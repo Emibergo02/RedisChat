@@ -1,0 +1,77 @@
+name: KalyaChat
+version: '${project.version}'
+main: dev.unnm3d.kalyachat.KalyaChat
+api-version: 1.18
+depend:
+  - PlaceholderAPI
+  - Vault
+commands:
+  kalyachat:
+    description: KalyaChat command
+    usage: /kalyachat <reload>
+    permission: kalyachat.admin
+  ignore:
+    description: Ignore command
+    permission: kalyachat.ignore
+  msg:
+    description: Sends a private message to a player
+    aliases:
+      - message
+    usage: /msg <player> <message>
+    permission: kalyachat.message
+  reply:
+    description: Replies to the last player who sent you a message
+    aliases: [r]
+    permission: kalyachat.message
+  broadcast:
+    description: Broadcasts a message to the server
+    aliases: [bc]
+    usage: /broadcast <message>
+    permission: kalyachat.broadcast
+  clearchat:
+    description: Clears the chat
+    aliases: [cc]
+    usage: /clearchat
+    permission: kalyachat.clearchat
+  invshare:
+    description: 'Invshare'
+  spychat:
+    description: Spychat command
+    aliases: [spyc]
+    permission: kalyachat.spycommand
+permissions:
+  kalyachat.useformatting:
+    description: Allows you to send formatted messages
+    default: op
+  kalyachat.broadcast:
+    description: Allows you to use the /broadcast command
+    default: op
+  kalyachat.clearchat:
+    description: Allows you to use the /clearchat command
+    default: op
+  kalyachat.message:
+    description: Allows you to use the /msg command
+    default: op
+  kalyachat.ignore:
+    description: Allows you to use the /ignore command
+    default: op
+  kalyachat.spycommand:
+    description: Allows you to use the /spychat command
+    default: op
+  kalyachat.admin:
+    description: Allows you to use the /kalyachat command
+    default: op
+    children:
+      - kalyachat.useformatting
+      - kalyachat.broadcast
+      - kalyachat.clearchat
+      - kalyachat.message
+      - kalyachat.ignore
+      - kalyachat.spycommand
+  kalyachat.default:
+    description: Allows you to use default commands
+    default: true
+    children:
+      - kalyachat.message
+      - kalyachat.ignore
+
