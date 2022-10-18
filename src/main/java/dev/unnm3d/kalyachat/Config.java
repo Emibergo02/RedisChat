@@ -13,7 +13,7 @@ import java.util.Map;
 public final class Config {
 
     @Comment({"Redis config", "Remove unnecessary keys if not needed (like user or password)"})
-    public Redis redis = new Redis("localhost", 6379, "root", "root",-1,0);
+    public Redis redis = new Redis("localhost", 6379, "root", "root",0,0);
     @Comment({"The format of the chat", "Permission format is overridden on descending order", "(if a player has default and vip, if default is the first element, vip will be ignored)"})
     public List<ChatFormat> formats = List.of(new ChatFormat("kalyachat.default",
             "<click:run_command:/msg %player_name%><hover:show_text:'" +

@@ -40,6 +40,9 @@ commands:
     aliases: [spyc]
     permission: kalyachat.spycommand
 permissions:
+  kalyachat.spychat:
+    description: You are spying the chat if it is true
+    default: false
   kalyachat.useformatting:
     description: Allows you to send formatted messages
     default: op
@@ -74,4 +77,5 @@ permissions:
     children:
       - kalyachat.message
       - kalyachat.ignore
+
 

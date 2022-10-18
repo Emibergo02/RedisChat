@@ -23,11 +23,12 @@ public class PlayerListManager implements TabCompleter {
             @Override
             public void run() {
                 try {
-                    playerList = kc.getRedisDataManager().getPlayerList();
+                    Set<String> redisList=kc.getRedisDataManager().getPlayerList();
+                    if(redisList!=null)playerList=redisList;
                 }catch (Exception ignored){
                 }
             }
-        }.runTaskTimerAsynchronously(kc, 0, 20);
+        }.runTaskTimerAsynchronously(kc, 0, 40);
     }
 
     @Nullable
@@ -41,6 +42,9 @@ public class PlayerListManager implements TabCompleter {
     }
 
     public static Set<String> getPlayerList(){
+        if(playerList==null){
+            return Set.of();
+        }
         return playerList;
     }
 }

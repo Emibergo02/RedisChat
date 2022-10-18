@@ -81,20 +81,6 @@ public class RedisDataManager {
 
     }
     public void listenChatPackets(){
-        ezRedisMessenger.registerChannelObjectListener("pincopallino", (packet) -> {
-
-                ChatPacket chatPacket = (ChatPacket) packet;
-                chatPacket.getReceiverName();
-
-
-
-
-                }, ChatPacket.class);
-        ezRedisMessenger.sendObjectPacketAsync("pincopallino", new ChatPacket("pincopallino", "ciao", "pincopallino"));
-
-
-
-
         ezRedisMessenger.registerChannelObjectListener(Channel.CHAT.getChannelName(), (packet) -> {
 
             ChatPacket chatPacket = (ChatPacket) packet;
