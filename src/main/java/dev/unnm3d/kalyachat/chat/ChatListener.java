@@ -45,6 +45,7 @@ public class ChatListener implements Listener {
                     event.getPlayer().sendMessage(MiniMessage.miniMessage().deserialize(KalyaChat.config.rate_limited));
                     return;
                 }
+            System.out.print("rate limit: "+(System.currentTimeMillis()-init)+" ms ");
 
             Component formatted = TextParser.parse(event.getPlayer(), chatFormatList.get(0).format());
 
@@ -91,7 +92,7 @@ public class ChatListener implements Listener {
 
             long tRedis=System.currentTimeMillis() - init;
 
-            System.out.println("Timings: Format: "+tFormat+" Inv: "+tInv+" Parse: "+tParse+" Send: "+tRedis+" Total: "+(tFormat+tInv+tParse+tRedis)+" ms");
+            System.out.println(" Format: "+tFormat+" Inv: "+tInv+" Parse: "+tParse+" Send: "+tRedis+" Total: "+(tFormat+tInv+tParse+tRedis)+" ms");
 
         });
     }

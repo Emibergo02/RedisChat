@@ -18,9 +18,9 @@ public class RedisDataManager {
     }
 
     public Optional<String> getReplyName(String requesterName) {
-        return ezRedisMessenger.jedisResource(jedis ->
-            Optional.ofNullable(jedis.hget("kalyachat_reply", requesterName))
-                ,1000,true);
+        return Optional.ofNullable(ezRedisMessenger.jedisResource(jedis ->
+            jedis.hget("kalyachat_reply", requesterName)
+                ,1000,true));
     }
     public void setReplyName(String nameReceiver,String requesterName) {
         ezRedisMessenger.jedisResourceFuture(jedis -> jedis.hset("kalyachat_reply", nameReceiver, requesterName));
@@ -29,8 +29,8 @@ public class RedisDataManager {
         return Boolean.TRUE.equals(ezRedisMessenger.jedisResource(jedis -> {
             String result = jedis.get("kalyachat_ratelimit_" + playerName);
             int nowMessages = result == null ? 0 : Integer.parseInt(result);//If null, then 0
-            return nowMessages > KalyaChat.config.rate_limit;//messages higher than limit
-        },1000,true));
+            return nowMessages >= KalyaChat.config.rate_limit;//messages higher than limit
+        },100,true));
 
     }
     public void setRateLimit(String playerName,int seconds) {
