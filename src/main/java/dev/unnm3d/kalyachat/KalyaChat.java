@@ -56,13 +56,20 @@ public final class KalyaChat extends JavaPlugin {
         getCommand("invshare").setExecutor(new InvShare(new InvCache(ezRedisMessenger)));
         getCommand("kalyachat").setExecutor((sender, command, label, args) -> {
             if(args.length == 1){
-                if(args[0].equalsIgnoreCase("reload")&&sender.hasPermission(Permission.KALYA_CHAT_ADMIN.getPermission())){
-                    loadYML();
-                    sender.sendMessage("§aConfig reloaded");
-                    return true;
-                }
+                if(sender.hasPermission(Permission.KALYA_CHAT_ADMIN.getPermission()))
+                    if(args[0].equalsIgnoreCase("reload")){
+                        loadYML();
+                        sender.sendMessage("§aConfig reloaded");
+                        return true;
+                    }else if(args[0].equalsIgnoreCase("debug")){
+                        sender.sendMessage("§aJedis status: ");
+                        sender.sendMessage(ezRedisMessenger.getJedisPoolStatus());
+                        sender.sendMessage("§aThread status: ");
+                        sender.sendMessage(ezRedisMessenger.getThreadPoolStatus());
+                    }
                 return true;
             }
+
             return false;
         });
 

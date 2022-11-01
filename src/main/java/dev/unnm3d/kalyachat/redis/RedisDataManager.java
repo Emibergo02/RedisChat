@@ -11,7 +11,7 @@ import java.util.Optional;
 import java.util.Set;
 
 public class RedisDataManager {
-    private EzRedisMessenger ezRedisMessenger;
+    private final EzRedisMessenger ezRedisMessenger;
 
     public RedisDataManager(EzRedisMessenger ezRedisMessenger) {
         this.ezRedisMessenger = ezRedisMessenger;
@@ -39,6 +39,7 @@ public class RedisDataManager {
             p.incr("kalyachat_ratelimit_"+playerName);
             p.expire("kalyachat_ratelimit_"+playerName, seconds);
             p.sync();
+            p.close();
             return null;
         });
     }

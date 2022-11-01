@@ -67,9 +67,9 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>com.github.Emibergo02</groupId>
+            <groupId>dev.unnm3d.redislib</groupId>
             <artifactId>EzRedisLib</artifactId>
-            <version>3.1-SNAPSHOT</version>
+            <version>3.3-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>net.kyori</groupId>
