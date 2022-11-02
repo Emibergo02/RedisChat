@@ -1,11 +1,11 @@
-package dev.unnm3d.kalyachat.commands;
+package dev.unnm3d.redischat.commands;
 
-import dev.unnm3d.kalyachat.Config;
-import dev.unnm3d.kalyachat.KalyaChat;
-import dev.unnm3d.kalyachat.Permission;
-import dev.unnm3d.kalyachat.chat.TextParser;
-import dev.unnm3d.kalyachat.redis.Channel;
-import dev.unnm3d.kalyachat.redis.ChatPacket;
+import dev.unnm3d.redischat.Config;
+import dev.unnm3d.redischat.RedisChat;
+import dev.unnm3d.redischat.Permission;
+import dev.unnm3d.redischat.chat.TextParser;
+import dev.unnm3d.redischat.redis.Channel;
+import dev.unnm3d.redischat.redis.ChatPacket;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
@@ -22,22 +22,22 @@ public class MsgCommand implements CommandExecutor {
     public static void sendMsg(String[] args, CommandSender sender, String receiverName) {
 
         if (!PlayerListManager.getPlayerList().contains(receiverName)) {
-            sender.sendMessage(MiniMessage.miniMessage().deserialize(KalyaChat.config.player_not_online.replace("%player%", receiverName)));
+            sender.sendMessage(MiniMessage.miniMessage().deserialize(RedisChat.config.player_not_online.replace("%player%", receiverName)));
             return;
         }
 
 
-        Bukkit.getScheduler().runTaskAsynchronously(KalyaChat.getInstance(), () ->
+        Bukkit.getScheduler().runTaskAsynchronously(RedisChat.getInstance(), () ->
         {
             String message = String.join(" ", args);
-            List<Config.ChatFormat> chatFormatList = KalyaChat.config.getChatFormats(sender);
+            List<Config.ChatFormat> chatFormatList = RedisChat.config.getChatFormats(sender);
             if (chatFormatList.isEmpty()) return;
 
             Component formatted = TextParser.parse(sender, chatFormatList.get(0).private_format().replace("%receiver%", receiverName).replace("%sender%", sender.getName()));
 
             //Check for minimessage tags permission
             boolean parsePlaceholders = true;
-            if (!sender.hasPermission(Permission.KALYA_CHAT_USE_FORMATTING.getPermission())) {
+            if (!sender.hasPermission(Permission.REDIS_CHAT_USE_FORMATTING.getPermission())) {
                 message = TextParser.purify(message);
                 parsePlaceholders = false;
             }
@@ -52,9 +52,9 @@ public class MsgCommand implements CommandExecutor {
                     builder -> builder.match("%message%").replacement(toBeReplaced)
             );
             //Send to other servers
-            KalyaChat.getInstance().getRedisMessenger().sendObjectPacketAsync(Channel.CHAT.getChannelName(), new ChatPacket( sender.getName(), MiniMessage.miniMessage().serialize(toBeReplaced),receiverName));
-            KalyaChat.getInstance().getChatListener().onSenderPrivateChat(sender,formatted);
-            KalyaChat.getInstance().getRedisDataManager().setReplyName(receiverName,sender.getName());
+            RedisChat.getInstance().getRedisMessenger().sendObjectPacketAsync(Channel.CHAT.getChannelName(), new ChatPacket( sender.getName(), MiniMessage.miniMessage().serialize(toBeReplaced),receiverName));
+            RedisChat.getInstance().getChatListener().onSenderPrivateChat(sender,formatted);
+            RedisChat.getInstance().getRedisDataManager().setReplyName(receiverName,sender.getName());
 
 
         });
@@ -62,7 +62,7 @@ public class MsgCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, @NotNull String[] args) {
-        if (!sender.hasPermission(Permission.KALYA_CHAT_MESSAGE.getPermission())) return true;
+        if (!sender.hasPermission(Permission.REDIS_CHAT_MESSAGE.getPermission())) return true;
 
 
         if (args.length < 2) {

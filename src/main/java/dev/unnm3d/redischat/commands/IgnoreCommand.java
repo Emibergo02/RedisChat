@@ -1,7 +1,7 @@
-package dev.unnm3d.kalyachat.commands;
+package dev.unnm3d.redischat.commands;
 
-import dev.unnm3d.kalyachat.KalyaChat;
-import dev.unnm3d.kalyachat.chat.TextParser;
+import dev.unnm3d.redischat.RedisChat;
+import dev.unnm3d.redischat.chat.TextParser;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -22,19 +22,19 @@ public class IgnoreCommand implements CommandExecutor {
 
                 if(args[0].equalsIgnoreCase("list")){
                         final StringJoiner ignoreList = new StringJoiner(", ");
-                        for (String username : KalyaChat.getInstance().getRedisDataManager().ignoringList(sender.getName())) {
+                        for (String username : RedisChat.getInstance().getRedisDataManager().ignoringList(sender.getName())) {
                             ignoreList.add(username);
                         }
-                        sender.sendMessage(TextParser.parse(KalyaChat.config.ignoring_list.replace("%list%", ignoreList.toString())));
+                        sender.sendMessage(TextParser.parse(RedisChat.config.ignoring_list.replace("%list%", ignoreList.toString())));
                         return;
 
                 }
-                KalyaChat.getInstance().getRedisDataManager().toggleIgnoring(sender.getName(), args[0]);
-                sender.sendMessage(TextParser.parse(KalyaChat.config.ignoring_player.replace("%player%", args[0])));
+                RedisChat.getInstance().getRedisDataManager().toggleIgnoring(sender.getName(), args[0]);
+                sender.sendMessage(TextParser.parse(RedisChat.config.ignoring_player.replace("%player%", args[0])));
 
 
             }
-        }.runTaskAsynchronously(KalyaChat.getInstance());
+        }.runTaskAsynchronously(RedisChat.getInstance());
 
 
         return false;

@@ -1,14 +1,14 @@
-package dev.unnm3d.kalyachat;
+package dev.unnm3d.redischat;
 
 import de.exlll.configlib.YamlConfigurationProperties;
 import de.exlll.configlib.YamlConfigurations;
 import dev.unnm3d.ezredislib.EzRedisMessenger;
-import dev.unnm3d.kalyachat.chat.ChatListener;
-import dev.unnm3d.kalyachat.commands.*;
-import dev.unnm3d.kalyachat.invshare.InvCache;
-import dev.unnm3d.kalyachat.invshare.InvGUI;
-import dev.unnm3d.kalyachat.invshare.InvShare;
-import dev.unnm3d.kalyachat.redis.RedisDataManager;
+import dev.unnm3d.redischat.chat.ChatListener;
+import dev.unnm3d.redischat.commands.*;
+import dev.unnm3d.redischat.invshare.InvCache;
+import dev.unnm3d.redischat.invshare.InvGUI;
+import dev.unnm3d.redischat.invshare.InvShare;
+import dev.unnm3d.redischat.redis.RedisDataManager;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -17,9 +17,9 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.nio.file.Path;
 
-public final class KalyaChat extends JavaPlugin {
+public final class RedisChat extends JavaPlugin {
 
-    private static KalyaChat instance;
+    private static RedisChat instance;
     private EzRedisMessenger ezRedisMessenger;
     public static Config config;
     private ChatListener chatListener;
@@ -42,7 +42,7 @@ public final class KalyaChat extends JavaPlugin {
         this.chatListener = new ChatListener(this);
         getServer().getPluginManager().registerEvents(this.chatListener, this);
         try {
-            this.ezRedisMessenger = new EzRedisMessenger(config.redis.host(), config.redis.port(), config.redis.user(), config.redis.password(),config.redis.timeout(),config.redis.database(),"kalyachat");
+            this.ezRedisMessenger = new EzRedisMessenger(config.redis.host(), config.redis.port(), config.redis.user(), config.redis.password(),config.redis.timeout(),config.redis.database(),"redischat");
             this.redisDataManager=new RedisDataManager(this.ezRedisMessenger);
             this.redisDataManager.listenChatPackets();
             Bukkit.getOnlinePlayers().forEach(player -> this.redisDataManager.addPlayerName(player.getName()));
@@ -54,9 +54,9 @@ public final class KalyaChat extends JavaPlugin {
         //InvShare part
         getServer().getPluginManager().registerEvents(new InvGUI.GuiListener(), this);
         getCommand("invshare").setExecutor(new InvShare(new InvCache(ezRedisMessenger)));
-        getCommand("kalyachat").setExecutor((sender, command, label, args) -> {
+        getCommand("redischat").setExecutor((sender, command, label, args) -> {
             if(args.length == 1){
-                if(sender.hasPermission(Permission.KALYA_CHAT_ADMIN.getPermission()))
+                if(sender.hasPermission(Permission.REDIS_CHAT_ADMIN.getPermission()))
                     if(args[0].equalsIgnoreCase("reload")){
                         loadYML();
                         sender.sendMessage("§aConfig reloaded");
@@ -80,7 +80,7 @@ public final class KalyaChat extends JavaPlugin {
         YamlConfigurationProperties properties = YamlConfigurationProperties.newBuilder()
                 .header(
                         """
-                                KalyaChat config
+                                RedisChat config
                                 """
                 )
                 .footer("Authors: Unnm3d")
@@ -105,7 +105,7 @@ public final class KalyaChat extends JavaPlugin {
         this.ezRedisMessenger.destroy();
     }
 
-    public static KalyaChat getInstance() {
+    public static RedisChat getInstance() {
         return instance;
     }
 

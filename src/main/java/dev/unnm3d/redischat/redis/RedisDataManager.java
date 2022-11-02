@@ -1,9 +1,9 @@
-package dev.unnm3d.kalyachat.redis;
+package dev.unnm3d.redischat.redis;
 
 import dev.unnm3d.ezredislib.EzRedisMessenger;
 import dev.unnm3d.jedis.Pipeline;
-import dev.unnm3d.kalyachat.KalyaChat;
-import dev.unnm3d.kalyachat.Permission;
+import dev.unnm3d.redischat.RedisChat;
+import dev.unnm3d.redischat.Permission;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -19,25 +19,25 @@ public class RedisDataManager {
 
     public Optional<String> getReplyName(String requesterName) {
         return Optional.ofNullable(ezRedisMessenger.jedisResource(jedis ->
-            jedis.hget("kalyachat_reply", requesterName)
+            jedis.hget("redischat_reply", requesterName)
                 ,1000,true));
     }
     public void setReplyName(String nameReceiver,String requesterName) {
-        ezRedisMessenger.jedisResourceFuture(jedis -> jedis.hset("kalyachat_reply", nameReceiver, requesterName));
+        ezRedisMessenger.jedisResourceFuture(jedis -> jedis.hset("redischat_reply", nameReceiver, requesterName));
     }
     public boolean isRateLimited(String playerName) {
         return Boolean.TRUE.equals(ezRedisMessenger.jedisResource(jedis -> {
-            String result = jedis.get("kalyachat_ratelimit_" + playerName);
+            String result = jedis.get("redischat_ratelimit_" + playerName);
             int nowMessages = result == null ? 0 : Integer.parseInt(result);//If null, then 0
-            return nowMessages >= KalyaChat.config.rate_limit;//messages higher than limit
+            return nowMessages >= RedisChat.config.rate_limit;//messages higher than limit
         },100,true));
 
     }
     public void setRateLimit(String playerName,int seconds) {
         ezRedisMessenger.jedisResourceFuture(jedis -> {
             Pipeline p=jedis.pipelined();
-            p.incr("kalyachat_ratelimit_"+playerName);
-            p.expire("kalyachat_ratelimit_"+playerName, seconds);
+            p.incr("redischat_ratelimit_"+playerName);
+            p.expire("redischat_ratelimit_"+playerName, seconds);
             p.sync();
             p.close();
             return null;
@@ -45,27 +45,27 @@ public class RedisDataManager {
     }
     public void addPlayerName(String playerName) {
         ezRedisMessenger.jedisResourceFuture(jedis -> {
-            jedis.sadd("kalyachat_playerlist", playerName);
+            jedis.sadd("redischat_playerlist", playerName);
             return null;
         });
     }
     public Set<String> getPlayerList() {
-        return ezRedisMessenger.jedisResource(jedis -> jedis.smembers("kalyachat_playerlist") ,1000,true);
+        return ezRedisMessenger.jedisResource(jedis -> jedis.smembers("redischat_playerlist") ,1000,true);
     }
     public void removePlayerName(String playerName) {
         ezRedisMessenger.jedisResourceFuture(jedis -> {
-            jedis.srem("kalyachat_playerlist", playerName);
+            jedis.srem("redischat_playerlist", playerName);
             return null;
         });
     }
     public void toggleIgnoring(String playerName, String ignoringName) {
         ezRedisMessenger.jedisResourceFuture(jedis -> {
 
-            long response=jedis.sadd("kalyachat_ignore_"+playerName, ignoringName);
+            long response=jedis.sadd("redischat_ignore_"+playerName, ignoringName);
             if(response==0) {
-                jedis.srem("kalyachat_ignore_" + playerName, ignoringName);
+                jedis.srem("redischat_ignore_" + playerName, ignoringName);
             }else {
-                jedis.expire("kalyachat_ignore_" + playerName, 60 * 60 * 24 * 7);
+                jedis.expire("redischat_ignore_" + playerName, 60 * 60 * 24 * 7);
             }
             return null;
         });
@@ -77,7 +77,7 @@ public class RedisDataManager {
     }
     public Set<String> ignoringList(String playerName) {
         return ezRedisMessenger.jedisResource(jedis ->
-                jedis.smembers("kalyachat_ignore_" + playerName)
+                jedis.smembers("redischat_ignore_" + playerName)
         );
 
     }
@@ -91,18 +91,18 @@ public class RedisDataManager {
                 for(Player player:Bukkit.getOnlinePlayers()){
                     if (player.getName().equals(chatPacket.getReceiverName())) {
                         realReceiver=true;
-                    }else if(player.hasPermission(Permission.KALYA_CHAT_SPYCHAT.getPermission())){
-                        KalyaChat.getInstance().getChatListener().onSpyPrivateChat(chatPacket.getReceiverName(),chatPacket.getSenderName(),player, chatPacket.getMessage());
+                    }else if(player.hasPermission(Permission.REDIS_CHAT_SPYCHAT.getPermission())){
+                        RedisChat.getInstance().getChatListener().onSpyPrivateChat(chatPacket.getReceiverName(),chatPacket.getSenderName(),player, chatPacket.getMessage());
                     }
                 }
                 if(!realReceiver)return;
             }
 
             if (chatPacket.isPrivate()) {
-                if(!KalyaChat.getInstance().getRedisDataManager().isIgnoring(chatPacket.getReceiverName(),chatPacket.getSenderName()))//Check ignoring
-                    KalyaChat.getInstance().getChatListener().onPrivateChat(chatPacket.getSenderName(), chatPacket.getReceiverName(), chatPacket.getMessage());
+                if(!RedisChat.getInstance().getRedisDataManager().isIgnoring(chatPacket.getReceiverName(),chatPacket.getSenderName()))//Check ignoring
+                    RedisChat.getInstance().getChatListener().onPrivateChat(chatPacket.getSenderName(), chatPacket.getReceiverName(), chatPacket.getMessage());
             } else {
-                KalyaChat.getInstance().getChatListener().onPublicChat(chatPacket.getMessage());
+                RedisChat.getInstance().getChatListener().onPublicChat(chatPacket.getMessage());
             }
 
         }, ChatPacket.class);

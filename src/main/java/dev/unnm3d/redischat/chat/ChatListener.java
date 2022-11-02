@@ -1,11 +1,11 @@
-package dev.unnm3d.kalyachat.chat;
+package dev.unnm3d.redischat.chat;
 
-import dev.unnm3d.kalyachat.Config;
-import dev.unnm3d.kalyachat.KalyaChat;
-import dev.unnm3d.kalyachat.Permission;
-import dev.unnm3d.kalyachat.invshare.InvShare;
-import dev.unnm3d.kalyachat.redis.Channel;
-import dev.unnm3d.kalyachat.redis.ChatPacket;
+import dev.unnm3d.redischat.Config;
+import dev.unnm3d.redischat.RedisChat;
+import dev.unnm3d.redischat.Permission;
+import dev.unnm3d.redischat.invshare.InvShare;
+import dev.unnm3d.redischat.redis.Channel;
+import dev.unnm3d.redischat.redis.ChatPacket;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -23,9 +23,9 @@ import java.util.List;
 
 public class ChatListener implements Listener {
     private final BukkitAudiences bukkitAudiences;
-    private final KalyaChat plugin;
+    private final RedisChat plugin;
 
-    public ChatListener(KalyaChat plugin) {
+    public ChatListener(RedisChat plugin) {
         this.plugin = plugin;
         this.bukkitAudiences = BukkitAudiences.create(plugin);
 
@@ -35,14 +35,14 @@ public class ChatListener implements Listener {
     public void onChat(AsyncPlayerChatEvent event) {
         if(event.isCancelled()) return;
         event.setCancelled(true);
-        Bukkit.getScheduler().runTaskAsynchronously(KalyaChat.getInstance(),()-> {
+        Bukkit.getScheduler().runTaskAsynchronously(RedisChat.getInstance(),()-> {
             long init = System.currentTimeMillis();
 
-            List<Config.ChatFormat> chatFormatList = KalyaChat.config.getChatFormats(event.getPlayer());
+            List<Config.ChatFormat> chatFormatList = RedisChat.config.getChatFormats(event.getPlayer());
             if (chatFormatList.isEmpty()) return;
-            if(!event.getPlayer().hasPermission(Permission.KALYA_CHAT_ADMIN.getPermission()))
+            if(!event.getPlayer().hasPermission(Permission.REDIS_CHAT_ADMIN.getPermission()))
                 if(plugin.getRedisDataManager().isRateLimited(event.getPlayer().getName())){
-                    event.getPlayer().sendMessage(MiniMessage.miniMessage().deserialize(KalyaChat.config.rate_limited));
+                    event.getPlayer().sendMessage(MiniMessage.miniMessage().deserialize(RedisChat.config.rate_limited));
                     return;
                 }
             System.out.print("rate limit: "+(System.currentTimeMillis()-init)+" ms ");
@@ -52,7 +52,7 @@ public class ChatListener implements Listener {
             //Check for minimessage tags permission
             String message = event.getMessage();
             boolean parsePlaceholders = true;
-            if (!event.getPlayer().hasPermission(Permission.KALYA_CHAT_USE_FORMATTING.getPermission())) {
+            if (!event.getPlayer().hasPermission(Permission.REDIS_CHAT_USE_FORMATTING.getPermission())) {
                 message = TextParser.purify(message);
                 parsePlaceholders = false;
             }
@@ -88,7 +88,7 @@ public class ChatListener implements Listener {
 
             // Send to other servers
             plugin.getRedisMessenger().sendObjectPacketAsync(Channel.CHAT.getChannelName(), new ChatPacket(event.getPlayer().getName(), MiniMessage.miniMessage().serialize(formatted)));
-            plugin.getRedisDataManager().setRateLimit(event.getPlayer().getName(),KalyaChat.config.rate_limit_time_seconds);
+            plugin.getRedisDataManager().setRateLimit(event.getPlayer().getName(), RedisChat.config.rate_limit_time_seconds);
 
             long tRedis=System.currentTimeMillis() - init;
 
@@ -105,7 +105,7 @@ public class ChatListener implements Listener {
         Player p = Bukkit.getPlayer(receiverName);
         if (p != null)
             if(p.isOnline()){
-                List<Config.ChatFormat> chatFormatList=KalyaChat.config.getChatFormats(p);
+                List<Config.ChatFormat> chatFormatList= RedisChat.config.getChatFormats(p);
                 if(chatFormatList.isEmpty())return;
                 Component formatted = TextParser.parse(null, chatFormatList.get(0).receive_private_format().replace("%receiver%", receiverName).replace("%sender%", senderName));
                 Component toBeReplaced = TextParser.parse(null, text);
@@ -122,16 +122,16 @@ public class ChatListener implements Listener {
     }
     @EventHandler
     public void onJoin(PlayerJoinEvent event){
-        KalyaChat.getInstance().getRedisDataManager().addPlayerName(event.getPlayer().getName());
+        RedisChat.getInstance().getRedisDataManager().addPlayerName(event.getPlayer().getName());
     }
 
     @EventHandler
     public void onQuit(PlayerQuitEvent event){
-        KalyaChat.getInstance().getRedisDataManager().removePlayerName(event.getPlayer().getName());
+        RedisChat.getInstance().getRedisDataManager().removePlayerName(event.getPlayer().getName());
     }
 
     public void onSpyPrivateChat(String receiverName,String senderName, Player watcher, String deserialize) {
-        Component formatted = MiniMessage.miniMessage().deserialize(KalyaChat.config.spychat_format.replace("%receiver%",receiverName).replace("%sender%",senderName));
+        Component formatted = MiniMessage.miniMessage().deserialize(RedisChat.config.spychat_format.replace("%receiver%",receiverName).replace("%sender%",senderName));
 
 
         //Parse into minimessage (placeholders, tags and mentions)

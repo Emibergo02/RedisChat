@@ -1,7 +1,8 @@
-package dev.unnm3d.kalyachat;
+package dev.unnm3d.redischat;
 
 import de.exlll.configlib.Comment;
 import de.exlll.configlib.Configuration;
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.EventPriority;
 import org.jetbrains.annotations.NotNull;
@@ -15,7 +16,7 @@ public final class Config {
     @Comment({"Redis config", "Remove unnecessary keys if not needed (like user or password)"})
     public Redis redis = new Redis("localhost", 6379, "root", "root",0,0);
     @Comment({"The format of the chat", "Permission format is overridden on descending order", "(if a player has default and vip, if default is the first element, vip will be ignored)"})
-    public List<ChatFormat> formats = List.of(new ChatFormat("kalyachat.default",
+    public List<ChatFormat> formats = List.of(new ChatFormat("redischat.default",
             "<click:run_command:/msg %player_name%><hover:show_text:'" +
                     "<reset>Informazioni | <white>%player_displayname%<br>" +
                     "<gold><bold>➧</bold> Dobloni<reset>: <white>%vault_eco_balance% <gold>✵<br>" +
@@ -71,12 +72,12 @@ public final class Config {
     public @NotNull List<ChatFormat> getChatFormats(CommandSender p) {
         List<Config.ChatFormat> chatFormatList = formats.stream().filter(format -> p.hasPermission(format.permission())).toList();
         if (chatFormatList.isEmpty()) {
-            System.out.println("No format found for " + p.getName());
+            Bukkit.getLogger().info("No format found for " + p.getName());
             return List.of();
         }
         return chatFormatList;
     }
     public static EventPriority getPriority(){
-        return EventPriority.valueOf(KalyaChat.config.chat_listener_priority.toUpperCase());
+        return EventPriority.valueOf(RedisChat.config.chat_listener_priority.toUpperCase());
     }
 }

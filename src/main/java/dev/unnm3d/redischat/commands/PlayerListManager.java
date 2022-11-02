@@ -1,6 +1,6 @@
-package dev.unnm3d.kalyachat.commands;
+package dev.unnm3d.redischat.commands;
 
-import dev.unnm3d.kalyachat.KalyaChat;
+import dev.unnm3d.redischat.RedisChat;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
@@ -17,7 +17,7 @@ public class PlayerListManager implements TabCompleter {
     private static Set<String> playerList;
 
     public PlayerListManager() {
-        KalyaChat kc=KalyaChat.getInstance();
+        RedisChat kc= RedisChat.getInstance();
         this.task=new BukkitRunnable(){
 
             @Override

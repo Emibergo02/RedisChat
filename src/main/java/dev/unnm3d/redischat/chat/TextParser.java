@@ -1,8 +1,8 @@
-package dev.unnm3d.kalyachat.chat;
+package dev.unnm3d.redischat.chat;
 
-import dev.unnm3d.kalyachat.Config;
-import dev.unnm3d.kalyachat.KalyaChat;
-import dev.unnm3d.kalyachat.commands.PlayerListManager;
+import dev.unnm3d.redischat.Config;
+import dev.unnm3d.redischat.RedisChat;
+import dev.unnm3d.redischat.commands.PlayerListManager;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -26,12 +26,12 @@ public class TextParser {
     }
 
     public static Component parse(CommandSender player, String text, TagResolver... tagResolvers) {
-        return miniMessage.deserialize(parsePlaceholders(player, parseMentions(text, KalyaChat.config.formats.get(0))), tagResolvers);
+        return miniMessage.deserialize(parsePlaceholders(player, parseMentions(text, RedisChat.config.formats.get(0))), tagResolvers);
     }
 
     public static Component parse(CommandSender player, String text, boolean parsePlaceholders, TagResolver... tagResolvers) {
         if (!parsePlaceholders)
-            return miniMessage.deserialize(parseMentions(text, KalyaChat.config.formats.get(0)), tagResolvers);
+            return miniMessage.deserialize(parseMentions(text, RedisChat.config.formats.get(0)), tagResolvers);
         else
             return parse(player, text, tagResolvers);
     }
@@ -73,9 +73,7 @@ public class TextParser {
                 System.out.println(p.getInventory().getItemInMainHand().getType().name());
                 toParse = toParse.replace("%item_name%", "Nothing");
             }
-
         }
-
         toParse = toParse.replace("%command%", "/invshare " + player.getName() + "-item");
         TagResolver item = Placeholder.component("item", parse(player, toParse));
 
@@ -84,7 +82,7 @@ public class TextParser {
         toParse = toParse.replace("%command%", "/invshare " + player.getName() + "-enderchest");
         TagResolver ec = Placeholder.component("ec", parse(player, toParse));
 
-        KalyaChat.config.placeholders.forEach((key, value) -> builder.resolver(Placeholder.component(key, parse(player, value))));
+        RedisChat.config.placeholders.forEach((key, value) -> builder.resolver(Placeholder.component(key, parse(player, value))));
 
         builder.resolver(inv);
         builder.resolver(item);
@@ -105,7 +103,7 @@ public class TextParser {
 
 
     public static String sanitize(String message) {
-        for (String regex : KalyaChat.config.regex_blacklist) {
+        for (String regex : RedisChat.config.regex_blacklist) {
             message = message.replaceAll(regex, "***");
         }
         return message;

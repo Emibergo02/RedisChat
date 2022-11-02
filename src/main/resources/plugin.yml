@@ -1,81 +1,81 @@
-name: KalyaChat
+name: RedisChat
 version: '${project.version}'
-main: dev.unnm3d.kalyachat.KalyaChat
+main: dev.unnm3d.redischat.RedisChat
 api-version: 1.18
 depend:
   - PlaceholderAPI
   - Vault
 commands:
-  kalyachat:
-    description: KalyaChat command
-    usage: /kalyachat <reload>
-    permission: kalyachat.admin
+  redischat:
+    description: RedisChat command
+    usage: /redischat <reload>
+    permission: redischat.admin
   ignore:
     description: Ignore command
-    permission: kalyachat.ignore
+    permission: redischat.ignore
   msg:
     description: Sends a private message to a player
     aliases:
       - message
     usage: /msg <player> <message>
-    permission: kalyachat.message
+    permission: redischat.message
   reply:
     description: Replies to the last player who sent you a message
     aliases: [r]
-    permission: kalyachat.message
+    permission: redischat.message
   broadcast:
     description: Broadcasts a message to the server
     aliases: [bc]
     usage: /broadcast <message>
-    permission: kalyachat.broadcast
+    permission: redischat.broadcast
   clearchat:
     description: Clears the chat
     aliases: [cc]
     usage: /clearchat
-    permission: kalyachat.clearchat
+    permission: redischat.clearchat
   invshare:
     description: 'Invshare'
   spychat:
     description: Spychat command
     aliases: [spyc]
-    permission: kalyachat.spycommand
+    permission: redischat.spycommand
 permissions:
-  kalyachat.spychat:
+  redischat.spychat:
     description: You are spying the chat if it is true
     default: false
-  kalyachat.useformatting:
+  redischat.useformatting:
     description: Allows you to send formatted messages
     default: op
-  kalyachat.broadcast:
+  redischat.broadcast:
     description: Allows you to use the /broadcast command
     default: op
-  kalyachat.clearchat:
+  redischat.clearchat:
     description: Allows you to use the /clearchat command
     default: op
-  kalyachat.message:
+  redischat.message:
     description: Allows you to use the /msg command
     default: op
-  kalyachat.ignore:
+  redischat.ignore:
     description: Allows you to use the /ignore command
     default: op
-  kalyachat.spycommand:
+  redischat.spycommand:
     description: Allows you to use the /spychat command
     default: op
-  kalyachat.admin:
-    description: Allows you to use the /kalyachat command
+  redischat.admin:
+    description: Allows you to use the /redischat command
     default: op
     children:
-      - kalyachat.useformatting
-      - kalyachat.broadcast
-      - kalyachat.clearchat
-      - kalyachat.message
-      - kalyachat.ignore
-      - kalyachat.spycommand
-  kalyachat.default:
+      - redischat.useformatting
+      - redischat.broadcast
+      - redischat.clearchat
+      - redischat.message
+      - redischat.ignore
+      - redischat.spycommand
+  redischat.default:
     description: Allows you to use default commands
     default: true
     children:
-      - kalyachat.message
-      - kalyachat.ignore
+      - redischat.message
+      - redischat.ignore
 
 

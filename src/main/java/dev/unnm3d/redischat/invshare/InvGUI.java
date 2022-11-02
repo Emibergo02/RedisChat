@@ -1,6 +1,6 @@
-package dev.unnm3d.kalyachat.invshare;
+package dev.unnm3d.redischat.invshare;
 
-import dev.unnm3d.kalyachat.KalyaChat;
+import dev.unnm3d.redischat.RedisChat;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
@@ -25,7 +25,7 @@ public class InvGUI implements Listener {
 
         // Put the items into the inventory
         inv.setContents(items);
-        Bukkit.getScheduler().runTask(KalyaChat.getInstance(), () -> {
+        Bukkit.getScheduler().runTask(RedisChat.getInstance(), () -> {
             player.openInventory(inv);
             invTitles.add(title);
             new BukkitRunnable() {
@@ -34,7 +34,7 @@ public class InvGUI implements Listener {
                     inv.close();
                     invTitles.remove(title);
                 }
-            }.runTaskLater(KalyaChat.getInstance(), 20*60*5);
+            }.runTaskLater(RedisChat.getInstance(), 20*60*5);
         });
     }
 
@@ -43,7 +43,7 @@ public class InvGUI implements Listener {
 
         // Put the items into the inventory
         inv.setItem(13, item);
-        Bukkit.getScheduler().runTask(KalyaChat.getInstance(), () -> {
+        Bukkit.getScheduler().runTask(RedisChat.getInstance(), () -> {
             player.openInventory(inv);
             invTitles.add(title);
             new BukkitRunnable() {
@@ -52,7 +52,7 @@ public class InvGUI implements Listener {
                     inv.close();
                     invTitles.remove(title);
                 }
-            }.runTaskLater(KalyaChat.getInstance(), 20*60*5);
+            }.runTaskLater(RedisChat.getInstance(), 20*60*5);
         });
     }
 
@@ -83,7 +83,7 @@ public class InvGUI implements Listener {
                         p.updateInventory();
                         invTitles.remove(e.getView().getTitle());
                     }
-                }.runTaskLater(KalyaChat.getInstance(), 2);
+                }.runTaskLater(RedisChat.getInstance(), 2);
             }
 
         }

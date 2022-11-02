@@ -1,11 +1,11 @@
-package dev.unnm3d.kalyachat.commands;
+package dev.unnm3d.redischat.commands;
 
-import dev.unnm3d.kalyachat.Config;
-import dev.unnm3d.kalyachat.KalyaChat;
-import dev.unnm3d.kalyachat.Permission;
-import dev.unnm3d.kalyachat.chat.TextParser;
-import dev.unnm3d.kalyachat.redis.Channel;
-import dev.unnm3d.kalyachat.redis.ChatPacket;
+import dev.unnm3d.redischat.Config;
+import dev.unnm3d.redischat.RedisChat;
+import dev.unnm3d.redischat.Permission;
+import dev.unnm3d.redischat.chat.TextParser;
+import dev.unnm3d.redischat.redis.Channel;
+import dev.unnm3d.redischat.redis.ChatPacket;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.command.Command;
@@ -29,27 +29,27 @@ public class ReplyCommand implements CommandExecutor {
             @Override
             public void run() {
 
-                Optional<String> receiver = KalyaChat.getInstance().getRedisDataManager().getReplyName(sender.getName());
+                Optional<String> receiver = RedisChat.getInstance().getRedisDataManager().getReplyName(sender.getName());
 
                 if(receiver.isEmpty()){
-                    sender.sendMessage(MiniMessage.miniMessage().deserialize(KalyaChat.config.no_reply_found));
+                    sender.sendMessage(MiniMessage.miniMessage().deserialize(RedisChat.config.no_reply_found));
                     return;
                 }else if(!PlayerListManager.getPlayerList().contains(receiver.get())){
-                    sender.sendMessage(MiniMessage.miniMessage().deserialize(KalyaChat.config.reply_not_online.replace("%player%",receiver.get())));
+                    sender.sendMessage(MiniMessage.miniMessage().deserialize(RedisChat.config.reply_not_online.replace("%player%",receiver.get())));
                     return;
                 }
 
 
 
                 String message=String.join(" ",args);
-                List<Config.ChatFormat> chatFormatList = KalyaChat.config.getChatFormats(sender);
+                List<Config.ChatFormat> chatFormatList = RedisChat.config.getChatFormats(sender);
                 if (chatFormatList.isEmpty()) return;
 
                 Component formatted = TextParser.parse(sender, chatFormatList.get(0).private_format().replace("%receiver%", receiver.get()).replace("%sender%", sender.getName()));
 
                 //Check for minimessage tags permission
                 boolean parsePlaceholders = true;
-                if (!sender.hasPermission(Permission.KALYA_CHAT_USE_FORMATTING.getPermission())) {
+                if (!sender.hasPermission(Permission.REDIS_CHAT_USE_FORMATTING.getPermission())) {
                     message = TextParser.purify(message);
                     parsePlaceholders = false;
                 }
@@ -64,12 +64,12 @@ public class ReplyCommand implements CommandExecutor {
                         builder -> builder.match("%message%").replacement(toBeReplaced)
                 );
                 //Send to other servers
-                KalyaChat.getInstance().getRedisMessenger().sendObjectPacketAsync(Channel.CHAT.getChannelName(), new ChatPacket( sender.getName(), MiniMessage.miniMessage().serialize(toBeReplaced),receiver.get()));
-                KalyaChat.getInstance().getChatListener().onSenderPrivateChat(sender,formatted);
-                KalyaChat.getInstance().getRedisDataManager().setReplyName(receiver.get(),sender.getName());
+                RedisChat.getInstance().getRedisMessenger().sendObjectPacketAsync(Channel.CHAT.getChannelName(), new ChatPacket( sender.getName(), MiniMessage.miniMessage().serialize(toBeReplaced),receiver.get()));
+                RedisChat.getInstance().getChatListener().onSenderPrivateChat(sender,formatted);
+                RedisChat.getInstance().getRedisDataManager().setReplyName(receiver.get(),sender.getName());
                 System.out.println("ReplyCommand: "+(System.currentTimeMillis()-init)+"ms");
             }
-        }.runTaskAsynchronously(KalyaChat.getInstance());
+        }.runTaskAsynchronously(RedisChat.getInstance());
 
         return false;
     }

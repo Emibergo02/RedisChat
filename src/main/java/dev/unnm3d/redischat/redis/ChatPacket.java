@@ -1,4 +1,4 @@
-package dev.unnm3d.kalyachat.redis;
+package dev.unnm3d.redischat.redis;
 
 import java.io.Serializable;
 
