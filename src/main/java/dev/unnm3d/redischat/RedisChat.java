@@ -36,7 +36,9 @@ public final class RedisChat extends JavaPlugin {
         this.getCommand("reply").setExecutor(new ReplyCommand());
         this.getCommand("broadcast").setExecutor(new BroadcastCommand());
         this.getCommand("clearchat").setExecutor(new ClearChatCommand());
-        this.getCommand("msg").setTabCompleter(new PlayerListManager());
+        PlayerListManager playerListManager=new PlayerListManager();
+        this.getCommand("msg").setTabCompleter(playerListManager);
+        this.getCommand("ignore").setTabCompleter(playerListManager);
 
 
         this.chatListener = new ChatListener(this);

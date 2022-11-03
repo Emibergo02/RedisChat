@@ -38,7 +38,7 @@ public class ReplyCommand implements CommandExecutor {
                     sender.sendMessage(MiniMessage.miniMessage().deserialize(RedisChat.config.reply_not_online.replace("%player%",receiver.get())));
                     return;
                 }
-
+                System.out.println("ReplyCommand redis: "+(System.currentTimeMillis()-init)+"ms");
 
 
                 String message=String.join(" ",args);
@@ -50,7 +50,7 @@ public class ReplyCommand implements CommandExecutor {
                 //Check for minimessage tags permission
                 boolean parsePlaceholders = true;
                 if (!sender.hasPermission(Permission.REDIS_CHAT_USE_FORMATTING.getPermission())) {
-                    message = TextParser.purify(message);
+                    message = TextParser.purgeTags(message);
                     parsePlaceholders = false;
                 }
                 // remove blacklisted stuff

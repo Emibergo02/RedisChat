@@ -53,10 +53,9 @@ public class ChatListener implements Listener {
             String message = event.getMessage();
             boolean parsePlaceholders = true;
             if (!event.getPlayer().hasPermission(Permission.REDIS_CHAT_USE_FORMATTING.getPermission())) {
-                message = TextParser.purify(message);
+                message = TextParser.purgeTags(message);
                 parsePlaceholders = false;
             }
-            System.out.println(message);
             if(message.trim().equals(""))return;
             message = TextParser.sanitize(message);
             long tFormat=System.currentTimeMillis() - init;

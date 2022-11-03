@@ -38,7 +38,7 @@ public class MsgCommand implements CommandExecutor {
             //Check for minimessage tags permission
             boolean parsePlaceholders = true;
             if (!sender.hasPermission(Permission.REDIS_CHAT_USE_FORMATTING.getPermission())) {
-                message = TextParser.purify(message);
+                message = TextParser.purgeTags(message);
                 parsePlaceholders = false;
             }
             // remove blacklisted stuff

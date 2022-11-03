@@ -14,6 +14,9 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class TextParser {
     private static final MiniMessage miniMessage = MiniMessage.miniMessage();
 
@@ -35,6 +38,15 @@ public class TextParser {
         else
             return parse(player, text, tagResolvers);
     }
+    public static Component parseWithoutMentions(CommandSender player, String text,boolean parseMentions, boolean parsePlaceholders, TagResolver... tagResolvers) {
+        if (!parseMentions) {
+            if (parsePlaceholders)
+                return miniMessage.deserialize(parsePlaceholders(player, text), tagResolvers);
+            else
+                return miniMessage.deserialize(text, tagResolvers);
+        }else
+            return parse(player, text,parsePlaceholders, tagResolvers);
+    }
     public static Component parse(CommandSender player, String text) {
         return parse(player, text, StandardTags.defaults());
     }
@@ -46,7 +58,7 @@ public class TextParser {
                 :PlaceholderAPI.setPlaceholders(null, text);
         return miniMessage.serialize(LegacyComponentSerializer.legacySection().deserialize(message)).replace("\\","");
     }
-    public static String purify(String text) {
+    public static String purgeTags(String text) {
         return miniMessage.stripTags(text, TagResolver.standard());
     }
 
@@ -57,7 +69,7 @@ public class TextParser {
         String toParse = chatFormat.inventory_format();
         toParse = toParse.replace("%player%", player.getName());
         toParse = toParse.replace("%command%", "/invshare " + player.getName() + "-inventory");
-        TagResolver inv = Placeholder.component("inv", parse(player, toParse));
+        TagResolver inv = Placeholder.component("inv", parseWithoutMentions(player, toParse,false,true,StandardTags.defaults()));
 
         toParse = chatFormat.item_format();
         toParse = toParse.replace("%player%", player.getName());
@@ -70,17 +82,16 @@ public class TextParser {
                     toParse = toParse.replace("%item_name%", p.getInventory().getItemInMainHand().getType().name().toLowerCase().replace("_", " "));
                 }
             else{
-                System.out.println(p.getInventory().getItemInMainHand().getType().name());
                 toParse = toParse.replace("%item_name%", "Nothing");
             }
         }
         toParse = toParse.replace("%command%", "/invshare " + player.getName() + "-item");
-        TagResolver item = Placeholder.component("item", parse(player, toParse));
+        TagResolver item = Placeholder.component("item", parseWithoutMentions(player, toParse,false,true,StandardTags.defaults()));
 
         toParse = chatFormat.enderchest_format();
         toParse = toParse.replace("%player%", player.getName());
         toParse = toParse.replace("%command%", "/invshare " + player.getName() + "-enderchest");
-        TagResolver ec = Placeholder.component("ec", parse(player, toParse));
+        TagResolver ec = Placeholder.component("ec", parseWithoutMentions(player, toParse,false,true,StandardTags.defaults()));
 
         RedisChat.config.placeholders.forEach((key, value) -> builder.resolver(Placeholder.component(key, parse(player, value))));
 
@@ -93,9 +104,14 @@ public class TextParser {
 
     public static String parseMentions(String text, Config.ChatFormat format) {
         String toParse = text;
+
         for(String playerName: PlayerListManager.getPlayerList()){
-            if (text.contains(" " + playerName + " ")||text.startsWith(playerName + " ")||text.endsWith(" " + playerName)) {
-                toParse = toParse.replace(playerName, format.mention_format().replace("%player%", playerName));
+            Pattern p = Pattern.compile("(^"+playerName+"|"+playerName+"$|\\s"+playerName+"\\s)"); //
+            Matcher m = p.matcher(text);
+            if (m.find()) {
+                String replacing=m.group();
+                replacing=replacing.replace(playerName, format.mention_format().replace("%player%", playerName));
+                toParse = toParse.replace(m.group(), replacing);
             }
         }
         return toParse;

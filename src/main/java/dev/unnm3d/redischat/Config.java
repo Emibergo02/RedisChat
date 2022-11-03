@@ -4,7 +4,6 @@ import de.exlll.configlib.Comment;
 import de.exlll.configlib.Configuration;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
-import org.bukkit.event.EventPriority;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -17,37 +16,34 @@ public final class Config {
     public Redis redis = new Redis("localhost", 6379, "root", "root",0,0);
     @Comment({"The format of the chat", "Permission format is overridden on descending order", "(if a player has default and vip, if default is the first element, vip will be ignored)"})
     public List<ChatFormat> formats = List.of(new ChatFormat("redischat.default",
-            "<click:run_command:/msg %player_name%><hover:show_text:'" +
-                    "<reset>Informazioni | <white>%player_displayname%<br>" +
-                    "<gold><bold>➧</bold> Dobloni<reset>: <white>%vault_eco_balance% <gold>✵<br>" +
-                    "<gold><bold>➧</bold> <yellow>Mondo<reset>: %multiverse_world_name_colored%<br>" +
-                    "<gold><bold>➧</bold> <yellow>Fazione<reset>: <white>%poldofaction_faction_name%<br>" +
-                    "<br><reset><underlined>Clicca per inviare un messaggio" +
-                    "'><white>\uE25C %vault_prefix%%player_displayname%%luckperms_suffix% <white>%poldofaction_faction_suffix%</click> <dark_gray>» <reset>%message%",
-            "<aqua>\u2709 <dark_aqua>MSG <white>(<reset>Tu <white>\u27a0 <green>%receiver%<white>)<reset>: <white>%message%",
-            "<aqua>\u2709 <dark_aqua>MSG <white>(<green>%sender% <white>\u27a0 <reset>Te<white>)<reset>: <white>%message%",
+            "<click:suggest_command:/msg %player_name%><hover:show_text:'" +
+                    "<reset>Information | <white>%player_displayname%<br>" +
+                    "<gold><bold>➧</bold> Money<reset>: <white>%vault_eco_balance% <gold>✵<br>" +
+                    "<br><reset><underlined>Click to send a message" +
+                    "'><white>%vault_prefix%%player_displayname%%luckperms_suffix% <white>%poldofaction_faction_suffix%</click> <dark_gray>» <reset>%message%",
+            "<dark_aqua>MSG <white>(<reset>You <white>to <green>%receiver%<white>)<reset>: <white>%message%",
+            "<dark_aqua>MSG <white>(<green>%sender% <white>to <reset>You<white>)<reset>: <white>%message%",
             "<click:run_command:%command%>[Open the inventory of %player%]</click>",
             "<click:run_command:%command%>[%item_name% of %player%]</click>",
-            "<click:run_command:%command%>[Open the enderchest of %player%]</click>", "<gold>@%player%"));
+            "<click:run_command:%command%>[Open the enderchest of %player%]</click>", "<aqua>@%player%</aqua>"));
     public Map<String, String> placeholders = Map.of("discord", "<click:open_url:https://discord.gg/uq6bBqAQ>Click to join our discord server</click>");
     public List<String> regex_blacklist = List.of("discord.gg/.*");
     public String inv_title = "Inventory of %player%";
     public String item_title = "Item of %player%";
     public String ec_title = "Enderchest of %player%";
-    public String broadcast_format = "<white>\uE25B <red>Annuncio <dark_gray>» <white>%message%";
-    public String clear_chat_message = "<newline><newline><newline><newline><newline><newline><newline><newline><newline><newline><newline><newline><newline><newline><newline><newline><newline><newline><newline><newline><newline><newline><newline><newline><newline><newline><newline><newline><newline><newline><newline><newline><newline>";
+    public String broadcast_format = "<red>Announce <dark_gray>» <white>%message%";
+    public String clear_chat_message = "<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>";
     public String player_not_online = "<red>The player %player% is not online</red>";
     public String no_reply_found = "<red>You do not have any message to reply</red>";
     public String reply_not_online = "<red>%player% is not online</red>";
     public String rate_limited = "<red>You've been rate limited</red>";
-    public String ignoring_list = "<red>%list%</red>";
-    public String ignoring_player = "<red>Toggled ignoring of %player%</red>";
+    public String ignoring_list = "<aqua>Player ignored</aqua><br><green>%list%</green>";
+    public String ignoring_player = "<green>Toggled ignoring of %player%</green>";
     public String spychat_format = "<red>%sender% said to %receiver% : %message%</red>";
     public int rate_limit = 3;
     public int rate_limit_time_seconds = 5;
     public String spychat_enabled = "<red>Spychat enabled</red>";
     public String spychat_disabled = "<red>Spychat disabled</red>";
-    public String chat_listener_priority = "HIGHEST";
 
     public record Redis(
             String host,
@@ -76,8 +72,5 @@ public final class Config {
             return List.of();
         }
         return chatFormatList;
-    }
-    public static EventPriority getPriority(){
-        return EventPriority.valueOf(RedisChat.config.chat_listener_priority.toUpperCase());
     }
 }

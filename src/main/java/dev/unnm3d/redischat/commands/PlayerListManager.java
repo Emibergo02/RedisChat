@@ -9,6 +9,7 @@ import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -35,8 +36,14 @@ public class PlayerListManager implements TabCompleter {
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if(args.length==0)return null;
-        if(command.getName().equalsIgnoreCase("msg")&&args.length!=1){
+
+        if(command.getName().equalsIgnoreCase("msg")||args.length!=1){
             return null;
+        }
+        if(command.getName().equalsIgnoreCase("ignore")){
+            List<String> temp= new ArrayList<>(List.of("list","all"));
+            temp.addAll(playerList.stream().filter(s -> s.startsWith(args[args.length-1])).toList());
+            return temp;
         }
         return playerList.stream().filter(s -> s.startsWith(args[args.length-1])).toList();
     }
