@@ -1,7 +1,7 @@
 package dev.unnm3d.redischat.commands;
 
-import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.Permission;
+import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.chat.TextParser;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -16,15 +16,15 @@ public class SpyChatCommand implements CommandExecutor {
         if (!(sender instanceof Player)) return false;
         net.milkbowl.vault.permission.Permission provider = RedisChat.getInstance().getPermissionProvider();
         if (provider == null) {
-            sender.sendMessage("§cVault not found, feature is not available");
+            RedisChat.config.sendMessage(sender, "<red>Vault not found, feature is not available");
             return false;
         }
-        if (!sender.hasPermission(Permission.REDIS_CHAT_SPYCHAT.getPermission())){
+        if (!sender.hasPermission(Permission.REDIS_CHAT_SPYCHAT.getPermission())) {
             RedisChat.getInstance().getPermissionProvider().playerAdd(null, (Player) sender, Permission.REDIS_CHAT_SPYCHAT.getPermission());
-            sender.sendMessage(TextParser.parse(RedisChat.config.spychat_enabled));
-        }else{
-            RedisChat.getInstance().getPermissionProvider().playerRemove(null,(Player) sender, Permission.REDIS_CHAT_SPYCHAT.getPermission());
-            sender.sendMessage(TextParser.parse(RedisChat.config.spychat_disabled));
+            RedisChat.config.sendMessage(sender, TextParser.parse(RedisChat.config.spychat_enabled));
+        } else {
+            RedisChat.getInstance().getPermissionProvider().playerRemove(null, (Player) sender, Permission.REDIS_CHAT_SPYCHAT.getPermission());
+            RedisChat.config.sendMessage(sender, TextParser.parse(RedisChat.config.spychat_disabled));
         }
 
         return false;

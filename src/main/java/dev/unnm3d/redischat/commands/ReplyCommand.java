@@ -1,8 +1,8 @@
 package dev.unnm3d.redischat.commands;
 
 import dev.unnm3d.redischat.Config;
-import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.Permission;
+import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.chat.TextParser;
 import dev.unnm3d.redischat.redis.Channel;
 import dev.unnm3d.redischat.redis.ChatPacket;
@@ -22,26 +22,26 @@ public class ReplyCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        if(!(sender instanceof Player))return false;
-        if(args.length==0)return false;
-        long init=System.currentTimeMillis();
-        new BukkitRunnable(){
+        if (!(sender instanceof Player)) return false;
+        if (args.length == 0) return false;
+        long init = System.currentTimeMillis();
+        new BukkitRunnable() {
             @Override
             public void run() {
 
                 Optional<String> receiver = RedisChat.getInstance().getRedisDataManager().getReplyName(sender.getName());
 
-                if(receiver.isEmpty()){
-                    sender.sendMessage(MiniMessage.miniMessage().deserialize(RedisChat.config.no_reply_found));
+                if (receiver.isEmpty()) {
+                    RedisChat.config.sendMessage(sender, RedisChat.config.no_reply_found);
                     return;
-                }else if(!PlayerListManager.getPlayerList().contains(receiver.get())){
-                    sender.sendMessage(MiniMessage.miniMessage().deserialize(RedisChat.config.reply_not_online.replace("%player%",receiver.get())));
+                } else if (!PlayerListManager.getPlayerList().contains(receiver.get())) {
+                    RedisChat.config.sendMessage(sender, RedisChat.config.reply_not_online.replace("%player%", receiver.get()));
                     return;
                 }
-                System.out.println("ReplyCommand redis: "+(System.currentTimeMillis()-init)+"ms");
+                System.out.println("ReplyCommand redis: " + (System.currentTimeMillis() - init) + "ms");
 
 
-                String message=String.join(" ",args);
+                String message = String.join(" ", args);
                 List<Config.ChatFormat> chatFormatList = RedisChat.config.getChatFormats(sender);
                 if (chatFormatList.isEmpty()) return;
 
@@ -64,10 +64,10 @@ public class ReplyCommand implements CommandExecutor {
                         builder -> builder.match("%message%").replacement(toBeReplaced)
                 );
                 //Send to other servers
-                RedisChat.getInstance().getRedisMessenger().sendObjectPacketAsync(Channel.CHAT.getChannelName(), new ChatPacket( sender.getName(), MiniMessage.miniMessage().serialize(toBeReplaced),receiver.get()));
-                RedisChat.getInstance().getChatListener().onSenderPrivateChat(sender,formatted);
-                RedisChat.getInstance().getRedisDataManager().setReplyName(receiver.get(),sender.getName());
-                System.out.println("ReplyCommand: "+(System.currentTimeMillis()-init)+"ms");
+                RedisChat.getInstance().getRedisMessenger().sendObjectPacketAsync(Channel.CHAT.getChannelName(), new ChatPacket(sender.getName(), MiniMessage.miniMessage().serialize(toBeReplaced), receiver.get()));
+                RedisChat.getInstance().getChatListener().onSenderPrivateChat(sender, formatted);
+                RedisChat.getInstance().getRedisDataManager().setReplyName(receiver.get(), sender.getName());
+                System.out.println("ReplyCommand: " + (System.currentTimeMillis() - init) + "ms");
             }
         }.runTaskAsynchronously(RedisChat.getInstance());
 

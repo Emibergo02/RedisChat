@@ -1,8 +1,8 @@
 package dev.unnm3d.redischat.chat;
 
 import dev.unnm3d.redischat.Config;
-import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.Permission;
+import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.invshare.InvShare;
 import dev.unnm3d.redischat.redis.Channel;
 import dev.unnm3d.redischat.redis.ChatPacket;
@@ -33,19 +33,19 @@ public class ChatListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH)
     public void onChat(AsyncPlayerChatEvent event) {
-        if(event.isCancelled()) return;
+        if (event.isCancelled()) return;
         event.setCancelled(true);
-        Bukkit.getScheduler().runTaskAsynchronously(RedisChat.getInstance(),()-> {
+        Bukkit.getScheduler().runTaskAsynchronously(RedisChat.getInstance(), () -> {
             long init = System.currentTimeMillis();
 
             List<Config.ChatFormat> chatFormatList = RedisChat.config.getChatFormats(event.getPlayer());
             if (chatFormatList.isEmpty()) return;
-            if(!event.getPlayer().hasPermission(Permission.REDIS_CHAT_ADMIN.getPermission()))
-                if(plugin.getRedisDataManager().isRateLimited(event.getPlayer().getName())){
-                    event.getPlayer().sendMessage(MiniMessage.miniMessage().deserialize(RedisChat.config.rate_limited));
+            if (!event.getPlayer().hasPermission(Permission.REDIS_CHAT_ADMIN.getPermission()))
+                if (plugin.getRedisDataManager().isRateLimited(event.getPlayer().getName())) {
+                    RedisChat.config.sendMessage(event.getPlayer(), RedisChat.config.rate_limited);
                     return;
                 }
-            System.out.print("rate limit: "+(System.currentTimeMillis()-init)+" ms ");
+            System.out.print("rate limit: " + (System.currentTimeMillis() - init) + " ms ");
 
             Component formatted = TextParser.parse(event.getPlayer(), chatFormatList.get(0).format());
 
@@ -56,9 +56,9 @@ public class ChatListener implements Listener {
                 message = TextParser.purgeTags(message);
                 parsePlaceholders = false;
             }
-            if(message.trim().equals(""))return;
+            if (message.trim().equals("")) return;
             message = TextParser.sanitize(message);
-            long tFormat=System.currentTimeMillis() - init;
+            long tFormat = System.currentTimeMillis() - init;
             init = System.currentTimeMillis();
 
             //Check inv update
@@ -71,7 +71,7 @@ public class ChatListener implements Listener {
             if (message.contains("<ec>")) {
                 InvShare.getCachehandler().addEnderchest(event.getPlayer().getName(), event.getPlayer().getEnderChest().getContents());
             }
-            long tInv=System.currentTimeMillis() - init;
+            long tInv = System.currentTimeMillis() - init;
 
 
             //Parse into minimessage (placeholders, tags and mentions)
@@ -82,16 +82,16 @@ public class ChatListener implements Listener {
             formatted = formatted.replaceText(
                     builder -> builder.match("%message%").replacement(toBeReplaced)
             );
-            long tParse=System.currentTimeMillis() - init;
+            long tParse = System.currentTimeMillis() - init;
             init = System.currentTimeMillis();
 
             // Send to other servers
             plugin.getRedisMessenger().sendObjectPacketAsync(Channel.CHAT.getChannelName(), new ChatPacket(event.getPlayer().getName(), MiniMessage.miniMessage().serialize(formatted)));
             plugin.getRedisDataManager().setRateLimit(event.getPlayer().getName(), RedisChat.config.rate_limit_time_seconds);
 
-            long tRedis=System.currentTimeMillis() - init;
+            long tRedis = System.currentTimeMillis() - init;
 
-            System.out.println(" Format: "+tFormat+" Inv: "+tInv+" Parse: "+tParse+" Send: "+tRedis+" Total: "+(tFormat+tInv+tParse+tRedis)+" ms");
+            System.out.println(" Format: " + tFormat + " Inv: " + tInv + " Parse: " + tParse + " Send: " + tRedis + " Total: " + (tFormat + tInv + tParse + tRedis) + " ms");
 
         });
     }
@@ -100,37 +100,39 @@ public class ChatListener implements Listener {
         bukkitAudiences.all().sendMessage(MiniMessage.miniMessage().deserialize(serializedText));
     }
 
-    public void onPrivateChat(String senderName,String receiverName, String text) {
+    public void onPrivateChat(String senderName, String receiverName, String text) {
         Player p = Bukkit.getPlayer(receiverName);
         if (p != null)
-            if(p.isOnline()){
-                List<Config.ChatFormat> chatFormatList= RedisChat.config.getChatFormats(p);
-                if(chatFormatList.isEmpty())return;
+            if (p.isOnline()) {
+                List<Config.ChatFormat> chatFormatList = RedisChat.config.getChatFormats(p);
+                if (chatFormatList.isEmpty()) return;
                 Component formatted = TextParser.parse(null, chatFormatList.get(0).receive_private_format().replace("%receiver%", receiverName).replace("%sender%", senderName));
                 Component toBeReplaced = TextParser.parse(null, text);
                 //Put message into format
                 formatted = formatted.replaceText(
                         builder -> builder.match("%message%").replacement(toBeReplaced)
                 );
-                p.sendMessage(formatted);
+                RedisChat.config.sendMessage(p, formatted);
             }
 
     }
-    public void onSenderPrivateChat(CommandSender sender, Component formatted){
-        sender.sendMessage(formatted);
+
+    public void onSenderPrivateChat(CommandSender sender, Component formatted) {
+        RedisChat.config.sendMessage(sender, formatted);
     }
+
     @EventHandler
-    public void onJoin(PlayerJoinEvent event){
+    public void onJoin(PlayerJoinEvent event) {
         RedisChat.getInstance().getRedisDataManager().addPlayerName(event.getPlayer().getName());
     }
 
     @EventHandler
-    public void onQuit(PlayerQuitEvent event){
+    public void onQuit(PlayerQuitEvent event) {
         RedisChat.getInstance().getRedisDataManager().removePlayerName(event.getPlayer().getName());
     }
 
-    public void onSpyPrivateChat(String receiverName,String senderName, Player watcher, String deserialize) {
-        Component formatted = MiniMessage.miniMessage().deserialize(RedisChat.config.spychat_format.replace("%receiver%",receiverName).replace("%sender%",senderName));
+    public void onSpyPrivateChat(String receiverName, String senderName, Player watcher, String deserialize) {
+        Component formatted = MiniMessage.miniMessage().deserialize(RedisChat.config.spychat_format.replace("%receiver%", receiverName).replace("%sender%", senderName));
 
 
         //Parse into minimessage (placeholders, tags and mentions)
@@ -139,7 +141,6 @@ public class ChatListener implements Listener {
         formatted = formatted.replaceText(
                 builder -> builder.match("%message%").replacement(toBeReplaced)
         );
-
-        watcher.sendMessage(formatted);
+        RedisChat.config.sendMessage(watcher, formatted);
     }
 }

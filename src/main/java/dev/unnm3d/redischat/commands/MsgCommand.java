@@ -1,8 +1,8 @@
 package dev.unnm3d.redischat.commands;
 
 import dev.unnm3d.redischat.Config;
-import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.Permission;
+import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.chat.TextParser;
 import dev.unnm3d.redischat.redis.Channel;
 import dev.unnm3d.redischat.redis.ChatPacket;
@@ -22,7 +22,7 @@ public class MsgCommand implements CommandExecutor {
     public static void sendMsg(String[] args, CommandSender sender, String receiverName) {
 
         if (!PlayerListManager.getPlayerList().contains(receiverName)) {
-            sender.sendMessage(MiniMessage.miniMessage().deserialize(RedisChat.config.player_not_online.replace("%player%", receiverName)));
+            RedisChat.config.sendMessage(sender, RedisChat.config.player_not_online.replace("%player%", receiverName));
             return;
         }
 
@@ -52,9 +52,9 @@ public class MsgCommand implements CommandExecutor {
                     builder -> builder.match("%message%").replacement(toBeReplaced)
             );
             //Send to other servers
-            RedisChat.getInstance().getRedisMessenger().sendObjectPacketAsync(Channel.CHAT.getChannelName(), new ChatPacket( sender.getName(), MiniMessage.miniMessage().serialize(toBeReplaced),receiverName));
-            RedisChat.getInstance().getChatListener().onSenderPrivateChat(sender,formatted);
-            RedisChat.getInstance().getRedisDataManager().setReplyName(receiverName,sender.getName());
+            RedisChat.getInstance().getRedisMessenger().sendObjectPacketAsync(Channel.CHAT.getChannelName(), new ChatPacket(sender.getName(), MiniMessage.miniMessage().serialize(toBeReplaced), receiverName));
+            RedisChat.getInstance().getChatListener().onSenderPrivateChat(sender, formatted);
+            RedisChat.getInstance().getRedisDataManager().setReplyName(receiverName, sender.getName());
 
 
         });

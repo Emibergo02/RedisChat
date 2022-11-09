@@ -25,17 +25,17 @@ public class InvCache {
             jedis.hset("invshare_inventories", name, serialize(inv));
             return jedis;
         });
-        Bukkit.getScheduler().runTaskLaterAsynchronously(RedisChat.getInstance(),() ->
-                ezRedisMessenger.jedisResourceFuture(jedis ->
-                        jedis.hdel("invshare_inventories", name)
-                )
-        ,20L * 60L * 5L);
+        Bukkit.getScheduler().runTaskLaterAsynchronously(RedisChat.getInstance(), () ->
+                        ezRedisMessenger.jedisResourceFuture(jedis ->
+                                jedis.hdel("invshare_inventories", name)
+                        )
+                , 20L * 60L * 5L);
     }
 
     public ItemStack[] getInventory(String name) {
         return deserialize(ezRedisMessenger.jedisResourceFuture(jedis -> {
-            String serializedInv=jedis.hget("invshare_inventories", name);
-            return serializedInv==null?"":serializedInv;
+            String serializedInv = jedis.hget("invshare_inventories", name);
+            return serializedInv == null ? "" : serializedInv;
         }).join());
 
     }
@@ -45,18 +45,18 @@ public class InvCache {
             jedis.hset("invshare_enderchests", name, serialize(inv));
             return jedis;
         });
-        Bukkit.getScheduler().runTaskLaterAsynchronously(RedisChat.getInstance(),() ->
+        Bukkit.getScheduler().runTaskLaterAsynchronously(RedisChat.getInstance(), () ->
                         ezRedisMessenger.jedisResourceFuture(jedis ->
                                 jedis.hdel("invshare_enderchests", name)
                         )
-                ,20L * 60L * 5L);
+                , 20L * 60L * 5L);
 
     }
 
     public ItemStack[] getEnderchest(String name) {
         return deserialize(ezRedisMessenger.jedisResourceFuture(jedis -> {
-            String serializedInv=jedis.hget("invshare_enderchests", name);
-            return serializedInv==null?"":serializedInv;
+            String serializedInv = jedis.hget("invshare_enderchests", name);
+            return serializedInv == null ? "" : serializedInv;
         }).join());
     }
 
@@ -65,22 +65,23 @@ public class InvCache {
             jedis.hset("invshare_item", name, serialize(item));
             return jedis;
         });
-        Bukkit.getScheduler().runTaskLaterAsynchronously(RedisChat.getInstance(),() ->
+        Bukkit.getScheduler().runTaskLaterAsynchronously(RedisChat.getInstance(), () ->
                         ezRedisMessenger.jedisResourceFuture(jedis ->
                                 jedis.hdel("invshare_item", name)
                         )
-                ,20L * 60L * 5L);
+                , 20L * 60L * 5L);
 
     }
 
     public ItemStack getItem(String name) {
         return ezRedisMessenger.jedisResourceFuture(jedis -> {
-            String serializedInv=jedis.hget("invshare_item", name);
-            ItemStack[] a = deserialize(serializedInv==null?"":serializedInv);
+            String serializedInv = jedis.hget("invshare_item", name);
+            ItemStack[] a = deserialize(serializedInv == null ? "" : serializedInv);
             if (a.length == 0) return new ItemStack(Material.AIR);
             return a[0];
         }).join();
     }
+
     private String serialize(ItemStack... items) {
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
              BukkitObjectOutputStream dataOutput = new BukkitObjectOutputStream(outputStream)) {

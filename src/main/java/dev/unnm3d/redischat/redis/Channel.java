@@ -3,7 +3,7 @@ package dev.unnm3d.redischat.redis;
 import dev.unnm3d.redischat.RedisChat;
 
 public enum Channel {
-    CHAT("g_chat_"+ RedisChat.config.redis.database());
+    CHAT("g_chat_" + RedisChat.config.redis.database());
 
     private final String channelName;
 

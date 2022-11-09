@@ -8,7 +8,6 @@ public class ChatPacket implements Serializable {
     private final String receiverName;
 
 
-
     public ChatPacket(String senderName, String message, String receiverName) {
         this.message = message;
         this.senderName = senderName;
@@ -20,7 +19,6 @@ public class ChatPacket implements Serializable {
         this.senderName = senderName;
         this.receiverName = null;
     }
-
 
 
     public String getSenderName() {

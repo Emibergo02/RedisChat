@@ -31,10 +31,12 @@ public class InvGUI implements Listener {
             new BukkitRunnable() {
                 @Override
                 public void run() {
-                    inv.close();
+                    if (player.getOpenInventory().getTopInventory() == inv || player.getOpenInventory().getBottomInventory() == inv) {
+                        player.closeInventory();
+                    }
                     invTitles.remove(title);
                 }
-            }.runTaskLater(RedisChat.getInstance(), 20*60*5);
+            }.runTaskLater(RedisChat.getInstance(), 20 * 60 * 5);
         });
     }
 
@@ -49,17 +51,19 @@ public class InvGUI implements Listener {
             new BukkitRunnable() {
                 @Override
                 public void run() {
-                    inv.close();
+                    if (player.getOpenInventory().getTopInventory() == inv || player.getOpenInventory().getBottomInventory() == inv) {
+                        player.closeInventory();
+                    }
                     invTitles.remove(title);
                 }
-            }.runTaskLater(RedisChat.getInstance(), 20*60*5);
+            }.runTaskLater(RedisChat.getInstance(), 20 * 60 * 5);
         });
     }
 
     public static class GuiListener implements Listener {
         @EventHandler(priority = org.bukkit.event.EventPriority.HIGHEST)
         public void onInventoryClick(InventoryClickEvent e) {
-            if (invTitles.contains(e.getView().getTitle())){
+            if (invTitles.contains(e.getView().getTitle())) {
                 e.setCancelled(true);
             }
 
@@ -68,7 +72,7 @@ public class InvGUI implements Listener {
 
         @EventHandler(priority = org.bukkit.event.EventPriority.HIGHEST)
         public void onInventoryDrag(InventoryDragEvent e) {
-            if (invTitles.contains(e.getView().getTitle())){
+            if (invTitles.contains(e.getView().getTitle())) {
                 e.setCancelled(true);
             }
         }
@@ -76,8 +80,8 @@ public class InvGUI implements Listener {
         @EventHandler(priority = org.bukkit.event.EventPriority.HIGHEST)
         public void onInventoryClose(InventoryCloseEvent e) {
             if (!invTitles.contains(e.getView().getTitle())) return;
-            if(e.getPlayer() instanceof Player p) {
-                new BukkitRunnable(){
+            if (e.getPlayer() instanceof Player p) {
+                new BukkitRunnable() {
                     @Override
                     public void run() {
                         p.updateInventory();

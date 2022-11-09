@@ -36,7 +36,7 @@ public final class RedisChat extends JavaPlugin {
         this.getCommand("reply").setExecutor(new ReplyCommand());
         this.getCommand("broadcast").setExecutor(new BroadcastCommand());
         this.getCommand("clearchat").setExecutor(new ClearChatCommand());
-        PlayerListManager playerListManager=new PlayerListManager();
+        PlayerListManager playerListManager = new PlayerListManager();
         this.getCommand("msg").setTabCompleter(playerListManager);
         this.getCommand("ignore").setTabCompleter(playerListManager);
 
@@ -44,8 +44,8 @@ public final class RedisChat extends JavaPlugin {
         this.chatListener = new ChatListener(this);
         getServer().getPluginManager().registerEvents(this.chatListener, this);
         try {
-            this.ezRedisMessenger = new EzRedisMessenger(config.redis.host(), config.redis.port(), config.redis.user(), config.redis.password(),config.redis.timeout(),config.redis.database(),"redischat");
-            this.redisDataManager=new RedisDataManager(this.ezRedisMessenger);
+            this.ezRedisMessenger = new EzRedisMessenger(config.redis.host(), config.redis.port(), config.redis.user(), config.redis.password(), config.redis.timeout(), config.redis.database(), "redischat");
+            this.redisDataManager = new RedisDataManager(this.ezRedisMessenger);
             this.redisDataManager.listenChatPackets();
             Bukkit.getOnlinePlayers().forEach(player -> this.redisDataManager.addPlayerName(player.getName()));
 
@@ -57,17 +57,17 @@ public final class RedisChat extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new InvGUI.GuiListener(), this);
         getCommand("invshare").setExecutor(new InvShare(new InvCache(ezRedisMessenger)));
         getCommand("redischat").setExecutor((sender, command, label, args) -> {
-            if(args.length == 1){
-                if(sender.hasPermission(Permission.REDIS_CHAT_ADMIN.getPermission()))
-                    if(args[0].equalsIgnoreCase("reload")){
+            if (args.length == 1) {
+                if (sender.hasPermission(Permission.REDIS_CHAT_ADMIN.getPermission()))
+                    if (args[0].equalsIgnoreCase("reload")) {
                         loadYML();
-                        sender.sendMessage("§aConfig reloaded");
+                        RedisChat.config.sendMessage(sender, "<green>Config reloaded");
                         return true;
-                    }else if(args[0].equalsIgnoreCase("debug")){
-                        sender.sendMessage("§aJedis status: ");
-                        sender.sendMessage(ezRedisMessenger.getJedisPoolStatus());
-                        sender.sendMessage("§aThread status: ");
-                        sender.sendMessage(ezRedisMessenger.getThreadPoolStatus());
+                    } else if (args[0].equalsIgnoreCase("debug")) {
+                        RedisChat.config.sendMessage(sender, "<green>Jedis status: ");
+                        RedisChat.config.sendMessage(sender, ezRedisMessenger.getJedisPoolStatus());
+                        RedisChat.config.sendMessage(sender, "<green>Thread status: ");
+                        RedisChat.config.sendMessage(sender, ezRedisMessenger.getThreadPoolStatus());
                     }
                 return true;
             }
@@ -99,9 +99,10 @@ public final class RedisChat extends JavaPlugin {
 
     public net.milkbowl.vault.permission.Permission getPermissionProvider() {
         @Nullable RegisteredServiceProvider<net.milkbowl.vault.permission.Permission> rsp = getServer().getServicesManager().getRegistration(net.milkbowl.vault.permission.Permission.class);
-        if(rsp==null)return null;
+        if (rsp == null) return null;
         return rsp.getProvider();
     }
+
     @Override
     public void onDisable() {
         this.ezRedisMessenger.destroy();

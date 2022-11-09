@@ -18,15 +18,15 @@ public class PlayerListManager implements TabCompleter {
     private static Set<String> playerList;
 
     public PlayerListManager() {
-        RedisChat kc= RedisChat.getInstance();
-        this.task=new BukkitRunnable(){
+        RedisChat kc = RedisChat.getInstance();
+        this.task = new BukkitRunnable() {
 
             @Override
             public void run() {
                 try {
-                    Set<String> redisList=kc.getRedisDataManager().getPlayerList();
-                    if(redisList!=null)playerList=redisList;
-                }catch (Exception ignored){
+                    Set<String> redisList = kc.getRedisDataManager().getPlayerList();
+                    if (redisList != null) playerList = redisList;
+                } catch (Exception ignored) {
                 }
             }
         }.runTaskTimerAsynchronously(kc, 0, 40);
@@ -35,21 +35,21 @@ public class PlayerListManager implements TabCompleter {
     @Nullable
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        if(args.length==0)return null;
+        if (args.length == 0) return null;
 
-        if(command.getName().equalsIgnoreCase("msg")||args.length!=1){
+        if (command.getName().equalsIgnoreCase("msg") || args.length != 1) {
             return null;
         }
-        if(command.getName().equalsIgnoreCase("ignore")){
-            List<String> temp= new ArrayList<>(List.of("list","all"));
-            temp.addAll(playerList.stream().filter(s -> s.startsWith(args[args.length-1])).toList());
+        if (command.getName().equalsIgnoreCase("ignore")) {
+            List<String> temp = new ArrayList<>(List.of("list", "all"));
+            temp.addAll(playerList.stream().filter(s -> s.startsWith(args[args.length - 1])).toList());
             return temp;
         }
-        return playerList.stream().filter(s -> s.startsWith(args[args.length-1])).toList();
+        return playerList.stream().filter(s -> s.startsWith(args[args.length - 1])).toList();
     }
 
-    public static Set<String> getPlayerList(){
-        if(playerList==null){
+    public static Set<String> getPlayerList() {
+        if (playerList == null) {
             return Set.of();
         }
         return playerList;
