@@ -1,7 +1,6 @@
 name: RedisChat
 version: '${project.version}'
 main: dev.unnm3d.redischat.RedisChat
-api-version: 1.18
 depend:
   - PlaceholderAPI
   - Vault
