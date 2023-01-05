@@ -4,7 +4,6 @@ import dev.unnm3d.redischat.Config;
 import dev.unnm3d.redischat.Permission;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.invshare.InvShare;
-import dev.unnm3d.redischat.redis.Channel;
 import dev.unnm3d.redischat.redis.ChatPacket;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.Component;
@@ -45,7 +44,7 @@ public class ChatListener implements Listener {
                     RedisChat.config.sendMessage(event.getPlayer(), RedisChat.config.rate_limited);
                     return;
                 }
-            System.out.print("rate limit: " + (System.currentTimeMillis() - init) + " ms ");
+            Bukkit.getLogger().info("rate limit: " + (System.currentTimeMillis() - init) + " ms ");
 
             Component formatted = TextParser.parse(event.getPlayer(), chatFormatList.get(0).format());
 
@@ -86,12 +85,12 @@ public class ChatListener implements Listener {
             init = System.currentTimeMillis();
 
             // Send to other servers
-            plugin.getRedisMessenger().sendObjectPacketAsync(Channel.CHAT.getChannelName(), new ChatPacket(event.getPlayer().getName(), MiniMessage.miniMessage().serialize(formatted)));
+            plugin.getRedisDataManager().sendObjectPacket(new ChatPacket(event.getPlayer().getName(), MiniMessage.miniMessage().serialize(formatted)));
             plugin.getRedisDataManager().setRateLimit(event.getPlayer().getName(), RedisChat.config.rate_limit_time_seconds);
 
             long tRedis = System.currentTimeMillis() - init;
 
-            System.out.println(" Format: " + tFormat + " Inv: " + tInv + " Parse: " + tParse + " Send: " + tRedis + " Total: " + (tFormat + tInv + tParse + tRedis) + " ms");
+            Bukkit.getLogger().info(" Format: " + tFormat + " Inv: " + tInv + " Parse: " + tParse + " Send: " + tRedis + " Total: " + (tFormat + tInv + tParse + tRedis) + " ms");
 
         });
     }

@@ -4,10 +4,10 @@ import dev.unnm3d.redischat.Config;
 import dev.unnm3d.redischat.Permission;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.chat.TextParser;
-import dev.unnm3d.redischat.redis.Channel;
 import dev.unnm3d.redischat.redis.ChatPacket;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -38,7 +38,7 @@ public class ReplyCommand implements CommandExecutor {
                     RedisChat.config.sendMessage(sender, RedisChat.config.reply_not_online.replace("%player%", receiver.get()));
                     return;
                 }
-                System.out.println("ReplyCommand redis: " + (System.currentTimeMillis() - init) + "ms");
+                Bukkit.getLogger().info("ReplyCommand redis: " + (System.currentTimeMillis() - init) + "ms");
 
 
                 String message = String.join(" ", args);
@@ -64,10 +64,10 @@ public class ReplyCommand implements CommandExecutor {
                         builder -> builder.match("%message%").replacement(toBeReplaced)
                 );
                 //Send to other servers
-                RedisChat.getInstance().getRedisMessenger().sendObjectPacketAsync(Channel.CHAT.getChannelName(), new ChatPacket(sender.getName(), MiniMessage.miniMessage().serialize(toBeReplaced), receiver.get()));
+                RedisChat.getInstance().getRedisDataManager().sendObjectPacket(new ChatPacket(sender.getName(), MiniMessage.miniMessage().serialize(toBeReplaced), receiver.get()));
                 RedisChat.getInstance().getChatListener().onSenderPrivateChat(sender, formatted);
                 RedisChat.getInstance().getRedisDataManager().setReplyName(receiver.get(), sender.getName());
-                System.out.println("ReplyCommand: " + (System.currentTimeMillis() - init) + "ms");
+                Bukkit.getLogger().info("ReplyCommand: " + (System.currentTimeMillis() - init) + "ms");
             }
         }.runTaskAsynchronously(RedisChat.getInstance());
 

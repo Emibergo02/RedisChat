@@ -3,7 +3,6 @@ package dev.unnm3d.redischat.commands;
 import dev.unnm3d.redischat.Permission;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.chat.TextParser;
-import dev.unnm3d.redischat.redis.Channel;
 import dev.unnm3d.redischat.redis.ChatPacket;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.command.Command;
@@ -20,7 +19,7 @@ public class BroadcastCommand implements CommandExecutor {
             @Override
             public void run() {
                 String message = MiniMessage.miniMessage().serialize(TextParser.parse(null, RedisChat.config.broadcast_format.replace("%message%", String.join(" ", args))));
-                RedisChat.getInstance().getRedisMessenger().sendObjectPacket(Channel.CHAT.getChannelName(), new ChatPacket(null, message));
+                RedisChat.getInstance().getRedisDataManager().sendObjectPacket(new ChatPacket(null, message));
             }
         }.runTaskAsynchronously(RedisChat.getInstance());
 

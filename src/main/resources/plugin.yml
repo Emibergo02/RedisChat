@@ -1,9 +1,13 @@
 name: RedisChat
 version: '${project.version}'
 main: dev.unnm3d.redischat.RedisChat
+author: Unnm3d
+api-version: 1.17
 depend:
   - PlaceholderAPI
   - Vault
+libraries:
+  - io.lettuce:lettuce-core:6.2.2.RELEASE
 commands:
   redischat:
     description: RedisChat command

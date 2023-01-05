@@ -2,13 +2,13 @@ package dev.unnm3d.redischat;
 
 import de.exlll.configlib.YamlConfigurationProperties;
 import de.exlll.configlib.YamlConfigurations;
-import dev.unnm3d.ezredislib.EzRedisMessenger;
 import dev.unnm3d.redischat.chat.ChatListener;
 import dev.unnm3d.redischat.commands.*;
 import dev.unnm3d.redischat.invshare.InvCache;
 import dev.unnm3d.redischat.invshare.InvGUI;
 import dev.unnm3d.redischat.invshare.InvShare;
 import dev.unnm3d.redischat.redis.RedisDataManager;
+import io.lettuce.core.RedisClient;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -20,7 +20,6 @@ import java.nio.file.Path;
 public final class RedisChat extends JavaPlugin {
 
     private static RedisChat instance;
-    private EzRedisMessenger ezRedisMessenger;
     public static Config config;
     private ChatListener chatListener;
     private RedisDataManager redisDataManager;
@@ -43,19 +42,15 @@ public final class RedisChat extends JavaPlugin {
 
         this.chatListener = new ChatListener(this);
         getServer().getPluginManager().registerEvents(this.chatListener, this);
-        try {
-            this.ezRedisMessenger = new EzRedisMessenger(config.redis.host(), config.redis.port(), config.redis.user(), config.redis.password(), config.redis.timeout(), config.redis.database(), "redischat");
-            this.redisDataManager = new RedisDataManager(this.ezRedisMessenger);
-            this.redisDataManager.listenChatPackets();
-            Bukkit.getOnlinePlayers().forEach(player -> this.redisDataManager.addPlayerName(player.getName()));
+
+        this.redisDataManager = new RedisDataManager(RedisClient.create(config.redis.redisUri()), this);
+        this.redisDataManager.listenChatPackets();
+        Bukkit.getOnlinePlayers().forEach(player -> this.redisDataManager.addPlayerName(player.getName()));
 
 
-        } catch (InstantiationException e) {
-            throw new RuntimeException(e);
-        }
         //InvShare part
         getServer().getPluginManager().registerEvents(new InvGUI.GuiListener(), this);
-        getCommand("invshare").setExecutor(new InvShare(new InvCache(ezRedisMessenger)));
+        getCommand("invshare").setExecutor(new InvShare(new InvCache(this)));
         getCommand("redischat").setExecutor((sender, command, label, args) -> {
             if (args.length == 1) {
                 if (sender.hasPermission(Permission.REDIS_CHAT_ADMIN.getPermission()))
@@ -63,11 +58,6 @@ public final class RedisChat extends JavaPlugin {
                         loadYML();
                         RedisChat.config.sendMessage(sender, "<green>Config reloaded");
                         return true;
-                    } else if (args[0].equalsIgnoreCase("debug")) {
-                        RedisChat.config.sendMessage(sender, "<green>Jedis status: ");
-                        RedisChat.config.sendMessage(sender, ezRedisMessenger.getJedisPoolStatus());
-                        RedisChat.config.sendMessage(sender, "<green>Thread status: ");
-                        RedisChat.config.sendMessage(sender, ezRedisMessenger.getThreadPoolStatus());
                     }
                 return true;
             }
@@ -105,16 +95,13 @@ public final class RedisChat extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        this.ezRedisMessenger.destroy();
+        this.redisDataManager.close();
     }
 
     public static RedisChat getInstance() {
         return instance;
     }
 
-    public EzRedisMessenger getRedisMessenger() {
-        return ezRedisMessenger;
-    }
 
     public RedisDataManager getRedisDataManager() {
         return redisDataManager;

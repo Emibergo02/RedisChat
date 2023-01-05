@@ -4,7 +4,6 @@ import dev.unnm3d.redischat.Config;
 import dev.unnm3d.redischat.Permission;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.chat.TextParser;
-import dev.unnm3d.redischat.redis.Channel;
 import dev.unnm3d.redischat.redis.ChatPacket;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -52,7 +51,7 @@ public class MsgCommand implements CommandExecutor {
                     builder -> builder.match("%message%").replacement(toBeReplaced)
             );
             //Send to other servers
-            RedisChat.getInstance().getRedisMessenger().sendObjectPacketAsync(Channel.CHAT.getChannelName(), new ChatPacket(sender.getName(), MiniMessage.miniMessage().serialize(toBeReplaced), receiverName));
+            RedisChat.getInstance().getRedisDataManager().sendObjectPacket(new ChatPacket(sender.getName(), MiniMessage.miniMessage().serialize(toBeReplaced), receiverName));
             RedisChat.getInstance().getChatListener().onSenderPrivateChat(sender, formatted);
             RedisChat.getInstance().getRedisDataManager().setReplyName(receiverName, sender.getName());
 
