@@ -5,7 +5,6 @@ import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.redis.redistools.RedisAbstract;
 import dev.unnm3d.redischat.redis.redistools.RedisPubSub;
 import io.lettuce.core.RedisClient;
-import io.lettuce.core.RedisFuture;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.async.RedisAsyncCommands;
 import io.lettuce.core.pubsub.StatefulRedisPubSubConnection;
@@ -19,7 +18,7 @@ import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -123,12 +122,12 @@ public class RedisDataManager extends RedisAbstract {
         removePlayerNames(new String[]{playerName});
     }
 
-    public CompletionStage<Long> removePlayerNames(String[] playerNames) {
-        return getConnectionAsync(connection->
+    public void removePlayerNames(String[] playerNames) {
+        getConnectionAsync(connection->
                 connection.srem(PLAYERLIST.toString(), playerNames)
                 .thenApply(result -> {
                     if (RedisChat.config.debug) {
-                        plugin.getLogger().info("01 Removed players " + playerNames + " from the playerlist");
+                        plugin.getLogger().info("01 Removed players " + Arrays.toString(playerNames) + " from the playerlist");
                     }
                     return result;
                 }).exceptionally(throwable -> {
@@ -197,142 +196,139 @@ public class RedisDataManager extends RedisAbstract {
 
     }
 
-    public CompletionStage<ItemStack> getPlayerItem(String playerName) {
-        if(RedisChat.config.debug){
-            Bukkit.getLogger().info("getPlayerItem: " + playerName);
-        }
-        StatefulRedisConnection<String, String> connection = lettuceRedisClient.connect();
-        return connection.async().hget(INVSHARE_ITEM.toString(), playerName)
-                        .thenApply(serializedInv -> {
-                            ItemStack[] itemStacks = deserialize(serializedInv == null ? "" : serializedInv);
-                            if(RedisChat.config.debug) {
-                                plugin.getLogger().info("04 Got item for " + playerName + " is " + (itemStacks.length!=0?itemStacks[0].toString():"null"));
-                            }
-                            connection.close();
-                            if (itemStacks.length == 0) return new ItemStack(Material.AIR);
-                            return itemStacks[0];
-                        }).exceptionally(throwable -> {
-                            throwable.printStackTrace();
-                            plugin.getLogger().warning("Error getting item");
-                            return null;
-                        });
-    }
-
     public void addInventory(String name, ItemStack[] inv) {
         if(RedisChat.config.debug){
             Bukkit.getLogger().info("addInventory: " + name);
         }
-        StatefulRedisConnection<String, String> connection = lettuceRedisClient.connect();
-        connection.async().hset(INVSHARE_INVENTORY.toString(), name, serialize(inv))
-                .thenApply(response -> {
-                    if (RedisChat.config.debug) {
-                        plugin.getLogger().info("05 Added inventory for " + name);
-                    }
-                    connection.close();
-                    scheduleConnection(scheduled -> {
-                        scheduled.sync().hdel(INVSHARE_INVENTORY.toString(), name);
-                        plugin.getLogger().warning("06 Removing inv");
-                        return null;
-                    }, 60, TimeUnit.SECONDS);
-                    return response;
-                })
-                .exceptionally(throwable -> {
-                    throwable.printStackTrace();
-                    plugin.getLogger().warning("Error adding inventory");
-                    return null;
-                });
+        getConnectionAsync(connection ->
+                connection.hset(INVSHARE_INVENTORY.toString(), name, serialize(inv))
+                        .thenApply(response -> {
+                            if (RedisChat.config.debug) {
+                                plugin.getLogger().info("05 Added inventory for " + name);
+                            }
+                            scheduleConnection(scheduled -> {
+                                scheduled.sync().hdel(INVSHARE_INVENTORY.toString(), name);
+                                plugin.getLogger().warning("06 Removing inv");
+                                return null;
+                            }, 60, TimeUnit.SECONDS);
+                            return response;
+                        })
+                        .exceptionally(throwable -> {
+                            throwable.printStackTrace();
+                            plugin.getLogger().warning("Error adding inventory");
+                            return null;
+                        })
+        );
     }
 
     public void addItem(String name, ItemStack item) {
         if(RedisChat.config.debug){
             Bukkit.getLogger().info("addItem: " + name);
         }
-        StatefulRedisConnection<String, String> connection = lettuceRedisClient.connect();
-        connection.async().hset(INVSHARE_ITEM.toString(), name, serialize(item))
-                .thenApply(response -> {
-                    if (RedisChat.config.debug) {
-                        plugin.getLogger().info("08 Added item for " + name);
-                    }
-                    connection.close();
-                    scheduleConnection(scheduled -> {
-                        scheduled.sync().hdel(INVSHARE_ITEM.toString(), name);
-                        plugin.getLogger().warning("09 Removing item");
-                        return null;
-                    }, 60, TimeUnit.SECONDS);
-                    return response;
-                }).exceptionally(throwable -> {
-                    throwable.printStackTrace();
-                    plugin.getLogger().warning("Error adding item");
-                    return null;
-                });
+        getConnectionAsync(connection ->
+                connection.hset(INVSHARE_ITEM.toString(), name, serialize(item))
+                        .thenApply(response -> {
+                            if (RedisChat.config.debug) {
+                                plugin.getLogger().info("08 Added item for " + name);
+                            }
+                            scheduleConnection(scheduled -> {
+                                scheduled.sync().hdel(INVSHARE_ITEM.toString(), name);
+                                plugin.getLogger().warning("09 Removing item");
+                                return null;
+                            }, 60, TimeUnit.SECONDS);
+                            return response;
+                        }).exceptionally(throwable -> {
+                            throwable.printStackTrace();
+                            plugin.getLogger().warning("Error adding item");
+                            return null;
+                        })
+        );
     }
 
     public void addEnderchest(String name, ItemStack[] inv) {
         if(RedisChat.config.debug){
             Bukkit.getLogger().info("addEnderchest: " + name);
         }
-        StatefulRedisConnection<String, String> connection = lettuceRedisClient.connect();
-        connection.async().hset(INVSHARE_ENDERCHEST.toString(), name, serialize(inv))
-                .thenApply(response -> {
-                    if (RedisChat.config.debug) {
-                        plugin.getLogger().info("10 Added enderchest for " + name);
-                    }
-                    connection.close();
-                    scheduleConnection(scheduled -> {
-                        scheduled.sync().hdel(INVSHARE_ENDERCHEST.toString(), name);
-                        if(RedisChat.config.debug) {
-                            plugin.getLogger().info("11 Removing enderchest");
-                        }
-                        return null;
-                    }, 60, TimeUnit.SECONDS);
-                    return response;
-                }).exceptionally(throwable -> {
-                    throwable.printStackTrace();
-                    plugin.getLogger().warning("Error adding enderchest");
-                    return null;
-                });
+        getConnectionAsync(connection ->
+                connection.hset(INVSHARE_ENDERCHEST.toString(), name, serialize(inv))
+                        .thenApply(response -> {
+                            if (RedisChat.config.debug) {
+                                plugin.getLogger().info("10 Added enderchest for " + name);
+                            }
+                            scheduleConnection(scheduled -> {
+                                scheduled.sync().hdel(INVSHARE_ENDERCHEST.toString(), name);
+                                if (RedisChat.config.debug) {
+                                    plugin.getLogger().info("11 Removing enderchest");
+                                }
+                                return null;
+                            }, 60, TimeUnit.SECONDS);
+                            return response;
+                        }).exceptionally(throwable -> {
+                            throwable.printStackTrace();
+                            plugin.getLogger().warning("Error adding enderchest");
+                            return null;
+                        })
+        );
+    }
+
+    public CompletionStage<ItemStack> getPlayerItem(String playerName) {
+        if(RedisChat.config.debug){
+            Bukkit.getLogger().info("getPlayerItem: " + playerName);
+        }
+        return getConnectionAsync(connection->
+                connection.hget(INVSHARE_ITEM.toString(), playerName)
+                        .thenApply(serializedInv -> {
+                            ItemStack[] itemStacks = deserialize(serializedInv == null ? "" : serializedInv);
+                            if(RedisChat.config.debug) {
+                                plugin.getLogger().info("04 Got item for " + playerName + " is " + (itemStacks.length!=0?itemStacks[0].toString():"null"));
+                            }
+                            if (itemStacks.length == 0) return new ItemStack(Material.AIR);
+                            return itemStacks[0];
+                        }).exceptionally(throwable -> {
+                            throwable.printStackTrace();
+                            plugin.getLogger().warning("Error getting item");
+                            return null;
+                        })
+        );
     }
 
     public CompletionStage<ItemStack[]> getPlayerInventory(String playerName) {
         if(RedisChat.config.debug){
             Bukkit.getLogger().info("getPlayerInventory: " + playerName);
         }
-        StatefulRedisConnection<String, String> connection = lettuceRedisClient.connect();
-        return connection.async().hget(INVSHARE_INVENTORY.toString(), playerName)
+        return getConnectionAsync(connection ->
+                connection.hget(INVSHARE_INVENTORY.toString(), playerName)
                         .thenApply(serializedInv -> {
                             if (RedisChat.config.debug) {
                                 plugin.getLogger().info("12 Got inventory for " + playerName + " is " + (serializedInv == null ? "null" : serializedInv));
                             }
-                            connection.close();
                             return deserialize(serializedInv == null ? "" : serializedInv);
                         })
                         .exceptionally(throwable -> {
                             throwable.printStackTrace();
                             plugin.getLogger().warning("Error getting inv");
                             return null;
-                        });
+                        }));
 
     }
 
-    //Get enderchest
     public CompletionStage<ItemStack[]> getPlayerEnderchest(String playerName) {
-        if(RedisChat.config.debug){
+        if (RedisChat.config.debug) {
             Bukkit.getLogger().info("getPlayerEnderchest: " + playerName);
         }
-        StatefulRedisConnection<String, String> connection = lettuceRedisClient.connect();
-        return connection.async().hget(INVSHARE_ENDERCHEST.toString(), playerName)
-                .thenApply(serializedInv -> {
-                            if (RedisChat.config.debug) {
-                                plugin.getLogger().info("13 Got enderchest for " + playerName + " is " + (serializedInv == null ? "null" : serializedInv));
-                            }
-                            connection.close();
-                            return deserialize(serializedInv == null ? "" : serializedInv);
-                        }
-                ).exceptionally(throwable -> {
-                    throwable.printStackTrace();
-                    plugin.getLogger().warning("Error getting ec");
-                    return null;
-                });
+        return getConnectionAsync(connection ->
+                connection.hget(INVSHARE_ENDERCHEST.toString(), playerName)
+                        .thenApply(serializedInv -> {
+                                    if (RedisChat.config.debug) {
+                                        plugin.getLogger().info("13 Got enderchest for " + playerName + " is " + (serializedInv == null ? "null" : serializedInv));
+                                    }
+                                    return deserialize(serializedInv == null ? "" : serializedInv);
+                                }
+                        ).exceptionally(throwable -> {
+                            throwable.printStackTrace();
+                            plugin.getLogger().warning("Error getting ec");
+                            return null;
+                        }));
     }
 
     public void listenChatPackets() {
@@ -356,13 +352,12 @@ public class RedisDataManager extends RedisAbstract {
                 }
 
                 if (chatPacket.isPrivate()) {
-                    CompletableFuture.runAsync(() -> {
-                        plugin.getRedisDataManager().isIgnoring(chatPacket.getReceiverName(), chatPacket.getSenderName())
-                                .thenAccept(ignored -> {
-                                    if (!ignored)
-                                        plugin.getChatListener().onPrivateChat(chatPacket.getSenderName(), chatPacket.getReceiverName(), chatPacket.getMessage());
-                                });
-                    });
+                    CompletableFuture.runAsync(() ->
+                            plugin.getRedisDataManager().isIgnoring(chatPacket.getReceiverName(), chatPacket.getSenderName())
+                            .thenAccept(ignored -> {
+                                if (!ignored)
+                                    plugin.getChatListener().onPrivateChat(chatPacket.getSenderName(), chatPacket.getReceiverName(), chatPacket.getMessage());
+                            }));
 
                 } else {
                     plugin.getChatListener().onPublicChat(chatPacket.getMessage());
@@ -394,10 +389,6 @@ public class RedisDataManager extends RedisAbstract {
                 })
         );
 
-    }
-
-    public String getRedisDatabase() {
-        return new File(System.getProperty("user.dir")).getName();
     }
 
     private String serialize(ItemStack... items) {

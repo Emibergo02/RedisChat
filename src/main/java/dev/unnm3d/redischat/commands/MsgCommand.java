@@ -26,8 +26,6 @@ public class MsgCommand implements CommandExecutor {
             return;
         }
 
-
-
         Bukkit.getScheduler().runTaskAsynchronously(RedisChat.getInstance(), () ->
         {
             String message = String.join(" ", args);

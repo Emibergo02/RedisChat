@@ -30,7 +30,10 @@ public final class Config {
             "<dark_aqua>MSG <white>(<green>%sender% <white>to <reset>You<white>)<reset>: <white>%message%",
             "<click:run_command:%command%>[Open the inventory of %player%]</click>",
             "<click:run_command:%command%>[%item_name% of %player%]</click>",
-            "<click:run_command:%command%>[Open the enderchest of %player%]</click>", "<aqua>@%player%</aqua>"));
+            "<click:run_command:%command%>[Open the enderchest of %player%]</click>",
+            "<aqua>@%player%</aqua>",
+            "<bold><click:open_url:%link%>[Click to open URL (be careful)]</bold>"
+    ));
     public Map<String, String> placeholders = Map.of("discord", "<click:open_url:https://discord.gg/uq6bBqAQ>Click to join our discord server</click>");
     public List<String> regex_blacklist = List.of("discord.gg/.*");
     public String inv_title = "Inventory of %player%";
@@ -65,7 +68,8 @@ public final class Config {
             String inventory_format,
             String item_format,
             String enderchest_format,
-            String mention_format) {
+            String mention_format,
+            String link_format) {
     }
 
     public @NotNull List<ChatFormat> getChatFormats(CommandSender p) {

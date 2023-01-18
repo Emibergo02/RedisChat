@@ -29,12 +29,21 @@ public class TextParser {
     }
 
     public static Component parse(CommandSender player, String text, TagResolver... tagResolvers) {
-        return miniMessage.deserialize(parsePlaceholders(player, parseMentions(text, RedisChat.config.formats.get(0))), tagResolvers);
+        return miniMessage.deserialize(
+                parsePlaceholders(player,
+                        parseMentions(
+                                parseLinks(text, RedisChat.config.formats.get(0)),
+                                RedisChat.config.formats.get(0))
+                ), tagResolvers);
     }
 
     public static Component parse(CommandSender player, String text, boolean parsePlaceholders, TagResolver... tagResolvers) {
         if (!parsePlaceholders)
-            return miniMessage.deserialize(parseMentions(text, RedisChat.config.formats.get(0)), tagResolvers);
+            return miniMessage.deserialize(
+                    parseMentions(
+                            parseLinks(text, RedisChat.config.formats.get(0)),
+                            RedisChat.config.formats.get(0)
+                    ), tagResolvers);
         else
             return parse(player, text, tagResolvers);
     }
@@ -119,7 +128,15 @@ public class TextParser {
         }
         return toParse;
     }
-
+    public static String parseLinks(String text, Config.ChatFormat format){
+        String toParse = text;
+        Pattern p = Pattern.compile("(https?://\\S+)");
+        Matcher m = p.matcher(text);
+        if(m.find()){
+            toParse = toParse.replace(m.group(), format.link_format().replace("%link%", m.group()));
+        }
+        return toParse;
+    }
 
     public static String sanitize(String message) {
         for (String regex : RedisChat.config.regex_blacklist) {
