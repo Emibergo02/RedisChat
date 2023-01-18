@@ -16,7 +16,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class InvGUI implements Listener {
+public class InvGUI {
     private static final List<String> invTitles = new ArrayList<>();
     private final Inventory inv;
 
@@ -46,6 +46,8 @@ public class InvGUI implements Listener {
         // Put the items into the inventory
         inv.setItem(13, item);
         Bukkit.getScheduler().runTask(RedisChat.getInstance(), () -> {
+            if (RedisChat.config.debug)
+                Bukkit.getLogger().info("Opening inventory for " + player.getName());
             player.openInventory(inv);
             invTitles.add(title);
             new BukkitRunnable() {
@@ -66,8 +68,6 @@ public class InvGUI implements Listener {
             if (invTitles.contains(e.getView().getTitle())) {
                 e.setCancelled(true);
             }
-
-
         }
 
         @EventHandler(priority = org.bukkit.event.EventPriority.HIGHEST)

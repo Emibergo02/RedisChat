@@ -39,6 +39,7 @@ public final class Config {
     public String broadcast_format = "<red>Announce <dark_gray>» <white>%message%";
     public String clear_chat_message = "<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>";
     public String player_not_online = "<red>The player %player% is not online</red>";
+    public String cannot_message_yourself = "<red>You cannot message yourself</red>";
     public String no_reply_found = "<red>You do not have any message to reply</red>";
     public String reply_not_online = "<red>%player% is not online</red>";
     public String rate_limited = "<red>You've been rate limited</red>";
@@ -49,6 +50,7 @@ public final class Config {
     public int rate_limit_time_seconds = 5;
     public String spychat_enabled = "<red>Spychat enabled</red>";
     public String spychat_disabled = "<red>Spychat disabled</red>";
+    public boolean debug = false;
 
     public record Redis(
             String redisUri,

@@ -9,10 +9,10 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 public class InvShare implements CommandExecutor {
-    private static InvCache cache = null;
+    private final RedisChat plugin;
 
-    public InvShare(InvCache cache) {
-        InvShare.cache = cache;
+    public InvShare(RedisChat plugin) {
+        this.plugin = plugin;
     }
 
     @Override
@@ -27,15 +27,26 @@ public class InvShare implements CommandExecutor {
             String playername = splitted[0];
             InventoryType type = InventoryType.valueOf(splitted[1].toUpperCase());
             switch (type) {
-                case ITEM ->
-                        new InvGUI(p, RedisChat.config.item_title.replace("%player%", playername), cache.getItem(playername));
-                case INVENTORY ->
-                        new InvGUI(p, RedisChat.config.inv_title.replace("%player%", playername), 45, cache.getInventory(playername));
-                case ENDERCHEST ->
-                        new InvGUI(p, RedisChat.config.ec_title.replace("%player%", playername), 27, cache.getEnderchest(playername));
+                case ITEM -> plugin.getRedisDataManager().getPlayerItem(playername)
+                        .thenAccept(item ->
+                                new InvGUI(p,
+                                        RedisChat.config.item_title.replace("%player%", playername),
+                                        item));
+
+                case INVENTORY -> plugin.getRedisDataManager().getPlayerInventory(playername)
+                        .thenAccept(inventoryContents ->
+                                new InvGUI(p,
+                                        RedisChat.config.item_title.replace("%player%", playername),
+                                        45,
+                                        inventoryContents));
+                case ENDERCHEST -> plugin.getRedisDataManager().getPlayerEnderchest(playername)
+                        .thenAccept(ecContents ->
+                                new InvGUI(p,
+                                        RedisChat.config.item_title.replace("%player%", playername),
+                                        27,
+                                        ecContents));
             }
         });
-
         return true;
     }
 
@@ -45,7 +56,4 @@ public class InvShare implements CommandExecutor {
         ITEM
     }
 
-    public static InvCache getCachehandler() {
-        return cache;
-    }
 }

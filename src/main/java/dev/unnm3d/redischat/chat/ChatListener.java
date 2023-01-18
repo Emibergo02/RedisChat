@@ -3,7 +3,6 @@ package dev.unnm3d.redischat.chat;
 import dev.unnm3d.redischat.Config;
 import dev.unnm3d.redischat.Permission;
 import dev.unnm3d.redischat.RedisChat;
-import dev.unnm3d.redischat.invshare.InvShare;
 import dev.unnm3d.redischat.redis.ChatPacket;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.Component;
@@ -27,7 +26,6 @@ public class ChatListener implements Listener {
     public ChatListener(RedisChat plugin) {
         this.plugin = plugin;
         this.bukkitAudiences = BukkitAudiences.create(plugin);
-
     }
 
     @EventHandler(priority = EventPriority.HIGH)
@@ -44,7 +42,8 @@ public class ChatListener implements Listener {
                     RedisChat.config.sendMessage(event.getPlayer(), RedisChat.config.rate_limited);
                     return;
                 }
-            Bukkit.getLogger().info("rate limit: " + (System.currentTimeMillis() - init) + " ms ");
+            if (RedisChat.config.debug)
+                Bukkit.getLogger().info("Rate limit: " + (System.currentTimeMillis() - init) + " ms ");
 
             Component formatted = TextParser.parse(event.getPlayer(), chatFormatList.get(0).format());
 
@@ -57,18 +56,18 @@ public class ChatListener implements Listener {
             }
             if (message.trim().equals("")) return;
             message = TextParser.sanitize(message);
+
             long tFormat = System.currentTimeMillis() - init;
             init = System.currentTimeMillis();
-
             //Check inv update
             if (message.contains("<inv>")) {
-                InvShare.getCachehandler().addInventory(event.getPlayer().getName(), event.getPlayer().getInventory().getContents());
+                plugin.getRedisDataManager().addInventory(event.getPlayer().getName(), event.getPlayer().getInventory().getContents());
             }
             if (message.contains("<item>")) {
-                InvShare.getCachehandler().addItem(event.getPlayer().getName(), event.getPlayer().getInventory().getItemInMainHand());
+                plugin.getRedisDataManager().addItem(event.getPlayer().getName(), event.getPlayer().getInventory().getItemInMainHand());
             }
             if (message.contains("<ec>")) {
-                InvShare.getCachehandler().addEnderchest(event.getPlayer().getName(), event.getPlayer().getEnderChest().getContents());
+                plugin.getRedisDataManager().addEnderchest(event.getPlayer().getName(), event.getPlayer().getEnderChest().getContents());
             }
             long tInv = System.currentTimeMillis() - init;
 
@@ -89,8 +88,8 @@ public class ChatListener implements Listener {
             plugin.getRedisDataManager().setRateLimit(event.getPlayer().getName(), RedisChat.config.rate_limit_time_seconds);
 
             long tRedis = System.currentTimeMillis() - init;
-
-            Bukkit.getLogger().info(" Format: " + tFormat + " Inv: " + tInv + " Parse: " + tParse + " Send: " + tRedis + " Total: " + (tFormat + tInv + tParse + tRedis) + " ms");
+            if (RedisChat.config.debug)
+                Bukkit.getLogger().info(" Format: " + tFormat + " Inv: " + tInv + " Parse: " + tParse + " Send: " + tRedis + " Total: " + (tFormat + tInv + tParse + tRedis) + " ms");
 
         });
     }
@@ -132,7 +131,6 @@ public class ChatListener implements Listener {
 
     public void onSpyPrivateChat(String receiverName, String senderName, Player watcher, String deserialize) {
         Component formatted = MiniMessage.miniMessage().deserialize(RedisChat.config.spychat_format.replace("%receiver%", receiverName).replace("%sender%", senderName));
-
 
         //Parse into minimessage (placeholders, tags and mentions)
         Component toBeReplaced = TextParser.parse(deserialize);

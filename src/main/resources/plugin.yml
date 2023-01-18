@@ -3,11 +3,16 @@ version: '${project.version}'
 main: dev.unnm3d.redischat.RedisChat
 author: Unnm3d
 api-version: 1.17
+libraries:
+  - io.lettuce:lettuce-core:6.2.2.RELEASE
 depend:
   - PlaceholderAPI
   - Vault
-libraries:
-  - io.lettuce:lettuce-core:6.2.2.RELEASE
+loadbefore:
+  - CMI
+  - CMILib
+  - Essentials
+  - EssentialsChat
 commands:
   redischat:
     description: RedisChat command

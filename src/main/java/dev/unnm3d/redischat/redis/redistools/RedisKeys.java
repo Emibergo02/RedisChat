@@ -1,10 +1,16 @@
 package dev.unnm3d.redischat.redis.redistools;
 
-import dev.unnm3d.redischat.RedisChat;
-
 public enum RedisKeys {
 
-    CHAT("g_chat_" + RedisChat.getInstance().getRedisDataManager().getRedisDatabase());
+    CHAT_CHANNEL("redischat:g_chat"),
+    PLAYERLIST("redischat:playerlist"),
+    IGNORE_PREFIX("redischat:ignore_"),
+    RATE_LIMIT_PREFIX("redischat:ratelimit_"),
+    REPLY("redischat:reply"),
+    INVSHARE_ITEM("redischat:item"),
+    INVSHARE_INVENTORY("redischat:inventory"),
+    INVSHARE_ENDERCHEST("redischat:enderchest"),
+    ;
 
     private final String keyName;
 

@@ -38,7 +38,8 @@ public class ReplyCommand implements CommandExecutor {
                     RedisChat.config.sendMessage(sender, RedisChat.config.reply_not_online.replace("%player%", receiver.get()));
                     return;
                 }
-                Bukkit.getLogger().info("ReplyCommand redis: " + (System.currentTimeMillis() - init) + "ms");
+                if (RedisChat.config.debug)
+                    Bukkit.getLogger().info("ReplyCommand redis: " + (System.currentTimeMillis() - init) + "ms");
 
 
                 String message = String.join(" ", args);
@@ -67,7 +68,8 @@ public class ReplyCommand implements CommandExecutor {
                 RedisChat.getInstance().getRedisDataManager().sendObjectPacket(new ChatPacket(sender.getName(), MiniMessage.miniMessage().serialize(toBeReplaced), receiver.get()));
                 RedisChat.getInstance().getChatListener().onSenderPrivateChat(sender, formatted);
                 RedisChat.getInstance().getRedisDataManager().setReplyName(receiver.get(), sender.getName());
-                Bukkit.getLogger().info("ReplyCommand: " + (System.currentTimeMillis() - init) + "ms");
+                if (RedisChat.config.debug)
+                    Bukkit.getLogger().info("ReplyCommand: " + (System.currentTimeMillis() - init) + "ms");
             }
         }.runTaskAsynchronously(RedisChat.getInstance());
 

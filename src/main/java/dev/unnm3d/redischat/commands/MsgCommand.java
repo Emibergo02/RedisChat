@@ -11,6 +11,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
@@ -24,6 +25,7 @@ public class MsgCommand implements CommandExecutor {
             RedisChat.config.sendMessage(sender, RedisChat.config.player_not_online.replace("%player%", receiverName));
             return;
         }
+
 
 
         Bukkit.getScheduler().runTaskAsynchronously(RedisChat.getInstance(), () ->
@@ -43,6 +45,18 @@ public class MsgCommand implements CommandExecutor {
             // remove blacklisted stuff
             message = TextParser.sanitize(message);
 
+            //Check inv update
+            if(sender instanceof Player player) {
+                if (message.contains("<inv>")) {
+                    RedisChat.getInstance().getRedisDataManager().addInventory(player.getName(), player.getInventory().getContents());
+                }
+                if (message.contains("<item>")) {
+                    RedisChat.getInstance().getRedisDataManager().addItem(player.getName(), player.getInventory().getItemInMainHand());
+                }
+                if (message.contains("<ec>")) {
+                    RedisChat.getInstance().getRedisDataManager().addEnderchest(player.getName(), player.getEnderChest().getContents());
+                }
+            }
 
             //Parse into minimessage (placeholders, tags and mentions)
             Component toBeReplaced = TextParser.parse(sender, message, parsePlaceholders, TextParser.getCustomTagResolver(sender, chatFormatList.get(0)));
@@ -63,13 +77,15 @@ public class MsgCommand implements CommandExecutor {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, @NotNull String[] args) {
         if (!sender.hasPermission(Permission.REDIS_CHAT_MESSAGE.getPermission())) return true;
 
-
         if (args.length < 2) {
             return true;
         }
 
         String receiverName = args[0];
-
+        if (receiverName.equalsIgnoreCase(sender.getName())) {
+            RedisChat.config.sendMessage(sender, RedisChat.config.cannot_message_yourself);
+            return true;
+        }
         // remove first arg[0], since it's the player name and we don't want to include it in the msg
         args = Arrays.copyOfRange(args, 1, args.length);
         // do some stuff to send the message

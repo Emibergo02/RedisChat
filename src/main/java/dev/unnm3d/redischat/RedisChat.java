@@ -4,18 +4,23 @@ import de.exlll.configlib.YamlConfigurationProperties;
 import de.exlll.configlib.YamlConfigurations;
 import dev.unnm3d.redischat.chat.ChatListener;
 import dev.unnm3d.redischat.commands.*;
-import dev.unnm3d.redischat.invshare.InvCache;
 import dev.unnm3d.redischat.invshare.InvGUI;
 import dev.unnm3d.redischat.invshare.InvShare;
 import dev.unnm3d.redischat.redis.RedisDataManager;
 import io.lettuce.core.RedisClient;
+import io.lettuce.core.resource.ClientResources;
+import io.lettuce.core.resource.DefaultClientResources;
+import io.lettuce.core.resource.ThreadFactoryProvider;
+import lombok.Getter;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.concurrent.ThreadFactory;
 
 public final class RedisChat extends JavaPlugin {
 
@@ -23,6 +28,7 @@ public final class RedisChat extends JavaPlugin {
     public static Config config;
     private ChatListener chatListener;
     private RedisDataManager redisDataManager;
+    private PlayerListManager playerListManager;
 
     @Override
     public void onEnable() {
@@ -35,22 +41,22 @@ public final class RedisChat extends JavaPlugin {
         this.getCommand("reply").setExecutor(new ReplyCommand());
         this.getCommand("broadcast").setExecutor(new BroadcastCommand());
         this.getCommand("clearchat").setExecutor(new ClearChatCommand());
-        PlayerListManager playerListManager = new PlayerListManager();
-        this.getCommand("msg").setTabCompleter(playerListManager);
-        this.getCommand("ignore").setTabCompleter(playerListManager);
+        this.playerListManager = new PlayerListManager(this);
+        this.getCommand("msg").setTabCompleter(this.playerListManager);
+        this.getCommand("ignore").setTabCompleter(this.playerListManager);
 
 
         this.chatListener = new ChatListener(this);
         getServer().getPluginManager().registerEvents(this.chatListener, this);
-
         this.redisDataManager = new RedisDataManager(RedisClient.create(config.redis.redisUri()), this);
+        getLogger().info("Redis URI: " + config.redis.redisUri());
         this.redisDataManager.listenChatPackets();
         Bukkit.getOnlinePlayers().forEach(player -> this.redisDataManager.addPlayerName(player.getName()));
 
 
         //InvShare part
         getServer().getPluginManager().registerEvents(new InvGUI.GuiListener(), this);
-        getCommand("invshare").setExecutor(new InvShare(new InvCache(this)));
+        getCommand("invshare").setExecutor(new InvShare(this));
         getCommand("redischat").setExecutor((sender, command, label, args) -> {
             if (args.length == 1) {
                 if (sender.hasPermission(Permission.REDIS_CHAT_ADMIN.getPermission()))
@@ -95,6 +101,9 @@ public final class RedisChat extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        getLogger().warning("RedisChat is disabling...");
+        this.playerListManager.getTask().cancel();
+        this.redisDataManager.removePlayerNames(getServer().getOnlinePlayers().stream().map(HumanEntity::getName).toArray(String[]::new));
         this.redisDataManager.close();
     }
 
