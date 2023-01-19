@@ -46,7 +46,7 @@ public class InvGUI {
         // Put the items into the inventory
         inv.setItem(13, item);
         Bukkit.getScheduler().runTask(RedisChat.getInstance(), () -> {
-            if (RedisChat.config.debug)
+            if (RedisChat.getInstance().config.debug)
                 Bukkit.getLogger().info("Opening inventory for " + player.getName());
             player.openInventory(inv);
             invTitles.add(title);

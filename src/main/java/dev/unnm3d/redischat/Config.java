@@ -18,7 +18,7 @@ public final class Config {
     private static final BukkitAudiences audiences = BukkitAudiences.create(RedisChat.getInstance());
 
     @Comment({"Redis uri", "Example: redis://user:password@localhost:6379"})
-    public Redis redis = new Redis("redis://user:password@localhost:6379", 12345);
+    public Redis redis = new Redis("redis://user:password@localhost:6379");
     @Comment({"The format of the chat", "Permission format is overridden on descending order", "(if a player has default and vip, if default is the first element, vip will be ignored)"})
     public List<ChatFormat> formats = List.of(new ChatFormat("redischat.default",
             "<click:suggest_command:/msg %player_name%><hover:show_text:'" +
@@ -56,8 +56,7 @@ public final class Config {
     public boolean debug = false;
 
     public record Redis(
-            String redisUri,
-            int forcedTimemout) {
+            String redisUri) {
     }
 
     public record ChatFormat(

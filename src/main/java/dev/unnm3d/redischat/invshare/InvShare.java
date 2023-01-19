@@ -30,19 +30,19 @@ public class InvShare implements CommandExecutor {
                 case ITEM -> plugin.getRedisDataManager().getPlayerItem(playername)
                         .thenAccept(item ->
                                 new InvGUI(p,
-                                        RedisChat.config.item_title.replace("%player%", playername),
+                                        plugin.config.item_title.replace("%player%", playername),
                                         item));
 
                 case INVENTORY -> plugin.getRedisDataManager().getPlayerInventory(playername)
                         .thenAccept(inventoryContents ->
                                 new InvGUI(p,
-                                        RedisChat.config.inv_title.replace("%player%", playername),
+                                        plugin.config.inv_title.replace("%player%", playername),
                                         45,
                                         inventoryContents));
                 case ENDERCHEST -> plugin.getRedisDataManager().getPlayerEnderchest(playername)
                         .thenAccept(ecContents ->
                                 new InvGUI(p,
-                                        RedisChat.config.ec_title.replace("%player%", playername),
+                                        plugin.config.ec_title.replace("%player%", playername),
                                         27,
                                         ecContents));
             }

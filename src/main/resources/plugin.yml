@@ -2,7 +2,6 @@ name: RedisChat
 version: '${project.version}'
 main: dev.unnm3d.redischat.RedisChat
 author: Unnm3d
-api-version: 1.17
 libraries:
   - io.lettuce:lettuce-core:6.2.2.RELEASE
 depend:
@@ -69,6 +68,9 @@ permissions:
   redischat.spycommand:
     description: Allows you to use the /spychat command
     default: op
+  redischat.bypass_rate_limit:
+    description: Bypass the rate limit
+    default: false
   redischat.admin:
     description: Allows you to use the /redischat command
     default: op
@@ -79,6 +81,7 @@ permissions:
       - redischat.message
       - redischat.ignore
       - redischat.spycommand
+      - redischat.bypass_rate_limit
   redischat.default:
     description: Allows you to use default commands
     default: true

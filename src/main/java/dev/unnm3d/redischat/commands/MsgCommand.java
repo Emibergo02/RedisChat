@@ -3,8 +3,8 @@ package dev.unnm3d.redischat.commands;
 import dev.unnm3d.redischat.Config;
 import dev.unnm3d.redischat.Permission;
 import dev.unnm3d.redischat.RedisChat;
-import dev.unnm3d.redischat.chat.TextParser;
 import dev.unnm3d.redischat.redis.ChatPacket;
+import lombok.AllArgsConstructor;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
@@ -17,55 +17,57 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Arrays;
 import java.util.List;
 
+@AllArgsConstructor
 public class MsgCommand implements CommandExecutor {
+    private final RedisChat plugin;
 
-    public static void sendMsg(String[] args, CommandSender sender, String receiverName) {
+    public void sendMsg(String[] args, CommandSender sender, String receiverName) {
 
         if (!PlayerListManager.getPlayerList().contains(receiverName)) {
-            RedisChat.config.sendMessage(sender, RedisChat.config.player_not_online.replace("%player%", receiverName));
+            plugin.config.sendMessage(sender, plugin.config.player_not_online.replace("%player%", receiverName));
             return;
         }
 
-        Bukkit.getScheduler().runTaskAsynchronously(RedisChat.getInstance(), () ->
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () ->
         {
             String message = String.join(" ", args);
-            List<Config.ChatFormat> chatFormatList = RedisChat.config.getChatFormats(sender);
+            List<Config.ChatFormat> chatFormatList = plugin.config.getChatFormats(sender);
             if (chatFormatList.isEmpty()) return;
 
-            Component formatted = TextParser.parse(sender, chatFormatList.get(0).private_format().replace("%receiver%", receiverName).replace("%sender%", sender.getName()));
+            Component formatted = plugin.getComponentProvider().parse(sender, chatFormatList.get(0).private_format().replace("%receiver%", receiverName).replace("%sender%", sender.getName()));
 
             //Check for minimessage tags permission
             boolean parsePlaceholders = true;
             if (!sender.hasPermission(Permission.REDIS_CHAT_USE_FORMATTING.getPermission())) {
-                message = TextParser.purgeTags(message);
+                message = plugin.getComponentProvider().purgeTags(message);
                 parsePlaceholders = false;
             }
             // remove blacklisted stuff
-            message = TextParser.sanitize(message);
+            message = plugin.getComponentProvider().sanitize(message);
 
             //Check inv update
-            if(sender instanceof Player player) {
+            if (sender instanceof Player player) {
                 if (message.contains("<inv>")) {
-                    RedisChat.getInstance().getRedisDataManager().addInventory(player.getName(), player.getInventory().getContents());
+                    plugin.getRedisDataManager().addInventory(player.getName(), player.getInventory().getContents());
                 }
                 if (message.contains("<item>")) {
-                    RedisChat.getInstance().getRedisDataManager().addItem(player.getName(), player.getInventory().getItemInMainHand());
+                    plugin.getRedisDataManager().addItem(player.getName(), player.getInventory().getItemInMainHand());
                 }
                 if (message.contains("<ec>")) {
-                    RedisChat.getInstance().getRedisDataManager().addEnderchest(player.getName(), player.getEnderChest().getContents());
+                    plugin.getRedisDataManager().addEnderchest(player.getName(), player.getEnderChest().getContents());
                 }
             }
 
             //Parse into minimessage (placeholders, tags and mentions)
-            Component toBeReplaced = TextParser.parse(sender, message, parsePlaceholders, TextParser.getCustomTagResolver(sender, chatFormatList.get(0)));
+            Component toBeReplaced = plugin.getComponentProvider().parse(sender, message, parsePlaceholders, plugin.getComponentProvider().getCustomTagResolver(sender, chatFormatList.get(0)));
             //Put message into format
             formatted = formatted.replaceText(
                     builder -> builder.match("%message%").replacement(toBeReplaced)
             );
             //Send to other servers
-            RedisChat.getInstance().getRedisDataManager().sendObjectPacket(new ChatPacket(sender.getName(), MiniMessage.miniMessage().serialize(toBeReplaced), receiverName));
-            RedisChat.getInstance().getChatListener().onSenderPrivateChat(sender, formatted);
-            RedisChat.getInstance().getRedisDataManager().setReplyName(receiverName, sender.getName());
+            plugin.getRedisDataManager().sendObjectPacket(new ChatPacket(sender.getName(), MiniMessage.miniMessage().serialize(toBeReplaced), receiverName));
+            plugin.getChatListener().onSenderPrivateChat(sender, formatted);
+            plugin.getRedisDataManager().setReplyName(receiverName, sender.getName());
 
 
         });
@@ -81,7 +83,7 @@ public class MsgCommand implements CommandExecutor {
 
         String receiverName = args[0];
         if (receiverName.equalsIgnoreCase(sender.getName())) {
-            RedisChat.config.sendMessage(sender, RedisChat.config.cannot_message_yourself);
+            plugin.config.sendMessage(sender, plugin.config.cannot_message_yourself);
             return true;
         }
         // remove first arg[0], since it's the player name and we don't want to include it in the msg

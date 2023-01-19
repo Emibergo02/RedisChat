@@ -24,7 +24,7 @@ public class PlayerListManager implements TabCompleter {
 
             @Override
             public void run() {
-                plugin.getRedisDataManager().getPlayerList().thenAccept(redisList->{
+                plugin.getRedisDataManager().getPlayerList().thenAccept(redisList -> {
                     if (redisList != null) playerList = redisList;
                 });
             }

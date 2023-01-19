@@ -4,14 +4,11 @@ import dev.unnm3d.redischat.Config;
 import dev.unnm3d.redischat.Permission;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.redis.ChatPacket;
-import net.kyori.adventure.platform.bukkit.BukkitAudiences;
+import lombok.AllArgsConstructor;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -19,104 +16,85 @@ import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.util.List;
 
+@AllArgsConstructor
 public class ChatListener implements Listener {
-    private final BukkitAudiences bukkitAudiences;
     private final RedisChat plugin;
 
-    public ChatListener(RedisChat plugin) {
-        this.plugin = plugin;
-        this.bukkitAudiences = BukkitAudiences.create(plugin);
-    }
-
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler
     public void onChat(AsyncPlayerChatEvent event) {
         if (event.isCancelled()) return;
         event.setCancelled(true);
-        Bukkit.getScheduler().runTaskAsynchronously(RedisChat.getInstance(), () -> {
-            long init = System.currentTimeMillis();
+        plugin.getLogger().info("Chat event fired async? " + event.isAsynchronous());
 
-            List<Config.ChatFormat> chatFormatList = RedisChat.config.getChatFormats(event.getPlayer());
-            if (chatFormatList.isEmpty()) return;
-            if (!event.getPlayer().hasPermission(Permission.REDIS_CHAT_ADMIN.getPermission()))
-                if (plugin.getRedisDataManager().isRateLimited(event.getPlayer().getName())) {
-                    RedisChat.config.sendMessage(event.getPlayer(), RedisChat.config.rate_limited);
-                    return;
-                }
-            if (RedisChat.config.debug)
-                Bukkit.getLogger().info("Rate limit: " + (System.currentTimeMillis() - init) + " ms ");
+        long init = System.currentTimeMillis();
+        int totalElapsed = 0;
 
-            Component formatted = TextParser.parse(event.getPlayer(), chatFormatList.get(0).format());
-
-            //Check for minimessage tags permission
-            String message = event.getMessage();
-            boolean parsePlaceholders = true;
-            if (!event.getPlayer().hasPermission(Permission.REDIS_CHAT_USE_FORMATTING.getPermission())) {
-                message = TextParser.purgeTags(message);
-                parsePlaceholders = false;
+        List<Config.ChatFormat> chatFormatList = plugin.config.getChatFormats(event.getPlayer());
+        if (chatFormatList.isEmpty()) return;
+        if (!event.getPlayer().hasPermission(Permission.REDIS_CHAT_BYPASS_RATE_LIMIT.getPermission()))
+            if (plugin.getRedisDataManager().isRateLimited(event.getPlayer().getName())) {
+                plugin.config.sendMessage(event.getPlayer(), plugin.config.rate_limited);
+                return;
             }
-            if (message.trim().equals("")) return;
-            message = TextParser.sanitize(message);
 
-            long tFormat = System.currentTimeMillis() - init;
-            init = System.currentTimeMillis();
-            //Check inv update
-            if (message.contains("<inv>")) {
-                plugin.getRedisDataManager().addInventory(event.getPlayer().getName(), event.getPlayer().getInventory().getContents());
-            }
-            if (message.contains("<item>")) {
-                plugin.getRedisDataManager().addItem(event.getPlayer().getName(), event.getPlayer().getInventory().getItemInMainHand());
-            }
-            if (message.contains("<ec>")) {
-                plugin.getRedisDataManager().addEnderchest(event.getPlayer().getName(), event.getPlayer().getEnderChest().getContents());
-            }
-            long tInv = System.currentTimeMillis() - init;
+        totalElapsed += debug("Rate limit timing: %time%ms", init);
+        init = System.currentTimeMillis();
 
+        Component formatted = plugin.getComponentProvider().parse(event.getPlayer(), chatFormatList.get(0).format());//Parse format without %message%
+        //Check for minimessage tags permission
+        String message = event.getMessage();
+        boolean parsePlaceholders = true;
+        if (!event.getPlayer().hasPermission(Permission.REDIS_CHAT_USE_FORMATTING.getPermission())) {
+            message = plugin.getComponentProvider().purgeTags(message);//Remove all minimessage tags
+            parsePlaceholders = false;
+        }
+        if (message.trim().equals("")) return;//Check if message is empty after purging tags
+        message = plugin.getComponentProvider().sanitize(message);
 
-            //Parse into minimessage (placeholders, tags and mentions)
-            init = System.currentTimeMillis();
-            Component toBeReplaced = TextParser.parse(event.getPlayer(), message, parsePlaceholders, TextParser.getCustomTagResolver(event.getPlayer(), chatFormatList.get(0)));
+        totalElapsed += debug("Format timing: %time%ms", init);
+        init = System.currentTimeMillis();
 
-            //Put message into format
-            formatted = formatted.replaceText(
-                    builder -> builder.match("%message%").replacement(toBeReplaced)
-            );
-            long tParse = System.currentTimeMillis() - init;
-            init = System.currentTimeMillis();
+        //Check inv update
+        if (message.contains("<inv>")) {
+            plugin.getRedisDataManager().addInventory(event.getPlayer().getName(), event.getPlayer().getInventory().getContents());
+        }
+        if (message.contains("<item>")) {
+            plugin.getRedisDataManager().addItem(event.getPlayer().getName(), event.getPlayer().getInventory().getItemInMainHand());
+        }
+        if (message.contains("<ec>")) {
+            plugin.getRedisDataManager().addEnderchest(event.getPlayer().getName(), event.getPlayer().getEnderChest().getContents());
+        }
+        totalElapsed += debug("Inv upload timing: %time%ms", init);
+        init = System.currentTimeMillis();
 
-            // Send to other servers
-            plugin.getRedisDataManager().sendObjectPacket(new ChatPacket(event.getPlayer().getName(), MiniMessage.miniMessage().serialize(formatted)));
-            plugin.getRedisDataManager().setRateLimit(event.getPlayer().getName(), RedisChat.config.rate_limit_time_seconds);
+        //Parse into minimessage (placeholders, tags and mentions)
+        Component toBeReplaced = plugin.getComponentProvider().parse(event.getPlayer(), message, parsePlaceholders, plugin.getComponentProvider().getCustomTagResolver(event.getPlayer(), chatFormatList.get(0)));
 
-            long tRedis = System.currentTimeMillis() - init;
-            if (RedisChat.config.debug)
-                Bukkit.getLogger().info(" Format: " + tFormat + " Inv: " + tInv + " Parse: " + tParse + " Send: " + tRedis + " Total: " + (tFormat + tInv + tParse + tRedis) + " ms");
+        //Put message into format
+        formatted = formatted.replaceText(
+                builder -> builder.match("%message%").replacement(toBeReplaced)
+        );
+        totalElapsed += debug("Message parsing timing: %time%ms", init);
 
-        });
+        // Send to other servers
+        plugin.getRedisDataManager().sendObjectPacket(new ChatPacket(event.getPlayer().getName(), MiniMessage.miniMessage().serialize(formatted)));
+        plugin.getRedisDataManager().setRateLimit(event.getPlayer().getName(), plugin.config.rate_limit_time_seconds);
+
+        if (plugin.config.debug) {
+            plugin.getLogger().info("Total chat event timing: " + totalElapsed + "ms");
+        }
     }
 
-    public void onPublicChat(String serializedText) {
-        bukkitAudiences.all().sendMessage(MiniMessage.miniMessage().deserialize(serializedText));
+    private int debug(String debugmsg, long init) {
+        int time = (int) (System.currentTimeMillis() - init);
+        if (plugin.config.debug)
+            plugin.getLogger().info(debugmsg.replace("%time%", String.valueOf(time)));
+        return time;
     }
 
-    public void onPrivateChat(String senderName, String receiverName, String text) {
-        Player p = Bukkit.getPlayer(receiverName);
-        if (p != null)
-            if (p.isOnline()) {
-                List<Config.ChatFormat> chatFormatList = RedisChat.config.getChatFormats(p);
-                if (chatFormatList.isEmpty()) return;
-                Component formatted = TextParser.parse(null, chatFormatList.get(0).receive_private_format().replace("%receiver%", receiverName).replace("%sender%", senderName));
-                Component toBeReplaced = TextParser.parse(null, text);
-                //Put message into format
-                formatted = formatted.replaceText(
-                        builder -> builder.match("%message%").replacement(toBeReplaced)
-                );
-                RedisChat.config.sendMessage(p, formatted);
-            }
-
-    }
 
     public void onSenderPrivateChat(CommandSender sender, Component formatted) {
-        RedisChat.config.sendMessage(sender, formatted);
+        plugin.config.sendMessage(sender, formatted);
     }
 
     @EventHandler
@@ -129,15 +107,5 @@ public class ChatListener implements Listener {
         RedisChat.getInstance().getRedisDataManager().removePlayerName(event.getPlayer().getName());
     }
 
-    public void onSpyPrivateChat(String receiverName, String senderName, Player watcher, String deserialize) {
-        Component formatted = MiniMessage.miniMessage().deserialize(RedisChat.config.spychat_format.replace("%receiver%", receiverName).replace("%sender%", senderName));
 
-        //Parse into minimessage (placeholders, tags and mentions)
-        Component toBeReplaced = TextParser.parse(deserialize);
-        //Put message into format
-        formatted = formatted.replaceText(
-                builder -> builder.match("%message%").replacement(toBeReplaced)
-        );
-        RedisChat.config.sendMessage(watcher, formatted);
-    }
 }

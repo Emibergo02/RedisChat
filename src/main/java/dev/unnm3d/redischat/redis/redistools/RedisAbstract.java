@@ -3,9 +3,7 @@ package dev.unnm3d.redischat.redis.redistools;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.async.RedisAsyncCommands;
-import io.lettuce.core.pubsub.StatefulRedisPubSubConnection;
 import lombok.AllArgsConstructor;
-import org.bukkit.Bukkit;
 
 import java.time.Duration;
 import java.util.concurrent.*;
@@ -13,10 +11,8 @@ import java.util.function.Function;
 
 @AllArgsConstructor
 public abstract class RedisAbstract {
-    protected static final ScheduledExecutorService executorService =  Executors.newSingleThreadScheduledExecutor();
+    protected static final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
     protected RedisClient lettuceRedisClient;
-
-    private int forcedTimeout;
 
 
     public <T> T getConnectionSync(RedisCallBack<T> redisCallBack) {
@@ -28,13 +24,13 @@ public abstract class RedisAbstract {
 
     public <T> ScheduledFuture<T> scheduleConnection(Function<StatefulRedisConnection<String, String>, T> function, int timeout, TimeUnit timeUnit) {
         return executorService.schedule(() -> {
-            try(StatefulRedisConnection<String, String> connection = lettuceRedisClient.connect()){
+            try (StatefulRedisConnection<String, String> connection = lettuceRedisClient.connect()) {
                 return function.apply(connection);
             }
         }, timeout, timeUnit);
     }
 
-    public <T> CompletionStage<T> getConnectionAsync(Function<RedisAsyncCommands<String, String> , CompletionStage<T>> redisCallBack) {
+    public <T> CompletionStage<T> getConnectionAsync(Function<RedisAsyncCommands<String, String>, CompletionStage<T>> redisCallBack) {
         StatefulRedisConnection<String, String> connection = lettuceRedisClient.connect();
         CompletionStage<T> returnable = redisCallBack.apply(connection.async());
         return returnable.thenApply(t -> {
@@ -42,7 +38,6 @@ public abstract class RedisAbstract {
             return t;
         });
     }
-
 
 
     public StatefulRedisConnection<String, String> getUnclosedConnection() {

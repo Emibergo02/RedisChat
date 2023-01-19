@@ -1,7 +1,5 @@
 package dev.unnm3d.redischat.redis;
 
-import net.milkbowl.vault.chat.Chat;
-
 import java.io.Serializable;
 
 public class ChatPacket implements Serializable {
@@ -15,6 +13,7 @@ public class ChatPacket implements Serializable {
         this.senderName = senderName;
         this.receiverName = receiverName;
     }
+
     public ChatPacket(String serialized) {
         String[] splitted = serialized.split("§§§");
         this.message = splitted[1];
@@ -48,6 +47,7 @@ public class ChatPacket implements Serializable {
     public String getReceiverName() {
         return receiverName;
     }
+
     public String serialize() {
         return senderName + "§§§" + message + (receiverName != null ? "§§§" + receiverName : "");
     }

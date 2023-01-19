@@ -78,9 +78,9 @@
             <version>4.12.0</version>
         </dependency>
         <dependency>
-            <groupId>com.github.Exlll.ConfigLib</groupId>
-            <artifactId>configlib-yaml</artifactId>
-            <version>v4.2.0</version>
+            <groupId>com.github.Emibergo02</groupId>
+            <artifactId>ConfigLib</artifactId>
+            <version>master-6be5fb9cab-1</version>
         </dependency>
         <dependency>
             <groupId>net.kyori</groupId>
