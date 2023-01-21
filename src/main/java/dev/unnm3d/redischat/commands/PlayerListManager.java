@@ -18,8 +18,10 @@ public class PlayerListManager implements TabCompleter {
     @Getter
     private final BukkitTask task;
     private static Set<String> playerList;
+    private final RedisChat plugin;
 
     public PlayerListManager(RedisChat plugin) {
+        this.plugin = plugin;
         this.task = new BukkitRunnable() {
 
             @Override
@@ -35,16 +37,20 @@ public class PlayerListManager implements TabCompleter {
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (args.length == 0) return null;
-
-        if (command.getName().equalsIgnoreCase("msg") && args.length == 1) {
-            return playerList.stream().filter(s -> s.startsWith(args[args.length - 1])).toList();
+        switch (command.getName()) {
+            case "msg" -> {
+                if (args.length == 1) {
+                    plugin.getLogger().info("Tab complete for msg");
+                    return playerList.stream().filter(s -> s.startsWith(args[args.length - 1])).toList();
+                }
+            }
+            case "ignore" -> {
+                List<String> temp = new ArrayList<>(List.of("list", "all"));
+                temp.addAll(playerList.stream().filter(s -> s.startsWith(args[args.length - 1])).toList());
+                return temp;
+            }
         }
-        if (command.getName().equalsIgnoreCase("ignore")) {
-            List<String> temp = new ArrayList<>(List.of("list", "all"));
-            temp.addAll(playerList.stream().filter(s -> s.startsWith(args[args.length - 1])).toList());
-            return temp;
-        }
-        return null;
+        return List.of();
     }
 
     public static Set<String> getPlayerList() {

@@ -8,6 +8,7 @@ import dev.unnm3d.redischat.commands.*;
 import dev.unnm3d.redischat.invshare.InvGUI;
 import dev.unnm3d.redischat.invshare.InvShare;
 import dev.unnm3d.redischat.redis.RedisDataManager;
+import dev.unnm3d.redischat.task.AnnounceManager;
 import io.lettuce.core.RedisClient;
 import lombok.Getter;
 import org.bukkit.Bukkit;
@@ -26,6 +27,7 @@ public final class RedisChat extends JavaPlugin {
     private ChatListener chatListener;
     private RedisDataManager redisDataManager;
     private PlayerListManager playerListManager;
+    private AnnounceManager announceManager;
     @Getter
     private ComponentProvider componentProvider;
 
@@ -52,6 +54,10 @@ public final class RedisChat extends JavaPlugin {
         this.redisDataManager.listenChatPackets();
         Bukkit.getOnlinePlayers().forEach(player -> this.redisDataManager.addPlayerName(player.getName()));
 
+        this.announceManager = new AnnounceManager(this);
+        AnnounceCommand announceCommand = new AnnounceCommand(this, this.announceManager);
+        this.getCommand("announce").setExecutor(announceCommand);
+        this.getCommand("announce").setTabCompleter(announceCommand);
 
         //InvShare part
         getServer().getPluginManager().registerEvents(new InvGUI.GuiListener(), this);
@@ -61,6 +67,7 @@ public final class RedisChat extends JavaPlugin {
                 if (sender.hasPermission(Permission.REDIS_CHAT_ADMIN.getPermission()))
                     if (args[0].equalsIgnoreCase("reload")) {
                         loadYML();
+                        announceManager.reload();
                         config.sendMessage(sender, "<green>Config reloaded");
                         return true;
                     }
@@ -104,6 +111,7 @@ public final class RedisChat extends JavaPlugin {
         this.playerListManager.getTask().cancel();
         this.redisDataManager.removePlayerNames(getServer().getOnlinePlayers().stream().map(HumanEntity::getName).toArray(String[]::new));
         this.redisDataManager.close();
+        this.announceManager.cancelAll();
     }
 
     public static RedisChat getInstance() {

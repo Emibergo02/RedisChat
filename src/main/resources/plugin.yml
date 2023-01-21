@@ -46,6 +46,10 @@ commands:
     description: Spychat command
     aliases: [spyc]
     permission: redischat.spycommand
+  announce:
+    description: RedisChat announce
+    usage: /announce <start/stop> announceName
+    permission: redischat.announce
 permissions:
   redischat.spychat:
     description: You are spying the chat if it is true
@@ -81,6 +85,7 @@ permissions:
       - redischat.message
       - redischat.ignore
       - redischat.spycommand
+      - redischat.announce
       - redischat.bypass_rate_limit
   redischat.default:
     description: Allows you to use default commands

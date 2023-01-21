@@ -34,6 +34,8 @@ public final class Config {
             "<aqua>@%player%</aqua>",
             "<bold><click:open_url:%link%>[Click to open URL (be careful)]</bold>"
     ));
+    @Comment({"Announces configs", "delay and interval are in seconds", "If you want to disable an announce, just remove it from the list"})
+    public List<Announce> announces = List.of(new Announce("default", "<red>RedisChat Announce: <br><white>lorem ipsum dolor sit amet", 5, 300));
     public Map<String, String> placeholders = Map.of("discord", "<click:open_url:https://discord.gg/uq6bBqAQ>Click to join our discord server</click>");
     public List<String> regex_blacklist = List.of("discord.gg/.*");
     public String inv_title = "Inventory of %player%";
@@ -43,6 +45,9 @@ public final class Config {
     public String clear_chat_message = "<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>";
     public String player_not_online = "<red>The player %player% is not online</red>";
     public String cannot_message_yourself = "<red>You cannot message yourself</red>";
+    public String missing_arguments = "<red>Missing arguments</red>";
+    public String action_completed_successfully = "<green>Action completed successfully</green>";
+    public String announce_not_found = "<red>The announce %name% does not exist</red>";
     public String no_reply_found = "<red>You do not have any message to reply</red>";
     public String reply_not_online = "<red>%player% is not online</red>";
     public String rate_limited = "<red>You've been rate limited</red>";
@@ -69,6 +74,13 @@ public final class Config {
             String enderchest_format,
             String mention_format,
             String link_format) {
+    }
+
+    public record Announce(
+            String announceName,
+            String message,
+            int delay,
+            int interval) {
     }
 
     public @NotNull List<ChatFormat> getChatFormats(CommandSender p) {

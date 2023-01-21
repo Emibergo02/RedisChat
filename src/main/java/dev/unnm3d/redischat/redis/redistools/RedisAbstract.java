@@ -46,7 +46,7 @@ public abstract class RedisAbstract {
 
 
     public void close() {
-        lettuceRedisClient.shutdown(Duration.ofSeconds(3), Duration.ZERO);
+        lettuceRedisClient.shutdown(Duration.ofSeconds(1), Duration.ofSeconds(1));
         executorService.shutdown();
     }
 
