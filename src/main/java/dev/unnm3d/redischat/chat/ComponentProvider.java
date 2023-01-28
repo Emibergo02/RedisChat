@@ -99,7 +99,6 @@ public class ComponentProvider {
         toParse = chatFormat.item_format();
         toParse = toParse.replace("%player%", player.getName());
         if (player instanceof Player p) {
-
             if (!p.getInventory().getItemInMainHand().getType().isAir())
                 if (p.getInventory().getItemInMainHand().getItemMeta().hasDisplayName())
                     toParse = toParse.replace("%item_name%", p.getInventory().getItemInMainHand().getItemMeta().getDisplayName());

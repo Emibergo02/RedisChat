@@ -7,7 +7,6 @@ public enum Permission {
     REDIS_CHAT_CLEARCHAT("redischat.clearchat"),
     REDIS_CHAT_ADMIN("redischat.admin"),
     REDIS_CHAT_BYPASS_RATE_LIMIT("redischat.bypass_rate_limit"),
-    REDIS_CHAT_SPYCHAT("redischat.spychat"),
     ;
 
     private final String permission;

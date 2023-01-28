@@ -6,7 +6,6 @@ libraries:
   - io.lettuce:lettuce-core:6.2.2.RELEASE
 depend:
   - PlaceholderAPI
-  - Vault
 loadbefore:
   - CMI
   - CMILib

@@ -98,14 +98,15 @@ public class ChatListener implements Listener {
         plugin.config.sendMessage(sender, formatted);
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onJoin(PlayerJoinEvent event) {
-        RedisChat.getInstance().getRedisDataManager().addPlayerName(event.getPlayer().getName());
+        plugin.getRedisDataManager().addPlayerName(event.getPlayer().getName());
+        plugin.getSpyManager().onJoin(event.getPlayer());
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onQuit(PlayerQuitEvent event) {
-        RedisChat.getInstance().getRedisDataManager().removePlayerName(event.getPlayer().getName());
+        plugin.getRedisDataManager().removePlayerName(event.getPlayer().getName());
     }
 
 

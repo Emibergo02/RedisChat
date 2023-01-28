@@ -56,8 +56,8 @@ public final class Config {
     public String spychat_format = "<red>%sender% said to %receiver% : %message%</red>";
     public int rate_limit = 3;
     public int rate_limit_time_seconds = 5;
-    public String spychat_enabled = "<red>Spychat enabled</red>";
-    public String spychat_disabled = "<red>Spychat disabled</red>";
+    public String spychat_enabled = "<green>Spychat enabled for %player%</green>";
+    public String spychat_disabled = "<red>Spychat disabled for %player%</red>";
     public boolean debug = false;
 
     public record Redis(

@@ -10,6 +10,7 @@ public enum RedisKeys {
     INVSHARE_ITEM("redischat:item"),
     INVSHARE_INVENTORY("redischat:inventory"),
     INVSHARE_ENDERCHEST("redischat:enderchest"),
+    SPYING_LIST("redischat:spying"),
     ;
 
     private final String keyName;

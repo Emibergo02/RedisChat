@@ -6,7 +6,7 @@
 
     <groupId>dev.unnm3d</groupId>
     <artifactId>RedisChat</artifactId>
-    <version>2.2-LettuceCore</version>
+    <version>2.3</version>
     <packaging>jar</packaging>
 
     <name>RedisChat</name>
@@ -86,12 +86,6 @@
             <groupId>net.kyori</groupId>
             <artifactId>adventure-platform-bukkit</artifactId>
             <version>4.2.0</version>
-        </dependency>
-        <dependency>
-            <groupId>net.milkbowl.vault</groupId>
-            <artifactId>VaultAPI</artifactId>
-            <version>1.7</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>io.lettuce</groupId>

@@ -1,6 +1,5 @@
 package dev.unnm3d.redischat.redis;
 
-import dev.unnm3d.redischat.Permission;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.redis.redistools.RedisAbstract;
 import dev.unnm3d.redischat.redis.redistools.RedisPubSub;
@@ -69,6 +68,56 @@ public class RedisDataManager extends RedisAbstract {
         rac.expire(RATE_LIMIT_PREFIX + playerName, seconds);
         connection.flushCommands();
         connection.close();
+    }
+
+    public CompletionStage<Boolean> isSpying(String playerName) {
+        return getConnectionAsync(connection ->
+                connection.sismember(SPYING_LIST.toString(), playerName)
+                        .thenApply(result -> {
+                            if (plugin.config.debug) {
+                                plugin.getLogger().info("isSpying " + playerName + " " + result);
+                            }
+                            return result;
+                        })
+                        .exceptionally(throwable -> {
+                            throwable.printStackTrace();
+                            plugin.getLogger().warning("Error getting spy list from redis");
+                            return null;
+                        })
+        );
+    }
+
+    public void setSpying(String playerName, boolean spy) {
+        getConnectionAsync(connection -> {
+                    if (spy) {
+                        return connection.sadd(SPYING_LIST.toString(), playerName)
+                                .thenApply(result -> {
+                                    if (plugin.config.debug) {
+                                        plugin.getLogger().info("setSpying " + playerName + " " + result);
+                                    }
+                                    return result;
+                                })
+                                .exceptionally(throwable -> {
+                                    throwable.printStackTrace();
+                                    plugin.getLogger().warning("Error getting spy list from redis");
+                                    return null;
+                                });
+                    } else {
+                        return connection.srem(SPYING_LIST.toString(), playerName)
+                                .thenApply(result -> {
+                                    if (plugin.config.debug) {
+                                        plugin.getLogger().info("setSpying " + playerName + " " + result);
+                                    }
+                                    return result;
+                                })
+                                .exceptionally(throwable -> {
+                                    throwable.printStackTrace();
+                                    plugin.getLogger().warning("Error getting spy list from redis");
+                                    return null;
+                                });
+                    }
+                }
+        );
     }
 
     public void addPlayerName(String playerName) {
@@ -311,7 +360,7 @@ public class RedisDataManager extends RedisAbstract {
                 if (chatPacket.isPrivate()) {
                     long init = System.currentTimeMillis();
                     for (Player player : Bukkit.getOnlinePlayers()) {
-                        if (player.hasPermission(Permission.REDIS_CHAT_SPYCHAT.getPermission())) {//Spychat
+                        if (plugin.getSpyManager().isSpying(player.getName())) {//Spychat
                             plugin.getComponentProvider().sendSpyChat(chatPacket.getReceiverName(), chatPacket.getSenderName(), player, chatPacket.getMessage());
                         }
                         if (player.getName().equals(chatPacket.getReceiverName())) {//Private message
