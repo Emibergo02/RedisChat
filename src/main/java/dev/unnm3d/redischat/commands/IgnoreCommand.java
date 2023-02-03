@@ -16,21 +16,27 @@ public class IgnoreCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        if (!(sender instanceof Player)) return false;
-        if (args.length == 0) return false;
+        if (!(sender instanceof Player)) return true;
+        if (args.length == 0) return true;
 
         if (args[0].equalsIgnoreCase("list")) {
             final StringJoiner ignoreList = new StringJoiner(", ");
-            plugin.getRedisDataManager().ignoringList(sender.getName()).thenAccept(list -> {
-                if (list == null) return;
-                list.forEach(ignoreList::add);
-                plugin.config.sendMessage(sender, plugin.getComponentProvider().parse(plugin.config.ignoring_list.replace("%list%", ignoreList.toString())));
-            });
+            plugin.getRedisDataManager().ignoringList(sender.getName())
+                    .thenAccept(list -> {
+                        if (list == null) return;
+                        list.forEach(ignoreList::add);
+                        plugin.config.sendMessage(sender, plugin.getComponentProvider().parse(plugin.config.ignoring_list.replace("%list%", ignoreList.toString())));
+                    });
 
         }
-        plugin.getRedisDataManager().toggleIgnoring(sender.getName(), args[0]);
-        plugin.config.sendMessage(sender, plugin.getComponentProvider().parse(plugin.config.ignoring_player.replace("%player%", args[0])));
+        plugin.getRedisDataManager().toggleIgnoring(sender.getName(), args[0])
+                .thenAccept(ignored -> {
+                    if (ignored)
+                        plugin.config.sendMessage(sender, plugin.getComponentProvider().parse(plugin.config.ignoring_player.replace("%player%", args[0])));
+                    else
+                        plugin.config.sendMessage(sender, plugin.getComponentProvider().parse(plugin.config.not_ignoring_player.replace("%player%", args[0])));
+                });
 
-        return false;
+        return true;
     }
 }

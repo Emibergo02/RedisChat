@@ -52,13 +52,15 @@ public final class Config {
     public String reply_not_online = "<red>%player% is not online</red>";
     public String rate_limited = "<red>You've been rate limited</red>";
     public String ignoring_list = "<aqua>Player ignored</aqua><br><green>%list%</green>";
-    public String ignoring_player = "<green>Toggled ignoring of %player%</green>";
+    public String ignoring_player = "<green>Ignoring %player%</green>";
+    public String not_ignoring_player = "<green>Ignore removed for %player%</green>";
     public String spychat_format = "<red>%sender% said to %receiver% : %message%</red>";
     public int rate_limit = 3;
     public int rate_limit_time_seconds = 5;
     public String spychat_enabled = "<green>Spychat enabled for %player%</green>";
     public String spychat_disabled = "<red>Spychat disabled for %player%</red>";
     public boolean debug = false;
+
 
     public record Redis(
             String redisUri) {

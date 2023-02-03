@@ -175,22 +175,24 @@ public class RedisDataManager extends RedisAbstract {
 
     }
 
-    public void toggleIgnoring(String playerName, String ignoringName) {
-        getConnectionAsync(connection ->
+    public CompletionStage<Boolean> toggleIgnoring(String playerName, String ignoringName) {
+        return getConnectionAsync(connection ->
                 connection.sadd(IGNORE_PREFIX + playerName, ignoringName)
                         .thenApply(response -> {
 
                             StatefulRedisConnection<String, String> connection2 = lettuceRedisClient.connect();
-                            if (response == 0)
+                            if (plugin.config.debug) {
+                                plugin.getLogger().info("02 Toggling ignoring " + ignoringName + " for " + playerName);
+                            }
+                            if (response == 0) {
                                 connection2.async().srem(IGNORE_PREFIX + playerName, ignoringName)
                                         .thenAccept(response2 -> connection2.close());
-                            else
-                                connection2.async().expire(IGNORE_PREFIX + playerName, 60 * 60 * 24 * 7)
-                                        .thenAccept(response2 -> connection2.close());
-                            if (plugin.config.debug) {
-                                plugin.getLogger().info("02 Toggled ignoring " + ignoringName + " for " + playerName);
+                                return false;
                             }
-                            return response;
+                            connection2.async().expire(IGNORE_PREFIX + playerName, 60 * 60 * 24 * 7)
+                                    .thenAccept(response2 -> connection2.close());
+                            return true;
+
                         })
                         .exceptionally(throwable -> {
                             throwable.printStackTrace();
@@ -240,8 +242,11 @@ public class RedisDataManager extends RedisAbstract {
                                 plugin.getLogger().info("05 Added inventory for " + name);
                             }
                             scheduleConnection(scheduled -> {
-                                scheduled.sync().hdel(INVSHARE_INVENTORY.toString(), name);
-                                plugin.getLogger().warning("06 Removing inv");
+                                scheduled.async().hdel(INVSHARE_INVENTORY.toString(), name).thenAccept(response2 -> {
+                                    if (plugin.config.debug) {
+                                        plugin.getLogger().warning("06 Removing inv");
+                                    }
+                                });
                                 return null;
                             }, 60, TimeUnit.SECONDS);
                             return response;
@@ -262,8 +267,11 @@ public class RedisDataManager extends RedisAbstract {
                                 plugin.getLogger().info("08 Added item for " + name);
                             }
                             scheduleConnection(scheduled -> {
-                                scheduled.sync().hdel(INVSHARE_ITEM.toString(), name);
-                                plugin.getLogger().warning("09 Removing item");
+                                scheduled.async().hdel(INVSHARE_ITEM.toString(), name).thenAccept(response2 -> {
+                                    if (plugin.config.debug) {
+                                        plugin.getLogger().warning("09 Removing item");
+                                    }
+                                });
                                 return null;
                             }, 60, TimeUnit.SECONDS);
                             return response;
@@ -283,10 +291,11 @@ public class RedisDataManager extends RedisAbstract {
                                 plugin.getLogger().info("10 Added enderchest for " + name);
                             }
                             scheduleConnection(scheduled -> {
-                                scheduled.sync().hdel(INVSHARE_ENDERCHEST.toString(), name);
-                                if (plugin.config.debug) {
-                                    plugin.getLogger().info("11 Removing enderchest");
-                                }
+                                scheduled.async().hdel(INVSHARE_ENDERCHEST.toString(), name).thenAccept(response2 -> {
+                                    if (plugin.config.debug) {
+                                        plugin.getLogger().warning("11 Removing enderchest");
+                                    }
+                                });
                                 return null;
                             }, 60, TimeUnit.SECONDS);
                             return response;
