@@ -24,8 +24,8 @@ public class ReplyCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        if (!(sender instanceof Player)) return false;
-        if (args.length == 0) return false;
+        if (!(sender instanceof Player)) return true;
+        if (args.length == 0) return true;
         long init = System.currentTimeMillis();
         new BukkitRunnable() {
             @Override
@@ -75,6 +75,6 @@ public class ReplyCommand implements CommandExecutor {
             }
         }.runTaskAsynchronously(plugin);
 
-        return false;
+        return true;
     }
 }

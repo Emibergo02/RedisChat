@@ -25,6 +25,6 @@ public class ClearChatCommand implements CommandExecutor {
                 plugin.getRedisDataManager().sendObjectPacket(new ChatPacket(null, message));
             }
         }.runTaskAsynchronously(plugin);
-        return false;
+        return true;
     }
 }

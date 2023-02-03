@@ -26,6 +26,6 @@ public class BroadcastCommand implements CommandExecutor {
             }
         }.runTaskAsynchronously(plugin);
 
-        return false;
+        return true;
     }
 }
