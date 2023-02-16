@@ -8,7 +8,9 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 
@@ -18,7 +20,7 @@ public final class Config {
     private static final BukkitAudiences audiences = BukkitAudiences.create(RedisChat.getInstance());
 
     @Comment({"Redis uri", "Example: redis://user:password@localhost:6379"})
-    public Redis redis = new Redis("redis://user:password@localhost:6379");
+    public Redis redis = new Redis("redis://localhost:6379/0?timeout=1s&clientName=RedisChat");
     @Comment({"The format of the chat", "Permission format is overridden on descending order", "(if a player has default and vip, if default is the first element, vip will be ignored)"})
     public List<ChatFormat> formats = List.of(new ChatFormat("redischat.default",
             "<click:suggest_command:/msg %player_name%><hover:show_text:'" +
@@ -42,7 +44,7 @@ public final class Config {
     public String item_title = "Item of %player%";
     public String ec_title = "Enderchest of %player%";
     public String broadcast_format = "<red>Announce <dark_gray>» <white>%message%";
-    public String clear_chat_message = "<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>";
+    public String clear_chat_message = "<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared";
     public String player_not_online = "<red>The player %player% is not online</red>";
     public String cannot_message_yourself = "<red>You cannot message yourself</red>";
     public String missing_arguments = "<red>Missing arguments</red>";
@@ -59,6 +61,9 @@ public final class Config {
     public int rate_limit_time_seconds = 5;
     public String spychat_enabled = "<green>Spychat enabled for %player%</green>";
     public String spychat_disabled = "<red>Spychat disabled for %player%</red>";
+    public String editMessageError = "<red>This config entry is not a String or doesn't exist!";
+    public String editMessageClickHere = "<click:open_url:%url%>Click here to edit the message %field%!</click>";
+    public String editMessageSuccess = "<green>Saved successfully %field%!";
     public boolean debug = false;
 
 
@@ -92,6 +97,23 @@ public final class Config {
             return List.of();
         }
         return chatFormatList;
+    }
+
+    public @Nullable Field getStringField(String name) throws NoSuchFieldException {
+        Field field = getClass().getField(name);
+        return field.getType().equals(String.class) ? field : null;
+    }
+
+    public @Nullable String getStringFromField(String fieldName) throws NoSuchFieldException, IllegalAccessException {
+        Field field = getStringField(fieldName);
+        return field != null ? (String) field.get(this) : null;
+    }
+
+    public boolean setStringField(String fieldName, String text) throws NoSuchFieldException, IllegalAccessException {
+        Field field = getStringField(fieldName);
+        if (field == null) return false;
+        field.set(this, text);
+        return true;
     }
 
     public void sendMessage(CommandSender p, String message) {

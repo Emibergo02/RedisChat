@@ -1,6 +1,5 @@
 package dev.unnm3d.redischat.commands;
 
-import dev.unnm3d.redischat.Permission;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.redis.ChatPacket;
 import lombok.AllArgsConstructor;
@@ -17,7 +16,6 @@ public class ClearChatCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        if (!sender.hasPermission(Permission.REDIS_CHAT_CLEARCHAT.getPermission())) return false;
         new BukkitRunnable() {
             @Override
             public void run() {

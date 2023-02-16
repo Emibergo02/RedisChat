@@ -23,7 +23,7 @@ public class MsgCommand implements CommandExecutor {
 
     public void sendMsg(String[] args, CommandSender sender, String receiverName) {
 
-        if (!PlayerListManager.getPlayerList().contains(receiverName)) {
+        if (!plugin.getPlayerListManager().getPlayerList().contains(receiverName)) {
             plugin.config.sendMessage(sender, plugin.config.player_not_online.replace("%player%", receiverName));
             return;
         }

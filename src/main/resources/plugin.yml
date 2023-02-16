@@ -6,6 +6,9 @@ libraries:
   - io.lettuce:lettuce-core:6.2.2.RELEASE
 depend:
   - PlaceholderAPI
+softdepend:
+  - Oraxen
+  - ItemsAdder
 loadbefore:
   - CMI
   - CMILib
@@ -86,6 +89,7 @@ permissions:
       - redischat.spycommand
       - redischat.announce
       - redischat.bypass_rate_limit
+      - redischat.editmessage
   redischat.default:
     description: Allows you to use default commands
     default: true

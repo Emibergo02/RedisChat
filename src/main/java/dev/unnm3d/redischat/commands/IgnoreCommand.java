@@ -17,7 +17,10 @@ public class IgnoreCommand implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (!(sender instanceof Player)) return true;
-        if (args.length == 0) return true;
+        if (args.length == 0) {
+            plugin.config.sendMessage(sender, plugin.config.missing_arguments);
+            return true;
+        }
 
         if (args[0].equalsIgnoreCase("list")) {
             final StringJoiner ignoreList = new StringJoiner(", ");

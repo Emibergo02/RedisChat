@@ -2,10 +2,9 @@ package dev.unnm3d.redischat.redis;
 
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.redis.redistools.RedisAbstract;
-import dev.unnm3d.redischat.redis.redistools.RedisPubSub;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.api.StatefulRedisConnection;
-import io.lettuce.core.api.async.RedisAsyncCommands;
+import io.lettuce.core.pubsub.RedisPubSubListener;
 import io.lettuce.core.pubsub.StatefulRedisPubSubConnection;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -27,8 +26,7 @@ import static dev.unnm3d.redischat.redis.redistools.RedisKeys.*;
 
 public class RedisDataManager extends RedisAbstract {
     private final RedisChat plugin;
-    private StatefulRedisPubSubConnection<String, String> pubSubConnection;
-    public static int pubsubindex = 0;
+    public static int pubSubIndex = 0;
 
     public RedisDataManager(RedisClient redisClient, RedisChat redisChat) {
         super(redisClient);
@@ -60,14 +58,11 @@ public class RedisDataManager extends RedisAbstract {
     }
 
     public void setRateLimit(String playerName, int seconds) {
-        StatefulRedisConnection<String, String> connection = lettuceRedisClient.connect();
-        connection.setAutoFlushCommands(false);
-        RedisAsyncCommands<String, String> rac = connection.async();
-
-        rac.incr(RATE_LIMIT_PREFIX + playerName);
-        rac.expire(RATE_LIMIT_PREFIX + playerName, seconds);
-        connection.flushCommands();
-        connection.close();
+        getConnectionPipeline(connection -> {
+            connection.incr(RATE_LIMIT_PREFIX + playerName);
+            connection.expire(RATE_LIMIT_PREFIX + playerName, seconds);
+            return null;
+        });
     }
 
     public CompletionStage<Boolean> isSpying(String playerName) {
@@ -359,8 +354,8 @@ public class RedisDataManager extends RedisAbstract {
     }
 
     public void listenChatPackets() {
-        this.pubSubConnection = lettuceRedisClient.connectPubSub();
-        this.pubSubConnection.addListener(new RedisPubSub<>() {
+        StatefulRedisPubSubConnection<String, String> pubSubConnection = getPubSubConnection();
+        pubSubConnection.addListener(new RedisPubSubListener<>() {
             @Override
             public void message(String channel, String message) {
                 //plugin.getLogger().info("Received message #"+pubsubindex+" on channel " + channel + ": " + message);
@@ -387,14 +382,36 @@ public class RedisDataManager extends RedisAbstract {
                 }
 
                 plugin.getComponentProvider().sendPublicChat(chatPacket.getMessage());
+            }
 
+            @Override
+            public void message(String pattern, String channel, String message) {
+            }
+
+            @Override
+            public void subscribed(String channel, long count) {
+            }
+
+            @Override
+            public void psubscribed(String pattern, long count) {
+            }
+
+            @Override
+            public void unsubscribed(String channel, long count) {
+            }
+
+            @Override
+            public void punsubscribed(String pattern, long count) {
             }
         });
-        this.pubSubConnection.async().subscribe(CHAT_CHANNEL.toString()).exceptionally(throwable -> {
-            throwable.printStackTrace();
-            plugin.getLogger().warning("Error subscribing to chat channel");
-            return null;
-        }).thenAccept(subscription -> plugin.getLogger().info("Subscribed to channel: " + CHAT_CHANNEL));
+
+        pubSubConnection.async().subscribe(CHAT_CHANNEL.toString())
+                .exceptionally(throwable -> {
+                    throwable.printStackTrace();
+                    plugin.getLogger().warning("Error subscribing to chat channel");
+                    return null;
+                })
+                .thenAccept(subscription -> plugin.getLogger().info("Subscribed to channel: " + CHAT_CHANNEL));
 
 
     }
@@ -404,7 +421,7 @@ public class RedisDataManager extends RedisAbstract {
                 conn.publish(CHAT_CHANNEL.toString(), packet.serialize())
                         .thenApply(integer -> {
                             if (plugin.config.debug) {
-                                plugin.getLogger().warning("#" + (++pubsubindex) + "received by " + integer + " servers");
+                                plugin.getLogger().warning("#" + (++pubSubIndex) + "received by " + integer + " servers");
                             }
                             return integer;
                         })
@@ -450,7 +467,6 @@ public class RedisDataManager extends RedisAbstract {
 
     @Override
     public void close() {
-        this.pubSubConnection.close();
         super.close();
     }
 

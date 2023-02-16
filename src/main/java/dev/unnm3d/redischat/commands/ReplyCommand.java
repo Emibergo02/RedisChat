@@ -36,13 +36,12 @@ public class ReplyCommand implements CommandExecutor {
                 if (receiver.isEmpty()) {
                     plugin.config.sendMessage(sender, plugin.config.no_reply_found);
                     return;
-                } else if (!PlayerListManager.getPlayerList().contains(receiver.get())) {
+                } else if (!plugin.getPlayerListManager().getPlayerList().contains(receiver.get())) {
                     plugin.config.sendMessage(sender, plugin.config.reply_not_online.replace("%player%", receiver.get()));
                     return;
                 }
                 if (plugin.config.debug)
                     Bukkit.getLogger().info("ReplyCommand redis: " + (System.currentTimeMillis() - init) + "ms");
-
 
                 String message = String.join(" ", args);
                 List<Config.ChatFormat> chatFormatList = plugin.config.getChatFormats(sender);

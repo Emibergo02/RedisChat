@@ -2,7 +2,6 @@ package dev.unnm3d.redischat.chat;
 
 import dev.unnm3d.redischat.Config;
 import dev.unnm3d.redischat.RedisChat;
-import dev.unnm3d.redischat.commands.PlayerListManager;
 import lombok.AllArgsConstructor;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
@@ -26,11 +25,21 @@ public class ComponentProvider {
     private final MiniMessage miniMessage;
     private final RedisChat plugin;
     private final BukkitAudiences bukkitAudiences;
+    private final TagResolver standardTagResolver;
 
     public ComponentProvider(RedisChat plugin) {
+
         this.plugin = plugin;
         this.miniMessage = MiniMessage.miniMessage();
         this.bukkitAudiences = BukkitAudiences.create(plugin);
+
+        TagResolver standardTagResolver1 = StandardTags.defaults();
+        //try {
+        //    Field oraxenTagResolver = Class.forName("io.th0rgal.oraxen.utils.AdventureUtils").getField("OraxenTagResolver");
+        //    standardTagResolver1 = (TagResolver) oraxenTagResolver.get(null);
+        //} catch (ClassNotFoundException | NoSuchFieldException | IllegalAccessException ignored) {
+        //}
+        this.standardTagResolver = standardTagResolver1;
     }
 
     public Component parse(String text, TagResolver... tagResolvers) {
@@ -38,7 +47,7 @@ public class ComponentProvider {
     }
 
     public Component parse(String text) {
-        return parse(text, StandardTags.defaults());
+        return parse(text, this.standardTagResolver);
     }
 
     public Component parse(CommandSender player, String text, TagResolver... tagResolvers) {
@@ -46,33 +55,36 @@ public class ComponentProvider {
                 parsePlaceholders(player,
                         parseMentions(
                                 parseLinks(text, plugin.config.formats.get(0)),
-                                plugin.config.formats.get(0))
+                                plugin.config.formats.get(0)
+                        )
                 ), tagResolvers);
     }
 
     public Component parse(CommandSender player, String text, boolean parsePlaceholders, TagResolver... tagResolvers) {
-        if (!parsePlaceholders)
+        if (!parsePlaceholders) {
             return miniMessage.deserialize(
                     parseMentions(
                             parseLinks(text, plugin.config.formats.get(0)),
                             plugin.config.formats.get(0)
                     ), tagResolvers);
-        else
-            return parse(player, text, tagResolvers);
+        }
+
+        return parse(player, text, tagResolvers);
     }
 
     public Component parseWithoutMentions(CommandSender player, String text, boolean parseMentions, boolean parsePlaceholders, TagResolver... tagResolvers) {
         if (!parseMentions) {
-            if (parsePlaceholders)
+            if (parsePlaceholders) {
                 return miniMessage.deserialize(parsePlaceholders(player, text), tagResolvers);
-            else
-                return miniMessage.deserialize(text, tagResolvers);
-        } else
-            return parse(player, text, parsePlaceholders, tagResolvers);
+            }
+            return miniMessage.deserialize(text, tagResolvers);
+        }
+
+        return parse(player, text, parsePlaceholders, tagResolvers);
     }
 
     public Component parse(CommandSender player, String text) {
-        return parse(player, text, StandardTags.defaults());
+        return parse(player, text, this.standardTagResolver);
     }
 
     public String parsePlaceholders(CommandSender cmdSender, String text) {
@@ -94,28 +106,29 @@ public class ComponentProvider {
         String toParse = chatFormat.inventory_format();
         toParse = toParse.replace("%player%", player.getName());
         toParse = toParse.replace("%command%", "/invshare " + player.getName() + "-inventory");
-        TagResolver inv = Placeholder.component("inv", parseWithoutMentions(player, toParse, false, true, StandardTags.defaults()));
+        TagResolver inv = Placeholder.component("inv", parseWithoutMentions(player, toParse, false, true, this.standardTagResolver));
 
         toParse = chatFormat.item_format();
         toParse = toParse.replace("%player%", player.getName());
         if (player instanceof Player p) {
-            if (!p.getInventory().getItemInMainHand().getType().isAir())
-                if (p.getInventory().getItemInMainHand().getItemMeta().hasDisplayName())
-                    toParse = toParse.replace("%item_name%", p.getInventory().getItemInMainHand().getItemMeta().getDisplayName());
-                else {
-                    toParse = toParse.replace("%item_name%", p.getInventory().getItemInMainHand().getType().name().toLowerCase().replace("_", " "));
-                }
-            else {
+            if (!p.getInventory().getItemInMainHand().getType().isAir()) {
+                if (p.getInventory().getItemInMainHand().getItemMeta() != null)
+                    if (p.getInventory().getItemInMainHand().getItemMeta().hasDisplayName())
+                        toParse = toParse.replace("%item_name%", p.getInventory().getItemInMainHand().getItemMeta().getDisplayName());
+                    else {
+                        toParse = toParse.replace("%item_name%", p.getInventory().getItemInMainHand().getType().name().toLowerCase().replace("_", " "));
+                    }
+            } else {
                 toParse = toParse.replace("%item_name%", "Nothing");
             }
         }
         toParse = toParse.replace("%command%", "/invshare " + player.getName() + "-item");
-        TagResolver item = Placeholder.component("item", parseWithoutMentions(player, toParse, false, true, StandardTags.defaults()));
+        TagResolver item = Placeholder.component("item", parseWithoutMentions(player, toParse, false, true, this.standardTagResolver));
 
         toParse = chatFormat.enderchest_format();
         toParse = toParse.replace("%player%", player.getName());
         toParse = toParse.replace("%command%", "/invshare " + player.getName() + "-enderchest");
-        TagResolver ec = Placeholder.component("ec", parseWithoutMentions(player, toParse, false, true, StandardTags.defaults()));
+        TagResolver ec = Placeholder.component("ec", parseWithoutMentions(player, toParse, false, true, this.standardTagResolver));
 
         plugin.config.placeholders.forEach((key, value) -> builder.resolver(Placeholder.component(key, parse(player, value))));
 
@@ -129,7 +142,7 @@ public class ComponentProvider {
     public String parseMentions(String text, Config.ChatFormat format) {
         String toParse = text;
 
-        for (String playerName : PlayerListManager.getPlayerList()) {
+        for (String playerName : plugin.getPlayerListManager().getPlayerList()) {
             Pattern p = Pattern.compile("(^" + playerName + "|" + playerName + "$|\\s" + playerName + "\\s)"); //
             Matcher m = p.matcher(text);
             if (m.find()) {
