@@ -21,6 +21,8 @@ public final class Config {
 
     @Comment({"Redis uri", "Example: redis://user:password@localhost:6379"})
     public Redis redis = new Redis("redis://localhost:6379/0?timeout=1s&clientName=RedisChat");
+    @Comment("Webeditor URL")
+    public String webEditorUrl = "https://webui.advntr.dev/";
     @Comment({"The format of the chat", "Permission format is overridden on descending order", "(if a player has default and vip, if default is the first element, vip will be ignored)"})
     public List<ChatFormat> formats = List.of(new ChatFormat("redischat.default",
             "<click:suggest_command:/msg %player_name%><hover:show_text:'" +

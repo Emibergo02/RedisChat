@@ -65,7 +65,7 @@ public final class RedisChat extends JavaPlugin {
 
         //Commands section
         this.playerListManager = new PlayerListManager(this);
-        MainCommand mainCommand = new MainCommand(this, new AdventureWebuiEditorAPI());
+        MainCommand mainCommand = new MainCommand(this, new AdventureWebuiEditorAPI(config.webEditorUrl));
         loadCommand("redischat", mainCommand, mainCommand);
         this.spyManager = new SpyManager(this);
         loadCommand("spychat", new SpyChatCommand(this), null);
