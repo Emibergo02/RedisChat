@@ -24,7 +24,7 @@ public class MsgCommand implements CommandExecutor {
     public void sendMsg(String[] args, CommandSender sender, String receiverName) {
 
         if (!plugin.getPlayerListManager().getPlayerList().contains(receiverName)) {
-            plugin.config.sendMessage(sender, plugin.config.player_not_online.replace("%player%", receiverName));
+            plugin.messages.sendMessage(sender, plugin.messages.player_not_online.replace("%player%", receiverName));
             return;
         }
 
@@ -83,7 +83,7 @@ public class MsgCommand implements CommandExecutor {
 
         String receiverName = args[0];
         if (receiverName.equalsIgnoreCase(sender.getName())) {
-            plugin.config.sendMessage(sender, plugin.config.cannot_message_yourself);
+            plugin.messages.sendMessage(sender, plugin.messages.cannot_message_yourself);
             return true;
         }
         // remove first arg[0], since it's the player name and we don't want to include it in the msg

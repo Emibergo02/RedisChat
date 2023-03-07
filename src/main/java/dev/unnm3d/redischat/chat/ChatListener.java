@@ -34,7 +34,7 @@ public class ChatListener implements Listener {
         if (chatFormatList.isEmpty()) return;
         if (!event.getPlayer().hasPermission(Permission.REDIS_CHAT_BYPASS_RATE_LIMIT.getPermission()))
             if (plugin.getRedisDataManager().isRateLimited(event.getPlayer().getName())) {
-                plugin.config.sendMessage(event.getPlayer(), plugin.config.rate_limited);
+                plugin.messages.sendMessage(event.getPlayer(), plugin.messages.rate_limited);
                 return;
             }
 

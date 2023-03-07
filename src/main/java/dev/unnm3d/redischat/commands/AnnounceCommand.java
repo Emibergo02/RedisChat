@@ -21,24 +21,24 @@ public class AnnounceCommand implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (args.length < 2) {
-            plugin.config.sendMessage(sender, plugin.config.missing_arguments);
+            plugin.messages.sendMessage(sender, plugin.messages.missing_arguments);
             return true;
         }
         String announceName = args[1];
         switch (args[0]) {
             case "stop" -> {
                 if (announceManager.cancelAnnounce(announceName) == null) {
-                    plugin.config.sendMessage(sender, plugin.config.announce_not_found.replace("%name%", announceName));
+                    plugin.messages.sendMessage(sender, plugin.messages.announce_not_found.replace("%name%", announceName));
                     return true;
                 }
-                plugin.config.sendMessage(sender, plugin.config.action_completed_successfully);
+                plugin.messages.sendMessage(sender, plugin.messages.action_completed_successfully);
             }
             case "start" -> {
                 if (announceManager.startAnnounce(announceName) == null) {
-                    plugin.config.sendMessage(sender, plugin.config.announce_not_found.replace("%name%", announceName));
+                    plugin.messages.sendMessage(sender, plugin.messages.announce_not_found.replace("%name%", announceName));
                     return true;
                 }
-                plugin.config.sendMessage(sender, plugin.config.action_completed_successfully);
+                plugin.messages.sendMessage(sender, plugin.messages.action_completed_successfully);
             }
         }
 

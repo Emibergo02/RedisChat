@@ -23,13 +23,13 @@ public final class Config {
     public Redis redis = new Redis("redis://localhost:6379/0?timeout=1s&clientName=RedisChat");
     @Comment("Webeditor URL")
     public String webEditorUrl = "https://webui.advntr.dev/";
-    @Comment({"The format of the chat", "Permission format is overridden on descending order", "(if a player has default and vip, if default is the first element, vip will be ignored)"})
+    @Comment({"Here you can decide your chat format", "Permission format is overridden on descending order", "(if a player has default and vip, if default is the first element, vip will be ignored)"})
     public List<ChatFormat> formats = List.of(new ChatFormat("redischat.default",
             "<click:suggest_command:/msg %player_name%><hover:show_text:'" +
                     "<reset>Information | <white>%player_displayname%<br>" +
                     "<gold><bold>➧</bold> Money<reset>: <white>%vault_eco_balance% <gold>✵<br>" +
                     "<br><reset><underlined>Click to send a message" +
-                    "'><white>%vault_prefix%%player_displayname%%luckperms_suffix% <white>%poldofaction_faction_suffix%</click> <dark_gray>» <reset>%message%",
+                    "'><white>%vault_prefix%%player_displayname%%luckperms_suffix%</click> <dark_gray>» <reset>%message%",
             "<dark_aqua>MSG <white>(<reset>You <white>to <green>%receiver%<white>)<reset>: <white>%message%",
             "<dark_aqua>MSG <white>(<green>%sender% <white>to <reset>You<white>)<reset>: <white>%message%",
             "<click:run_command:%command%>[Open the inventory of %player%]</click>",
@@ -38,36 +38,24 @@ public final class Config {
             "<aqua>@%player%</aqua>",
             "<bold><click:open_url:%link%>[Click to open URL (be careful)]</bold>"
     ));
-    @Comment({"Announces configs", "delay and interval are in seconds", "If you want to disable an announce, just remove it from the list"})
+    @Comment({"Announcer configurations", "delay and interval are in seconds", "If you want to disable an announce, just remove it from the list"})
     public List<Announce> announces = List.of(new Announce("default", "<red>RedisChat Announce: <br><white>lorem ipsum dolor sit amet", 5, 300));
+    @Comment({"Here you can create your own placeholders", "You can give them an identifier, which will go under the format <>", "You can give them actions, like click url"})
     public Map<String, String> placeholders = Map.of("discord", "<click:open_url:https://discord.gg/uq6bBqAQ>Click to join our discord server</click>");
+    @Comment ({"Here you can blacklist some terms (like swears, insults and unwanted urls)", "They will be replaced with a *", "You can use the regex syntax and the * wildcard"})
     public List<String> regex_blacklist = List.of("discord.gg/.*");
+    @Comment({"Here you can the decide the titles of the GUI", "These titles will be shown on the top of the GUI"})
     public String inv_title = "Inventory of %player%";
     public String item_title = "Item of %player%";
     public String ec_title = "Enderchest of %player%";
+    @Comment("There are some others chat formats, like broadcast and clear chat messages")
     public String broadcast_format = "<red>Announce <dark_gray>» <white>%message%";
     public String clear_chat_message = "<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared";
-    public String player_not_online = "<red>The player %player% is not online</red>";
-    public String cannot_message_yourself = "<red>You cannot message yourself</red>";
-    public String missing_arguments = "<red>Missing arguments</red>";
-    public String action_completed_successfully = "<green>Action completed successfully</green>";
-    public String announce_not_found = "<red>The announce %name% does not exist</red>";
-    public String no_reply_found = "<red>You do not have any message to reply</red>";
-    public String reply_not_online = "<red>%player% is not online</red>";
-    public String rate_limited = "<red>You've been rate limited</red>";
-    public String ignoring_list = "<aqua>Player ignored</aqua><br><green>%list%</green>";
-    public String ignoring_player = "<green>Ignoring %player%</green>";
-    public String not_ignoring_player = "<green>Ignore removed for %player%</green>";
-    public String spychat_format = "<red>%sender% said to %receiver% : %message%</red>";
+    @Comment("Here you can decide the time between two messages of the same player")
     public int rate_limit = 3;
     public int rate_limit_time_seconds = 5;
-    public String spychat_enabled = "<green>Spychat enabled for %player%</green>";
-    public String spychat_disabled = "<red>Spychat disabled for %player%</red>";
-    public String editMessageError = "<red>This config entry is not a String or doesn't exist!";
-    public String editMessageClickHere = "<click:open_url:%url%>Click here to edit the message %field%!</click>";
-    public String editMessageSuccess = "<green>Saved successfully %field%!";
+    @Comment("Toggle debug mode (by default is false)")
     public boolean debug = false;
-
 
     public record Redis(
             String redisUri) {

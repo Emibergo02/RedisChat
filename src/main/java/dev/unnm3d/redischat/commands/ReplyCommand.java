@@ -34,10 +34,10 @@ public class ReplyCommand implements CommandExecutor {
                 Optional<String> receiver = plugin.getRedisDataManager().getReplyName(sender.getName());
 
                 if (receiver.isEmpty()) {
-                    plugin.config.sendMessage(sender, plugin.config.no_reply_found);
+                    plugin.config.sendMessage(sender, plugin.messages.no_reply_found);
                     return;
                 } else if (!plugin.getPlayerListManager().getPlayerList().contains(receiver.get())) {
-                    plugin.config.sendMessage(sender, plugin.config.reply_not_online.replace("%player%", receiver.get()));
+                    plugin.config.sendMessage(sender, plugin.messages.reply_not_online.replace("%player%", receiver.get()));
                     return;
                 }
                 if (plugin.config.debug)

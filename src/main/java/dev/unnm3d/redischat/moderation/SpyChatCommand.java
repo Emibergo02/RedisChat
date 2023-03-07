@@ -17,7 +17,7 @@ public class SpyChatCommand implements CommandExecutor {
         String playerName = sender.getName();
         if (args.length == 0) {
             if (!(sender instanceof Player)) {
-                plugin.config.sendMessage(sender, plugin.config.player_not_online.replace("%player%", sender.getName()));
+                plugin.messages.sendMessage(sender, plugin.messages.player_not_online.replace("%player%", sender.getName()));
                 return true;
             }
         } else {
@@ -25,9 +25,9 @@ public class SpyChatCommand implements CommandExecutor {
         }
 
         if (plugin.getSpyManager().toggleSpying(playerName)) {
-            plugin.config.sendMessage(sender, plugin.getComponentProvider().parse(plugin.config.spychat_enabled.replace("%player%", playerName)));
+            plugin.messages.sendMessage(sender, plugin.getComponentProvider().parse(plugin.messages.spychat_enabled.replace("%player%", playerName)));
         } else {
-            plugin.config.sendMessage(sender, plugin.getComponentProvider().parse(plugin.config.spychat_disabled.replace("%player%", playerName)));
+            plugin.messages.sendMessage(sender, plugin.getComponentProvider().parse(plugin.messages.spychat_disabled.replace("%player%", playerName)));
         }
         return true;
     }

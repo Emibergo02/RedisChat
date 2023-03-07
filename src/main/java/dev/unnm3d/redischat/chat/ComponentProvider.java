@@ -176,7 +176,7 @@ public class ComponentProvider {
     }
 
     public void sendSpyChat(String receiverName, String senderName, Player watcher, String deserialize) {
-        Component formatted = MiniMessage.miniMessage().deserialize(plugin.config.spychat_format.replace("%receiver%", receiverName).replace("%sender%", senderName));
+        Component formatted = MiniMessage.miniMessage().deserialize(plugin.messages.spychat_format.replace("%receiver%", receiverName).replace("%sender%", senderName));
 
         //Parse into minimessage (placeholders, tags and mentions)
         Component toBeReplaced = parse(deserialize);
@@ -184,7 +184,7 @@ public class ComponentProvider {
         formatted = formatted.replaceText(
                 builder -> builder.match("%message%").replacement(toBeReplaced)
         );
-        plugin.config.sendMessage(watcher, formatted);
+        plugin.messages.sendMessage(watcher, formatted);
     }
 
     public void sendPrivateChat(String senderName, String receiverName, String text) {

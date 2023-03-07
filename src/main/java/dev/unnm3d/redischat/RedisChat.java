@@ -30,6 +30,7 @@ public final class RedisChat extends JavaPlugin {
 
     private static RedisChat instance;
     public Config config;
+    public Messages messages;
     private ChatListener chatListener;
     @Getter
     private RedisDataManager redisDataManager;
@@ -94,10 +95,16 @@ public final class RedisChat extends JavaPlugin {
                 .build();
 
         Path configFile = new File(getDataFolder(), "config.yml").toPath();
+        Path messagesFile = new File(getDataFolder(), "messages.yml").toPath();
 
         this.config = YamlConfigurations.update(
                 configFile,
                 Config.class,
+                properties
+        );
+        this.messages = YamlConfigurations.update(
+                messagesFile,
+                Messages.class,
                 properties
         );
     }

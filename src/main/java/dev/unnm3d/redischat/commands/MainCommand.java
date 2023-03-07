@@ -39,29 +39,29 @@ public class MainCommand implements CommandExecutor, TabCompleter {
             adventureWebuiEditorAPI.retrieveSession(args[2]).thenAccept(message -> {
                 try {
                     if (plugin.config.setStringField(configField, message)) {
-                        plugin.config.sendMessage(sender, plugin.config.editMessageSuccess.replace("%field%", configField));
+                        plugin.messages.sendMessage(sender, plugin.messages.editMessageSuccess.replace("%field%", configField));
                         plugin.saveYML();
                     } else {
-                        plugin.config.sendMessage(sender, plugin.config.editMessageError);
+                        plugin.messages.sendMessage(sender, plugin.messages.editMessageError);
                     }
                 } catch (IllegalAccessException | NoSuchFieldException e) {
-                    plugin.config.sendMessage(sender, plugin.config.editMessageError);
+                    plugin.messages.sendMessage(sender, plugin.messages.editMessageError);
                 }
             });
         } else if (args[0].equalsIgnoreCase("editmessage")) {
             try {
                 String fieldString = plugin.config.getStringFromField(configField);
                 if (fieldString == null) {
-                    plugin.config.sendMessage(sender, plugin.config.editMessageError);
+                    plugin.messages.sendMessage(sender, plugin.messages.editMessageError);
                     return true;
                 }
                 adventureWebuiEditorAPI.startSession(fieldString, "/redischat savemessage " + configField + " {token}", "RedisEconomy")
                         .thenAccept(token ->
-                                plugin.config.sendMessage(sender, plugin.config.editMessageClickHere
+                                plugin.messages.sendMessage(sender, plugin.messages.editMessageClickHere
                                         .replace("%field%", configField)
                                         .replace("%url%", adventureWebuiEditorAPI.getEditorUrl(token))));
             } catch (NoSuchFieldException | IllegalAccessException e) {
-                plugin.config.sendMessage(sender, plugin.config.editMessageError);
+                plugin.messages.sendMessage(sender, plugin.messages.editMessageError);
             }
         }
         return true;
