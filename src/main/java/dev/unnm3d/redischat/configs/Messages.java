@@ -14,7 +14,6 @@ import java.lang.reflect.Field;
 @Configuration
 public final class Messages {
     private static final BukkitAudiences audiences = BukkitAudiences.create(RedisChat.getInstance());
-    @Comment("Here you can configure the messages of the plugin")
     public String player_not_online = "<red>The player %player% is not online</red>";
     public String cannot_message_yourself = "<red>You cannot message yourself</red>";
     public String missing_arguments = "<red>Missing arguments</red>";
@@ -31,9 +30,9 @@ public final class Messages {
     public String spychat_enabled = "<green>Spychat enabled for %player%</green>";
     public String spychat_disabled = "<red>Spychat disabled for %player%</red>";
     public String editMessageError = "<red>This config entry is not a String or doesn't exist!";
-    @Comment("%url% is the url to the WebUI, %field% is the config field to edit")
+    @Comment("%url% is the url of the WebUI, %field% is the config field to edit")
     public String editMessageClickHere = "<click:open_url:%url%>Click here to edit the message %field%!</click>";
-    @Comment("%field% is the config field edited")
+    @Comment("%field% is the field edited")
     public String editMessageSuccess = "<green>Saved successfully %field%!";
 
     public void sendMessage(CommandSender p, String message) {

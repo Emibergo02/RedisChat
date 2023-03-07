@@ -87,27 +87,24 @@ public final class RedisChat extends JavaPlugin {
 
 
     public void loadYML() {
-        YamlConfigurationProperties properties = YamlConfigurationProperties.newBuilder()
-                .header(
-                        """
-                                RedisChat config
-                                """
-                )
-                .footer("Authors: Unnm3d")
-                .build();
-
         Path configFile = new File(getDataFolder(), "config.yml").toPath();
-        Path messagesFile = new File(getDataFolder(), "messages.yml").toPath();
-
         this.config = YamlConfigurations.update(
                 configFile,
                 Config.class,
-                properties
+                YamlConfigurationProperties.newBuilder()
+                        .header("RedisChat config")
+                        .footer("Authors: Unnm3d")
+                        .build()
         );
+
+        Path messagesFile = new File(getDataFolder(), "messages.yml").toPath();
         this.messages = YamlConfigurations.update(
                 messagesFile,
                 Messages.class,
-                properties
+                YamlConfigurationProperties.newBuilder()
+                        .header("RedisChat messages")
+                        .footer("Authors: Unnm3d")
+                        .build()
         );
     }
 

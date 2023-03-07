@@ -32,6 +32,12 @@ public class MainCommand implements CommandExecutor, TabCompleter {
             plugin.config.sendMessage(sender, "<green>Config reloaded");
             return true;
         }
+
+        if(args.length < 2){
+            plugin.messages.sendMessage(sender, plugin.messages.missing_arguments);
+            return true;
+        }
+
         String configField = args[1];
 
         if (args[0].equalsIgnoreCase("savemessage")) {
