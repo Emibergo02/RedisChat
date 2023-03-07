@@ -1,16 +1,15 @@
-package dev.unnm3d.redischat;
+package dev.unnm3d.redischat.configs;
 
 import de.exlll.configlib.Comment;
 import de.exlll.configlib.Configuration;
+import dev.unnm3d.redischat.RedisChat;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 
@@ -42,7 +41,7 @@ public final class Config {
     public List<Announce> announces = List.of(new Announce("default", "<red>RedisChat Announce: <br><white>lorem ipsum dolor sit amet", 5, 300));
     @Comment({"Here you can create your own placeholders", "You can give them an identifier, which will go under the format <>", "You can give them actions, like click url"})
     public Map<String, String> placeholders = Map.of("discord", "<click:open_url:https://discord.gg/uq6bBqAQ>Click to join our discord server</click>");
-    @Comment ({"Here you can blacklist some terms (like swears, insults and unwanted urls)", "They will be replaced with a *", "You can use the regex syntax and the * wildcard"})
+    @Comment({"Here you can blacklist some terms (like swears, insults and unwanted urls)", "They will be replaced with a *", "You can use the regex syntax and the * wildcard"})
     public List<String> regex_blacklist = List.of("discord.gg/.*");
     @Comment({"Here you can the decide the titles of the GUI", "These titles will be shown on the top of the GUI"})
     public String inv_title = "Inventory of %player%";
@@ -87,23 +86,6 @@ public final class Config {
             return List.of();
         }
         return chatFormatList;
-    }
-
-    public @Nullable Field getStringField(String name) throws NoSuchFieldException {
-        Field field = getClass().getField(name);
-        return field.getType().equals(String.class) ? field : null;
-    }
-
-    public @Nullable String getStringFromField(String fieldName) throws NoSuchFieldException, IllegalAccessException {
-        Field field = getStringField(fieldName);
-        return field != null ? (String) field.get(this) : null;
-    }
-
-    public boolean setStringField(String fieldName, String text) throws NoSuchFieldException, IllegalAccessException {
-        Field field = getStringField(fieldName);
-        if (field == null) return false;
-        field.set(this, text);
-        return true;
     }
 
     public void sendMessage(CommandSender p, String message) {

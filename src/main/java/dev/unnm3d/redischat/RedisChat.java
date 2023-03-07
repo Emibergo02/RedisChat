@@ -5,6 +5,8 @@ import de.exlll.configlib.YamlConfigurations;
 import dev.unnm3d.redischat.chat.ChatListener;
 import dev.unnm3d.redischat.chat.ComponentProvider;
 import dev.unnm3d.redischat.commands.*;
+import dev.unnm3d.redischat.configs.Config;
+import dev.unnm3d.redischat.configs.Messages;
 import dev.unnm3d.redischat.invshare.InvGUI;
 import dev.unnm3d.redischat.invshare.InvShare;
 import dev.unnm3d.redischat.moderation.SpyChatCommand;
@@ -109,8 +111,8 @@ public final class RedisChat extends JavaPlugin {
         );
     }
 
-    public void saveYML() {
-        YamlConfigurations.save(new File(this.getDataFolder(), "config.yml").toPath(), Config.class, config);
+    public void saveMessages() {
+        YamlConfigurations.save(new File(this.getDataFolder(), "messages.yml").toPath(), Messages.class, messages);
     }
 
 

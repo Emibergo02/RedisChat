@@ -1,7 +1,7 @@
 package dev.unnm3d.redischat.commands;
 
-import dev.unnm3d.redischat.Config;
 import dev.unnm3d.redischat.RedisChat;
+import dev.unnm3d.redischat.configs.Config;
 import dev.unnm3d.redischat.task.AnnounceManager;
 import lombok.AllArgsConstructor;
 import org.bukkit.command.Command;

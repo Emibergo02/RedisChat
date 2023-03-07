@@ -1,7 +1,7 @@
 package dev.unnm3d.redischat.chat;
 
-import dev.unnm3d.redischat.Config;
 import dev.unnm3d.redischat.RedisChat;
+import dev.unnm3d.redischat.configs.Config;
 import lombok.AllArgsConstructor;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;

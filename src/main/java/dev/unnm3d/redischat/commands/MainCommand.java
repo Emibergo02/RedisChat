@@ -38,9 +38,9 @@ public class MainCommand implements CommandExecutor, TabCompleter {
             if (args.length < 3) return true;
             adventureWebuiEditorAPI.retrieveSession(args[2]).thenAccept(message -> {
                 try {
-                    if (plugin.config.setStringField(configField, message)) {
+                    if (plugin.messages.setStringField(configField, message)) {
                         plugin.messages.sendMessage(sender, plugin.messages.editMessageSuccess.replace("%field%", configField));
-                        plugin.saveYML();
+                        plugin.saveMessages();
                     } else {
                         plugin.messages.sendMessage(sender, plugin.messages.editMessageError);
                     }
@@ -50,7 +50,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
             });
         } else if (args[0].equalsIgnoreCase("editmessage")) {
             try {
-                String fieldString = plugin.config.getStringFromField(configField);
+                String fieldString = plugin.messages.getStringFromField(configField);
                 if (fieldString == null) {
                     plugin.messages.sendMessage(sender, plugin.messages.editMessageError);
                     return true;
@@ -76,7 +76,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
         if (sender.hasPermission(Permission.REDIS_CHAT_ADMIN_EDIT.getPermission())) {
             if (args.length == 1) list.add("editmessage");
             else if (args.length == 2) {
-                return Arrays.stream(plugin.config.getClass().getFields()).filter(field -> field.getType().equals(String.class)).map(Field::getName).toList();
+                return Arrays.stream(plugin.messages.getClass().getFields()).filter(field -> field.getType().equals(String.class)).map(Field::getName).toList();
             }
         }
         return list;

@@ -1,8 +1,8 @@
 package dev.unnm3d.redischat.commands;
 
-import dev.unnm3d.redischat.Config;
 import dev.unnm3d.redischat.Permission;
 import dev.unnm3d.redischat.RedisChat;
+import dev.unnm3d.redischat.configs.Config;
 import dev.unnm3d.redischat.redis.ChatPacket;
 import lombok.AllArgsConstructor;
 import net.kyori.adventure.text.Component;
