@@ -37,13 +37,11 @@ public class MailManager {
                 plugin.messages.mailEditorStart
                         .replace("%link%", plugin.getWebEditorAPI().getEditorUrl(token))
         );
-        editorMode.values().forEach(System.out::println);
     }
 
     public void stopEditorMode(Player sender, String content) {
         editorMode.computeIfPresent(sender.getUniqueId(), (s, mail) -> {
             mail.setContent(content);
-            System.out.println(content);
             return mail;
         });
     }

@@ -44,7 +44,6 @@ public class RedisDataManager extends RedisAbstract {
         StatefulRedisConnection<String, String> connection = lettuceRedisClient.connect();
         connection.sync().hset(REPLY.toString(), nameReceiver, requesterName);
         connection.close();
-
     }
 
     public boolean isRateLimited(String playerName) {

@@ -19,7 +19,8 @@ public class BroadcastCommand implements CommandExecutor {
         new BukkitRunnable() {
             @Override
             public void run() {
-                String message = MiniMessage.miniMessage().serialize(plugin.getComponentProvider().parse(null, RedisChat.getInstance().config.broadcast_format.replace("%message%", String.join(" ", args))));
+                String message = MiniMessage.miniMessage().serialize(plugin.getComponentProvider().parse(null,
+                        plugin.config.broadcast_format.replace("%message%", String.join(" ", args))));
                 plugin.getRedisDataManager().sendObjectPacket(new ChatPacket(null, message));
             }
         }.runTaskAsynchronously(plugin);
