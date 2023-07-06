@@ -34,7 +34,7 @@ public abstract class RedisAbstract {
     public <T> CompletionStage<T> getConnectionPipeline(Function<RedisAsyncCommands<String, String>, CompletionStage<T>> redisCallBack) {
         StatefulRedisConnection<String, String> connection = roundRobinConnectionPool.get();
         connection.setAutoFlushCommands(false);
-        CompletionStage<T> completionStage = redisCallBack.apply(roundRobinConnectionPool.get().async());
+        CompletionStage<T> completionStage = redisCallBack.apply(connection.async());
         connection.flushCommands();
         connection.setAutoFlushCommands(true);
         return completionStage;
@@ -48,7 +48,6 @@ public abstract class RedisAbstract {
 
     public void close() {
         pubSubConnections.forEach(StatefulRedisPubSubConnection::close);
-        roundRobinConnectionPool.close();
         lettuceRedisClient.shutdown(Duration.ofSeconds(1), Duration.ofSeconds(1));
         executorService.shutdown();
     }

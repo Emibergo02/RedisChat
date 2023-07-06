@@ -11,14 +11,16 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.List;
 
 @AllArgsConstructor
-public class MsgCommand implements CommandExecutor {
+public class MsgCommand implements CommandExecutor, TabCompleter {
     private final RedisChat plugin;
 
     public void sendMsg(String[] args, CommandSender sender, String receiverName) {
@@ -92,5 +94,12 @@ public class MsgCommand implements CommandExecutor {
         sendMsg(args, sender, receiverName);
 
         return true;
+    }
+
+    @Nullable
+    @Override
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
+        if (args.length == 0 || !sender.hasPermission(Permission.REDIS_CHAT_MESSAGE.getPermission())) return List.of();
+        return plugin.getPlayerListManager().getPlayerList().stream().filter(s -> s.startsWith(args[args.length - 1])).toList();
     }
 }

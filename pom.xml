@@ -15,15 +15,6 @@
         <java.version>16</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-
-    <distributionManagement>
-        <repository>
-            <id>nexus-snapshots</id>
-            <name>Kalya Snapshots</name>
-            <url>http://162.55.103.47:8081/repository/kalya-snapshots/</url>
-        </repository>
-
-    </distributionManagement>
     <build>
         <plugins>
             <plugin>
@@ -52,6 +43,10 @@
                                     <pattern>net.kyori</pattern>
                                     <shadedPattern>net.kyori.shaded</shadedPattern>
                                 </relocation>
+                                <relocation>
+                                    <pattern>de.exlll</pattern>
+                                    <shadedPattern>de.exlll.shaded</shadedPattern>
+                                </relocation>
                             </relocations>
                         </configuration>
                     </execution>
@@ -63,25 +58,6 @@
                 <version>3.0.0</version>
                 <configuration>
                     <skip>true</skip>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.sonatype.plugins</groupId>
-                <artifactId>nexus-staging-maven-plugin</artifactId>
-                <version>1.6.13</version>
-                <executions>
-                    <execution>
-                        <id>default-deploy</id>
-                        <phase>deploy</phase>
-                        <goals>
-                            <goal>deploy</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <serverId>nexus-snapshots</serverId>
-                    <nexusUrl>http://162.55.103.47:8081/repository/kalya-snapshots/</nexusUrl>
-                    <skipStaging>true</skipStaging>
                 </configuration>
             </plugin>
         </plugins>
@@ -115,6 +91,10 @@
             <id>spigot-vault-api</id>
             <url>https://ci.ender.zone/plugin/repository/everything/</url>
         </repository>
+        <repository>
+            <id>xenondevs</id>
+            <url>https://repo.xenondevs.xyz/releases</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -127,35 +107,41 @@
         <dependency>
             <groupId>me.clip</groupId>
             <artifactId>placeholderapi</artifactId>
-            <version>2.10.9</version>
+            <version>2.11.1</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>net.kyori</groupId>
             <artifactId>adventure-text-minimessage</artifactId>
-            <version>4.12.0</version>
+            <version>4.13.0</version>
         </dependency>
         <dependency>
-            <groupId>com.github.Emibergo02</groupId>
-            <artifactId>ConfigLib</artifactId>
+            <groupId>com.github.Emibergo02.ConfigLib</groupId>
+            <artifactId>configlib-paper</artifactId>
             <version>master-6be5fb9cab-1</version>
         </dependency>
         <dependency>
             <groupId>net.kyori</groupId>
             <artifactId>adventure-platform-bukkit</artifactId>
-            <version>4.2.0</version>
+            <version>4.3.0</version>
         </dependency>
         <dependency>
             <groupId>io.lettuce</groupId>
             <artifactId>lettuce-core</artifactId>
-            <version>6.2.2.RELEASE</version>
+            <version>6.2.4.RELEASE</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.24</version>
+            <version>1.18.26</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>xyz.xenondevs.invui</groupId>
+            <artifactId>invui</artifactId>
+            <version>1.12</version>
+            <type>pom</type>
         </dependency>
     </dependencies>
 

@@ -1,14 +1,18 @@
 package dev.unnm3d.redischat;
 
+import de.exlll.configlib.ConfigLib;
 import de.exlll.configlib.YamlConfigurationProperties;
 import de.exlll.configlib.YamlConfigurations;
 import dev.unnm3d.redischat.chat.ChatListener;
 import dev.unnm3d.redischat.chat.ComponentProvider;
 import dev.unnm3d.redischat.commands.*;
 import dev.unnm3d.redischat.configs.Config;
+import dev.unnm3d.redischat.configs.GuiSettings;
 import dev.unnm3d.redischat.configs.Messages;
 import dev.unnm3d.redischat.invshare.InvGUI;
 import dev.unnm3d.redischat.invshare.InvShare;
+import dev.unnm3d.redischat.mail.MailCommand;
+import dev.unnm3d.redischat.mail.MailManager;
 import dev.unnm3d.redischat.moderation.SpyChatCommand;
 import dev.unnm3d.redischat.moderation.SpyManager;
 import dev.unnm3d.redischat.redis.RedisDataManager;
@@ -33,6 +37,7 @@ public final class RedisChat extends JavaPlugin {
     private static RedisChat instance;
     public Config config;
     public Messages messages;
+    public GuiSettings guiSettings;
     private ChatListener chatListener;
     @Getter
     private RedisDataManager redisDataManager;
@@ -44,6 +49,8 @@ public final class RedisChat extends JavaPlugin {
     private SpyManager spyManager;
     @Getter
     private ComponentProvider componentProvider;
+    @Getter
+    private AdventureWebuiEditorAPI webEditorAPI;
 
     @Override
     public void onEnable() {
@@ -54,12 +61,18 @@ public final class RedisChat extends JavaPlugin {
         this.redisDataManager = new RedisDataManager(RedisClient.create(config.redis.redisUri()), this);
         getLogger().info("Redis URI: " + config.redis.redisUri());
         this.redisDataManager.listenChatPackets();
-        this.getServer().getOnlinePlayers().forEach(player -> this.redisDataManager.addPlayerName(player.getName()));
 
         //Chat section
         this.componentProvider = new ComponentProvider(this);
         this.chatListener = new ChatListener(this);
         getServer().getPluginManager().registerEvents(this.chatListener, this);
+
+        //Mail section
+        if(config.enableMails) {
+            MailCommand mailCommand = new MailCommand(new MailManager(this));
+            loadCommand("rmail", mailCommand, mailCommand);
+        }
+
 
         //Announce feature
         this.announceManager = new AnnounceManager(this);
@@ -68,15 +81,24 @@ public final class RedisChat extends JavaPlugin {
 
         //Commands section
         this.playerListManager = new PlayerListManager(this);
-        MainCommand mainCommand = new MainCommand(this, new AdventureWebuiEditorAPI(config.webEditorUrl));
+
+        this.webEditorAPI = new AdventureWebuiEditorAPI(config.webEditorUrl);
+
+        MainCommand mainCommand = new MainCommand(this, this.webEditorAPI);
         loadCommand("redischat", mainCommand, mainCommand);
+        SetItemCommand setItemCommand = new SetItemCommand(this);
+        loadCommand("setitem", setItemCommand, setItemCommand);
+
         this.spyManager = new SpyManager(this);
         loadCommand("spychat", new SpyChatCommand(this), null);
-        loadCommand("msg", new MsgCommand(this), this.playerListManager);
-        loadCommand("ignore", new IgnoreCommand(this), this.playerListManager);
+        MsgCommand msgCommand = new MsgCommand(this);
+        loadCommand("msg", msgCommand, msgCommand);
+        IgnoreCommand ignoreCommand = new IgnoreCommand(this);
+        loadCommand("ignore", ignoreCommand, ignoreCommand);
         loadCommand("reply", new ReplyCommand(this), null);
         loadCommand("broadcast", new BroadcastCommand(this), null);
         loadCommand("clearchat", new ClearChatCommand(this), null);
+
 
         //InvShare part
         getServer().getPluginManager().registerEvents(new InvGUI.GuiListener(), this);
@@ -106,18 +128,37 @@ public final class RedisChat extends JavaPlugin {
                         .footer("Authors: Unnm3d")
                         .build()
         );
+        Path guiSettingsFile = new File(getDataFolder(), "guis.yml").toPath();
+        this.guiSettings = YamlConfigurations.update(
+                guiSettingsFile,
+                GuiSettings.class,
+                ConfigLib.BUKKIT_DEFAULT_PROPERTIES.toBuilder()
+                        .header("RedisChat guis")
+                        .footer("Authors: Unnm3d")
+                        .build()
+        );
+
     }
 
     public void saveMessages() {
         YamlConfigurations.save(new File(this.getDataFolder(), "messages.yml").toPath(), Messages.class, messages);
     }
 
+    public void saveGuiSettings() {
+        YamlConfigurations.save(
+                new File(this.getDataFolder(), "guis.yml").toPath(),
+                GuiSettings.class,
+                guiSettings,
+                ConfigLib.BUKKIT_DEFAULT_PROPERTIES.toBuilder()
+                        .header("RedisChat guis")
+                        .footer("Authors: Unnm3d")
+                        .build());
+    }
 
     @Override
     public void onDisable() {
         getLogger().warning("RedisChat is disabling...");
-        this.playerListManager.getTask().cancel();
-        this.redisDataManager.removePlayerNames(getServer().getOnlinePlayers().stream().map(HumanEntity::getName).toArray(String[]::new));
+        this.playerListManager.stop();
         this.redisDataManager.close();
         this.announceManager.cancelAll();
     }

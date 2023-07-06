@@ -2,8 +2,9 @@ name: RedisChat
 version: '${project.version}'
 main: dev.unnm3d.redischat.RedisChat
 author: Unnm3d
+api-version: 1.16
 libraries:
-  - io.lettuce:lettuce-core:6.2.2.RELEASE
+  - io.lettuce:lettuce-core:6.2.4.RELEASE
 depend:
   - PlaceholderAPI
 softdepend:
@@ -19,6 +20,11 @@ commands:
     description: RedisChat command
     usage: /redischat <reload>
     permission: redischat.admin
+  setitem:
+    description: Setitem command
+    aliases: [si]
+    usage: /setitem <item-name>
+    permission: redischat.setitem
   ignore:
     description: Ignore command
     permission: redischat.ignore
@@ -52,6 +58,10 @@ commands:
     description: RedisChat announce
     usage: /announce <start/stop> announceName
     permission: redischat.announce
+  rmail:
+    description: RedisChat mail
+    usage: /rmail <send/delete> [player]
+    aliases: [mail]
 permissions:
   redischat.spychat:
     description: You are spying the chat if it is true
@@ -77,6 +87,9 @@ permissions:
   redischat.bypass_rate_limit:
     description: Bypass the rate limit
     default: false
+  redischat.setitem:
+    description: Allows you to use the /setitem command
+    default: op
   redischat.admin:
     description: Allows you to use the /redischat command
     default: op
@@ -90,6 +103,7 @@ permissions:
       - redischat.announce
       - redischat.bypass_rate_limit
       - redischat.editmessage
+      - redischat.setitem
   redischat.default:
     description: Allows you to use default commands
     default: true

@@ -1,17 +1,22 @@
 package dev.unnm3d.redischat.commands;
 
+import dev.unnm3d.redischat.Permission;
 import dev.unnm3d.redischat.RedisChat;
 import lombok.AllArgsConstructor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.StringJoiner;
 
 @AllArgsConstructor
-public class IgnoreCommand implements CommandExecutor {
+public class IgnoreCommand implements CommandExecutor, TabCompleter {
     private final RedisChat plugin;
 
     @Override
@@ -30,7 +35,7 @@ public class IgnoreCommand implements CommandExecutor {
                         list.forEach(ignoreList::add);
                         plugin.messages.sendMessage(sender, plugin.getComponentProvider().parse(plugin.messages.ignoring_list.replace("%list%", ignoreList.toString())));
                     });
-
+            return true;
         }
         plugin.getRedisDataManager().toggleIgnoring(sender.getName(), args[0])
                 .thenAccept(ignored -> {
@@ -41,5 +46,14 @@ public class IgnoreCommand implements CommandExecutor {
                 });
 
         return true;
+    }
+
+    @Nullable
+    @Override
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
+        if (!sender.hasPermission(Permission.REDIS_CHAT_IGNORE.getPermission())) return List.of();
+        List<String> temp = new ArrayList<>(List.of("list", "all"));
+        temp.addAll(plugin.getPlayerListManager().getPlayerList().stream().filter(s -> s.startsWith(args[args.length - 1])).toList());
+        return temp;
     }
 }

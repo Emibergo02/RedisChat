@@ -11,6 +11,8 @@ public enum RedisKeys {
     INVSHARE_INVENTORY("redischat:inventory"),
     INVSHARE_ENDERCHEST("redischat:enderchest"),
     SPYING_LIST("redischat:spying"),
+    PRIVATE_MAIL_PREFIX("redismail:"),
+    PUBLIC_MAIL("redismail:public"),
     ;
 
     private final String keyName;

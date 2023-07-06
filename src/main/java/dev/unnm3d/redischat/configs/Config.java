@@ -2,10 +2,6 @@ package dev.unnm3d.redischat.configs;
 
 import de.exlll.configlib.Comment;
 import de.exlll.configlib.Configuration;
-import dev.unnm3d.redischat.RedisChat;
-import net.kyori.adventure.platform.bukkit.BukkitAudiences;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
@@ -15,8 +11,6 @@ import java.util.Map;
 
 @Configuration
 public final class Config {
-
-    private static final BukkitAudiences audiences = BukkitAudiences.create(RedisChat.getInstance());
 
     @Comment({"Redis uri", "Example: redis://user:password@localhost:6379"})
     public Redis redis = new Redis("redis://localhost:6379/0?timeout=1s&clientName=RedisChat");
@@ -53,8 +47,12 @@ public final class Config {
     @Comment("Here you can decide the time between two messages of the same player")
     public int rate_limit = 3;
     public int rate_limit_time_seconds = 5;
+    @Comment("Enabling this")
+    public boolean legacyColorCodesSupport = false;
+    public boolean enableMails = false;
     @Comment("Toggle debug mode (by default is false)")
     public boolean debug = false;
+
 
     public record Redis(
             String redisUri) {
@@ -86,13 +84,5 @@ public final class Config {
             return List.of();
         }
         return chatFormatList;
-    }
-
-    public void sendMessage(CommandSender p, String message) {
-        audiences.sender(p).sendMessage(MiniMessage.miniMessage().deserialize(message));
-    }
-
-    public void sendMessage(CommandSender p, Component component) {
-        audiences.sender(p).sendMessage(component);
     }
 }

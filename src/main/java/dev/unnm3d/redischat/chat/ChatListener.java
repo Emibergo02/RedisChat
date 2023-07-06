@@ -25,7 +25,6 @@ public class ChatListener implements Listener {
     public void onChat(AsyncPlayerChatEvent event) {
         if (event.isCancelled()) return;
         event.setCancelled(true);
-        plugin.getLogger().info("Chat event fired async? " + event.isAsynchronous());
 
         long init = System.currentTimeMillis();
         int totalElapsed = 0;
@@ -50,6 +49,10 @@ public class ChatListener implements Listener {
             parsePlaceholders = false;
         }
         if (message.trim().equals("")) return;//Check if message is empty after purging tags
+        if (plugin.getComponentProvider().antiCaps(message)) {
+            plugin.messages.sendMessage(event.getPlayer(), plugin.messages.caps);
+            message = message.toLowerCase();
+        }
         message = plugin.getComponentProvider().sanitize(message);
 
         totalElapsed += debug("Format timing: %time%ms", init);
@@ -95,18 +98,12 @@ public class ChatListener implements Listener {
 
 
     public void onSenderPrivateChat(CommandSender sender, Component formatted) {
-        plugin.config.sendMessage(sender, formatted);
+        plugin.getComponentProvider().sendMessage(sender, formatted);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onJoin(PlayerJoinEvent event) {
-        plugin.getRedisDataManager().addPlayerName(event.getPlayer().getName());
         plugin.getSpyManager().onJoin(event.getPlayer());
-    }
-
-    @EventHandler(priority = EventPriority.LOWEST)
-    public void onQuit(PlayerQuitEvent event) {
-        plugin.getRedisDataManager().removePlayerName(event.getPlayer().getName());
     }
 
 

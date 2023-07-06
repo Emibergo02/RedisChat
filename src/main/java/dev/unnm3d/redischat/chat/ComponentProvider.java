@@ -3,43 +3,52 @@ package dev.unnm3d.redischat.chat;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.configs.Config;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import me.clip.placeholderapi.PlaceholderAPI;
+import net.kyori.adventure.inventory.Book;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.minimessage.tag.standard.StandardTags;
+import net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import net.md_5.bungee.api.chat.BaseComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @AllArgsConstructor
 public class ComponentProvider {
-    private final MiniMessage miniMessage;
     private final RedisChat plugin;
-    private final BukkitAudiences bukkitAudiences;
+    private final BukkitAudiences audiences;
+    private final MiniMessage miniMessage;
     private final TagResolver standardTagResolver;
+    private final ConcurrentHashMap<Player, List<Component>> cacheBlocked;
+    @Getter
+    private static ComponentProvider instance;
 
     public ComponentProvider(RedisChat plugin) {
-
+        instance = this;
         this.plugin = plugin;
+        this.audiences = BukkitAudiences.create(plugin);
         this.miniMessage = MiniMessage.miniMessage();
-        this.bukkitAudiences = BukkitAudiences.create(plugin);
+        this.cacheBlocked = new ConcurrentHashMap<>();
 
-        TagResolver standardTagResolver1 = StandardTags.defaults();
-        //try {
-        //    Field oraxenTagResolver = Class.forName("io.th0rgal.oraxen.utils.AdventureUtils").getField("OraxenTagResolver");
-        //    standardTagResolver1 = (TagResolver) oraxenTagResolver.get(null);
-        //} catch (ClassNotFoundException | NoSuchFieldException | IllegalAccessException ignored) {
-        //}
-        this.standardTagResolver = standardTagResolver1;
+        this.standardTagResolver = StandardTags.defaults();
+
+    }
+
+    public BaseComponent[] toBaseComponent(Component component) {
+        return BungeeComponentSerializer.get().serialize(component);
     }
 
     public Component parse(String text, TagResolver... tagResolvers) {
@@ -51,6 +60,7 @@ public class ComponentProvider {
     }
 
     public Component parse(CommandSender player, String text, TagResolver... tagResolvers) {
+        System.out.println("Parsing: " + text);
         return miniMessage.deserialize(
                 parsePlaceholders(player,
                         parseMentions(
@@ -130,7 +140,7 @@ public class ComponentProvider {
         toParse = toParse.replace("%command%", "/invshare " + player.getName() + "-enderchest");
         TagResolver ec = Placeholder.component("ec", parseWithoutMentions(player, toParse, false, true, this.standardTagResolver));
 
-        plugin.config.placeholders.forEach((key, value) -> builder.resolver(Placeholder.component(key, parse(player, value))));
+        plugin.config.placeholders.forEach((key, value) -> builder.resolver(Placeholder.component(key, MiniMessage.miniMessage().deserialize(value))));
 
         builder.resolver(inv);
         builder.resolver(item);
@@ -141,7 +151,7 @@ public class ComponentProvider {
 
     public String parseMentions(String text, Config.ChatFormat format) {
         String toParse = text;
-
+        System.out.println(plugin.getPlayerListManager().getPlayerList());
         for (String playerName : plugin.getPlayerListManager().getPlayerList()) {
             Pattern p = Pattern.compile("(^" + playerName + "|" + playerName + "$|\\s" + playerName + "\\s)"); //
             Matcher m = p.matcher(text);
@@ -171,10 +181,27 @@ public class ComponentProvider {
         return message;
     }
 
-    public void sendPublicChat(String serializedText) {
-        bukkitAudiences.all().sendMessage(MiniMessage.miniMessage().deserialize(serializedText));
+    public boolean antiCaps(String message) {
+        int capsCount = 0;
+        for (char c : message.toCharArray())
+            if (Character.isUpperCase(c))
+                capsCount++;
+        return capsCount > message.length() / 2 && message.length() > 20;//50% of the message is caps and the message is longer than 20 chars
     }
 
+    public void sendPublicChat(String serializedText) {
+        for (Player onlinePlayer : plugin.getServer().getOnlinePlayers()) {
+            sendComponentOrCache(onlinePlayer, MiniMessage.miniMessage().deserialize(serializedText));
+        }
+    }
+
+    /**
+     * Sends a spy message to watchers
+     * @param receiverName The name of the receiver of the message
+     * @param senderName The name of the sender of the message
+     * @param watcher The player who is spying the message
+     * @param deserialize The message to send
+     */
     public void sendSpyChat(String receiverName, String senderName, Player watcher, String deserialize) {
         Component formatted = MiniMessage.miniMessage().deserialize(plugin.messages.spychat_format.replace("%receiver%", receiverName).replace("%sender%", senderName));
 
@@ -184,9 +211,16 @@ public class ComponentProvider {
         formatted = formatted.replaceText(
                 builder -> builder.match("%message%").replacement(toBeReplaced)
         );
-        plugin.messages.sendMessage(watcher, formatted);
+        sendComponentOrCache(watcher, formatted);
     }
 
+    /**
+     * Sends a private message to the receiver
+     * It is the final step of the private message process
+     * @param senderName The name of the sender
+     * @param receiverName The name of the receiver
+     * @param text The message to send
+     */
     public void sendPrivateChat(String senderName, String receiverName, String text) {
         Player p = Bukkit.getPlayer(receiverName);
         if (p != null)
@@ -199,9 +233,60 @@ public class ComponentProvider {
                 formatted = formatted.replaceText(
                         builder -> builder.match("%message%").replacement(toBeReplaced)
                 );
-                plugin.config.sendMessage(p, formatted);
+                sendComponentOrCache(p, formatted);
             }
+    }
 
+    /**
+     * Sends a message to the player, or caches it if the player is blocked
+     *
+     * @param player    The player to send the message to
+     * @param component The message to send
+     */
+    private void sendComponentOrCache(Player player, Component component) {
+        if (cacheBlocked.computeIfPresent(player,
+                (player1, components) -> {
+                    components.add(component);
+                    return components;
+                }) == null) {//If the player is not blocked
+            plugin.getComponentProvider().sendMessage(player, component);
+        }
+    }
+
+    /**
+     * Pauses the chat for a player and caches all messages sent to them
+     * @param player The player to pause the chat for
+     */
+    public void pauseChat(Player player) {
+        cacheBlocked.put(player, new ArrayList<>());
+    }
+
+    public boolean isPaused(Player player) {
+        return cacheBlocked.containsKey(player);
+    }
+
+    /**
+     * Unpauses the chat for a player and sends all cached messages to them
+     * @param player The player to unpause the chat for
+     */
+    public void unpauseChat(Player player) {
+        if (cacheBlocked.containsKey(player)) {
+            for (Component component : cacheBlocked.remove(player)) {
+                plugin.getComponentProvider().sendMessage(player, component);
+            }
+        }
+    }
+
+    public void sendMessage(CommandSender p, String message) {
+        audiences.sender(p).sendMessage(MiniMessage.miniMessage().deserialize(message));
+    }
+
+    public void sendMessage(CommandSender p, Component component) {
+        audiences.sender(p).sendMessage(component);
+    }
+
+    public void openBook(Player player, Book book) {
+        audiences.player(player).openBook(book);
     }
 }
 

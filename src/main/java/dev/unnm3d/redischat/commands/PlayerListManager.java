@@ -1,58 +1,83 @@
 package dev.unnm3d.redischat.commands;
 
-import dev.unnm3d.redischat.Permission;
 import dev.unnm3d.redischat.RedisChat;
+import io.lettuce.core.pubsub.RedisPubSubListener;
+import io.lettuce.core.pubsub.StatefulRedisPubSubConnection;
 import lombok.Getter;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
-import org.bukkit.command.TabCompleter;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
-public class PlayerListManager implements TabCompleter {
-    @Getter
+import static dev.unnm3d.redischat.redis.redistools.RedisKeys.PLAYERLIST;
+
+public class PlayerListManager {
     private final BukkitTask task;
     @Getter
-    private Set<String> playerList;
+    private Set<String> playerList ;
     private final RedisChat plugin;
 
     public PlayerListManager(RedisChat plugin) {
         this.plugin = plugin;
-        this.playerList = Set.of();
+        this.playerList = Collections.synchronizedSet(new HashSet<>());
         this.task = new BukkitRunnable() {
-
             @Override
             public void run() {
-                plugin.getRedisDataManager().getPlayerList().thenAccept(redisList -> {
-                    if (redisList != null) playerList = redisList;
-                });
+                playerList.clear();
+                plugin.getRedisDataManager().getConnectionAsync(connection ->
+                        connection.publish(PLAYERLIST.toString(),
+                                String.join("§", plugin.getServer().getOnlinePlayers()
+                                        .stream().map(HumanEntity::getName).toArray(String[]::new)))
+                );
             }
-        }.runTaskTimerAsynchronously(plugin, 0, 160);
+        }.runTaskTimerAsynchronously(plugin, 0, 200);
+        listenChatPackets();
     }
 
-    @Nullable
-    @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        if (args.length == 0) return null;
-        switch (command.getName()) {
-            case "msg" -> {
-                if (args.length != 1 || sender.hasPermission(Permission.REDIS_CHAT_MESSAGE.getPermission())) break;
-                return playerList.stream().filter(s -> s.startsWith(args[args.length - 1])).toList();
+    public void listenChatPackets() {
+        StatefulRedisPubSubConnection<String, String> pubSubConnection = plugin.getRedisDataManager().getPubSubConnection();
+        pubSubConnection.addListener(new RedisPubSubListener<>() {
+            @Override
+            public void message(String channel, String message) {
+                playerList.addAll(Arrays.asList(message.split("§")));
             }
-            case "ignore" -> {
-                if (!sender.hasPermission(Permission.REDIS_CHAT_IGNORE.getPermission())) break;
-                List<String> temp = new ArrayList<>(List.of("list", "all"));
-                temp.addAll(playerList.stream().filter(s -> s.startsWith(args[args.length - 1])).toList());
-                return temp;
+
+            @Override
+            public void message(String pattern, String channel, String message) {
             }
-        }
-        return List.of();
+
+            @Override
+            public void subscribed(String channel, long count) {
+            }
+
+            @Override
+            public void psubscribed(String pattern, long count) {
+            }
+
+            @Override
+            public void unsubscribed(String channel, long count) {
+            }
+
+            @Override
+            public void punsubscribed(String pattern, long count) {
+            }
+        });
+        pubSubConnection.async().subscribe(PLAYERLIST.toString())
+                .exceptionally(throwable -> {
+                    throwable.printStackTrace();
+                    plugin.getLogger().warning("Error subscribing to playerlist channel");
+                    return null;
+                })
+                .thenAccept(subscription -> plugin.getLogger().info("Subscribed to channel: " + PLAYERLIST));
+    }
+
+    public void stop() {
+        task.cancel();
     }
 
 }

@@ -1,6 +1,7 @@
 package dev.unnm3d.redischat.redis;
 
 import dev.unnm3d.redischat.RedisChat;
+import dev.unnm3d.redischat.mail.Mail;
 import dev.unnm3d.redischat.redis.redistools.RedisAbstract;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.api.StatefulRedisConnection;
@@ -16,9 +17,7 @@ import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.util.Arrays;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
 
@@ -113,61 +112,6 @@ public class RedisDataManager extends RedisAbstract {
                     }
                 }
         );
-    }
-
-    public void addPlayerName(String playerName) {
-        getConnectionAsync(connection ->
-                connection.sadd(PLAYERLIST.toString(), playerName)
-                        .thenApply(result -> {
-                            if (plugin.config.debug) {
-                                plugin.getLogger().info("00 Added player " + playerName + " to the playerlist");
-                            }
-                            return result;
-                        })
-                        .exceptionally(throwable -> {
-                            throwable.printStackTrace();
-                            plugin.getLogger().warning("Error adding player name to redis");
-                            return null;
-                        }));
-
-    }
-
-    public CompletionStage<Set<String>> getPlayerList() {
-        return getConnectionAsync(connection ->
-                connection.smembers(PLAYERLIST.toString())
-                        .thenApply(result -> {
-                            if (plugin.config.debug) {
-                                plugin.getLogger().info("repeated00 get playerlist " + result);
-                            }
-                            return result;
-                        })
-                        .exceptionally(throwable -> {
-                            throwable.printStackTrace();
-                            plugin.getLogger().warning("Error getting player list from redis");
-                            return null;
-                        })
-        );
-    }
-
-    public void removePlayerName(String playerName) {
-        removePlayerNames(new String[]{playerName});
-    }
-
-    public void removePlayerNames(String[] playerNames) {
-        getConnectionAsync(connection ->
-                connection.srem(PLAYERLIST.toString(), playerNames)
-                        .thenApply(result -> {
-                            if (plugin.config.debug) {
-                                plugin.getLogger().info("01 Removed players " + Arrays.toString(playerNames) + " from the playerlist");
-                            }
-                            return result;
-                        }).exceptionally(throwable -> {
-                            throwable.printStackTrace();
-                            plugin.getLogger().warning("Error removing player name to redis");
-                            return null;
-                        })
-        );
-
     }
 
     public CompletionStage<Boolean> toggleIgnoring(String playerName, String ignoringName) {
@@ -345,12 +289,66 @@ public class RedisDataManager extends RedisAbstract {
                                         plugin.getLogger().info("13 Got enderchest for " + playerName + " is " + (serializedInv == null ? "null" : serializedInv));
                                     }
                                     return deserialize(serializedInv == null ? "" : serializedInv);
-                                }
-                        ).exceptionally(throwable -> {
+                                })
+                        .exceptionally(throwable -> {
                             throwable.printStackTrace();
                             plugin.getLogger().warning("Error getting ec");
                             return null;
                         }));
+    }
+
+    public CompletionStage<List<Mail>> getPlayerPrivateMail(String playerName) {
+        return getConnectionAsync(connection ->
+                connection.hgetall(PRIVATE_MAIL_PREFIX + playerName)
+                        .thenApply(this::deserializeMails)
+                        .exceptionally(throwable -> {
+                            throwable.printStackTrace();
+                            plugin.getLogger().warning("Error getting private mails");
+                            return null;
+                        }));
+    }
+
+    public CompletionStage<Boolean> setPlayerPrivateMail(Mail mail) {
+        return getConnectionPipeline(connection -> {
+            connection.hset(PRIVATE_MAIL_PREFIX + mail.getReceiver(), String.valueOf(mail.getId()), mail.toString());
+            mail.setCategory(Mail.MailCategory.SENT);
+            return connection.hset(PRIVATE_MAIL_PREFIX + mail.getSender(), String.valueOf(mail.getId()), mail.toString()).exceptionally(throwable -> {
+                throwable.printStackTrace();
+                plugin.getLogger().warning("Error setting private mail");
+                return null;
+            });
+        }).exceptionally(throwable -> {
+            throwable.printStackTrace();
+            plugin.getLogger().warning("Error setting private mail");
+            return null;
+        });
+    }
+
+    public CompletionStage<Boolean> setPublicMail(Mail mail) {
+        return getConnectionAsync(connection ->
+                connection.hset(PUBLIC_MAIL.toString(), String.valueOf(mail.getId()), mail.toString()).exceptionally(throwable -> {
+                    throwable.printStackTrace();
+                    plugin.getLogger().warning("Error setting public mail");
+                    return null;
+                }));
+    }
+
+    public CompletionStage<List<Mail>> getPublicMails() {
+        return getConnectionAsync(connection ->
+                connection.hgetall(PUBLIC_MAIL.toString())
+                        .thenApply(this::deserializeMails).exceptionally(throwable -> {
+                            throwable.printStackTrace();
+                            plugin.getLogger().warning("Error getting public mails");
+                            return null;
+                        }));
+    }
+
+    private List<Mail> deserializeMails(Map<String, String> timestampMail) {
+        List<Mail> mailList = new ArrayList<>();
+        for (Map.Entry<String, String> timestampMailEntry : timestampMail.entrySet()) {
+            mailList.add(new Mail(Double.parseDouble(timestampMailEntry.getKey()), timestampMailEntry.getValue()));
+        }
+        return mailList;
     }
 
     public void listenChatPackets() {
