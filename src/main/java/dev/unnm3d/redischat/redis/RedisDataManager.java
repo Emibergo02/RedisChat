@@ -182,7 +182,7 @@ public class RedisDataManager extends RedisAbstract {
                                     }
                                 });
                                 return null;
-                            }, 60, TimeUnit.SECONDS);
+                            }, 120, TimeUnit.SECONDS);
                             return response;
                         })
                         .exceptionally(throwable -> {
@@ -207,7 +207,7 @@ public class RedisDataManager extends RedisAbstract {
                                     }
                                 });
                                 return null;
-                            }, 60, TimeUnit.SECONDS);
+                            }, 120, TimeUnit.SECONDS);
                             return response;
                         }).exceptionally(throwable -> {
                             throwable.printStackTrace();
@@ -231,7 +231,7 @@ public class RedisDataManager extends RedisAbstract {
                                     }
                                 });
                                 return null;
-                            }, 60, TimeUnit.SECONDS);
+                            }, 120, TimeUnit.SECONDS);
                             return response;
                         }).exceptionally(throwable -> {
                             throwable.printStackTrace();
@@ -280,11 +280,11 @@ public class RedisDataManager extends RedisAbstract {
         return getConnectionAsync(connection ->
                 connection.hget(INVSHARE_ENDERCHEST.toString(), playerName)
                         .thenApply(serializedInv -> {
-                                    if (plugin.config.debug) {
-                                        plugin.getLogger().info("13 Got enderchest for " + playerName + " is " + (serializedInv == null ? "null" : serializedInv));
-                                    }
-                                    return deserialize(serializedInv == null ? "" : serializedInv);
-                                })
+                            if (plugin.config.debug) {
+                                plugin.getLogger().info("13 Got enderchest for " + playerName + " is " + (serializedInv == null ? "null" : serializedInv));
+                            }
+                            return deserialize(serializedInv == null ? "" : serializedInv);
+                        })
                         .exceptionally(throwable -> {
                             throwable.printStackTrace();
                             plugin.getLogger().warning("Error getting ec");

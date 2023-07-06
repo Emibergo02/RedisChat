@@ -9,8 +9,6 @@ import dev.unnm3d.redischat.commands.*;
 import dev.unnm3d.redischat.configs.Config;
 import dev.unnm3d.redischat.configs.GuiSettings;
 import dev.unnm3d.redischat.configs.Messages;
-import dev.unnm3d.redischat.invshare.InvGUI;
-import dev.unnm3d.redischat.invshare.InvShare;
 import dev.unnm3d.redischat.mail.MailCommand;
 import dev.unnm3d.redischat.mail.MailManager;
 import dev.unnm3d.redischat.moderation.SpyChatCommand;
@@ -100,7 +98,6 @@ public final class RedisChat extends JavaPlugin {
 
 
         //InvShare part
-        getServer().getPluginManager().registerEvents(new InvGUI.GuiListener(), this);
         loadCommand("invshare", new InvShare(this), null);
 
         new Metrics(this, 17678);
