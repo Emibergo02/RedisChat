@@ -9,30 +9,32 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static dev.unnm3d.redischat.redis.redistools.RedisKeys.PLAYERLIST;
 
 public class PlayerListManager {
     private final BukkitTask task;
     @Getter
-    private Set<String> playerList ;
+    private final Set<String> playerList;
     private final RedisChat plugin;
 
     public PlayerListManager(RedisChat plugin) {
         this.plugin = plugin;
-        this.playerList = Collections.synchronizedSet(new HashSet<>());
+        this.playerList = ConcurrentHashMap.newKeySet();
         this.task = new BukkitRunnable() {
             @Override
             public void run() {
                 playerList.clear();
+                plugin.getServer().getOnlinePlayers().stream()
+                        .map(HumanEntity::getName)
+                        .filter(s -> !s.isEmpty())
+                        .forEach(playerList::add);
                 plugin.getRedisDataManager().getConnectionAsync(connection ->
                         connection.publish(PLAYERLIST.toString(),
-                                String.join("§", plugin.getServer().getOnlinePlayers()
-                                        .stream().map(HumanEntity::getName).toArray(String[]::new)))
+                                String.join("§", playerList))
                 );
             }
         }.runTaskTimerAsynchronously(plugin, 0, 200);
@@ -44,7 +46,11 @@ public class PlayerListManager {
         pubSubConnection.addListener(new RedisPubSubListener<>() {
             @Override
             public void message(String channel, String message) {
-                playerList.addAll(Arrays.asList(message.split("§")));
+                Arrays.asList(message.split("§")).forEach(s -> {
+                    if(s!=null&& !s.isEmpty())
+                        playerList.add(s);
+                });
+
             }
 
             @Override

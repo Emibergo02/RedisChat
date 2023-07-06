@@ -29,7 +29,7 @@ public final class Config {
             "<click:run_command:%command%>[%item_name% of %player%]</click>",
             "<click:run_command:%command%>[Open the enderchest of %player%]</click>",
             "<aqua>@%player%</aqua>",
-            "<bold><click:open_url:%link%>[Click to open URL (be careful)]</bold>"
+            "<bold><click:open_url:%link%>[Click to open URL (be careful)]</click></bold>"
     ));
     @Comment({"Announcer configurations", "delay and interval are in seconds", "If you want to disable an announce, just remove it from the list"})
     public List<Announce> announces = List.of(new Announce("default", "<red>RedisChat Announce: <br><white>lorem ipsum dolor sit amet", 5, 300));

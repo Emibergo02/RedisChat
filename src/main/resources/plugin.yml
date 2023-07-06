@@ -60,7 +60,6 @@ commands:
     permission: redischat.announce
   rmail:
     description: RedisChat mail
-    usage: /rmail <send/delete> [player]
     aliases: [mail]
 permissions:
   redischat.spychat:

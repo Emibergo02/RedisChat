@@ -13,7 +13,6 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.util.List;
 
@@ -72,7 +71,7 @@ public class ChatListener implements Listener {
         init = System.currentTimeMillis();
 
         //Parse into minimessage (placeholders, tags and mentions)
-        Component toBeReplaced = plugin.getComponentProvider().parse(event.getPlayer(), message, parsePlaceholders, plugin.getComponentProvider().getCustomTagResolver(event.getPlayer(), chatFormatList.get(0)));
+        Component toBeReplaced = plugin.getComponentProvider().parse(event.getPlayer(), message, parsePlaceholders,true,true, plugin.getComponentProvider().getInvShareTagResolver(event.getPlayer(), chatFormatList.get(0)));
 
         //Put message into format
         formatted = formatted.replaceText(

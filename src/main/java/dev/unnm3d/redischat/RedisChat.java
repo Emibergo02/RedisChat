@@ -24,7 +24,6 @@ import lombok.Getter;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.command.TabCompleter;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -68,7 +67,7 @@ public final class RedisChat extends JavaPlugin {
         getServer().getPluginManager().registerEvents(this.chatListener, this);
 
         //Mail section
-        if(config.enableMails) {
+        if (config.enableMails) {
             MailCommand mailCommand = new MailCommand(new MailManager(this));
             loadCommand("rmail", mailCommand, mailCommand);
         }

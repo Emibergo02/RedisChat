@@ -118,18 +118,14 @@ public class RedisDataManager extends RedisAbstract {
         return getConnectionAsync(connection ->
                 connection.sadd(IGNORE_PREFIX + playerName, ignoringName)
                         .thenApply(response -> {
-
-                            StatefulRedisConnection<String, String> connection2 = lettuceRedisClient.connect();
                             if (plugin.config.debug) {
                                 plugin.getLogger().info("02 Toggling ignoring " + ignoringName + " for " + playerName);
                             }
                             if (response == 0) {
-                                connection2.async().srem(IGNORE_PREFIX + playerName, ignoringName)
-                                        .thenAccept(response2 -> connection2.close());
+                                getConnectionAsync(connection3 -> connection3.srem(IGNORE_PREFIX + playerName, ignoringName));
                                 return false;
                             }
-                            connection2.async().expire(IGNORE_PREFIX + playerName, 60 * 60 * 24 * 7)
-                                    .thenAccept(response2 -> connection2.close());
+                            getConnectionAsync(connection3 -> connection3.expire(IGNORE_PREFIX + playerName, 60 * 60 * 24 * 7));
                             return true;
 
                         })

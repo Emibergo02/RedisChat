@@ -60,7 +60,7 @@ public class ReplyCommand implements CommandExecutor {
 
 
                 //Parse into minimessage (placeholders, tags and mentions)
-                Component toBeReplaced = plugin.getComponentProvider().parse(sender, message, parsePlaceholders, plugin.getComponentProvider().getCustomTagResolver(sender, chatFormatList.get(0)));
+                Component toBeReplaced = plugin.getComponentProvider().parse(sender, message, parsePlaceholders,true,true, plugin.getComponentProvider().getInvShareTagResolver(sender, chatFormatList.get(0)));
                 //Put message into format
                 formatted = formatted.replaceText(
                         builder -> builder.match("%message%").replacement(toBeReplaced)
