@@ -20,7 +20,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,20 +64,20 @@ public class ComponentProvider {
         return parse(text, this.standardTagResolver);
     }
 
-    public Component parse( CommandSender player, String text, TagResolver... tagResolvers) {
+    public Component parse(CommandSender player, String text, TagResolver... tagResolvers) {
         return parse(player, text, true, true, true, tagResolvers);
     }
 
     public Component parse(CommandSender player, String text, boolean parsePlaceholders, boolean parseMentions, boolean parseLinks, TagResolver... tagResolvers) {
-        if(player!=null)
+        if (player != null)
             text = parseLegacy(player, text);
-        if(parseLinks){
+        if (parseLinks) {
             text = parseLinks(text, plugin.config.formats.get(0));
         }
-        if(parseMentions){
+        if (parseMentions) {
             text = parseMentions(text, plugin.config.formats.get(0));
         }
-        if(parsePlaceholders){
+        if (parsePlaceholders) {
             text = parsePlaceholders(player, text);
         }
         if (plugin.config.debug)
@@ -111,7 +110,7 @@ public class ComponentProvider {
         String toParse = chatFormat.inventory_format();
         toParse = toParse.replace("%player%", player.getName());
         toParse = toParse.replace("%command%", "/invshare " + player.getName() + "-inventory");
-        TagResolver inv = Placeholder.component("inv", parse(player, toParse, true, false,false, this.standardTagResolver));
+        TagResolver inv = Placeholder.component("inv", parse(player, toParse, true, false, false, this.standardTagResolver));
 
         toParse = chatFormat.item_format();
         toParse = toParse.replace("%player%", player.getName());
@@ -128,12 +127,12 @@ public class ComponentProvider {
             }
         }
         toParse = toParse.replace("%command%", "/invshare " + player.getName() + "-item");
-        TagResolver item = Placeholder.component("item", parse(player, toParse, true, false,false, this.standardTagResolver));
+        TagResolver item = Placeholder.component("item", parse(player, toParse, true, false, false, this.standardTagResolver));
 
         toParse = chatFormat.enderchest_format();
         toParse = toParse.replace("%player%", player.getName());
         toParse = toParse.replace("%command%", "/invshare " + player.getName() + "-enderchest");
-        TagResolver ec = Placeholder.component("ec", parse(player, toParse, true, false,false, this.standardTagResolver));
+        TagResolver ec = Placeholder.component("ec", parse(player, toParse, true, false, false, this.standardTagResolver));
 
         customPlaceholderResolvers.forEach(builder::resolver);
 
@@ -192,7 +191,7 @@ public class ComponentProvider {
     public String parseLegacy(CommandSender player, String text) {
         if (plugin.config.legacyColorCodesSupport && player.hasPermission(Permission.REDIS_CHAT_USE_FORMATTING.getPermission())) {
             text = miniMessage.serialize(LegacyComponentSerializer.legacyAmpersand().deserialize(text));
-            if(plugin.config.debug){
+            if (plugin.config.debug) {
                 Bukkit.getLogger().info("Parsed legacy: " + text);
             }
         }
@@ -242,7 +241,7 @@ public class ComponentProvider {
                 Component formatted = parse(null, chatFormatList.get(0).receive_private_format()
                         .replace("%receiver%", receiverName)
                         .replace("%sender%", senderName));
-                Component toBeReplaced = parse(p, text,false,false,false, this.standardTagResolver);
+                Component toBeReplaced = parse(p, text, false, false, false, this.standardTagResolver);
                 //Put message into format
                 formatted = formatted.replaceText(
                         builder -> builder.match("%message%").replacement(toBeReplaced)

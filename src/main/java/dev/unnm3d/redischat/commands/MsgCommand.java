@@ -7,7 +7,6 @@ import dev.unnm3d.redischat.redis.ChatPacket;
 import lombok.AllArgsConstructor;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -62,7 +61,7 @@ public class MsgCommand implements CommandExecutor, TabCompleter {
             }
 
             //Parse into minimessage (placeholders, tags and mentions)
-            Component toBeReplaced = plugin.getComponentProvider().parse(sender, message, parsePlaceholders,true,true, plugin.getComponentProvider().getInvShareTagResolver(sender, chatFormatList.get(0)));
+            Component toBeReplaced = plugin.getComponentProvider().parse(sender, message, parsePlaceholders, true, true, plugin.getComponentProvider().getInvShareTagResolver(sender, chatFormatList.get(0)));
             //Put message into format
             formatted = formatted.replaceText(
                     builder -> builder.match("%message%").replacement(toBeReplaced)

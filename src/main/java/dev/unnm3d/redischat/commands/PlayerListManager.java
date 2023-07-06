@@ -9,7 +9,6 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -47,7 +46,7 @@ public class PlayerListManager {
             @Override
             public void message(String channel, String message) {
                 Arrays.asList(message.split("§")).forEach(s -> {
-                    if(s!=null&& !s.isEmpty())
+                    if (s != null && !s.isEmpty())
                         playerList.add(s);
                 });
 
