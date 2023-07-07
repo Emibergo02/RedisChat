@@ -1,7 +1,7 @@
 package dev.unnm3d.redischat.commands;
 
 import dev.unnm3d.redischat.RedisChat;
-import dev.unnm3d.redischat.redis.ChatPacket;
+import dev.unnm3d.redischat.chat.ChatMessageInfo;
 import lombok.AllArgsConstructor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.command.Command;
@@ -21,7 +21,7 @@ public class BroadcastCommand implements CommandExecutor {
             public void run() {
                 String message = MiniMessage.miniMessage().serialize(plugin.getComponentProvider().parse(null,
                         plugin.config.broadcast_format.replace("%message%", String.join(" ", args))));
-                plugin.getRedisDataManager().sendObjectPacket(new ChatPacket(null, message));
+                plugin.getRedisDataManager().sendObjectPacket(new ChatMessageInfo(null, message));
             }
         }.runTaskAsynchronously(plugin);
 

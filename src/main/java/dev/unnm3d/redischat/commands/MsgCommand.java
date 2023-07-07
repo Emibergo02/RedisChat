@@ -2,8 +2,8 @@ package dev.unnm3d.redischat.commands;
 
 import dev.unnm3d.redischat.Permission;
 import dev.unnm3d.redischat.RedisChat;
+import dev.unnm3d.redischat.chat.ChatMessageInfo;
 import dev.unnm3d.redischat.configs.Config;
-import dev.unnm3d.redischat.redis.ChatPacket;
 import lombok.AllArgsConstructor;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -67,7 +67,7 @@ public class MsgCommand implements CommandExecutor, TabCompleter {
                     builder -> builder.match("%message%").replacement(toBeReplaced)
             );
             //Send to other servers
-            plugin.getRedisDataManager().sendObjectPacket(new ChatPacket(sender.getName(), MiniMessage.miniMessage().serialize(toBeReplaced), receiverName));
+            plugin.getRedisDataManager().sendObjectPacket(new ChatMessageInfo(sender.getName(), MiniMessage.miniMessage().serialize(toBeReplaced), receiverName));
             plugin.getChatListener().onSenderPrivateChat(sender, formatted);
             plugin.getRedisDataManager().setReplyName(receiverName, sender.getName());
 

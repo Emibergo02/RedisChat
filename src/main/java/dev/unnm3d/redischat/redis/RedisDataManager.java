@@ -1,6 +1,7 @@
 package dev.unnm3d.redischat.redis;
 
 import dev.unnm3d.redischat.RedisChat;
+import dev.unnm3d.redischat.chat.ChatMessageInfo;
 import dev.unnm3d.redischat.mail.Mail;
 import dev.unnm3d.redischat.redis.redistools.RedisAbstract;
 import io.lettuce.core.RedisClient;
@@ -352,21 +353,21 @@ public class RedisDataManager extends RedisAbstract {
             @Override
             public void message(String channel, String message) {
                 //plugin.getLogger().info("Received message #"+pubsubindex+" on channel " + channel + ": " + message);
-                ChatPacket chatPacket = new ChatPacket(message);
+                ChatMessageInfo chatMessageInfo = new ChatMessageInfo(message);
 
-                if (chatPacket.isPrivate()) {
+                if (chatMessageInfo.isPrivate()) {
                     long init = System.currentTimeMillis();
                     for (Player player : Bukkit.getOnlinePlayers()) {
                         if (plugin.getSpyManager().isSpying(player.getName())) {//Spychat
-                            plugin.getComponentProvider().sendSpyChat(chatPacket.getReceiverName(), chatPacket.getSenderName(), player, chatPacket.getMessage());
+                            plugin.getComponentProvider().sendSpyChat(chatMessageInfo.getReceiverName(), chatMessageInfo.getSenderName(), player, chatMessageInfo.getMessage());
                         }
-                        if (player.getName().equals(chatPacket.getReceiverName())) {//Private message
-                            plugin.getRedisDataManager().isIgnoring(chatPacket.getReceiverName(), chatPacket.getSenderName())
+                        if (player.getName().equals(chatMessageInfo.getReceiverName())) {//Private message
+                            plugin.getRedisDataManager().isIgnoring(chatMessageInfo.getReceiverName(), chatMessageInfo.getSenderName())
                                     .thenAccept(ignored -> {
                                         if (!ignored)
-                                            plugin.getComponentProvider().sendPrivateChat(chatPacket.getSenderName(), chatPacket.getReceiverName(), chatPacket.getMessage());
+                                            plugin.getComponentProvider().sendPrivateChat(chatMessageInfo);
                                         if (plugin.config.debug) {
-                                            plugin.getLogger().info("Private message sent to " + chatPacket.getReceiverName() + " in " + (System.currentTimeMillis() - init) + "ms");
+                                            plugin.getLogger().info("Private message sent to " + chatMessageInfo.getReceiverName() + " in " + (System.currentTimeMillis() - init) + "ms");
                                         }
                                     });
                         }
@@ -374,7 +375,7 @@ public class RedisDataManager extends RedisAbstract {
                     return;
                 }
 
-                plugin.getComponentProvider().sendPublicChat(chatPacket.getMessage());
+                plugin.getComponentProvider().sendGenericChat(chatMessageInfo);
             }
 
             @Override
@@ -409,7 +410,7 @@ public class RedisDataManager extends RedisAbstract {
 
     }
 
-    public void sendObjectPacket(ChatPacket packet) {
+    public void sendObjectPacket(ChatMessageInfo packet) {
         getConnectionAsync(conn ->
                 conn.publish(CHAT_CHANNEL.toString(), packet.serialize())
                         .thenApply(integer -> {

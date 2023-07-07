@@ -57,9 +57,9 @@ public class Mail extends AbstractItem {
         if (content.isEmpty()) return new ItemBuilder(Material.PAPER);
         return new ItemBuilder(RedisChat.getInstance().guiSettings.mailItem)
                 .setDisplayName(ComponentProvider.getInstance().toBaseComponent(
-                        ComponentProvider.getInstance().parse("<reset>"+title)))
+                        ComponentProvider.getInstance().parse("<reset>" + title)))
                 .addLoreLines(ComponentProvider.getInstance().toBaseComponent(
-                        ComponentProvider.getInstance().parse("<reset>"+content)));
+                        ComponentProvider.getInstance().parse("<reset>" + content)));
     }
 
     @Override

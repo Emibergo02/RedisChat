@@ -48,7 +48,7 @@ public class MailManager {
 
     public void confirmSendMail(Player sender, boolean confirm) {
         Mail mail = editorMode.remove(sender.getUniqueId());
-        if(mail == null){
+        if (mail == null) {
             plugin.getComponentProvider().sendMessage(sender, plugin.messages.mailError);
             return;
         }

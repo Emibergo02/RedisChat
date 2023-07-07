@@ -29,10 +29,11 @@ public final class Config {
             "<click:run_command:%command%>[%item_name% of %player%]</click>",
             "<click:run_command:%command%>[Open the enderchest of %player%]</click>",
             "<aqua>@%player%</aqua>",
-            "<bold><click:open_url:%link%>[Click to open URL (be careful)]</click></bold>"
+            "<bold><click:open_url:%link%>[Click to open URL (be careful)]</click></bold>",
+            "<gold>StaffChat <dark_gray>» <white>%message%"
     ));
     @Comment({"Announcer configurations", "delay and interval are in seconds", "If you want to disable an announce, just remove it from the list"})
-    public List<Announce> announces = List.of(new Announce("default", "<red>RedisChat Announce: <br><white>lorem ipsum dolor sit amet", 5, 300));
+    public List<Announce> announces = List.of(new Announce("default", "<red>RedisChat Announce: <br><white>lorem ipsum dolor sit amet", "", 5, 300));
     @Comment({"Here you can create your own placeholders", "You can give them an identifier, which will go under the format <>", "You can give them actions, like click url"})
     public Map<String, String> placeholders = Map.of("discord", "<click:open_url:https://discord.gg/uq6bBqAQ>Click to join our discord server</click>");
     @Comment({"Here you can blacklist some terms (like swears, insults and unwanted urls)", "They will be replaced with a *", "You can use the regex syntax and the * wildcard"})
@@ -47,6 +48,7 @@ public final class Config {
     @Comment("Here you can decide the time between two messages of the same player")
     public int rate_limit = 3;
     public int rate_limit_time_seconds = 5;
+    public String staffChatPrefix = "!";
     @Comment("Enabling this")
     public boolean legacyColorCodesSupport = false;
     public boolean enableMails = false;
@@ -67,12 +69,14 @@ public final class Config {
             String item_format,
             String enderchest_format,
             String mention_format,
-            String link_format) {
+            String link_format,
+            String staff_chat_format) {
     }
 
     public record Announce(
             String announceName,
             String message,
+            String permission,
             int delay,
             int interval) {
     }

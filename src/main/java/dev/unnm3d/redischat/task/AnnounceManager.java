@@ -19,7 +19,7 @@ public class AnnounceManager {
         cancelAll();
         task.clear();
         plugin.config.announces.forEach(announce -> {
-            AnnounceTask at = new AnnounceTask(plugin, announce.message(), announce.delay(), announce.interval());
+            AnnounceTask at = new AnnounceTask(plugin, announce.message(), announce.permission(), announce.delay(), announce.interval());
             task.put(announce.announceName(), at);
             at.start();
         });

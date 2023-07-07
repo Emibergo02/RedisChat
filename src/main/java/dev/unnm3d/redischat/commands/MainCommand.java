@@ -33,7 +33,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
             return true;
         }
 
-        if(args.length < 2){
+        if (args.length < 2) {
             plugin.messages.sendMessage(sender, plugin.messages.missing_arguments);
             return true;
         }

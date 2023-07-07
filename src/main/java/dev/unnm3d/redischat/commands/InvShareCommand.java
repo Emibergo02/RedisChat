@@ -2,6 +2,7 @@ package dev.unnm3d.redischat.commands;
 
 import dev.unnm3d.redischat.RedisChat;
 import lombok.AllArgsConstructor;
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -19,7 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @AllArgsConstructor
-public class InvShare implements CommandExecutor {
+public class InvShareCommand implements CommandExecutor {
 
     private final RedisChat plugin;
 
@@ -63,15 +64,21 @@ public class InvShare implements CommandExecutor {
                                             ecContents
                                     )
                             ));
-
         }
-
         return true;
     }
 
     private void openInvShareGui(Player player, String title, int size, ItemStack[] items) {
         Gui gui = Gui.empty(9, size);
-        gui.addItems(Arrays.stream(items).map(ItemBuilder::new).map(SimpleItem::new).toArray(Item[]::new));
+        gui.addItems(
+                Arrays.stream(items)
+                        .map(itemStack -> {
+                            if (itemStack == null) return new ItemBuilder(Material.AIR);
+                            return new ItemBuilder(itemStack);
+                        })
+                        .map(SimpleItem::new)
+                        .toArray(Item[]::new)
+        );
         Window.single().setTitle(title).setGui(gui).setCloseHandlers(List.of(() -> new BukkitRunnable() {
             @Override
             public void run() {
@@ -90,7 +97,6 @@ public class InvShare implements CommandExecutor {
             }
         }.runTaskLater(plugin, 1))).open(player);
     }
-
 
     public enum InventoryType {
         INVENTORY,

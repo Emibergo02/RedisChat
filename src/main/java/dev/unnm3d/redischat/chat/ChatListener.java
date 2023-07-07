@@ -3,7 +3,7 @@ package dev.unnm3d.redischat.chat;
 import dev.unnm3d.redischat.Permission;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.configs.Config;
-import dev.unnm3d.redischat.redis.ChatPacket;
+import dev.unnm3d.redischat.moderation.StaffChat;
 import lombok.AllArgsConstructor;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -19,6 +19,7 @@ import java.util.List;
 @AllArgsConstructor
 public class ChatListener implements Listener {
     private final RedisChat plugin;
+    private final StaffChat staffChat;
 
     @EventHandler(priority = EventPriority.HIGH)
     public void onChat(AsyncPlayerChatEvent event) {
@@ -30,6 +31,14 @@ public class ChatListener implements Listener {
 
         List<Config.ChatFormat> chatFormatList = plugin.config.getChatFormats(event.getPlayer());
         if (chatFormatList.isEmpty()) return;
+
+        if (event.getMessage().startsWith(plugin.config.staffChatPrefix)) {
+            if (event.getPlayer().hasPermission(Permission.REDIS_CHAT_ADMIN_STAFF_CHAT.getPermission())) {
+                staffChat.staffChat(event.getPlayer(), chatFormatList.get(0), event.getMessage().substring(1));
+                return;
+            }
+        }
+
         if (!event.getPlayer().hasPermission(Permission.REDIS_CHAT_BYPASS_RATE_LIMIT.getPermission()))
             if (plugin.getRedisDataManager().isRateLimited(event.getPlayer().getName())) {
                 plugin.messages.sendMessage(event.getPlayer(), plugin.messages.rate_limited);
@@ -71,7 +80,7 @@ public class ChatListener implements Listener {
         init = System.currentTimeMillis();
 
         //Parse into minimessage (placeholders, tags and mentions)
-        Component toBeReplaced = plugin.getComponentProvider().parse(event.getPlayer(), message, parsePlaceholders,true,true, plugin.getComponentProvider().getInvShareTagResolver(event.getPlayer(), chatFormatList.get(0)));
+        Component toBeReplaced = plugin.getComponentProvider().parse(event.getPlayer(), message, parsePlaceholders, true, true, plugin.getComponentProvider().getInvShareTagResolver(event.getPlayer(), chatFormatList.get(0)));
 
         //Put message into format
         formatted = formatted.replaceText(
@@ -80,7 +89,7 @@ public class ChatListener implements Listener {
         totalElapsed += debug("Message parsing timing: %time%ms", init);
 
         // Send to other servers
-        plugin.getRedisDataManager().sendObjectPacket(new ChatPacket(event.getPlayer().getName(), MiniMessage.miniMessage().serialize(formatted)));
+        plugin.getRedisDataManager().sendObjectPacket(new ChatMessageInfo(event.getPlayer().getName(), MiniMessage.miniMessage().serialize(formatted)));
         plugin.getRedisDataManager().setRateLimit(event.getPlayer().getName(), plugin.config.rate_limit_time_seconds);
 
         if (plugin.config.debug) {

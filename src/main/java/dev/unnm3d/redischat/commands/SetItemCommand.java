@@ -38,7 +38,7 @@ public class SetItemCommand implements CommandExecutor, TabCompleter {
     @Nullable
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
-        if(args.length==1) {
+        if (args.length == 1) {
             return List.of("mailItem", "backButton", "forwardButton", "PublicButton", "privateButton");
         }
         return List.of();

@@ -198,9 +198,13 @@ public class ComponentProvider {
         return text;
     }
 
-    public void sendPublicChat(String serializedText) {
+    public void sendGenericChat(ChatMessageInfo chatMessageInfo) {
+        String multicastPermission = chatMessageInfo.getReceiverName().charAt(0) == '@' ? chatMessageInfo.getReceiverName().substring(1) : null;
         for (Player onlinePlayer : plugin.getServer().getOnlinePlayers()) {
-            sendComponentOrCache(onlinePlayer, MiniMessage.miniMessage().deserialize(serializedText));
+            if (multicastPermission != null) {
+                if (!onlinePlayer.hasPermission(multicastPermission)) continue;
+            }
+            sendComponentOrCache(onlinePlayer, MiniMessage.miniMessage().deserialize(chatMessageInfo.getMessage()));
         }
     }
 
@@ -228,20 +232,18 @@ public class ComponentProvider {
      * Sends a private message to the receiver
      * It is the final step of the private message process
      *
-     * @param senderName   The name of the sender
-     * @param receiverName The name of the receiver
-     * @param text         The message to send
+     * @param chatMessageInfo The chat packet to send
      */
-    public void sendPrivateChat(String senderName, String receiverName, String text) {
-        Player p = Bukkit.getPlayer(receiverName);
+    public void sendPrivateChat(ChatMessageInfo chatMessageInfo) {
+        Player p = Bukkit.getPlayer(chatMessageInfo.getReceiverName());
         if (p != null)
             if (p.isOnline()) {
                 List<Config.ChatFormat> chatFormatList = plugin.config.getChatFormats(p);
                 if (chatFormatList.isEmpty()) return;
                 Component formatted = parse(null, chatFormatList.get(0).receive_private_format()
-                        .replace("%receiver%", receiverName)
-                        .replace("%sender%", senderName));
-                Component toBeReplaced = parse(p, text, false, false, false, this.standardTagResolver);
+                        .replace("%receiver%", chatMessageInfo.getReceiverName())
+                        .replace("%sender%", chatMessageInfo.getSenderName()));
+                Component toBeReplaced = parse(p, chatMessageInfo.getMessage(), false, false, false, this.standardTagResolver);
                 //Put message into format
                 formatted = formatted.replaceText(
                         builder -> builder.match("%message%").replacement(toBeReplaced)

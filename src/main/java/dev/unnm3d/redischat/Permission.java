@@ -10,6 +10,7 @@ public enum Permission {
     REDIS_CHAT_CLEARCHAT("redischat.clearchat"),
     REDIS_CHAT_ADMIN("redischat.admin"),
     REDIS_CHAT_ADMIN_EDIT("redischat.editmessage"),
+    REDIS_CHAT_ADMIN_STAFF_CHAT("redischat.staffchat"),
     REDIS_CHAT_BYPASS_RATE_LIMIT("redischat.bypass_rate_limit"),
     ;
 

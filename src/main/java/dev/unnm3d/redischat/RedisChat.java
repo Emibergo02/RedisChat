@@ -13,6 +13,7 @@ import dev.unnm3d.redischat.mail.MailCommand;
 import dev.unnm3d.redischat.mail.MailManager;
 import dev.unnm3d.redischat.moderation.SpyChatCommand;
 import dev.unnm3d.redischat.moderation.SpyManager;
+import dev.unnm3d.redischat.moderation.StaffChat;
 import dev.unnm3d.redischat.redis.RedisDataManager;
 import dev.unnm3d.redischat.task.AnnounceManager;
 import dev.unnm3d.redischat.utils.AdventureWebuiEditorAPI;
@@ -61,7 +62,8 @@ public final class RedisChat extends JavaPlugin {
 
         //Chat section
         this.componentProvider = new ComponentProvider(this);
-        this.chatListener = new ChatListener(this);
+        StaffChat staffChat = new StaffChat(this);
+        this.chatListener = new ChatListener(this, staffChat);
         getServer().getPluginManager().registerEvents(this.chatListener, this);
 
         //Mail section
@@ -95,10 +97,11 @@ public final class RedisChat extends JavaPlugin {
         loadCommand("reply", new ReplyCommand(this), null);
         loadCommand("broadcast", new BroadcastCommand(this), null);
         loadCommand("clearchat", new ClearChatCommand(this), null);
+        loadCommand("staffchat", staffChat, null);
 
 
         //InvShare part
-        loadCommand("invshare", new InvShare(this), null);
+        loadCommand("invshare", new InvShareCommand(this), null);
 
         new Metrics(this, 17678);
     }
