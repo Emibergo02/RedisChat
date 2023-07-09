@@ -3,7 +3,6 @@ package dev.unnm3d.redischat.commands;
 import dev.unnm3d.redischat.RedisChat;
 import io.lettuce.core.pubsub.RedisPubSubListener;
 import io.lettuce.core.pubsub.StatefulRedisPubSubConnection;
-import lombok.Getter;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
@@ -16,38 +15,37 @@ import static dev.unnm3d.redischat.redis.redistools.RedisKeys.PLAYERLIST;
 
 public class PlayerListManager {
     private final BukkitTask task;
-    @Getter
-    private final Set<String> playerList;
+    private final ConcurrentHashMap<String, Long> playerList;
     private final RedisChat plugin;
 
     public PlayerListManager(RedisChat plugin) {
         this.plugin = plugin;
-        this.playerList = ConcurrentHashMap.newKeySet();
+        this.playerList = new ConcurrentHashMap<>();
         this.task = new BukkitRunnable() {
             @Override
             public void run() {
-                playerList.clear();
+                playerList.entrySet().removeIf(entry -> System.currentTimeMillis() - entry.getValue() > 1000 * 11);
                 plugin.getServer().getOnlinePlayers().stream()
                         .map(HumanEntity::getName)
                         .filter(s -> !s.isEmpty())
-                        .forEach(playerList::add);
+                        .forEach(name -> playerList.put(name, System.currentTimeMillis()));
                 plugin.getRedisDataManager().getConnectionAsync(connection ->
                         connection.publish(PLAYERLIST.toString(),
-                                String.join("§", playerList))
+                                String.join("§", playerList.keySet().stream().toList()))
                 );
             }
-        }.runTaskTimerAsynchronously(plugin, 0, 200);
-        listenChatPackets();
+        }.runTaskTimerAsynchronously(plugin, 0, 200);//10 seconds
+        listenPlayerListUpdate();
     }
 
-    public void listenChatPackets() {
+    public void listenPlayerListUpdate() {
         StatefulRedisPubSubConnection<String, String> pubSubConnection = plugin.getRedisDataManager().getPubSubConnection();
         pubSubConnection.addListener(new RedisPubSubListener<>() {
             @Override
             public void message(String channel, String message) {
                 Arrays.asList(message.split("§")).forEach(s -> {
                     if (s != null && !s.isEmpty())
-                        playerList.add(s);
+                        playerList.put(s, System.currentTimeMillis());
                 });
 
             }
@@ -79,6 +77,10 @@ public class PlayerListManager {
                     return null;
                 })
                 .thenAccept(subscription -> plugin.getLogger().info("Subscribed to channel: " + PLAYERLIST));
+    }
+
+    public Set<String> getPlayerList() {
+        return playerList.keySet();
     }
 
     public void stop() {

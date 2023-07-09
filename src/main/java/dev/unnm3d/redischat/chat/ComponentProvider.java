@@ -21,6 +21,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -69,10 +70,13 @@ public class ComponentProvider {
     }
 
     public Component parse(CommandSender player, String text, boolean parsePlaceholders, boolean parseMentions, boolean parseLinks, TagResolver... tagResolvers) {
-        if (player != null)
-            text = parseLegacy(player, text);
+        AbstractMap.SimpleEntry<String, Component> parsedLinks = new AbstractMap.SimpleEntry<>(null, null);
         if (parseLinks) {
-            text = parseLinks(text, plugin.config.formats.get(0));
+            parsedLinks = parseLinks(text, plugin.config.formats.get(0));
+            text = parsedLinks.getKey();
+        }
+        if (player != null) {
+            text = parseLegacy(player, text);
         }
         if (parseMentions) {
             text = parseMentions(text, plugin.config.formats.get(0));
@@ -82,7 +86,12 @@ public class ComponentProvider {
         }
         if (plugin.config.debug)
             Bukkit.getLogger().info("Parsed SelectableParse: " + text);
-        return miniMessage.deserialize(text, tagResolvers);
+
+        AbstractMap.SimpleEntry<String, Component> finalParsedLinks = parsedLinks;
+        return miniMessage.deserialize(text, tagResolvers).replaceText(rTextBuilder -> {
+            if (finalParsedLinks.getValue() != null)
+                rTextBuilder.match("%link%").replacement(finalParsedLinks.getValue());
+        });
     }
 
     public Component parse(CommandSender player, String text) {
@@ -107,32 +116,55 @@ public class ComponentProvider {
 
         TagResolver.Builder builder = TagResolver.builder();
 
-        String toParse = chatFormat.inventory_format();
-        toParse = toParse.replace("%player%", player.getName());
-        toParse = toParse.replace("%command%", "/invshare " + player.getName() + "-inventory");
-        TagResolver inv = Placeholder.component("inv", parse(player, toParse, true, false, false, this.standardTagResolver));
+        String toParseInv = chatFormat.inventory_format();
+        toParseInv = toParseInv.replace("%player%", player.getName());
+        toParseInv = toParseInv.replace("%command%", "/invshare " + player.getName() + "-inventory");
+        TagResolver inv = Placeholder.component("inv", parse(player, toParseInv, true, false, false, this.standardTagResolver));
 
-        toParse = chatFormat.item_format();
-        toParse = toParse.replace("%player%", player.getName());
+        String toParseItem = chatFormat.item_format();
+        toParseItem = toParseItem.replace("%player%", player.getName());
+        toParseItem = toParseItem.replace("%command%", "/invshare " + player.getName() + "-item");
+        Component toParseItemComponent = parse(player, toParseItem, true, false, false, this.standardTagResolver);
         if (player instanceof Player p) {
             if (!p.getInventory().getItemInMainHand().getType().isAir()) {
                 if (p.getInventory().getItemInMainHand().getItemMeta() != null)
-                    if (p.getInventory().getItemInMainHand().getItemMeta().hasDisplayName())
-                        toParse = toParse.replace("%item_name%", p.getInventory().getItemInMainHand().getItemMeta().getDisplayName());
-                    else {
-                        toParse = toParse.replace("%item_name%", p.getInventory().getItemInMainHand().getType().name().toLowerCase().replace("_", " "));
+                    if (p.getInventory().getItemInMainHand().getItemMeta().hasDisplayName()) {
+                        toParseItemComponent = toParseItemComponent.replaceText(rTextBuilder ->
+                                rTextBuilder.match("%item_name%")
+                                        .replacement(
+                                                parse(player,
+                                                        p.getInventory().getItemInMainHand().getItemMeta().getDisplayName()
+                                                                .replace("§", "&"),
+                                                        false,
+                                                        false,
+                                                        false,
+                                                        this.standardTagResolver))
+                        );
+                    } else {
+                        toParseItemComponent = toParseItemComponent.replaceText(rTextBuilder ->
+                                rTextBuilder.match("%item_name%")
+                                        .replacement(
+                                                parse(player,
+                                                        p.getInventory().getItemInMainHand().getType().name().toLowerCase().replace("_", " "),
+                                                        false,
+                                                        false,
+                                                        false,
+                                                        this.standardTagResolver))
+                        );
                     }
             } else {
-                toParse = toParse.replace("%item_name%", "Nothing");
+                toParseItemComponent = toParseItemComponent.replaceText(rTextBuilder ->
+                        rTextBuilder.match("%item_name%")
+                                .replacement("Nothing")
+                );
             }
         }
-        toParse = toParse.replace("%command%", "/invshare " + player.getName() + "-item");
-        TagResolver item = Placeholder.component("item", parse(player, toParse, true, false, false, this.standardTagResolver));
+        TagResolver item = Placeholder.component("item", toParseItemComponent);
 
-        toParse = chatFormat.enderchest_format();
-        toParse = toParse.replace("%player%", player.getName());
-        toParse = toParse.replace("%command%", "/invshare " + player.getName() + "-enderchest");
-        TagResolver ec = Placeholder.component("ec", parse(player, toParse, true, false, false, this.standardTagResolver));
+        String toParseEnderChest = chatFormat.enderchest_format();
+        toParseEnderChest = toParseEnderChest.replace("%player%", player.getName());
+        toParseEnderChest = toParseEnderChest.replace("%command%", "/invshare " + player.getName() + "-enderchest");
+        TagResolver ec = Placeholder.component("ec", parse(player, toParseEnderChest, true, false, false, this.standardTagResolver));
 
         customPlaceholderResolvers.forEach(builder::resolver);
 
@@ -147,30 +179,36 @@ public class ComponentProvider {
         for (String playerName : plugin.getPlayerListManager().getPlayerList()) {
             Pattern p = Pattern.compile("(^" + playerName + "|" + playerName + "$|\\s" + playerName + "\\s)"); //
             Matcher m = p.matcher(text);
+            if (plugin.config.debug)
+                Bukkit.getLogger().info(playerName);
             if (m.find()) {
                 String replacing = m.group();
                 replacing = replacing.replace(playerName, format.mention_format().replace("%player%", playerName));
                 toParse = toParse.replace(m.group(), replacing);
                 if (plugin.config.debug)
-                    Bukkit.getLogger().info("mention " + playerName + " : " + toParse);
+                    Bukkit.getLogger().info("mention parsed for " + playerName + " : " + toParse);
             }
         }
 
         return toParse;
     }
 
-    public String parseLinks(String text, Config.ChatFormat format) {
-        String toParse = text;
+    public AbstractMap.SimpleEntry<String, Component> parseLinks(String text, Config.ChatFormat format) {
+        Component linkComponent = null;
         Pattern p = Pattern.compile("(https?://\\S+)");
         Matcher m = p.matcher(text);
         if (m.find()) {
             String linkString = m.group();
-            linkString = linkString.endsWith("/") ? linkString.substring(0, linkString.length() - 1) : linkString;
-            toParse = toParse.replace(m.group(), format.link_format().replace("%link%", linkString));
+            linkString = linkString.endsWith("/") ? // the last slash breaks the closing tag of <click>
+                    linkString.substring(0, linkString.length() - 1) :
+                    linkString;
+            text = text.replace(m.group(), "%link%");//replace the link with a placeholder
+            linkComponent = miniMessage.deserialize(format.link_format().replace("%link%", linkString));
         }
+
         if (plugin.config.debug)
-            Bukkit.getLogger().info("links: " + toParse);
-        return toParse;
+            Bukkit.getLogger().info("links: " + text);
+        return new AbstractMap.SimpleEntry<>(text, linkComponent);
     }
 
     public String sanitize(String message) {

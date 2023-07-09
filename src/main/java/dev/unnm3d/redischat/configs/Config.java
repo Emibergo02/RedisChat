@@ -32,7 +32,12 @@ public final class Config {
             "<bold><click:open_url:%link%>[Click to open URL (be careful)]</click></bold>",
             "<gold>StaffChat <dark_gray>» <white>%message%"
     ));
-    @Comment({"Announcer configurations", "delay and interval are in seconds", "If you want to disable an announce, just remove it from the list"})
+    @Comment({
+            "Announcer configurations",
+            "delay and interval are in seconds",
+            "If you want to disable an announce, just remove it from the list",
+            "If you specify a permission, only players with that permission will see the announce. Keep it empty to make it public",
+    })
     public List<Announce> announces = List.of(new Announce("default", "<red>RedisChat Announce: <br><white>lorem ipsum dolor sit amet", "", 5, 300));
     @Comment({"Here you can create your own placeholders", "You can give them an identifier, which will go under the format <>", "You can give them actions, like click url"})
     public Map<String, String> placeholders = Map.of("discord", "<click:open_url:https://discord.gg/uq6bBqAQ>Click to join our discord server</click>");

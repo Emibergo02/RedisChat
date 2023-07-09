@@ -79,7 +79,7 @@ public class ChatListener implements Listener {
         totalElapsed += debug("Inv upload timing: %time%ms", init);
         init = System.currentTimeMillis();
 
-        //Parse into minimessage (placeholders, tags and mentions)
+        //Parse to MiniMessage component (placeholders, tags and mentions)
         Component toBeReplaced = plugin.getComponentProvider().parse(event.getPlayer(), message, parsePlaceholders, true, true, plugin.getComponentProvider().getInvShareTagResolver(event.getPlayer(), chatFormatList.get(0)));
 
         //Put message into format

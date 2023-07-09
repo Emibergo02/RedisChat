@@ -31,6 +31,6 @@ public class AnnounceTask extends BukkitRunnable {
         plugin.getRedisDataManager().sendObjectPacket(
                 new ChatMessageInfo(KnownChatEntities.SERVER_SENDER.toString(),
                         message,
-                        KnownChatEntities.PERMISSION_MULTICAST + permission));
+                        permission.isEmpty() ? KnownChatEntities.BROADCAST.toString() : KnownChatEntities.PERMISSION_MULTICAST + permission));
     }
 }
