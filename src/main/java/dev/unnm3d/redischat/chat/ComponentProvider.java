@@ -20,6 +20,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.intellij.lang.annotations.RegExp;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -75,37 +76,78 @@ public class ComponentProvider {
             parsedLinks = parseLinks(text, plugin.config.formats.get(0));
             text = parsedLinks.getKey();
         }
-        if (player != null) {
-            text = parseLegacy(player, text);
-        }
         if (parseMentions) {
             text = parseMentions(text, plugin.config.formats.get(0));
         }
-        if (parsePlaceholders) {
-            text = parsePlaceholders(player, text);
+        if (plugin.config.legacyColorCodesSupport) {
+            text = parseLegacy(player, text);
         }
-        if (plugin.config.debug)
-            Bukkit.getLogger().info("Parsed SelectableParse: " + text);
 
-        AbstractMap.SimpleEntry<String, Component> finalParsedLinks = parsedLinks;
-        return miniMessage.deserialize(text, tagResolvers).replaceText(rTextBuilder -> {
-            if (finalParsedLinks.getValue() != null)
-                rTextBuilder.match("%link%").replacement(finalParsedLinks.getValue());
-        });
+        Component finalComponent;
+        if (parsePlaceholders) {
+            finalComponent = parsePlaceholders(player, text, tagResolvers);
+        } else {
+            finalComponent = miniMessage.deserialize(text, tagResolvers);
+        }
+        if (parsedLinks.getValue() != null) {
+            AbstractMap.SimpleEntry<String, Component> finalParsedLinks = parsedLinks;
+            finalComponent = finalComponent.replaceText(rTextBuilder ->
+                    rTextBuilder.match("%link%")
+                            .replacement(finalParsedLinks.getValue()));
+        }
+        return finalComponent;
+    }
+
+    public String replaceBukkitColorCodesWithSection(String text) {
+        if (!plugin.config.legacyColorCodesSupport) { // if legacy color codes support is disabled, we don't need to replace anything
+            return text;
+        }
+        char[] chars = text.toCharArray();
+        for (int i = 0; i < chars.length; i++) {
+            if (chars[i] == '&' && i + 1 < chars.length) {
+                int charCode = chars[i + 1];
+                // 0-9                           a-f                            k-o                             r
+                if ((charCode >= 48 && charCode <= 57) || (charCode >= 97 && charCode <= 102) || (charCode >= 107 && charCode <= 111) || charCode == 114) {
+                    chars[i] = '§';
+                }
+            }
+        }
+        return new String(chars);
     }
 
     public Component parse(CommandSender player, String text) {
         return parse(player, text, this.standardTagResolver);
     }
 
-    public String parsePlaceholders(CommandSender cmdSender, String text) {
-        String message =
-                cmdSender instanceof OfflinePlayer offlinePlayer
-                        ? PlaceholderAPI.setPlaceholders(offlinePlayer, text)
-                        : PlaceholderAPI.setPlaceholders(null, text);
-        if (plugin.config.debug)
-            Bukkit.getLogger().info("Parsed placeholders: " + message);
-        return miniMessage.serialize(LegacyComponentSerializer.legacySection().deserialize(message)).replace("\\", "");
+    public Component parsePlaceholders(CommandSender cmdSender, String text, TagResolver[] tagResolvers) {
+        String[] splittedPlaceholders = text.split("%");
+        Component fullTextComponent = miniMessage.deserialize(text, tagResolvers);
+        int placeholderStep = 1;
+        // we need to split the text by % and then check if the placeholder is a placeholder or not
+        for (int i = 0; i < splittedPlaceholders.length; i++) {
+            if (i % 2 == placeholderStep) {
+                @RegExp String reformattedPlaceholder = "%" + splittedPlaceholders[i] + "%";
+                String parsedPlaceH = cmdSender instanceof OfflinePlayer offlinePlayer
+                        ? PlaceholderAPI.setPlaceholders(offlinePlayer, reformattedPlaceholder)
+                        : PlaceholderAPI.setPlaceholders(null, reformattedPlaceholder);
+                if (parsedPlaceH.equals(reformattedPlaceholder)) {
+                    placeholderStep = Math.abs(placeholderStep - 1);
+                    continue;
+                }
+                fullTextComponent = fullTextComponent.replaceText(rTextBuilder ->
+                        rTextBuilder.match(reformattedPlaceholder)
+                                .replacement(
+                                        // we need to replace the color codes with section sign, because MiniMessage doesn't support '&'
+                                        // if there are RGB MiniMessage tags, because the Bukkit formatting doesn't support RGB
+                                        LegacyComponentSerializer.legacySection().deserialize(
+                                                replaceBukkitColorCodesWithSection(parsedPlaceH)
+                                        )
+                                )
+                );
+
+            }
+        }
+        return fullTextComponent;
     }
 
     public String purgeTags(String text) {
@@ -133,8 +175,9 @@ public class ComponentProvider {
                                 rTextBuilder.match("%item_name%")
                                         .replacement(
                                                 parse(player,
-                                                        p.getInventory().getItemInMainHand().getItemMeta().getDisplayName()
-                                                                .replace("§", "&"),
+                                                        plugin.config.legacyColorCodesSupport ?
+                                                                p.getInventory().getItemInMainHand().getItemMeta().getDisplayName().replace("§", "&") :
+                                                                p.getInventory().getItemInMainHand().getItemMeta().getDisplayName(),
                                                         false,
                                                         false,
                                                         false,
@@ -213,7 +256,7 @@ public class ComponentProvider {
 
     public String sanitize(String message) {
         for (String regex : plugin.config.regex_blacklist) {
-            message = message.replaceAll(regex, "***");
+            message = message.replaceAll(regex, "<obf>swear</obf>");
         }
         return message;
     }
@@ -233,7 +276,7 @@ public class ComponentProvider {
                 Bukkit.getLogger().info("Parsed legacy: " + text);
             }
         }
-        return text;
+        return text.replace("\\", "");
     }
 
     public void sendGenericChat(ChatMessageInfo chatMessageInfo) {
