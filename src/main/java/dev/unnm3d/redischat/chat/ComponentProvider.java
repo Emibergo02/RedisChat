@@ -20,10 +20,12 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.intellij.lang.annotations.RegExp;
+import org.bukkit.permissions.Permissible;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
@@ -83,16 +85,14 @@ public class ComponentProvider {
             text = parseLegacy(player, text);
         }
 
-        Component finalComponent;
-        if (parsePlaceholders) {
-            finalComponent = parsePlaceholders(player, text, tagResolvers);
-        } else {
-            finalComponent = miniMessage.deserialize(text, tagResolvers);
-        }
+        Component finalComponent = parsePlaceholders ?
+                parsePlaceholders(player, text, tagResolvers) :
+                miniMessage.deserialize(text, tagResolvers);
+
         if (parsedLinks.getValue() != null) {
             AbstractMap.SimpleEntry<String, Component> finalParsedLinks = parsedLinks;
             finalComponent = finalComponent.replaceText(rTextBuilder ->
-                    rTextBuilder.match("%link%")
+                    rTextBuilder.matchLiteral("%link%")
                             .replacement(finalParsedLinks.getValue()));
         }
         return finalComponent;
@@ -119,35 +119,47 @@ public class ComponentProvider {
         return parse(player, text, this.standardTagResolver);
     }
 
+    /**
+     * Parses PlaceholderAPI placeholders
+     * If a placeholder returns a colored string, we replace the placeholder as a component
+     * to not override the successive tag formatting
+     *
+     * @param cmdSender    Who is parsing the placeholders
+     * @param text         The text to parse
+     * @param tagResolvers The tag resolvers to use
+     * @return The parsed component
+     */
     public Component parsePlaceholders(CommandSender cmdSender, String text, TagResolver[] tagResolvers) {
-        String[] splittedPlaceholders = text.split("%");
-        Component fullTextComponent = miniMessage.deserialize(text, tagResolvers);
+        final String[] stringPlaceholders = text.split("%");
+
+        final LinkedHashMap<String, Component> placeholders = new LinkedHashMap<>();
         int placeholderStep = 1;
         // we need to split the text by % and then check if the placeholder is a placeholder or not
-        for (int i = 0; i < splittedPlaceholders.length; i++) {
+        for (int i = 0; i < stringPlaceholders.length; i++) {
             if (i % 2 == placeholderStep) {
-                @RegExp String reformattedPlaceholder = "%" + splittedPlaceholders[i] + "%";
-                String parsedPlaceH = cmdSender instanceof OfflinePlayer offlinePlayer
-                        ? PlaceholderAPI.setPlaceholders(offlinePlayer, reformattedPlaceholder)
-                        : PlaceholderAPI.setPlaceholders(null, reformattedPlaceholder);
+                final String reformattedPlaceholder = "%" + stringPlaceholders[i] + "%";
+                final String parsedPlaceH = replaceBukkitColorCodesWithSection(
+                        cmdSender instanceof OfflinePlayer offlinePlayer
+                                ? PlaceholderAPI.setPlaceholders(offlinePlayer, reformattedPlaceholder)
+                                : PlaceholderAPI.setPlaceholders(null, reformattedPlaceholder)
+                );
                 if (parsedPlaceH.equals(reformattedPlaceholder)) {
                     placeholderStep = Math.abs(placeholderStep - 1);
                     continue;
                 }
-                fullTextComponent = fullTextComponent.replaceText(rTextBuilder ->
-                        rTextBuilder.match(reformattedPlaceholder)
-                                .replacement(
-                                        // we need to replace the color codes with section sign, because MiniMessage doesn't support '&'
-                                        // if there are RGB MiniMessage tags, because the Bukkit formatting doesn't support RGB
-                                        LegacyComponentSerializer.legacySection().deserialize(
-                                                replaceBukkitColorCodesWithSection(parsedPlaceH)
-                                        )
-                                )
-                );
-
+                if (parsedPlaceH.contains("§")) {
+                    //Colored placeholder needs to be pasted after the normal text is parsed
+                    placeholders.put(reformattedPlaceholder, LegacyComponentSerializer.legacySection().deserialize(parsedPlaceH));
+                } else {
+                    text = text.replace(reformattedPlaceholder, parsedPlaceH);
+                }
             }
         }
-        return fullTextComponent;
+        Component answer = miniMessage.deserialize(text, tagResolvers);
+        for (String placeholder : placeholders.keySet()) {
+            answer = answer.replaceText(rBuilder -> rBuilder.matchLiteral(placeholder).replacement(placeholders.get(placeholder)));
+        }
+        return answer;
     }
 
     public String purgeTags(String text) {
@@ -172,12 +184,10 @@ public class ComponentProvider {
                 if (p.getInventory().getItemInMainHand().getItemMeta() != null)
                     if (p.getInventory().getItemInMainHand().getItemMeta().hasDisplayName()) {
                         toParseItemComponent = toParseItemComponent.replaceText(rTextBuilder ->
-                                rTextBuilder.match("%item_name%")
+                                rTextBuilder.matchLiteral("%item_name%")
                                         .replacement(
                                                 parse(player,
-                                                        plugin.config.legacyColorCodesSupport ?
-                                                                p.getInventory().getItemInMainHand().getItemMeta().getDisplayName().replace("§", "&") :
-                                                                p.getInventory().getItemInMainHand().getItemMeta().getDisplayName(),
+                                                        parseLegacy(null, p.getInventory().getItemInMainHand().getItemMeta().getDisplayName()),
                                                         false,
                                                         false,
                                                         false,
@@ -185,7 +195,7 @@ public class ComponentProvider {
                         );
                     } else {
                         toParseItemComponent = toParseItemComponent.replaceText(rTextBuilder ->
-                                rTextBuilder.match("%item_name%")
+                                rTextBuilder.matchLiteral("%item_name%")
                                         .replacement(
                                                 parse(player,
                                                         p.getInventory().getItemInMainHand().getType().name().toLowerCase().replace("_", " "),
@@ -197,7 +207,7 @@ public class ComponentProvider {
                     }
             } else {
                 toParseItemComponent = toParseItemComponent.replaceText(rTextBuilder ->
-                        rTextBuilder.match("%item_name%")
+                        rTextBuilder.matchLiteral("%item_name%")
                                 .replacement("Nothing")
                 );
             }
@@ -222,8 +232,6 @@ public class ComponentProvider {
         for (String playerName : plugin.getPlayerListManager().getPlayerList()) {
             Pattern p = Pattern.compile("(^" + playerName + "|" + playerName + "$|\\s" + playerName + "\\s)"); //
             Matcher m = p.matcher(text);
-            if (plugin.config.debug)
-                Bukkit.getLogger().info(playerName);
             if (m.find()) {
                 String replacing = m.group();
                 replacing = replacing.replace(playerName, format.mention_format().replace("%player%", playerName));
@@ -269,14 +277,18 @@ public class ComponentProvider {
         return capsCount > message.length() / 2 && message.length() > 20;//50% of the message is caps and the message is longer than 20 chars
     }
 
-    public String parseLegacy(CommandSender player, String text) {
-        if (plugin.config.legacyColorCodesSupport && player.hasPermission(Permission.REDIS_CHAT_USE_FORMATTING.getPermission())) {
-            text = miniMessage.serialize(LegacyComponentSerializer.legacyAmpersand().deserialize(text));
+    public String parseLegacy(@Nullable Permissible player, String text) {
+        if (
+                player == null || //Is without permissions or if it has permissions
+                        player.hasPermission(Permission.REDIS_CHAT_USE_FORMATTING.getPermission())
+        ) {
+            text = miniMessage.serialize(LegacyComponentSerializer.legacySection().deserialize(replaceBukkitColorCodesWithSection(text)));
             if (plugin.config.debug) {
                 Bukkit.getLogger().info("Parsed legacy: " + text);
             }
+            return text.replace("\\", "");
         }
-        return text.replace("\\", "");
+        return text;
     }
 
     public void sendGenericChat(ChatMessageInfo chatMessageInfo) {
@@ -304,7 +316,7 @@ public class ComponentProvider {
         Component toBeReplaced = parse(deserialize);
         //Put message into format
         formatted = formatted.replaceText(
-                builder -> builder.match("%message%").replacement(toBeReplaced)
+                builder -> builder.matchLiteral("%message%").replacement(toBeReplaced)
         );
         sendComponentOrCache(watcher, formatted);
     }
@@ -327,7 +339,7 @@ public class ComponentProvider {
                 Component toBeReplaced = parse(p, chatMessageInfo.getMessage(), false, false, false, this.standardTagResolver);
                 //Put message into format
                 formatted = formatted.replaceText(
-                        builder -> builder.match("%message%").replacement(toBeReplaced)
+                        builder -> builder.matchLiteral("%message%").replacement(toBeReplaced)
                 );
                 sendComponentOrCache(p, formatted);
             }

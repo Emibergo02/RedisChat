@@ -5,6 +5,9 @@ author: Unnm3d
 api-version: 1.16
 libraries:
   - io.lettuce:lettuce-core:6.2.4.RELEASE
+  - org.yaml:snakeyaml:1.27
+  - org.snakeyaml:snakeyaml-engine:2.3
+  - org.jetbrains:annotations:19.0.0
 depend:
   - PlaceholderAPI
 softdepend:

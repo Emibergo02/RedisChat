@@ -48,7 +48,7 @@ public class ChatListener implements Listener {
         totalElapsed += debug("Rate limit timing: %time%ms", init);
         init = System.currentTimeMillis();
 
-        Component formatted = plugin.getComponentProvider().parse(event.getPlayer(), chatFormatList.get(0).format());//Parse format without %message%
+        Component formatted = plugin.getComponentProvider().parse(event.getPlayer(), chatFormatList.get(0).format(), true, true, true);//Parse format without %message%
         //Check for minimessage tags permission
         String message = event.getMessage();
         boolean parsePlaceholders = true;
