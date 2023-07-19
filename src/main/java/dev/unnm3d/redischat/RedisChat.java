@@ -86,7 +86,7 @@ public final class RedisChat extends JavaPlugin {
         MainCommand mainCommand = new MainCommand(this, this.webEditorAPI);
         loadCommand("redischat", mainCommand, mainCommand);
         SetItemCommand setItemCommand = new SetItemCommand(this);
-        loadCommand("setitem", setItemCommand, setItemCommand);
+        loadCommand("redischat-setitem", setItemCommand, setItemCommand);
 
         this.spyManager = new SpyManager(this);
         loadCommand("spychat", new SpyChatCommand(this), null);

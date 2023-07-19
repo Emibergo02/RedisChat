@@ -23,10 +23,9 @@ commands:
     description: RedisChat command
     usage: /redischat <reload>
     permission: redischat.admin
-  setitem:
+  redischat-setitem:
     description: Setitem command
-    aliases: [si]
-    usage: /setitem <item-name>
+    usage: /redischat-setitem <item-name>
     permission: redischat.setitem
   ignore:
     description: Ignore command

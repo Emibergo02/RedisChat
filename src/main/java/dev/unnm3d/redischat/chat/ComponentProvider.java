@@ -106,8 +106,13 @@ public class ComponentProvider {
         for (int i = 0; i < chars.length; i++) {
             if (chars[i] == '&' && i + 1 < chars.length) {
                 int charCode = chars[i + 1];
-                // 0-9                           a-f                            k-o                             r
-                if ((charCode >= 48 && charCode <= 57) || (charCode >= 97 && charCode <= 102) || (charCode >= 107 && charCode <= 111) || charCode == 114) {
+
+                if ((charCode >= 48 && charCode <= 57)          // 0-9
+                        || (charCode >= 97 && charCode <= 102)  // a-f
+                        || (charCode >= 107 && charCode <= 111) // k-o
+                        || charCode == 114                      // r
+                        || charCode == 120                      // x
+                ) {
                     chars[i] = '§';
                 }
             }
@@ -147,7 +152,9 @@ public class ComponentProvider {
                     placeholderStep = Math.abs(placeholderStep - 1);
                     continue;
                 }
-                if (parsedPlaceH.contains("§")) {
+                if (plugin.config.enablePlaceholderGlitch) {
+                    text = text.replace(reformattedPlaceholder, miniMessage.serialize(LegacyComponentSerializer.legacySection().deserialize(parsedPlaceH)));
+                } else if (parsedPlaceH.contains("§")) {
                     //Colored placeholder needs to be pasted after the normal text is parsed
                     placeholders.put(reformattedPlaceholder, LegacyComponentSerializer.legacySection().deserialize(parsedPlaceH));
                 } else {
