@@ -275,7 +275,7 @@ public class ComponentProvider {
 
     private String parseResolverIntegrations(String text){
         for (TagResolverIntegration resolver : this.tagResolverIntegrationList) {
-            text = resolver.resolve(text);
+            text = resolver.parseTags(text);
         }
         return text;
     }
@@ -315,7 +315,9 @@ public class ComponentProvider {
             if (multicastPermission != null) {
                 if (!onlinePlayer.hasPermission(multicastPermission)) continue;
             }
-            if(chatMessageInfo.getMessage().contains(onlinePlayer.getName())){
+            if(chatMessageInfo.getMessage().contains(
+                    plugin.config.getChatFormats(onlinePlayer).get(0).mention_format().replace("%player%", onlinePlayer.getName())
+            )){
                 onlinePlayer.playSound(onlinePlayer.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 2.0f);
             }
             sendComponentOrCache(onlinePlayer, MiniMessage.miniMessage().deserialize(chatMessageInfo.getMessage()));

@@ -11,6 +11,7 @@ import dev.unnm3d.redischat.configs.GuiSettings;
 import dev.unnm3d.redischat.configs.Messages;
 import dev.unnm3d.redischat.integrations.ItemsAdderTagResolver;
 import dev.unnm3d.redischat.integrations.OraxenTagResolver;
+import dev.unnm3d.redischat.integrations.VanishIntegration;
 import dev.unnm3d.redischat.mail.MailCommand;
 import dev.unnm3d.redischat.mail.MailManager;
 import dev.unnm3d.redischat.moderation.SpyChatCommand;
@@ -116,6 +117,7 @@ public final class RedisChat extends JavaPlugin {
             getLogger().info("ItemsAdder found, enabling integration");
             componentProvider.addResolverIntegration(new ItemsAdderTagResolver());
         }
+        playerListManager.addVanishIntegration(new VanishIntegration(){}); //PremiumVanish standard
     }
 
 

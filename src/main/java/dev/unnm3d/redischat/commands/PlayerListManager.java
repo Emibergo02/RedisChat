@@ -1,13 +1,16 @@
 package dev.unnm3d.redischat.commands;
 
 import dev.unnm3d.redischat.RedisChat;
+import dev.unnm3d.redischat.integrations.VanishIntegration;
 import io.lettuce.core.pubsub.RedisPubSubListener;
 import io.lettuce.core.pubsub.StatefulRedisPubSubConnection;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -16,16 +19,19 @@ import static dev.unnm3d.redischat.redis.redistools.RedisKeys.PLAYERLIST;
 public class PlayerListManager {
     private final BukkitTask task;
     private final ConcurrentHashMap<String, Long> playerList;
+    private final List<VanishIntegration> vanishIntegrations;
     private final RedisChat plugin;
 
     public PlayerListManager(RedisChat plugin) {
         this.plugin = plugin;
         this.playerList = new ConcurrentHashMap<>();
+        this.vanishIntegrations = new ArrayList<>();
         this.task = new BukkitRunnable() {
             @Override
             public void run() {
                 playerList.entrySet().removeIf(entry -> System.currentTimeMillis() - entry.getValue() > 1000 * 11);
                 plugin.getServer().getOnlinePlayers().stream()
+                        .filter(player -> vanishIntegrations.stream().noneMatch(integration -> integration.isVanished(player)))
                         .map(HumanEntity::getName)
                         .filter(s -> !s.isEmpty())
                         .forEach(name -> playerList.put(name, System.currentTimeMillis()));
@@ -77,6 +83,10 @@ public class PlayerListManager {
                     return null;
                 })
                 .thenAccept(subscription -> plugin.getLogger().info("Subscribed to channel: " + PLAYERLIST));
+    }
+
+    public void addVanishIntegration(VanishIntegration vanishIntegration) {
+        vanishIntegrations.add(vanishIntegration);
     }
 
     public Set<String> getPlayerList() {
