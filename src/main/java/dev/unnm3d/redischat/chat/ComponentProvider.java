@@ -25,7 +25,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permissible;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -273,7 +276,7 @@ public class ComponentProvider {
         return new AbstractMap.SimpleEntry<>(text, linkComponent);
     }
 
-    private String parseResolverIntegrations(String text){
+    private String parseResolverIntegrations(String text) {
         for (TagResolverIntegration resolver : this.tagResolverIntegrationList) {
             text = resolver.parseTags(text);
         }
@@ -315,10 +318,8 @@ public class ComponentProvider {
             if (multicastPermission != null) {
                 if (!onlinePlayer.hasPermission(multicastPermission)) continue;
             }
-            if(chatMessageInfo.getMessage().contains(
-                    plugin.config.getChatFormats(onlinePlayer).get(0).mention_format().replace("%player%", onlinePlayer.getName())
-            )){
-                onlinePlayer.playSound(onlinePlayer.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 2.0f);
+            if (chatMessageInfo.getMessage().contains("@" + onlinePlayer.getName())) {
+                onlinePlayer.playSound(onlinePlayer.getLocation(), Sound.BLOCK_NOTE_BLOCK_GUITAR, 1, 2.0f);
             }
             sendComponentOrCache(onlinePlayer, MiniMessage.miniMessage().deserialize(chatMessageInfo.getMessage()));
         }
