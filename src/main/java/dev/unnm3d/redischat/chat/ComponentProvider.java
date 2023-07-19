@@ -3,6 +3,7 @@ package dev.unnm3d.redischat.chat;
 import dev.unnm3d.redischat.Permission;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.configs.Config;
+import dev.unnm3d.redischat.integrations.TagResolverIntegration;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import me.clip.placeholderapi.PlaceholderAPI;
@@ -18,15 +19,13 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.md_5.bungee.api.chat.BaseComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permissible;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -41,6 +40,7 @@ public class ComponentProvider {
     @Getter
     private static ComponentProvider instance;
     private final List<TagResolver.Single> customPlaceholderResolvers;
+    private final List<TagResolverIntegration> tagResolverIntegrationList;
 
     public ComponentProvider(RedisChat plugin) {
         instance = this;
@@ -53,7 +53,11 @@ public class ComponentProvider {
                         Placeholder.component(entry.getKey(), MiniMessage.miniMessage().deserialize(entry.getValue()))
                 ).toList();
         this.standardTagResolver = StandardTags.defaults();
+        this.tagResolverIntegrationList = new ArrayList<>();
+    }
 
+    public void addResolverIntegration(TagResolverIntegration integration) {
+        this.tagResolverIntegrationList.add(integration);
     }
 
     public BaseComponent[] toBaseComponent(Component component) {
@@ -86,7 +90,7 @@ public class ComponentProvider {
         }
 
         Component finalComponent = parsePlaceholders ?
-                parsePlaceholders(player, text, tagResolvers) :
+                parsePlaceholders(player, parseResolverIntegrations(text), tagResolvers) :
                 miniMessage.deserialize(text, tagResolvers);
 
         if (parsedLinks.getValue() != null) {
@@ -269,6 +273,13 @@ public class ComponentProvider {
         return new AbstractMap.SimpleEntry<>(text, linkComponent);
     }
 
+    private String parseResolverIntegrations(String text){
+        for (TagResolverIntegration resolver : this.tagResolverIntegrationList) {
+            text = resolver.resolve(text);
+        }
+        return text;
+    }
+
     public String sanitize(String message) {
         for (String regex : plugin.config.regex_blacklist) {
             message = message.replaceAll(regex, "<obf>swear</obf>");
@@ -303,6 +314,9 @@ public class ComponentProvider {
         for (Player onlinePlayer : plugin.getServer().getOnlinePlayers()) {
             if (multicastPermission != null) {
                 if (!onlinePlayer.hasPermission(multicastPermission)) continue;
+            }
+            if(chatMessageInfo.getMessage().contains(onlinePlayer.getName())){
+                onlinePlayer.playSound(onlinePlayer.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 2.0f);
             }
             sendComponentOrCache(onlinePlayer, MiniMessage.miniMessage().deserialize(chatMessageInfo.getMessage()));
         }

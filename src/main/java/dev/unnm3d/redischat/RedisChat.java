@@ -9,6 +9,8 @@ import dev.unnm3d.redischat.commands.*;
 import dev.unnm3d.redischat.configs.Config;
 import dev.unnm3d.redischat.configs.GuiSettings;
 import dev.unnm3d.redischat.configs.Messages;
+import dev.unnm3d.redischat.integrations.ItemsAdderTagResolver;
+import dev.unnm3d.redischat.integrations.OraxenTagResolver;
 import dev.unnm3d.redischat.mail.MailCommand;
 import dev.unnm3d.redischat.mail.MailManager;
 import dev.unnm3d.redischat.moderation.SpyChatCommand;
@@ -104,6 +106,16 @@ public final class RedisChat extends JavaPlugin {
         loadCommand("invshare", new InvShareCommand(this), null);
 
         new Metrics(this, 17678);
+
+        //Integration section
+        if(getServer().getPluginManager().getPlugin("Oraxen") != null) {
+            getLogger().info("Oraxen found, enabling integration");
+            componentProvider.addResolverIntegration(new OraxenTagResolver());
+        }
+        if(getServer().getPluginManager().getPlugin("ItemsAdder") != null) {
+            getLogger().info("ItemsAdder found, enabling integration");
+            componentProvider.addResolverIntegration(new ItemsAdderTagResolver());
+        }
     }
 
 
