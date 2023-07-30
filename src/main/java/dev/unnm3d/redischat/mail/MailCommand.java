@@ -88,7 +88,7 @@ public class MailCommand implements CommandExecutor, TabCompleter {
         if (args.length == 2 && args[1].equalsIgnoreCase("send")) {
             ArrayList<String> list = new ArrayList<>();
             list.add("*public");
-            list.addAll(mailManager.getPlugin().getPlayerListManager().getPlayerList().stream().filter(s -> s.startsWith(args[args.length - 1])).toList());
+            list.addAll(mailManager.getPlugin().getPlayerListManager().getPlayerList().stream().filter(s -> s.toLowerCase().startsWith(args[args.length - 1])).toList());
             return list;
         }
         if (args.length == 3 && args[1].equalsIgnoreCase("send")) return List.of("<aqua>Mail Object/Title</aqua>");

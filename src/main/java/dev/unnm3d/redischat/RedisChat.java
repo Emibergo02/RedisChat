@@ -9,7 +9,6 @@ import dev.unnm3d.redischat.commands.*;
 import dev.unnm3d.redischat.configs.Config;
 import dev.unnm3d.redischat.configs.GuiSettings;
 import dev.unnm3d.redischat.configs.Messages;
-import dev.unnm3d.redischat.integrations.ItemsAdderTagResolver;
 import dev.unnm3d.redischat.integrations.OraxenTagResolver;
 import dev.unnm3d.redischat.integrations.VanishIntegration;
 import dev.unnm3d.redischat.mail.MailCommand;
@@ -109,15 +108,12 @@ public final class RedisChat extends JavaPlugin {
         new Metrics(this, 17678);
 
         //Integration section
-        if(getServer().getPluginManager().getPlugin("Oraxen") != null) {
+        if (getServer().getPluginManager().getPlugin("Oraxen") != null) {
             getLogger().info("Oraxen found, enabling integration");
             componentProvider.addResolverIntegration(new OraxenTagResolver());
         }
-        if(getServer().getPluginManager().getPlugin("ItemsAdder") != null) {
-            getLogger().info("ItemsAdder found, enabling integration");
-            componentProvider.addResolverIntegration(new ItemsAdderTagResolver());
-        }
-        playerListManager.addVanishIntegration(new VanishIntegration(){}); //PremiumVanish standard
+        playerListManager.addVanishIntegration(new VanishIntegration() {
+        }); //PremiumVanish standard
     }
 
 

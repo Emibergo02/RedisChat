@@ -29,7 +29,7 @@ public class PlayerListManager {
         this.task = new BukkitRunnable() {
             @Override
             public void run() {
-                playerList.entrySet().removeIf(entry -> System.currentTimeMillis() - entry.getValue() > 1000 * 11);
+                playerList.entrySet().removeIf(entry -> System.currentTimeMillis() - entry.getValue() > 1000 * 6);
                 plugin.getServer().getOnlinePlayers().stream()
                         .filter(player -> vanishIntegrations.stream().noneMatch(integration -> integration.isVanished(player)))
                         .map(HumanEntity::getName)
@@ -40,7 +40,7 @@ public class PlayerListManager {
                                 String.join("§", playerList.keySet().stream().toList()))
                 );
             }
-        }.runTaskTimerAsynchronously(plugin, 0, 200);//10 seconds
+        }.runTaskTimerAsynchronously(plugin, 0, 100);//5 seconds
         listenPlayerListUpdate();
     }
 

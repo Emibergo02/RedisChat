@@ -12,7 +12,6 @@ depend:
   - PlaceholderAPI
 softdepend:
   - Oraxen
-  - ItemsAdder
 loadbefore:
   - CMI
   - CMILib

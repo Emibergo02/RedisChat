@@ -100,6 +100,6 @@ public class MsgCommand implements CommandExecutor, TabCompleter {
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
         if (args.length == 0 || !sender.hasPermission(Permission.REDIS_CHAT_MESSAGE.getPermission())) return List.of();
-        return plugin.getPlayerListManager().getPlayerList().stream().filter(s -> s.startsWith(args[args.length - 1])).toList();
+        return plugin.getPlayerListManager().getPlayerList().stream().filter(s -> s.toLowerCase().startsWith(args[args.length - 1])).toList();
     }
 }
