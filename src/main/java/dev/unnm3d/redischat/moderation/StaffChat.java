@@ -6,7 +6,6 @@ import dev.unnm3d.redischat.chat.ChatMessageInfo;
 import dev.unnm3d.redischat.chat.KnownChatEntities;
 import dev.unnm3d.redischat.configs.Config;
 import lombok.AllArgsConstructor;
-import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -28,11 +27,12 @@ public class StaffChat implements CommandExecutor {
     }
 
     public void staffChat(CommandSender commandSender, Config.ChatFormat chatFormat, String message) {
-        Component formatted = plugin.getComponentProvider().parse(commandSender,
-                chatFormat.staff_chat_format().replace("%message%", message));
-        plugin.getRedisDataManager().sendObjectPacket(new ChatMessageInfo(
+        plugin.getRedisDataManager().sendChatMessage(new ChatMessageInfo(
                 commandSender.getName(),
-                MiniMessage.miniMessage().serialize(formatted),
+                MiniMessage.miniMessage().serialize(
+                        plugin.getComponentProvider().parse(commandSender, chatFormat.staff_chat_format())
+                ),
+                message,
                 KnownChatEntities.PERMISSION_MULTICAST + Permission.REDIS_CHAT_ADMIN_STAFF_CHAT.getPermission()
         ));
     }

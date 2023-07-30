@@ -12,26 +12,71 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.util.io.BukkitObjectInputStream;
-import org.bukkit.util.io.BukkitObjectOutputStream;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
 
 import static dev.unnm3d.redischat.redis.redistools.RedisKeys.*;
 
-public class RedisDataManager extends RedisAbstract {
+public class RedisDataManager extends RedisAbstract implements DataManager {
     private final RedisChat plugin;
     public static int pubSubIndex = 0;
 
     public RedisDataManager(RedisClient redisClient, RedisChat redisChat) {
         super(redisClient);
         this.plugin = redisChat;
+        listenSub();
     }
 
+    private void listenSub() {
+        StatefulRedisPubSubConnection<String, String> pubSubConnection = getPubSubConnection();
+        pubSubConnection.addListener(new RedisPubSubListener<>() {
+            @Override
+            public void message(String channel, String message) {
+                if (channel.equals(CHAT_CHANNEL.toString()))
+                    receiveSerializedChatMessage(message);
+                else if (channel.equals(PLAYERLIST.toString()))
+                    if (plugin.getPlayerListManager() != null)
+                        plugin.getPlayerListManager().updatePlayerList(Arrays.asList(message.split("§")));
+            }
+
+            @Override
+            public void message(String pattern, String channel, String message) {
+            }
+
+            @Override
+            public void subscribed(String channel, long count) {
+            }
+
+            @Override
+            public void psubscribed(String pattern, long count) {
+            }
+
+            @Override
+            public void unsubscribed(String channel, long count) {
+            }
+
+            @Override
+            public void punsubscribed(String pattern, long count) {
+            }
+        });
+        //TODO: subscribe to multiple channels
+        pubSubConnection.async().subscribe(CHAT_CHANNEL.toString(), PLAYERLIST.toString())
+                .exceptionally(throwable -> {
+                    throwable.printStackTrace();
+                    plugin.getLogger().warning("Error subscribing to chat channel");
+                    return null;
+                })
+                .thenAccept(subscription -> plugin.getLogger().info("Subscribed to channel: " + CHAT_CHANNEL));
+
+
+    }
+
+    @Override
     public Optional<String> getReplyName(String requesterName) {
         StatefulRedisConnection<String, String> connection = lettuceRedisClient.connect();
         String replyName = connection.sync().hget(REPLY.toString(), requesterName);
@@ -40,12 +85,14 @@ public class RedisDataManager extends RedisAbstract {
 
     }
 
+    @Override
     public void setReplyName(String nameReceiver, String requesterName) {
         StatefulRedisConnection<String, String> connection = lettuceRedisClient.connect();
         connection.sync().hset(REPLY.toString(), nameReceiver, requesterName);
         connection.close();
     }
 
+    @Override
     public boolean isRateLimited(String playerName) {
         StatefulRedisConnection<String, String> connection = lettuceRedisClient.connect();
         String result = connection.sync().get(RATE_LIMIT_PREFIX + playerName);
@@ -55,6 +102,7 @@ public class RedisDataManager extends RedisAbstract {
         return nowMessages >= plugin.config.rate_limit;//messages higher than limit
     }
 
+    @Override
     public void setRateLimit(String playerName, int seconds) {
         getConnectionPipeline(connection -> {
             connection.incr(RATE_LIMIT_PREFIX + playerName);
@@ -63,6 +111,7 @@ public class RedisDataManager extends RedisAbstract {
         });
     }
 
+    @Override
     public CompletionStage<Boolean> isSpying(String playerName) {
         return getConnectionAsync(connection ->
                 connection.sismember(SPYING_LIST.toString(), playerName)
@@ -80,6 +129,7 @@ public class RedisDataManager extends RedisAbstract {
         );
     }
 
+    @Override
     public void setSpying(String playerName, boolean spy) {
         getConnectionAsync(connection -> {
                     if (spy) {
@@ -113,6 +163,7 @@ public class RedisDataManager extends RedisAbstract {
         );
     }
 
+    @Override
     public CompletionStage<Boolean> toggleIgnoring(String playerName, String ignoringName) {
         return getConnectionAsync(connection ->
                 connection.sadd(IGNORE_PREFIX + playerName, ignoringName)
@@ -137,6 +188,7 @@ public class RedisDataManager extends RedisAbstract {
 
     }
 
+    @Override
     public CompletionStage<Boolean> isIgnoring(String playerName, String ignoringName) {
         return getConnectionAsync(connection ->
                 connection.smembers(IGNORE_PREFIX + playerName)
@@ -152,6 +204,7 @@ public class RedisDataManager extends RedisAbstract {
                         }));
     }
 
+    @Override
     public CompletionStage<Set<String>> ignoringList(String playerName) {
         return getConnectionAsync(connection ->
                 connection.smembers(IGNORE_PREFIX + playerName)
@@ -168,6 +221,7 @@ public class RedisDataManager extends RedisAbstract {
 
     }
 
+    @Override
     public void addInventory(String name, ItemStack[] inv) {
         getConnectionAsync(connection ->
                 connection.hset(INVSHARE_INVENTORY.toString(), name, serialize(inv))
@@ -193,6 +247,7 @@ public class RedisDataManager extends RedisAbstract {
         );
     }
 
+    @Override
     public void addItem(String name, ItemStack item) {
         getConnectionAsync(connection ->
                 connection.hset(INVSHARE_ITEM.toString(), name, serialize(item))
@@ -217,6 +272,7 @@ public class RedisDataManager extends RedisAbstract {
         );
     }
 
+    @Override
     public void addEnderchest(String name, ItemStack[] inv) {
         getConnectionAsync(connection ->
                 connection.hset(INVSHARE_ENDERCHEST.toString(), name, serialize(inv))
@@ -241,6 +297,7 @@ public class RedisDataManager extends RedisAbstract {
         );
     }
 
+    @Override
     public CompletionStage<ItemStack> getPlayerItem(String playerName) {
         return getConnectionAsync(connection ->
                 connection.hget(INVSHARE_ITEM.toString(), playerName)
@@ -259,6 +316,7 @@ public class RedisDataManager extends RedisAbstract {
         );
     }
 
+    @Override
     public CompletionStage<ItemStack[]> getPlayerInventory(String playerName) {
         return getConnectionAsync(connection ->
                 connection.hget(INVSHARE_INVENTORY.toString(), playerName)
@@ -276,6 +334,7 @@ public class RedisDataManager extends RedisAbstract {
 
     }
 
+    @Override
     public CompletionStage<ItemStack[]> getPlayerEnderchest(String playerName) {
         return getConnectionAsync(connection ->
                 connection.hget(INVSHARE_ENDERCHEST.toString(), playerName)
@@ -292,6 +351,7 @@ public class RedisDataManager extends RedisAbstract {
                         }));
     }
 
+    @Override
     public CompletionStage<List<Mail>> getPlayerPrivateMail(String playerName) {
         return getConnectionAsync(connection ->
                 connection.hgetall(PRIVATE_MAIL_PREFIX + playerName)
@@ -303,6 +363,7 @@ public class RedisDataManager extends RedisAbstract {
                         }));
     }
 
+    @Override
     public CompletionStage<Boolean> setPlayerPrivateMail(Mail mail) {
         return getConnectionPipeline(connection -> {
             connection.hset(PRIVATE_MAIL_PREFIX + mail.getReceiver(), String.valueOf(mail.getId()), mail.toString());
@@ -319,6 +380,7 @@ public class RedisDataManager extends RedisAbstract {
         });
     }
 
+    @Override
     public CompletionStage<Boolean> setPublicMail(Mail mail) {
         return getConnectionAsync(connection ->
                 connection.hset(PUBLIC_MAIL.toString(), String.valueOf(mail.getId()), mail.toString()).exceptionally(throwable -> {
@@ -328,6 +390,7 @@ public class RedisDataManager extends RedisAbstract {
                 }));
     }
 
+    @Override
     public CompletionStage<List<Mail>> getPublicMails() {
         return getConnectionAsync(connection ->
                 connection.hgetall(PUBLIC_MAIL.toString())
@@ -338,78 +401,8 @@ public class RedisDataManager extends RedisAbstract {
                         }));
     }
 
-    private List<Mail> deserializeMails(Map<String, String> timestampMail) {
-        List<Mail> mailList = new ArrayList<>();
-        for (Map.Entry<String, String> timestampMailEntry : timestampMail.entrySet()) {
-            mailList.add(new Mail(Double.parseDouble(timestampMailEntry.getKey()), timestampMailEntry.getValue()));
-        }
-        return mailList;
-    }
-
-    public void listenChatPackets() {
-        StatefulRedisPubSubConnection<String, String> pubSubConnection = getPubSubConnection();
-        pubSubConnection.addListener(new RedisPubSubListener<>() {
-            @Override
-            public void message(String channel, String message) {
-                //plugin.getLogger().info("Received message #"+pubsubindex+" on channel " + channel + ": " + message);
-                ChatMessageInfo chatMessageInfo = new ChatMessageInfo(message);
-
-                if (chatMessageInfo.isPrivate()) {
-                    long init = System.currentTimeMillis();
-                    for (Player player : Bukkit.getOnlinePlayers()) {
-                        if (plugin.getSpyManager().isSpying(player.getName())) {//Spychat
-                            plugin.getComponentProvider().sendSpyChat(chatMessageInfo.getReceiverName(), chatMessageInfo.getSenderName(), player, chatMessageInfo.getMessage());
-                        }
-                        if (player.getName().equals(chatMessageInfo.getReceiverName())) {//Private message
-                            plugin.getRedisDataManager().isIgnoring(chatMessageInfo.getReceiverName(), chatMessageInfo.getSenderName())
-                                    .thenAccept(ignored -> {
-                                        if (!ignored)
-                                            plugin.getComponentProvider().sendPrivateChat(chatMessageInfo);
-                                        if (plugin.config.debug) {
-                                            plugin.getLogger().info("Private message sent to " + chatMessageInfo.getReceiverName() + " with ignore: "+ignored+" in " + (System.currentTimeMillis() - init) + "ms");
-                                        }
-                                    });
-                        }
-                    }
-                    return;
-                }
-
-                plugin.getComponentProvider().sendGenericChat(chatMessageInfo);
-            }
-
-            @Override
-            public void message(String pattern, String channel, String message) {
-            }
-
-            @Override
-            public void subscribed(String channel, long count) {
-            }
-
-            @Override
-            public void psubscribed(String pattern, long count) {
-            }
-
-            @Override
-            public void unsubscribed(String channel, long count) {
-            }
-
-            @Override
-            public void punsubscribed(String pattern, long count) {
-            }
-        });
-
-        pubSubConnection.async().subscribe(CHAT_CHANNEL.toString())
-                .exceptionally(throwable -> {
-                    throwable.printStackTrace();
-                    plugin.getLogger().warning("Error subscribing to chat channel");
-                    return null;
-                })
-                .thenAccept(subscription -> plugin.getLogger().info("Subscribed to channel: " + CHAT_CHANNEL));
-
-
-    }
-
-    public void sendObjectPacket(ChatMessageInfo packet) {
+    @Override
+    public void sendChatMessage(ChatMessageInfo packet) {
         getConnectionAsync(conn ->
                 conn.publish(CHAT_CHANNEL.toString(), packet.serialize())
                         .thenApply(integer -> {
@@ -427,36 +420,41 @@ public class RedisDataManager extends RedisAbstract {
 
     }
 
-    private String serialize(ItemStack... items) {
-        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-             BukkitObjectOutputStream dataOutput = new BukkitObjectOutputStream(outputStream)) {
+    @Override
+    public void receiveSerializedChatMessage(String chatMessage) {
+        ChatMessageInfo chatMessageInfo = new ChatMessageInfo(chatMessage);
 
-            dataOutput.writeInt(items.length);
-
-            for (ItemStack item : items)
-                dataOutput.writeObject(item);
-
-            return Base64.getEncoder().encodeToString(outputStream.toByteArray());
-
-        } catch (Exception ignored) {
-            return "";
+        if (chatMessageInfo.isPrivate()) {
+            long init = System.currentTimeMillis();
+            for (Player player : Bukkit.getOnlinePlayers()) {
+                if (plugin.getSpyManager().isSpying(player.getName())) {//Spychat
+                    plugin.getComponentProvider().sendSpyChat(chatMessageInfo, player);
+                }
+                if (player.getName().equals(chatMessageInfo.getReceiverName())) {//Private message
+                    plugin.getRedisDataManager().isIgnoring(chatMessageInfo.getReceiverName(), chatMessageInfo.getSenderName())
+                            .thenAccept(ignored -> {
+                                if (!ignored)
+                                    plugin.getComponentProvider().sendPrivateChat(chatMessageInfo);
+                                if (plugin.config.debug) {
+                                    plugin.getLogger().info("Private message sent to " + chatMessageInfo.getReceiverName() + " with ignore: " + ignored + " in " + (System.currentTimeMillis() - init) + "ms");
+                                }
+                            });
+                }
+            }
+            return;
         }
+
+        plugin.getComponentProvider().sendGenericChat(chatMessageInfo);
     }
 
-    private ItemStack[] deserialize(String source) {
-        try (ByteArrayInputStream inputStream = new ByteArrayInputStream(Base64.getDecoder().decode(source));
-             BukkitObjectInputStream dataInput = new BukkitObjectInputStream(inputStream)) {
-
-            ItemStack[] items = new ItemStack[dataInput.readInt()];
-
-            for (int i = 0; i < items.length; i++)
-                items[i] = (ItemStack) dataInput.readObject();
-
-            return items;
-        } catch (Exception ignored) {
-            return new ItemStack[0];
-        }
+    @Override
+    public void publishPlayerList(List<String> playerNames) {
+        getConnectionAsync(connection ->
+                connection.publish(PLAYERLIST.toString(),
+                        String.join("§", playerNames))
+        );
     }
+
 
     @Override
     public void close() {

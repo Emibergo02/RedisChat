@@ -62,12 +62,13 @@ public class MsgCommand implements CommandExecutor, TabCompleter {
 
             //Parse into minimessage (placeholders, tags and mentions)
             Component toBeReplaced = plugin.getComponentProvider().parse(sender, message, parsePlaceholders, true, true, plugin.getComponentProvider().getInvShareTagResolver(sender, chatFormatList.get(0)));
-            //Put message into format
-            formatted = formatted.replaceText(
-                    builder -> builder.match("%message%").replacement(toBeReplaced)
-            );
+
             //Send to other servers
-            plugin.getRedisDataManager().sendObjectPacket(new ChatMessageInfo(sender.getName(), MiniMessage.miniMessage().serialize(toBeReplaced), receiverName));
+            plugin.getRedisDataManager().sendChatMessage(new ChatMessageInfo(sender.getName(),
+                    MiniMessage.miniMessage().serialize(formatted),
+                    MiniMessage.miniMessage().serialize(toBeReplaced),
+                    receiverName));
+
             plugin.getChatListener().onSenderPrivateChat(sender, formatted);
             plugin.getRedisDataManager().setReplyName(receiverName, sender.getName());
 

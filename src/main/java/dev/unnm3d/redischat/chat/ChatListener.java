@@ -82,14 +82,10 @@ public class ChatListener implements Listener {
         //Parse to MiniMessage component (placeholders, tags and mentions)
         Component toBeReplaced = plugin.getComponentProvider().parse(event.getPlayer(), message, parsePlaceholders, true, true, plugin.getComponentProvider().getInvShareTagResolver(event.getPlayer(), chatFormatList.get(0)));
 
-        //Put message into format
-        formatted = formatted.replaceText(
-                builder -> builder.match("%message%").replacement(toBeReplaced)
-        );
         totalElapsed += debug("Message parsing timing: %time%ms", init);
 
         // Send to other servers
-        plugin.getRedisDataManager().sendObjectPacket(new ChatMessageInfo(event.getPlayer().getName(), MiniMessage.miniMessage().serialize(formatted)));
+        plugin.getRedisDataManager().sendChatMessage(new ChatMessageInfo(event.getPlayer().getName(), MiniMessage.miniMessage().serialize(formatted), MiniMessage.miniMessage().serialize(toBeReplaced)));
         plugin.getRedisDataManager().setRateLimit(event.getPlayer().getName(), plugin.config.rate_limit_time_seconds);
 
         if (plugin.config.debug) {

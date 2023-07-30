@@ -143,7 +143,6 @@ public class ComponentProvider {
      */
     public Component parsePlaceholders(CommandSender cmdSender, String text, TagResolver[] tagResolvers) {
         final String[] stringPlaceholders = text.split("%");
-
         final LinkedHashMap<String, Component> placeholders = new LinkedHashMap<>();
         int placeholderStep = 1;
         // we need to split the text by % and then check if the placeholder is a placeholder or not
@@ -244,7 +243,7 @@ public class ComponentProvider {
     public String parseMentions(String text, Config.ChatFormat format) {
         String toParse = text;
         for (String playerName : plugin.getPlayerListManager().getPlayerList()) {
-            playerName=playerName.replace("*","\\*");
+            playerName = playerName.replace("*", "\\*");
             Pattern p = Pattern.compile("(^" + playerName + "|" + playerName + "$|\\s" + playerName + "\\s)"); //
             Matcher m = p.matcher(text);
             if (m.find()) {
@@ -279,7 +278,7 @@ public class ComponentProvider {
 
     private String parseResolverIntegrations(String text) {
         for (TagResolverIntegration resolver : this.tagResolverIntegrationList) {
-            text = resolver.parseTags(text);
+            text = resolver.parseTags(text).replace("\\", "");
         }
         return text;
     }
@@ -319,31 +318,36 @@ public class ComponentProvider {
             if (multicastPermission != null) {
                 if (!onlinePlayer.hasPermission(multicastPermission)) continue;
             }
-            if (chatMessageInfo.getMessage().contains("@" + onlinePlayer.getName())) {
+            if (chatMessageInfo.getMessage().contains(onlinePlayer.getName())) {
                 onlinePlayer.playSound(onlinePlayer.getLocation(), Sound.BLOCK_NOTE_BLOCK_GUITAR, 1, 2.0f);
             }
-            sendComponentOrCache(onlinePlayer, MiniMessage.miniMessage().deserialize(chatMessageInfo.getMessage()));
+            Component formattingComponent = MiniMessage.miniMessage().deserialize(chatMessageInfo.getFormatting()).replaceText(
+                    builder -> builder.matchLiteral("%message%").replacement(
+                            MiniMessage.miniMessage().deserialize(chatMessageInfo.getMessage())
+                    )
+            );
+            audiences.sender(plugin.getServer().getConsoleSender()).sendMessage(formattingComponent);//send to console for logging purposes
+            sendComponentOrCache(onlinePlayer, formattingComponent);
         }
     }
 
     /**
      * Sends a spy message to watchers
      *
-     * @param receiverName The name of the receiver of the message
-     * @param senderName   The name of the sender of the message
-     * @param watcher      The player who is spying the message
-     * @param deserialize  The message to send
+     * @param chatMessageInfo The chat content to send
+     * @param watcher         The player who is spying the message
      */
-    public void sendSpyChat(String receiverName, String senderName, Player watcher, String deserialize) {
-        Component formatted = MiniMessage.miniMessage().deserialize(plugin.messages.spychat_format.replace("%receiver%", receiverName).replace("%sender%", senderName));
-
-        //Parse into minimessage (placeholders, tags and mentions)
-        Component toBeReplaced = parse(deserialize);
-        //Put message into format
-        formatted = formatted.replaceText(
-                builder -> builder.matchLiteral("%message%").replacement(toBeReplaced)
-        );
-        sendComponentOrCache(watcher, formatted);
+    public void sendSpyChat(ChatMessageInfo chatMessageInfo, Player watcher) {
+        Component finalFormatted = MiniMessage.miniMessage().deserialize(
+                        plugin.messages.spychat_format
+                                .replace("%receiver%", chatMessageInfo.getReceiverName())
+                                .replace("%sender%", chatMessageInfo.getSenderName()))
+                .replaceText(
+                        builder -> builder.matchLiteral("%message%").replacement(
+                                MiniMessage.miniMessage().deserialize(chatMessageInfo.getMessage())
+                        )
+                );
+        sendComponentOrCache(watcher, finalFormatted);
     }
 
     /**

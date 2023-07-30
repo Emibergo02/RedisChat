@@ -21,7 +21,7 @@ public class BroadcastCommand implements CommandExecutor {
             public void run() {
                 String message = MiniMessage.miniMessage().serialize(plugin.getComponentProvider().parse(null,
                         plugin.config.broadcast_format.replace("%message%", String.join(" ", args))));
-                plugin.getRedisDataManager().sendObjectPacket(new ChatMessageInfo(null, message));
+                plugin.getRedisDataManager().sendChatMessage(new ChatMessageInfo(null, null, message));
             }
         }.runTaskAsynchronously(plugin);
 

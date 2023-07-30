@@ -20,7 +20,7 @@ public class ClearChatCommand implements CommandExecutor {
             @Override
             public void run() {
                 String message = MiniMessage.miniMessage().serialize(plugin.getComponentProvider().parse(null, RedisChat.getInstance().config.clear_chat_message.replace("%message%", String.join(" ", args))));
-                plugin.getRedisDataManager().sendObjectPacket(new ChatMessageInfo(null, message));
+                plugin.getRedisDataManager().sendChatMessage(new ChatMessageInfo(null, null, message));
             }
         }.runTaskAsynchronously(plugin);
         return true;
