@@ -68,7 +68,7 @@ public class ReplyCommand implements CommandExecutor {
                         MiniMessage.miniMessage().serialize(toBeReplaced),
                         receiver.get()));
 
-                plugin.getChatListener().onSenderPrivateChat(sender, formatted);
+                plugin.getChatListener().onSenderPrivateChat(sender, formatted.replaceText(aBuilder -> aBuilder.matchLiteral("%message%").replacement(toBeReplaced)));
                 plugin.getRedisDataManager().setReplyName(receiver.get(), sender.getName());
                 if (plugin.config.debug)
                     Bukkit.getLogger().info("ReplyCommand: " + (System.currentTimeMillis() - init) + "ms");

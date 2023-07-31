@@ -314,6 +314,13 @@ public class ComponentProvider {
 
     public void sendGenericChat(ChatMessageInfo chatMessageInfo) {
         String multicastPermission = chatMessageInfo.getReceiverName().charAt(0) == '@' ? chatMessageInfo.getReceiverName().substring(1) : null;
+        Component formattedComponent = MiniMessage.miniMessage().deserialize(chatMessageInfo.getFormatting()).replaceText(
+                builder -> builder.matchLiteral("%message%").replacement(
+                        MiniMessage.miniMessage().deserialize(chatMessageInfo.getMessage())
+                )
+        );
+        audiences.sender(plugin.getServer().getConsoleSender()).sendMessage(formattedComponent);//send to console for logging purposes
+
         for (Player onlinePlayer : plugin.getServer().getOnlinePlayers()) {
             if (multicastPermission != null) {
                 if (!onlinePlayer.hasPermission(multicastPermission)) continue;
@@ -321,13 +328,7 @@ public class ComponentProvider {
             if (chatMessageInfo.getMessage().contains(onlinePlayer.getName())) {
                 onlinePlayer.playSound(onlinePlayer.getLocation(), Sound.BLOCK_NOTE_BLOCK_GUITAR, 1, 2.0f);
             }
-            Component formattingComponent = MiniMessage.miniMessage().deserialize(chatMessageInfo.getFormatting()).replaceText(
-                    builder -> builder.matchLiteral("%message%").replacement(
-                            MiniMessage.miniMessage().deserialize(chatMessageInfo.getMessage())
-                    )
-            );
-            audiences.sender(plugin.getServer().getConsoleSender()).sendMessage(formattingComponent);//send to console for logging purposes
-            sendComponentOrCache(onlinePlayer, formattingComponent);
+            sendComponentOrCache(onlinePlayer, formattedComponent);
         }
     }
 

@@ -35,7 +35,7 @@ public final class Config {
     @Comment({
             "Announcer configurations",
             "delay and interval are in seconds",
-            "If you want to disable an announce, just remove it from the list",
+            "If you want to disable an announce, just remove it from the list, remember that in yaml [] is an empty list",
             "If you specify a permission, only players with that permission will see the announce. Keep it empty to make it public",
     })
     public List<Announce> announces = List.of(new Announce("default", "<red>RedisChat Announce: <br><white>lorem ipsum dolor sit amet", "", 5, 300));

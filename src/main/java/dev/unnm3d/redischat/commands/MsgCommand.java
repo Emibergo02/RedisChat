@@ -69,7 +69,7 @@ public class MsgCommand implements CommandExecutor, TabCompleter {
                     MiniMessage.miniMessage().serialize(toBeReplaced),
                     receiverName));
 
-            plugin.getChatListener().onSenderPrivateChat(sender, formatted);
+            plugin.getChatListener().onSenderPrivateChat(sender, formatted.replaceText(aBuilder -> aBuilder.matchLiteral("%message%").replacement(toBeReplaced)));
             plugin.getRedisDataManager().setReplyName(receiverName, sender.getName());
 
 

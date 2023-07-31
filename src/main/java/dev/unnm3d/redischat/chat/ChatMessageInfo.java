@@ -33,7 +33,7 @@ public class ChatMessageInfo implements Serializable {
     public ChatMessageInfo(String senderName, String formatting, String message, String receiverName) {
         this.senderName = senderName;
         this.formatting = Strings.nullToEmpty(formatting);
-        this.message = message;
+        this.message = Strings.nullToEmpty(message);
         this.receiverName = receiverName;
     }
 

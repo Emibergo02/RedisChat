@@ -22,14 +22,17 @@ public class PlayerListManager {
         this.task = new BukkitRunnable() {
             @Override
             public void run() {
-                playerList.entrySet().removeIf(entry -> System.currentTimeMillis() - entry.getValue() > 1000 * 6);
+                playerList.entrySet().removeIf(stringLongEntry -> System.currentTimeMillis() - stringLongEntry.getValue() > 1000 * 6);
+
+                List<String> tempList = new ArrayList<>();
                 plugin.getServer().getOnlinePlayers().stream()
                         .filter(player -> vanishIntegrations.stream().noneMatch(integration -> integration.isVanished(player)))
                         .map(HumanEntity::getName)
                         .filter(s -> !s.isEmpty())
-                        .forEach(name -> playerList.put(name, System.currentTimeMillis()));
+                        .forEach(tempList::add);
+                plugin.getRedisDataManager().publishPlayerList(tempList);
 
-                plugin.getRedisDataManager().publishPlayerList(playerList.keySet().stream().toList());
+                tempList.forEach(s -> playerList.put(s, System.currentTimeMillis()));
             }
         }.runTaskTimerAsynchronously(plugin, 0, 100);//5 seconds
     }
