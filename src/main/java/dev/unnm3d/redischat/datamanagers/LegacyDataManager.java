@@ -139,10 +139,6 @@ public class LegacyDataManager implements DataManager {
     }
 
     private Connection getConnection() throws SQLException {
-        Bukkit.getLogger().info("Active connections: " + dataSource.getHikariPoolMXBean().getActiveConnections());
-        Bukkit.getLogger().info("Idle connections: " + dataSource.getHikariPoolMXBean().getIdleConnections());
-        Bukkit.getLogger().info("Threads awaiting: " + dataSource.getHikariPoolMXBean().getThreadsAwaitingConnection());
-
         return dataSource.getConnection();
     }
 
