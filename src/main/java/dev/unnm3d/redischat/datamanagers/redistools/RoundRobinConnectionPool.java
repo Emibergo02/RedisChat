@@ -3,13 +3,12 @@ package dev.unnm3d.redischat.datamanagers.redistools;
 
 import io.lettuce.core.api.StatefulRedisConnection;
 
-import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
 public class RoundRobinConnectionPool<K, V> {
     private final AtomicInteger next = new AtomicInteger(0);
-    private StatefulRedisConnection<K, V>[] elements;
+    private final StatefulRedisConnection<K, V>[] elements;
     private final Supplier<StatefulRedisConnection<K, V>> statefulRedisConnectionSupplier;
 
     @SuppressWarnings("unchecked")
