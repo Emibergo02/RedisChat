@@ -27,7 +27,7 @@ public class StaffChat implements CommandExecutor {
     }
 
     public void staffChat(CommandSender commandSender, Config.ChatFormat chatFormat, String message) {
-        plugin.getRedisDataManager().sendChatMessage(new ChatMessageInfo(
+        plugin.getDataManager().sendChatMessage(new ChatMessageInfo(
                 commandSender.getName(),
                 MiniMessage.miniMessage().serialize(
                         plugin.getComponentProvider().parse(commandSender, chatFormat.staff_chat_format())

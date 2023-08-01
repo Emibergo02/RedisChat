@@ -36,7 +36,7 @@ public class InvShareCommand implements CommandExecutor {
         String playername = splitted[0];
         InventoryType type = InventoryType.valueOf(splitted[1].toUpperCase());
         switch (type) {
-            case ITEM -> plugin.getRedisDataManager().getPlayerItem(playername)
+            case ITEM -> plugin.getDataManager().getPlayerItem(playername)
                     .thenAccept(item ->
                             plugin.getServer().getScheduler().runTask(plugin, () ->
                                     openInvShareGuiItem(p,
@@ -46,7 +46,7 @@ public class InvShareCommand implements CommandExecutor {
                             ));
 
 
-            case INVENTORY -> plugin.getRedisDataManager().getPlayerInventory(playername)
+            case INVENTORY -> plugin.getDataManager().getPlayerInventory(playername)
                     .thenAccept(inventoryContents ->
                             plugin.getServer().getScheduler().runTask(plugin, () ->
                                     openInvShareGui(p,
@@ -55,7 +55,7 @@ public class InvShareCommand implements CommandExecutor {
                                             inventoryContents
                                     )
                             ));
-            case ENDERCHEST -> plugin.getRedisDataManager().getPlayerEnderchest(playername)
+            case ENDERCHEST -> plugin.getDataManager().getPlayerEnderchest(playername)
                     .thenAccept(ecContents ->
                             plugin.getServer().getScheduler().runTask(plugin, () ->
                                     openInvShareGui(p,

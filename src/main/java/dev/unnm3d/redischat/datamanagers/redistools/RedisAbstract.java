@@ -1,4 +1,4 @@
-package dev.unnm3d.redischat.redis.redistools;
+package dev.unnm3d.redischat.datamanagers.redistools;
 
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.api.StatefulRedisConnection;

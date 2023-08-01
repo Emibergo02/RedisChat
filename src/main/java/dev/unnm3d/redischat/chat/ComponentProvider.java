@@ -18,6 +18,7 @@ import net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.md_5.bungee.api.chat.BaseComponent;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
@@ -109,22 +110,7 @@ public class ComponentProvider {
         if (!plugin.config.legacyColorCodesSupport) { // if legacy color codes support is disabled, we don't need to replace anything
             return text;
         }
-        char[] chars = text.toCharArray();
-        for (int i = 0; i < chars.length; i++) {
-            if (chars[i] == '&' && i + 1 < chars.length) {
-                int charCode = chars[i + 1];
-
-                if ((charCode >= 48 && charCode <= 57)          // 0-9
-                        || (charCode >= 97 && charCode <= 102)  // a-f
-                        || (charCode >= 107 && charCode <= 111) // k-o
-                        || charCode == 114                      // r
-                        || charCode == 120                      // x
-                ) {
-                    chars[i] = '§';
-                }
-            }
-        }
-        return new String(chars);
+        return ChatColor.translateAlternateColorCodes('&', text);
     }
 
     public Component parse(CommandSender player, String text) {

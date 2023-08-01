@@ -61,6 +61,8 @@ public class MailCommand implements CommandExecutor, TabCompleter {
                     mailManager.confirmSendMail((Player) sender, true);
                 } else if (args[2].equalsIgnoreCase("abort")) {
                     mailManager.confirmSendMail((Player) sender, false);
+                } else if (args[2].equalsIgnoreCase("preview")) {
+                    mailManager.previewMail((Player) sender);
                 }
                 return true;
             }

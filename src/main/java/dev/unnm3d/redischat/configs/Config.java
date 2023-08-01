@@ -12,8 +12,33 @@ import java.util.Map;
 @Configuration
 public final class Config {
 
-    @Comment({"Redis uri", "Example: redis://user:password@localhost:6379"})
-    public Redis redis = new Redis("redis://localhost:6379/0?timeout=1s&clientName=RedisChat");
+    @Comment({"RedisChat storage type, can be REDIS or MySQL+PM",
+            "If you use Mysql you need a proxy. The plugin will send the data to the proxy via pluginmessages",
+            "If you use REDIS you don't need any proxy, this is the recommended option"})
+    public String dataMedium = DataType.REDIS.keyName;
+    @Comment("Leave password or user empty if you don't have a password or user")
+    public RedisSettings redis = new RedisSettings("localhost",
+            6379,
+            null,
+            null,
+            1,
+            1000,
+            "RedisChat");
+    public Mysql mysql = new Mysql("127.0.0.1",
+            3306,
+            "redischat",
+            "com.mysql.cj.jdbc.Driver",
+            "?autoReconnect=true"
+                    + "&useSSL=false"
+                    + "&useUnicode=true"
+                    + "&characterEncoding=UTF-8",
+            "root",
+            "password",
+            5,
+            5,
+            1800000,
+            30000,
+            20000);
     @Comment("Webeditor URL")
     public String webEditorUrl = "https://webui.advntr.dev/";
     @Comment({"Here you can decide your chat format", "Permission format is overridden on descending order", "(if a player has default and vip, if default is the first element, vip will be ignored)"})
@@ -65,12 +90,31 @@ public final class Config {
     public boolean enablePlaceholderGlitch = false;
     @Comment("Enables /rmail /mail and the whole feature")
     public boolean enableMails = false;
+    @Comment("The format of the timestamp in mails (by default is like 31/07/2023 15:24)")
+    public String mailTimestampFormat = "dd/MM/yyyy HH:mm";
+    @Comment("The timezone of the timestamp in mails (by default is Central European Time)")
+    public String mailTimestampZone = "UTC+1";
     @Comment("Toggle debug mode (by default is false)")
     public boolean debug = false;
 
 
-    public record Redis(
-            String redisUri) {
+    public record RedisSettings(String host, int port, String user, String password, int database, int timeout,
+                                     String clientName) {
+    }
+
+    public record Mysql(
+            String host,
+            int port,
+            String database,
+            String driverClass,
+            String connectionParameters,
+            String username,
+            String password,
+            int poolSize,
+            int poolIdle,
+            long poolLifetime,
+            long poolKeepAlive,
+            long poolTimeout) {
     }
 
     public record ChatFormat(
@@ -101,5 +145,35 @@ public final class Config {
             return List.of();
         }
         return chatFormatList;
+    }
+
+    public DataType getDataMedium() {
+        return DataType.fromString(dataMedium.toUpperCase());
+    }
+
+    public enum DataType {
+        MYSQL("MYSQL+PM"),
+        REDIS("REDIS");
+        private final String keyName;
+
+        /**
+         * @param keyName the name of the key
+         */
+        DataType(final String keyName) {
+            this.keyName = keyName;
+        }
+        public static DataType fromString(String text) {
+            for (DataType b : DataType.values()) {
+                if (b.keyName.equalsIgnoreCase(text)) {
+                    return b;
+                }
+            }
+            return null;
+        }
+
+        @Override
+        public String toString() {
+            return keyName;
+        }
     }
 }

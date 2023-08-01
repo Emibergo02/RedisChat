@@ -14,21 +14,24 @@ public class SpyChatCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        String playerName = sender.getName();
-        if (args.length == 0) {
-            if (!(sender instanceof Player)) {
-                plugin.messages.sendMessage(sender, plugin.messages.player_not_online.replace("%player%", sender.getName()));
-                return true;
+        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+            String playerName = sender.getName();
+            if (args.length == 0) {
+                if (!(sender instanceof Player)) {
+                    plugin.messages.sendMessage(sender, plugin.messages.player_not_online.replace("%player%", sender.getName()));
+                    return;
+                }
+            } else {
+                playerName = args[0];
             }
-        } else {
-            playerName = args[0];
-        }
 
-        if (plugin.getSpyManager().toggleSpying(playerName)) {
-            plugin.messages.sendMessage(sender, plugin.getComponentProvider().parse(plugin.messages.spychat_enabled.replace("%player%", playerName)));
-        } else {
-            plugin.messages.sendMessage(sender, plugin.getComponentProvider().parse(plugin.messages.spychat_disabled.replace("%player%", playerName)));
-        }
+            if (plugin.getSpyManager().toggleSpying(playerName)) {
+                plugin.messages.sendMessage(sender, plugin.getComponentProvider().parse(plugin.messages.spychat_enabled.replace("%player%", playerName)));
+            } else {
+                plugin.messages.sendMessage(sender, plugin.getComponentProvider().parse(plugin.messages.spychat_disabled.replace("%player%", playerName)));
+            }
+        });
+
         return true;
     }
 }

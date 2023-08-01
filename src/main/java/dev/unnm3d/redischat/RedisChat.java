@@ -9,6 +9,9 @@ import dev.unnm3d.redischat.commands.*;
 import dev.unnm3d.redischat.configs.Config;
 import dev.unnm3d.redischat.configs.GuiSettings;
 import dev.unnm3d.redischat.configs.Messages;
+import dev.unnm3d.redischat.datamanagers.DataManager;
+import dev.unnm3d.redischat.datamanagers.LegacyDataManager;
+import dev.unnm3d.redischat.datamanagers.RedisDataManager;
 import dev.unnm3d.redischat.integrations.OraxenTagResolver;
 import dev.unnm3d.redischat.integrations.VanishIntegration;
 import dev.unnm3d.redischat.mail.MailCommand;
@@ -16,12 +19,11 @@ import dev.unnm3d.redischat.mail.MailManager;
 import dev.unnm3d.redischat.moderation.SpyChatCommand;
 import dev.unnm3d.redischat.moderation.SpyManager;
 import dev.unnm3d.redischat.moderation.StaffChat;
-import dev.unnm3d.redischat.redis.DataManager;
-import dev.unnm3d.redischat.redis.RedisDataManager;
 import dev.unnm3d.redischat.task.AnnounceManager;
 import dev.unnm3d.redischat.utils.AdventureWebuiEditorAPI;
 import dev.unnm3d.redischat.utils.Metrics;
 import io.lettuce.core.RedisClient;
+import io.lettuce.core.RedisURI;
 import lombok.Getter;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.PluginCommand;
@@ -32,6 +34,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 
 public final class RedisChat extends JavaPlugin {
 
@@ -41,7 +45,7 @@ public final class RedisChat extends JavaPlugin {
     public GuiSettings guiSettings;
     private ChatListener chatListener;
     @Getter
-    private DataManager redisDataManager;
+    private DataManager dataManager;
     @Getter
     private PlayerListManager playerListManager;
     @Getter
@@ -59,8 +63,26 @@ public final class RedisChat extends JavaPlugin {
         loadYML();
 
         //Redis section
-        this.redisDataManager = new RedisDataManager(RedisClient.create(config.redis.redisUri()), this);
-        getLogger().info("Redis URI: " + config.redis.redisUri());
+        if (config.getDataMedium() == Config.DataType.REDIS) {
+            RedisURI.Builder redisURIBuilder = RedisURI.builder()
+                    .withHost(config.redis.host())
+                    .withPort(config.redis.port())
+                    .withDatabase(config.redis.database())
+                    .withTimeout(Duration.of(config.redis.timeout(), TimeUnit.MILLISECONDS.toChronoUnit()))
+                    .withClientName(config.redis.clientName());
+            if (config.redis.user().equals("changecredentials"))
+                getLogger().warning("You are using default redis credentials. Please change them in the config.yml file!");
+            //Authentication params
+            redisURIBuilder = config.redis.password().equals("") ?
+                    redisURIBuilder :
+                    config.redis.user().equals("") ?
+                            redisURIBuilder.withPassword(config.redis.password().toCharArray()) :
+                            redisURIBuilder.withAuthentication(config.redis.user(), config.redis.password());
+
+            this.dataManager = new RedisDataManager(RedisClient.create(redisURIBuilder.build()), this);
+        } else if (config.getDataMedium() == Config.DataType.MYSQL) {
+            this.dataManager = new LegacyDataManager(this);
+        }
 
         //Chat section
         this.componentProvider = new ComponentProvider(this);
@@ -168,7 +190,7 @@ public final class RedisChat extends JavaPlugin {
     public void onDisable() {
         getLogger().warning("RedisChat is disabling...");
         this.playerListManager.stop();
-        this.redisDataManager.close();
+        this.dataManager.close();
         this.announceManager.cancelAll();
     }
 

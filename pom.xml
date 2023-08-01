@@ -6,7 +6,7 @@
 
     <groupId>dev.unnm3d</groupId>
     <artifactId>RedisChat</artifactId>
-    <version>2.7.1</version>
+    <version>3.0</version>
     <packaging>jar</packaging>
 
     <name>RedisChat</name>
@@ -185,6 +185,18 @@
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
             <version>19.0.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>5.0.1</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mariadb.jdbc</groupId>
+            <artifactId>mariadb-java-client</artifactId>
+            <version>3.1.4</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

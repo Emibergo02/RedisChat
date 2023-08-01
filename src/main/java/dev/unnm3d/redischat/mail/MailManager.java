@@ -26,7 +26,7 @@ public class MailManager {
         this.publicMailList = new ArrayList<>();
         this.editorMode = new HashMap<>();
         this.mailGUI = new MailGUI(plugin);
-        plugin.getRedisDataManager().getPublicMails().toCompletableFuture()
+        plugin.getDataManager().getPublicMails().toCompletableFuture()
                 .thenAccept(list -> publicMailList = list);
     }
 
@@ -64,6 +64,15 @@ public class MailManager {
 
     }
 
+    public void previewMail(Player sender) {
+        Mail mail = editorMode.get(sender.getUniqueId());
+        if (mail == null) {
+            plugin.getComponentProvider().sendMessage(sender, plugin.messages.mailError);
+            return;
+        }
+        mail.openPreview(sender);
+    }
+
     /**
      * Send mail to redis
      *
@@ -72,8 +81,8 @@ public class MailManager {
      */
     private CompletionStage<Boolean> sendMail(@NotNull Mail mail) {
         if (mail.getCategory().equals(Mail.MailCategory.PUBLIC)) {
-            return plugin.getRedisDataManager().setPublicMail(mail);
+            return plugin.getDataManager().setPublicMail(mail);
         }
-        return plugin.getRedisDataManager().setPlayerPrivateMail(mail);
+        return plugin.getDataManager().setPlayerPrivateMail(mail);
     }
 }

@@ -1,6 +1,6 @@
-package dev.unnm3d.redischat.redis.redistools;
+package dev.unnm3d.redischat.datamanagers;
 
-public enum RedisKeys {
+public enum DataKeys {
 
     CHAT_CHANNEL("redischat:g_chat"),
     PLAYERLIST("redischat:playerlist"),
@@ -20,7 +20,7 @@ public enum RedisKeys {
     /**
      * @param keyName the name of the key
      */
-    RedisKeys(final String keyName) {
+    DataKeys(final String keyName) {
         this.keyName = keyName;
     }
 

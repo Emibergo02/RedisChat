@@ -1,26 +1,23 @@
-package dev.unnm3d.redischat.redis;
+package dev.unnm3d.redischat.datamanagers;
 
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.chat.ChatMessageInfo;
 import dev.unnm3d.redischat.mail.Mail;
-import dev.unnm3d.redischat.redis.redistools.RedisAbstract;
+import dev.unnm3d.redischat.datamanagers.redistools.RedisAbstract;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.pubsub.RedisPubSubListener;
 import io.lettuce.core.pubsub.StatefulRedisPubSubConnection;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
 
-import static dev.unnm3d.redischat.redis.redistools.RedisKeys.*;
+import static dev.unnm3d.redischat.datamanagers.DataKeys.*;
 
 public class RedisDataManager extends RedisAbstract implements DataManager {
     private final RedisChat plugin;
@@ -38,7 +35,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
             @Override
             public void message(String channel, String message) {
                 if (channel.equals(CHAT_CHANNEL.toString()))
-                    receiveSerializedChatMessage(message);
+                    plugin.getChatListener().receiveChatMessage(new ChatMessageInfo(message));
                 else if (channel.equals(PLAYERLIST.toString()))
                     if (plugin.getPlayerListManager() != null)
                         plugin.getPlayerListManager().updatePlayerList(Arrays.asList(message.split("§")));
@@ -64,7 +61,6 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
             public void punsubscribed(String pattern, long count) {
             }
         });
-        //TODO: subscribe to multiple channels
         pubSubConnection.async().subscribe(CHAT_CHANNEL.toString(), PLAYERLIST.toString())
                 .exceptionally(throwable -> {
                     throwable.printStackTrace();
@@ -205,14 +201,14 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     }
 
     @Override
-    public CompletionStage<Set<String>> ignoringList(String playerName) {
+    public CompletionStage<List<String>> ignoringList(String playerName) {
         return getConnectionAsync(connection ->
                 connection.smembers(IGNORE_PREFIX + playerName)
                         .thenApply(result -> {
                             if (plugin.config.debug) {
                                 plugin.getLogger().info("03 Ignoring list for " + playerName + " is " + result);
                             }
-                            return result;
+                            return List.copyOf(result);
                         }).exceptionally(throwable -> {
                             throwable.printStackTrace();
                             plugin.getLogger().warning("Error getting ignore list from redis");
@@ -366,9 +362,9 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     @Override
     public CompletionStage<Boolean> setPlayerPrivateMail(Mail mail) {
         return getConnectionPipeline(connection -> {
-            connection.hset(PRIVATE_MAIL_PREFIX + mail.getReceiver(), String.valueOf(mail.getId()), mail.toString());
+            connection.hset(PRIVATE_MAIL_PREFIX + mail.getReceiver(), String.valueOf(mail.getId()), mail.serialize());
             mail.setCategory(Mail.MailCategory.SENT);
-            return connection.hset(PRIVATE_MAIL_PREFIX + mail.getSender(), String.valueOf(mail.getId()), mail.toString()).exceptionally(throwable -> {
+            return connection.hset(PRIVATE_MAIL_PREFIX + mail.getSender(), String.valueOf(mail.getId()), mail.serialize()).exceptionally(throwable -> {
                 throwable.printStackTrace();
                 plugin.getLogger().warning("Error setting private mail");
                 return null;
@@ -383,7 +379,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     @Override
     public CompletionStage<Boolean> setPublicMail(Mail mail) {
         return getConnectionAsync(connection ->
-                connection.hset(PUBLIC_MAIL.toString(), String.valueOf(mail.getId()), mail.toString()).exceptionally(throwable -> {
+                connection.hset(PUBLIC_MAIL.toString(), String.valueOf(mail.getId()), mail.serialize()).exceptionally(throwable -> {
                     throwable.printStackTrace();
                     plugin.getLogger().warning("Error setting public mail");
                     return null;
@@ -418,33 +414,6 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
                         })
         );
 
-    }
-
-    @Override
-    public void receiveSerializedChatMessage(String chatMessage) {
-        ChatMessageInfo chatMessageInfo = new ChatMessageInfo(chatMessage);
-
-        if (chatMessageInfo.isPrivate()) {
-            long init = System.currentTimeMillis();
-            for (Player player : Bukkit.getOnlinePlayers()) {
-                if (plugin.getSpyManager().isSpying(player.getName())) {//Spychat
-                    plugin.getComponentProvider().sendSpyChat(chatMessageInfo, player);
-                }
-                if (player.getName().equals(chatMessageInfo.getReceiverName())) {//Private message
-                    plugin.getRedisDataManager().isIgnoring(chatMessageInfo.getReceiverName(), chatMessageInfo.getSenderName())
-                            .thenAccept(ignored -> {
-                                if (!ignored)
-                                    plugin.getComponentProvider().sendPrivateChat(chatMessageInfo);
-                                if (plugin.config.debug) {
-                                    plugin.getLogger().info("Private message sent to " + chatMessageInfo.getReceiverName() + " with ignore: " + ignored + " in " + (System.currentTimeMillis() - init) + "ms");
-                                }
-                            });
-                }
-            }
-            return;
-        }
-
-        plugin.getComponentProvider().sendGenericChat(chatMessageInfo);
     }
 
     @Override

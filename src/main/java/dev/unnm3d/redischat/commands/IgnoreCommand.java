@@ -29,7 +29,7 @@ public class IgnoreCommand implements CommandExecutor, TabCompleter {
 
         if (args[0].equalsIgnoreCase("list")) {
             final StringJoiner ignoreList = new StringJoiner(", ");
-            plugin.getRedisDataManager().ignoringList(sender.getName())
+            plugin.getDataManager().ignoringList(sender.getName())
                     .thenAccept(list -> {
                         if (list == null) return;
                         list.forEach(ignoreList::add);
@@ -37,7 +37,7 @@ public class IgnoreCommand implements CommandExecutor, TabCompleter {
                     });
             return true;
         }
-        plugin.getRedisDataManager().toggleIgnoring(sender.getName(), args[0])
+        plugin.getDataManager().toggleIgnoring(sender.getName(), args[0])
                 .thenAccept(ignored -> {
                     if (ignored)
                         plugin.messages.sendMessage(sender, plugin.getComponentProvider().parse(plugin.messages.ignoring_player.replace("%player%", args[0])));

@@ -36,7 +36,7 @@ public final class Messages {
     @Comment("%field% is the field edited")
     public String editMessageSuccess = "<green>Saved successfully %field%!";
     public String mailEditorStart = "<click:open_url:%link%><blue>Click here to start the mail editor!</blue></click>";
-    public String mailEditorConfirm = "<click:run_command:/rmail webui %token% confirm>[<green>Click here to confirm!</green>]</click>  <click:run_command:/rmail webui %token% abort>[<red>Click here to dismiss!</red>]</click>";
+    public String mailEditorConfirm = "Valid mail. What would you do?<br><click:run_command:/rmail webui %token% confirm>[<green>Confirm, send!</green>]</click>  <click:run_command:/rmail webui %token% preview>[<aqua>Preview</aqua>]</click>  <click:run_command:/rmail webui %token% abort>[<red>Dismiss</red>]</click>";
     public String mailError = "<red>You do not have any pending mail!</red>";
     public String mailEditorSent = "<green>Mail sent!</green>";
     public String mailEditorAbort = "<red>Mail aborted!</red>";

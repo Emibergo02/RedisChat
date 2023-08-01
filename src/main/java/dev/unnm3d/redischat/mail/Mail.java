@@ -10,11 +10,16 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.jetbrains.annotations.NotNull;
+import xyz.xenondevs.inventoryaccess.component.AdventureComponentWrapper;
 import xyz.xenondevs.invui.item.ItemProvider;
 import xyz.xenondevs.invui.item.builder.ItemBuilder;
 import xyz.xenondevs.invui.item.impl.AbstractItem;
 
+import java.time.Instant;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.TimeZone;
 
 @Getter
 public class Mail extends AbstractItem {
@@ -47,23 +52,27 @@ public class Mail extends AbstractItem {
     }
 
 
-    @Override
-    public String toString() {
+    public String serialize() {
         return category.toString() + "§§" + sender + "§§" + receiver + "§§" + title + "§§" + content;
     }
 
     @Override
     public ItemProvider getItemProvider() {
         if (content.isEmpty()) return new ItemBuilder(Material.PAPER);
+        ZonedDateTime cal = ZonedDateTime.ofInstant(Instant.ofEpochMilli((long) id), TimeZone.getTimeZone(RedisChat.getInstance().config.mailTimestampZone).toZoneId());
+
+        String timestampFormat = " <aqua>" + DateTimeFormatter.ofPattern(RedisChat.getInstance().config.mailTimestampFormat).format(cal);
         return new ItemBuilder(RedisChat.getInstance().guiSettings.mailItem)
-                .setDisplayName(ComponentProvider.getInstance().toBaseComponent(
-                        ComponentProvider.getInstance().parse("<reset>" + title)))
-                .addLoreLines(ComponentProvider.getInstance().toBaseComponent(
-                        ComponentProvider.getInstance().parse("<reset>" + content)));
+                .setDisplayName(new AdventureComponentWrapper(ComponentProvider.getInstance().parse("<yellow>" + title + timestampFormat)))
+                .addLoreLines(new AdventureComponentWrapper(ComponentProvider.getInstance().parse("<grey>" + content)));
     }
 
     @Override
     public void handleClick(@NotNull ClickType clickType, @NotNull Player player, @NotNull InventoryClickEvent event) {
+        openPreview(player);
+    }
+
+    public void openPreview(@NotNull Player player) {
         player.closeInventory();
         //Craft written book with mail contents
         ComponentProvider.getInstance().openBook(player, Book.builder()

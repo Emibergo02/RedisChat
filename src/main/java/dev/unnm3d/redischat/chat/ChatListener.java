@@ -7,7 +7,9 @@ import dev.unnm3d.redischat.moderation.StaffChat;
 import lombok.AllArgsConstructor;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -40,7 +42,7 @@ public class ChatListener implements Listener {
         }
 
         if (!event.getPlayer().hasPermission(Permission.REDIS_CHAT_BYPASS_RATE_LIMIT.getPermission()))
-            if (plugin.getRedisDataManager().isRateLimited(event.getPlayer().getName())) {
+            if (plugin.getDataManager().isRateLimited(event.getPlayer().getName())) {
                 plugin.messages.sendMessage(event.getPlayer(), plugin.messages.rate_limited);
                 return;
             }
@@ -68,13 +70,13 @@ public class ChatListener implements Listener {
 
         //Check inv update
         if (message.contains("<inv>")) {
-            plugin.getRedisDataManager().addInventory(event.getPlayer().getName(), event.getPlayer().getInventory().getContents());
+            plugin.getDataManager().addInventory(event.getPlayer().getName(), event.getPlayer().getInventory().getContents());
         }
         if (message.contains("<item>")) {
-            plugin.getRedisDataManager().addItem(event.getPlayer().getName(), event.getPlayer().getInventory().getItemInMainHand());
+            plugin.getDataManager().addItem(event.getPlayer().getName(), event.getPlayer().getInventory().getItemInMainHand());
         }
         if (message.contains("<ec>")) {
-            plugin.getRedisDataManager().addEnderchest(event.getPlayer().getName(), event.getPlayer().getEnderChest().getContents());
+            plugin.getDataManager().addEnderchest(event.getPlayer().getName(), event.getPlayer().getEnderChest().getContents());
         }
         totalElapsed += debug("Inv upload timing: %time%ms", init);
         init = System.currentTimeMillis();
@@ -85,8 +87,8 @@ public class ChatListener implements Listener {
         totalElapsed += debug("Message parsing timing: %time%ms", init);
 
         // Send to other servers
-        plugin.getRedisDataManager().sendChatMessage(new ChatMessageInfo(event.getPlayer().getName(), MiniMessage.miniMessage().serialize(formatted), MiniMessage.miniMessage().serialize(toBeReplaced)));
-        plugin.getRedisDataManager().setRateLimit(event.getPlayer().getName(), plugin.config.rate_limit_time_seconds);
+        plugin.getDataManager().sendChatMessage(new ChatMessageInfo(event.getPlayer().getName(), MiniMessage.miniMessage().serialize(formatted), MiniMessage.miniMessage().serialize(toBeReplaced)));
+        plugin.getDataManager().setRateLimit(event.getPlayer().getName(), plugin.config.rate_limit_time_seconds);
 
         if (plugin.config.debug) {
             plugin.getLogger().info("Total chat event timing: " + totalElapsed + "ms");
@@ -111,4 +113,27 @@ public class ChatListener implements Listener {
     }
 
 
+    public void receiveChatMessage(ChatMessageInfo chatMessageInfo) {
+        if (chatMessageInfo.isPrivate()) {
+            long init = System.currentTimeMillis();
+            for (Player player : Bukkit.getOnlinePlayers()) {
+                if (plugin.getSpyManager().isSpying(player.getName())) {//Spychat
+                    plugin.getComponentProvider().sendSpyChat(chatMessageInfo, player);
+                }
+                if (player.getName().equals(chatMessageInfo.getReceiverName())) {//Private message
+                    plugin.getDataManager().isIgnoring(chatMessageInfo.getReceiverName(), chatMessageInfo.getSenderName())
+                            .thenAccept(ignored -> {
+                                if (!ignored)
+                                    plugin.getComponentProvider().sendPrivateChat(chatMessageInfo);
+                                if (plugin.config.debug) {
+                                    plugin.getLogger().info("Private message sent to " + chatMessageInfo.getReceiverName() + " with ignore: " + ignored + " in " + (System.currentTimeMillis() - init) + "ms");
+                                }
+                            });
+                }
+            }
+            return;
+        }
+
+        plugin.getComponentProvider().sendGenericChat(chatMessageInfo);
+    }
 }

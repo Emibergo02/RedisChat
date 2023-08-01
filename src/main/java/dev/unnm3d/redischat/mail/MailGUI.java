@@ -17,7 +17,6 @@ import xyz.xenondevs.invui.item.impl.controlitem.ControlItem;
 import xyz.xenondevs.invui.item.impl.controlitem.PageItem;
 import xyz.xenondevs.invui.window.Window;
 
-import java.util.Arrays;
 import java.util.List;
 
 @AllArgsConstructor
@@ -26,7 +25,7 @@ public class MailGUI {
     private final RedisChat plugin;
 
     public void openPublicMailGui(Player player) {
-        this.plugin.getRedisDataManager().getPublicMails()
+        this.plugin.getDataManager().getPublicMails()
                 .thenAccept(list -> {
                             Gui global = getMailGui(list);
                             Bukkit.getScheduler().runTask(plugin, () ->
@@ -39,7 +38,7 @@ public class MailGUI {
     }
 
     public void openPrivateMailGui(Player player) {
-        this.plugin.getRedisDataManager().getPlayerPrivateMail(player.getName())
+        this.plugin.getDataManager().getPlayerPrivateMail(player.getName())
                 .thenAccept(list -> {
                             Gui global = getMailGui(list);
                             Bukkit.getScheduler().runTask(plugin, () ->
@@ -95,7 +94,7 @@ public class MailGUI {
                         return new ItemBuilder(plugin.guiSettings.privateButton);
                     }
                 })
-                .setContent(Arrays.stream(list.toArray(new Item[0])).toList())
+                .setContent(list.stream().map(mail -> (Item) mail).toList())
                 .build();
     }
 

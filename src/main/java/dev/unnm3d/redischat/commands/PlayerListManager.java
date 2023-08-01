@@ -30,7 +30,7 @@ public class PlayerListManager {
                         .map(HumanEntity::getName)
                         .filter(s -> !s.isEmpty())
                         .forEach(tempList::add);
-                plugin.getRedisDataManager().publishPlayerList(tempList);
+                plugin.getDataManager().publishPlayerList(tempList);
 
                 tempList.forEach(s -> playerList.put(s, System.currentTimeMillis()));
             }

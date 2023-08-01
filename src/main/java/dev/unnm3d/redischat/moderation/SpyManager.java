@@ -17,7 +17,7 @@ public class SpyManager {
     }
 
     public void onJoin(Player player) {
-        plugin.getRedisDataManager().isSpying(player.getName()).thenAccept(isSpying -> {
+        plugin.getDataManager().isSpying(player.getName()).thenAccept(isSpying -> {
             if (isSpying) {
                 this.isSpyingNames.put(player.getName(), Optional.empty());
             } else {
@@ -29,11 +29,11 @@ public class SpyManager {
     public boolean toggleSpying(String playerName) {
         if (isSpyingNames.containsKey(playerName)) {
             isSpyingNames.remove(playerName);
-            plugin.getRedisDataManager().setSpying(playerName, false);
+            plugin.getDataManager().setSpying(playerName, false);
             return false;
         } else {
             isSpyingNames.put(playerName, Optional.empty());
-            plugin.getRedisDataManager().setSpying(playerName, true);
+            plugin.getDataManager().setSpying(playerName, true);
             return true;
         }
     }

@@ -11,6 +11,9 @@ import java.util.List;
 @Configuration
 public final class GuiSettings {
 
+    public String publicMailTabTitle = "Public Mail";
+    public String privateMailTabTitle = "Private Mail";
+
     public List<String> structure = List.of(
             "x x x x x x x x x",
             "x x x x x x x x x",
@@ -21,9 +24,6 @@ public final class GuiSettings {
     public ItemStack forwardButton = getForwardButton();
     public ItemStack PublicButton = getPublicButton();
     public ItemStack privateButton = getPrivateButton();
-
-    public String publicMailTabTitle = "Public Mail";
-    public String privateMailTabTitle = "Private Mail";
 
 
     private ItemStack getBackButton() {

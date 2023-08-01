@@ -50,13 +50,13 @@ public class MsgCommand implements CommandExecutor, TabCompleter {
             //Check inv update
             if (sender instanceof Player player) {
                 if (message.contains("<inv>")) {
-                    plugin.getRedisDataManager().addInventory(player.getName(), player.getInventory().getContents());
+                    plugin.getDataManager().addInventory(player.getName(), player.getInventory().getContents());
                 }
                 if (message.contains("<item>")) {
-                    plugin.getRedisDataManager().addItem(player.getName(), player.getInventory().getItemInMainHand());
+                    plugin.getDataManager().addItem(player.getName(), player.getInventory().getItemInMainHand());
                 }
                 if (message.contains("<ec>")) {
-                    plugin.getRedisDataManager().addEnderchest(player.getName(), player.getEnderChest().getContents());
+                    plugin.getDataManager().addEnderchest(player.getName(), player.getEnderChest().getContents());
                 }
             }
 
@@ -64,13 +64,13 @@ public class MsgCommand implements CommandExecutor, TabCompleter {
             Component toBeReplaced = plugin.getComponentProvider().parse(sender, message, parsePlaceholders, true, true, plugin.getComponentProvider().getInvShareTagResolver(sender, chatFormatList.get(0)));
 
             //Send to other servers
-            plugin.getRedisDataManager().sendChatMessage(new ChatMessageInfo(sender.getName(),
+            plugin.getDataManager().sendChatMessage(new ChatMessageInfo(sender.getName(),
                     MiniMessage.miniMessage().serialize(formatted),
                     MiniMessage.miniMessage().serialize(toBeReplaced),
                     receiverName));
 
             plugin.getChatListener().onSenderPrivateChat(sender, formatted.replaceText(aBuilder -> aBuilder.matchLiteral("%message%").replacement(toBeReplaced)));
-            plugin.getRedisDataManager().setReplyName(receiverName, sender.getName());
+            plugin.getDataManager().setReplyName(receiverName, sender.getName());
 
 
         });

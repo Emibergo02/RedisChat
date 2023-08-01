@@ -1,4 +1,4 @@
-package dev.unnm3d.redischat.redis;
+package dev.unnm3d.redischat.datamanagers;
 
 import dev.unnm3d.redischat.chat.ChatMessageInfo;
 import dev.unnm3d.redischat.mail.Mail;
@@ -29,7 +29,7 @@ public interface DataManager {
 
     CompletionStage<Boolean> isIgnoring(String playerName, String ignoringName);
 
-    CompletionStage<Set<String>> ignoringList(String playerName);
+    CompletionStage<List<String>> ignoringList(String playerName);
 
     void addInventory(String name, ItemStack[] inv);
 
@@ -52,8 +52,6 @@ public interface DataManager {
     CompletionStage<List<Mail>> getPublicMails();
 
     void sendChatMessage(ChatMessageInfo chatMessage);
-
-    void receiveSerializedChatMessage(String chatMessage);
 
     void publishPlayerList(List<String> playerNames);
 
@@ -92,11 +90,10 @@ public interface DataManager {
     }
 
     default List<Mail> deserializeMails(Map<String, String> timestampMail) {
-        List<Mail> mailList = new ArrayList<>();
-        for (Map.Entry<String, String> timestampMailEntry : timestampMail.entrySet()) {
-            mailList.add(new Mail(Double.parseDouble(timestampMailEntry.getKey()), timestampMailEntry.getValue()));
-        }
-        return mailList;
+        return timestampMail.entrySet().stream()
+                .map(entry -> new AbstractMap.SimpleEntry<>(Double.parseDouble(entry.getKey()), entry.getValue()))
+                .sorted(Map.Entry.comparingByKey())
+                .map(entry -> new Mail(entry.getKey(), entry.getValue())).toList();
     }
 
 

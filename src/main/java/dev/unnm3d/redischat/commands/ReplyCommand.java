@@ -31,7 +31,7 @@ public class ReplyCommand implements CommandExecutor {
             @Override
             public void run() {
 
-                Optional<String> receiver = plugin.getRedisDataManager().getReplyName(sender.getName());
+                Optional<String> receiver = plugin.getDataManager().getReplyName(sender.getName());
 
                 if (receiver.isEmpty()) {
                     plugin.getComponentProvider().sendMessage(sender, plugin.messages.no_reply_found);
@@ -63,13 +63,13 @@ public class ReplyCommand implements CommandExecutor {
                 Component toBeReplaced = plugin.getComponentProvider().parse(sender, message, parsePlaceholders, true, true, plugin.getComponentProvider().getInvShareTagResolver(sender, chatFormatList.get(0)));
 
                 //Send to other servers
-                plugin.getRedisDataManager().sendChatMessage(new ChatMessageInfo(sender.getName(),
+                plugin.getDataManager().sendChatMessage(new ChatMessageInfo(sender.getName(),
                         MiniMessage.miniMessage().serialize(formatted),
                         MiniMessage.miniMessage().serialize(toBeReplaced),
                         receiver.get()));
 
                 plugin.getChatListener().onSenderPrivateChat(sender, formatted.replaceText(aBuilder -> aBuilder.matchLiteral("%message%").replacement(toBeReplaced)));
-                plugin.getRedisDataManager().setReplyName(receiver.get(), sender.getName());
+                plugin.getDataManager().setReplyName(receiver.get(), sender.getName());
                 if (plugin.config.debug)
                     Bukkit.getLogger().info("ReplyCommand: " + (System.currentTimeMillis() - init) + "ms");
             }
