@@ -21,12 +21,6 @@ public class RoundRobinConnectionPool<K, V> {
         }
     }
 
-    public void expandPool(int expandBy) {
-        if (expandBy <= 0)
-            throw new IllegalArgumentException("expandBy must be greater than 0");
-        this.elements = Arrays.copyOf(elements, elements.length + expandBy);
-    }
-
     public StatefulRedisConnection<K, V> get() {
         int index = next.getAndIncrement() % elements.length;
         StatefulRedisConnection<K, V> connection = elements[index];
@@ -40,12 +34,6 @@ public class RoundRobinConnectionPool<K, V> {
         connection = statefulRedisConnectionSupplier.get();
         elements[index] = connection;
         return connection;
-    }
-
-    public void close() {
-        for (StatefulRedisConnection<K, V> element : elements) {
-            element.closeAsync();
-        }
     }
 
 }

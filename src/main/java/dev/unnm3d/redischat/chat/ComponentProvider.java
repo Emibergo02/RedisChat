@@ -14,9 +14,7 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.minimessage.tag.standard.StandardTags;
-import net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
-import net.md_5.bungee.api.chat.BaseComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
@@ -62,10 +60,6 @@ public class ComponentProvider {
 
     public void addResolverIntegration(TagResolverIntegration integration) {
         this.tagResolverIntegrationList.add(integration);
-    }
-
-    public BaseComponent[] toBaseComponent(Component component) {
-        return BungeeComponentSerializer.get().serialize(component);
     }
 
     public Component parse(String text, TagResolver... tagResolvers) {
