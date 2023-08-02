@@ -87,13 +87,13 @@ public class MailCommand implements CommandExecutor, TabCompleter {
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
         if (!sender.hasPermission(Permission.REDIS_CHAT_MAIL_WRITE.getPermission())) return List.of();
         if (args.length == 1) return List.of("send", "delete");
-        if (args.length == 2 && args[1].equalsIgnoreCase("send")) {
+        if (args.length == 2 && args[0].equalsIgnoreCase("send")) {
             ArrayList<String> list = new ArrayList<>();
             list.add("*public");
             list.addAll(mailManager.getPlugin().getPlayerListManager().getPlayerList().stream().filter(s -> s.toLowerCase().startsWith(args[args.length - 1])).toList());
             return list;
         }
-        if (args.length == 3 && args[1].equalsIgnoreCase("send")) return List.of("<aqua>Mail Object/Title</aqua>");
+        if (args.length == 3 && args[0].equalsIgnoreCase("send")) return List.of("<aqua>Mail Object/Title</aqua>");
         return List.of();
     }
 }

@@ -9,7 +9,6 @@ libraries:
   - org.snakeyaml:snakeyaml-engine:2.3
   - org.jetbrains:annotations:19.0.0
   - com.zaxxer:HikariCP:5.0.1
-  - org.mariadb.jdbc:mariadb-java-client:3.1.4
 depend:
   - PlaceholderAPI
 softdepend:

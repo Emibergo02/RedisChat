@@ -19,8 +19,8 @@ public final class Config {
     @Comment("Leave password or user empty if you don't have a password or user")
     public RedisSettings redis = new RedisSettings("localhost",
             6379,
-            null,
-            null,
+            "",
+            "",
             1,
             1000,
             "RedisChat");
@@ -85,11 +85,11 @@ public final class Config {
     @Comment("Messages with this prefix will be sent to staff chat")
     public String staffChatPrefix = "!";
     @Comment("Enabling this")
-    public boolean legacyColorCodesSupport = false;
+    public boolean legacyColorCodesSupport = true;
     @Comment("Re-enables bukkit color glitches for colored placeholders")
     public boolean enablePlaceholderGlitch = false;
     @Comment("Enables /rmail /mail and the whole feature")
-    public boolean enableMails = false;
+    public boolean enableMails = true;
     @Comment("The format of the timestamp in mails (by default is like 31/07/2023 15:24)")
     public String mailTimestampFormat = "dd/MM/yyyy HH:mm";
     @Comment("The timezone of the timestamp in mails (by default is Central European Time)")
@@ -99,7 +99,7 @@ public final class Config {
 
 
     public record RedisSettings(String host, int port, String user, String password, int database, int timeout,
-                                     String clientName) {
+                                String clientName) {
     }
 
     public record Mysql(
@@ -162,6 +162,7 @@ public final class Config {
         DataType(final String keyName) {
             this.keyName = keyName;
         }
+
         public static DataType fromString(String text) {
             for (DataType b : DataType.values()) {
                 if (b.keyName.equalsIgnoreCase(text)) {
