@@ -207,51 +207,6 @@ public class LegacyDataManager implements DataManager {
     }
 
     @Override
-    public CompletionStage<Boolean> isSpying(String playerName) {
-        return CompletableFuture.supplyAsync(() -> {
-            try (Connection connection = getConnection()) {
-                try (PreparedStatement statement = connection.prepareStatement("""
-                        SELECT `is_spying`
-                        FROM player_data
-                        WHERE `player_name`=?""")) {
-
-                    statement.setString(1, playerName);
-
-                    final ResultSet resultSet = statement.executeQuery();
-                    if (resultSet.next()) {
-                        return resultSet.getBoolean("is_spying");
-                    }
-                }
-            } catch (SQLException e) {
-                Bukkit.getLogger().severe("Failed to fetch if a player is spying from the database");
-            }
-            return false;
-        });
-    }
-
-    @Override
-    public void setSpying(String playerName, boolean spy) {
-        try (Connection connection = getConnection()) {
-            try (PreparedStatement statement = connection.prepareStatement("""
-                    INSERT INTO player_data
-                        (`player_name`, `is_spying`)
-                    VALUES
-                        (?,?)
-                    ON DUPLICATE KEY UPDATE `is_spying` = ?;""")) {
-
-                statement.setString(1, playerName);
-                statement.setBoolean(2, spy);
-                statement.setBoolean(3, spy);
-                if (statement.executeUpdate() == 0) {
-                    throw new SQLException("Failed to insert spy toggling into database");
-                }
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Override
     public CompletionStage<Boolean> toggleIgnoring(String playerName, String ignoringName) {
         return CompletableFuture.supplyAsync(() -> {
             try (Connection connection = getConnection()) {

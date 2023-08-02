@@ -107,58 +107,6 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     }
 
     @Override
-    public CompletionStage<Boolean> isSpying(String playerName) {
-        return getConnectionAsync(connection ->
-                connection.sismember(SPYING_LIST.toString(), playerName)
-                        .thenApply(result -> {
-                            if (plugin.config.debug) {
-                                plugin.getLogger().info("isSpying " + playerName + " " + result);
-                            }
-                            return result;
-                        })
-                        .exceptionally(throwable -> {
-                            throwable.printStackTrace();
-                            plugin.getLogger().warning("Error getting spy list from redis");
-                            return null;
-                        })
-        );
-    }
-
-    @Override
-    public void setSpying(String playerName, boolean spy) {
-        getConnectionAsync(connection -> {
-                    if (spy) {
-                        return connection.sadd(SPYING_LIST.toString(), playerName)
-                                .thenApply(result -> {
-                                    if (plugin.config.debug) {
-                                        plugin.getLogger().info("setSpying " + playerName + " " + result);
-                                    }
-                                    return result;
-                                })
-                                .exceptionally(throwable -> {
-                                    throwable.printStackTrace();
-                                    plugin.getLogger().warning("Error getting spy list from redis");
-                                    return null;
-                                });
-                    } else {
-                        return connection.srem(SPYING_LIST.toString(), playerName)
-                                .thenApply(result -> {
-                                    if (plugin.config.debug) {
-                                        plugin.getLogger().info("setSpying " + playerName + " " + result);
-                                    }
-                                    return result;
-                                })
-                                .exceptionally(throwable -> {
-                                    throwable.printStackTrace();
-                                    plugin.getLogger().warning("Error getting spy list from redis");
-                                    return null;
-                                });
-                    }
-                }
-        );
-    }
-
-    @Override
     public CompletionStage<Boolean> toggleIgnoring(String playerName, String ignoringName) {
         return getConnectionAsync(connection ->
                 connection.sadd(IGNORE_PREFIX + playerName, ignoringName)
