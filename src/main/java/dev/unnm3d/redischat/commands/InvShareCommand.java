@@ -41,7 +41,6 @@ public class InvShareCommand implements CommandExecutor {
                             plugin.getServer().getScheduler().runTask(plugin, () ->
                                     openInvShareGui(p,
                                             plugin.config.inv_title.replace("%player%", playername),
-                                            5,
                                             inventoryContents
                                     )
                             ));
@@ -49,8 +48,8 @@ public class InvShareCommand implements CommandExecutor {
         return true;
     }
 
-    private void openInvShareGui(Player player, String title, int size, ItemStack[] items) {
-        Gui gui = Gui.empty(9, size);
+    private void openInvShareGui(Player player, String title, ItemStack[] items) {
+        Gui gui = Gui.empty(9, 5);
         gui.addItems(
                 Arrays.stream(items)
                         .map(itemStack -> {

@@ -71,12 +71,6 @@ public class ChatListener implements Listener {
         if (message.contains("<inv>")) {
             plugin.getDataManager().addInventory(event.getPlayer().getName(), event.getPlayer().getInventory().getContents());
         }
-        if (message.contains("<item>")) {
-            plugin.getDataManager().addItem(event.getPlayer().getName(), event.getPlayer().getInventory().getItemInMainHand());
-        }
-        if (message.contains("<ec>")) {
-            plugin.getDataManager().addEnderchest(event.getPlayer().getName(), event.getPlayer().getEnderChest().getContents());
-        }
         totalElapsed += debug("Inv upload timing: %time%ms", init);
         init = System.currentTimeMillis();
 
@@ -106,19 +100,11 @@ public class ChatListener implements Listener {
         plugin.getComponentProvider().sendMessage(sender, formatted);
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
-    public void onJoin(PlayerJoinEvent event) {
-        plugin.getSpyManager().onJoin(event.getPlayer());
-    }
-
 
     public void receiveChatMessage(ChatMessageInfo chatMessageInfo) {
         if (chatMessageInfo.isPrivate()) {
             long init = System.currentTimeMillis();
             for (Player player : Bukkit.getOnlinePlayers()) {
-                if (plugin.getSpyManager().isSpying(player.getName())) {//Spychat
-                    plugin.getComponentProvider().sendSpyChat(chatMessageInfo, player);
-                }
                 if (player.getName().equals(chatMessageInfo.getReceiverName())) {//Private message
                     plugin.getDataManager().isIgnoring(chatMessageInfo.getReceiverName(), chatMessageInfo.getSenderName())
                             .thenAccept(ignored -> {

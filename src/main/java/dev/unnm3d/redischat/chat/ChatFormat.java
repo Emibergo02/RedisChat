@@ -7,5 +7,6 @@ public record ChatFormat(
         String receive_private_format,
         String inventory_format,
         String mention_format,
-        String link_format) {
+        String link_format,
+        String staff_chat_format) {
 }

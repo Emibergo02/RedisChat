@@ -8,6 +8,7 @@ import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.Map;
 
 @Configuration
 public final class Config {
@@ -52,7 +53,8 @@ public final class Config {
             "<dark_aqua>MSG <white>(<green>%sender% <white>to <reset>You<white>)<reset>: <white>%message%",
             "<click:run_command:%command%>[Open the inventory of %player%]</click>",
             "<aqua>@%player%</aqua>",
-            "<bold><click:open_url:%link%>[Click to open URL (be careful)]</click></bold>"
+            "<bold><click:open_url:%link%>[Click to open URL (be careful)]</click></bold>",
+            "<gold>StaffChat <dark_gray>» <white>%message%"
     ));
     @Comment({"Here you can blacklist some terms (like swears, insults and unwanted urls)", "They will be replaced with a *", "You can use the regex syntax and the * wildcard"})
     public List<String> regex_blacklist = List.of("discord.gg/.*");

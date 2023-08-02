@@ -14,8 +14,6 @@ import dev.unnm3d.redischat.datamanagers.LegacyDataManager;
 import dev.unnm3d.redischat.datamanagers.RedisDataManager;
 import dev.unnm3d.redischat.integrations.OraxenTagResolver;
 import dev.unnm3d.redischat.api.VanishIntegration;
-import dev.unnm3d.redischat.moderation.SpyChatCommand;
-import dev.unnm3d.redischat.moderation.SpyManager;
 import dev.unnm3d.redischat.moderation.StaffChat;
 import dev.unnm3d.redischat.utils.AdventureWebuiEditorAPI;
 import dev.unnm3d.redischat.utils.Metrics;
@@ -44,8 +42,6 @@ public final class RedisChat extends JavaPlugin {
     private DataManager dataManager;
     @Getter
     private PlayerListManager playerListManager;
-    @Getter
-    private SpyManager spyManager;
     @Getter
     private ComponentProvider componentProvider;
     @Getter
@@ -94,9 +90,6 @@ public final class RedisChat extends JavaPlugin {
 
         MainCommand mainCommand = new MainCommand(this, this.webEditorAPI);
         loadCommand("redischat", mainCommand, mainCommand);
-
-        this.spyManager = new SpyManager(this);
-        loadCommand("spychat", new SpyChatCommand(this), null);
         MsgCommand msgCommand = new MsgCommand(this);
         loadCommand("msg", msgCommand, msgCommand);
         IgnoreCommand ignoreCommand = new IgnoreCommand(this);
