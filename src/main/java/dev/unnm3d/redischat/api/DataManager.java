@@ -7,7 +7,9 @@ import org.bukkit.util.io.BukkitObjectOutputStream;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.util.*;
+import java.util.Base64;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
 public interface DataManager {
@@ -19,10 +21,6 @@ public interface DataManager {
     boolean isRateLimited(String playerName);
 
     void setRateLimit(String playerName, int seconds);
-
-    CompletionStage<Boolean> isSpying(String playerName);
-
-    void setSpying(String playerName, boolean spy);
 
     CompletionStage<Boolean> toggleIgnoring(String playerName, String ignoringName);
 

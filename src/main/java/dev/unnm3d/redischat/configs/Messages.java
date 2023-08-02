@@ -26,8 +26,6 @@ public final class Messages {
     public String ignoring_player = "<green>Ignoring %player%</green>";
     public String not_ignoring_player = "<green>Ignore removed for %player%</green>";
     public String spychat_format = "<red>%sender% said to %receiver% : %message%</red>";
-    public String spychat_enabled = "<green>Spychat enabled for %player%</green>";
-    public String spychat_disabled = "<red>Spychat disabled for %player%</red>";
     public String editMessageError = "<red>This config entry is not a String or doesn't exist!";
     @Comment("%url% is the url of the WebUI, %field% is the config field to edit")
     public String editMessageClickHere = "<click:open_url:%url%>Click here to edit the message %field%!</click>";
