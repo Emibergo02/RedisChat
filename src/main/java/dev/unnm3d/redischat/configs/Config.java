@@ -8,7 +8,6 @@ import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
-import java.util.Map;
 
 @Configuration
 public final class Config {
@@ -52,29 +51,13 @@ public final class Config {
             "<dark_aqua>MSG <white>(<reset>You <white>to <green>%receiver%<white>)<reset>: <white>%message%",
             "<dark_aqua>MSG <white>(<green>%sender% <white>to <reset>You<white>)<reset>: <white>%message%",
             "<click:run_command:%command%>[Open the inventory of %player%]</click>",
-            "<click:run_command:%command%>[%item_name% of %player%]</click>",
-            "<click:run_command:%command%>[Open the enderchest of %player%]</click>",
             "<aqua>@%player%</aqua>",
-            "<bold><click:open_url:%link%>[Click to open URL (be careful)]</click></bold>",
-            "<gold>StaffChat <dark_gray>» <white>%message%"
+            "<bold><click:open_url:%link%>[Click to open URL (be careful)]</click></bold>"
     ));
-    @Comment({
-            "Announcer configurations",
-            "delay and interval are in seconds",
-            "If you want to disable an announce, just remove it from the list, remember that in yaml [] is an empty list",
-            "If you specify a permission, only players with that permission will see the announce. Keep it empty to make it public",
-    })
-    public List<Announce> announces = List.of(new Announce("default", "<red>RedisChat Announce: <br><white>lorem ipsum dolor sit amet", "", 5, 300));
-    @Comment({"Here you can create your own placeholders", "You can give them an identifier, which will go under the format <>", "You can give them actions, like click url"})
-    public Map<String, String> placeholders = Map.of("discord", "<click:open_url:https://discord.gg/uq6bBqAQ>Click to join our discord server</click>");
     @Comment({"Here you can blacklist some terms (like swears, insults and unwanted urls)", "They will be replaced with a *", "You can use the regex syntax and the * wildcard"})
     public List<String> regex_blacklist = List.of("discord.gg/.*");
     @Comment({"Title of the ShowInventory GUI"})
     public String inv_title = "Inventory of %player%";
-    @Comment({"Title of the ShowItem GUI"})
-    public String item_title = "Item of %player%";
-    @Comment({"Title of the ShowEnderchest GUI"})
-    public String ec_title = "Enderchest of %player%";
     @Comment("There are some others chat formats, like broadcast and clear chat messages")
     public String broadcast_format = "<red>Announce <dark_gray>» <white>%message%";
     @Comment("This message will be sent to all players when the chat is cleared")
@@ -85,16 +68,8 @@ public final class Config {
     public int rate_limit_time_seconds = 5;
     @Comment("Messages with this prefix will be sent to staff chat")
     public String staffChatPrefix = "!";
-    @Comment("Enabling this")
-    public boolean legacyColorCodesSupport = true;
     @Comment("Re-enables bukkit color glitches for colored placeholders")
     public boolean enablePlaceholderGlitch = false;
-    @Comment("Enables /rmail /mail and the whole feature")
-    public boolean enableMails = true;
-    @Comment("The format of the timestamp in mails (by default is like 31/07/2023 15:24)")
-    public String mailTimestampFormat = "dd/MM/yyyy HH:mm";
-    @Comment("The timezone of the timestamp in mails (by default is Central European Time)")
-    public String mailTimestampZone = "UTC+1";
     @Comment("Toggle debug mode (by default is false)")
     public boolean debug = false;
 
@@ -116,15 +91,6 @@ public final class Config {
             long poolLifetime,
             long poolKeepAlive,
             long poolTimeout) {
-    }
-
-
-    public record Announce(
-            String announceName,
-            String message,
-            String permission,
-            int delay,
-            int interval) {
     }
 
     public @NotNull List<ChatFormat> getChatFormats(CommandSender p) {

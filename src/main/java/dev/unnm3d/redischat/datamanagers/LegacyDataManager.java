@@ -7,7 +7,6 @@ import com.zaxxer.hikari.HikariDataSource;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.api.DataManager;
 import dev.unnm3d.redischat.chat.ChatMessageInfo;
-import dev.unnm3d.redischat.mail.Mail;
 import org.bukkit.Bukkit;
 import org.bukkit.inventory.ItemStack;
 
@@ -394,30 +393,6 @@ public class LegacyDataManager implements DataManager {
     }
 
     @Override
-    public CompletionStage<ItemStack> getPlayerItem(String playerName) {
-        return CompletableFuture.supplyAsync(() -> {
-            try (Connection connection = getConnection()) {
-                try (PreparedStatement statement = connection.prepareStatement("""
-                        select item_serialized from player_data
-                        where player_name = ?;""")) {
-
-                    statement.setString(1, playerName);
-
-                    final ResultSet resultSet = statement.executeQuery();
-
-                    if (resultSet.next()) {
-                        String serializedItem = resultSet.getString("item_serialized");
-                        return serializedItem == null ? null : deserialize(serializedItem)[0];
-                    }
-                }
-            } catch (SQLException e) {
-                Bukkit.getLogger().severe("Failed to fetch a player item from the database");
-            }
-            return null;
-        });
-    }
-
-    @Override
     public CompletionStage<ItemStack[]> getPlayerInventory(String playerName) {
         return CompletableFuture.supplyAsync(() -> {
             try (Connection connection = getConnection()) {
@@ -438,138 +413,6 @@ public class LegacyDataManager implements DataManager {
                 Bukkit.getLogger().severe("Failed to fetch a player inventory from the database");
             }
             return null;
-        });
-    }
-
-    @Override
-    public CompletionStage<ItemStack[]> getPlayerEnderchest(String playerName) {
-        return CompletableFuture.supplyAsync(() -> {
-            try (Connection connection = getConnection()) {
-                try (PreparedStatement statement = connection.prepareStatement("""
-                        select ec_serialized from player_data
-                        where player_name = ?;""")) {
-
-                    statement.setString(1, playerName);
-
-                    final ResultSet resultSet = statement.executeQuery();
-
-                    if (resultSet.next()) {
-                        String serializedEc = resultSet.getString("ec_serialized");
-                        return serializedEc == null ? null : deserialize(serializedEc);
-                    }
-                }
-            } catch (SQLException e) {
-                Bukkit.getLogger().severe("Failed to fetch serialized enderchest from the database");
-            }
-            return null;
-        });
-    }
-
-    @Override
-    public CompletionStage<List<Mail>> getPlayerPrivateMail(String playerName) {
-        return CompletableFuture.supplyAsync(() -> {
-            try (Connection connection = getConnection()) {
-                try (PreparedStatement statement = connection.prepareStatement("""
-                        select id, serializedMail from mails
-                        where recipient = ?;""")) {
-
-                    statement.setString(1, playerName);
-
-                    final ResultSet resultSet = statement.executeQuery();
-                    List<Mail> mails = new ArrayList<>();
-                    while (resultSet.next()) {
-                        mails.add(new Mail(
-                                resultSet.getDouble("id"),
-                                resultSet.getString("serializedMail")));
-                    }
-                    return mails;
-                }
-            } catch (SQLException e) {
-                Bukkit.getLogger().severe("Failed to fetch serialized private mails from the database");
-            }
-            return List.of();
-        });
-    }
-
-    @Override
-    public CompletionStage<Boolean> setPlayerPrivateMail(Mail mail) {
-        return CompletableFuture.supplyAsync(() -> {
-            try (Connection connection = getConnection()) {
-                try (PreparedStatement statement = connection.prepareStatement("""
-                        INSERT INTO mails
-                            (`id`,`recipient`,`serializedMail`)
-                        VALUES
-                            (?,?,?),
-                            (?,?,?);""")) {
-
-                    statement.setDouble(1, mail.getId());
-                    statement.setString(2, mail.getReceiver());
-                    statement.setString(3, mail.serialize());
-                    mail.setCategory(Mail.MailCategory.SENT);
-                    statement.setDouble(4, mail.getId() + 0.001);
-                    statement.setString(5, mail.getReceiver());
-                    statement.setString(6, mail.serialize());
-                    if (statement.executeUpdate() == 0) {
-                        throw new SQLException("Failed to insert serialized private mail into database");
-                    }
-                    return true;
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-            return false;
-        });
-    }
-
-    @Override
-    public CompletionStage<Boolean> setPublicMail(Mail mail) {
-        return CompletableFuture.supplyAsync(() -> {
-            try (Connection connection = getConnection()) {
-                try (PreparedStatement statement = connection.prepareStatement("""
-                    INSERT INTO mails
-                        (`id`,`recipient`,`serializedMail`)
-                    VALUES
-                        (?,?,?);""")) {
-
-                    statement.setDouble(1, mail.getId());
-                    statement.setString(2, mail.getReceiver());
-                    statement.setString(3, mail.serialize());
-                    if (statement.executeUpdate() == 0) {
-                        throw new SQLException("Failed to insert serialized public mail into database");
-                    }
-                    return true;
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-            return false;
-        }).exceptionally(e -> {
-            e.printStackTrace();
-            return false;
-        });
-    }
-
-    @Override
-    public CompletionStage<List<Mail>> getPublicMails() {
-        return CompletableFuture.supplyAsync(() -> {
-            try (Connection connection = getConnection()) {
-                try (PreparedStatement statement = connection.prepareStatement("""
-                        select id, serializedMail from mails
-                        where recipient = '*public';""")) {
-
-                    final ResultSet resultSet = statement.executeQuery();
-                    List<Mail> mails = new ArrayList<>();
-                    while (resultSet.next()) {
-                        mails.add(new Mail(
-                                resultSet.getDouble("id"),
-                                resultSet.getString("serializedMail")));
-                    }
-                    return mails;
-                }
-            } catch (SQLException e) {
-                Bukkit.getLogger().severe("Failed to fetch serialized public mails from the database");
-            }
-            return List.of();
         });
     }
 

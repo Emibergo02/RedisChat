@@ -1,7 +1,6 @@
 package dev.unnm3d.redischat.api;
 
 import dev.unnm3d.redischat.chat.ChatMessageInfo;
-import dev.unnm3d.redischat.mail.Mail;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.io.BukkitObjectInputStream;
 import org.bukkit.util.io.BukkitObjectOutputStream;
@@ -37,19 +36,8 @@ public interface DataManager {
 
     void addEnderchest(String name, ItemStack[] inv);
 
-    CompletionStage<ItemStack> getPlayerItem(String playerName);
-
     CompletionStage<ItemStack[]> getPlayerInventory(String playerName);
 
-    CompletionStage<ItemStack[]> getPlayerEnderchest(String playerName);
-
-    CompletionStage<List<Mail>> getPlayerPrivateMail(String playerName);
-
-    CompletionStage<Boolean> setPlayerPrivateMail(Mail mail);
-
-    CompletionStage<Boolean> setPublicMail(Mail mail);
-
-    CompletionStage<List<Mail>> getPublicMails();
 
     void sendChatMessage(ChatMessageInfo chatMessage);
 
@@ -87,13 +75,6 @@ public interface DataManager {
         } catch (Exception ignored) {
             return new ItemStack[0];
         }
-    }
-
-    default List<Mail> deserializeMails(Map<String, String> timestampMail) {
-        return timestampMail.entrySet().stream()
-                .map(entry -> new AbstractMap.SimpleEntry<>(Double.parseDouble(entry.getKey()), entry.getValue()))
-                .sorted(Map.Entry.comparingByKey())
-                .map(entry -> new Mail(entry.getKey(), entry.getValue())).toList();
     }
 
 

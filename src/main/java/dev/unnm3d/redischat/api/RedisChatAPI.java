@@ -72,14 +72,6 @@ public abstract class RedisChatAPI {
     public abstract String sanitize(String message);
 
     /**
-     * Parse a text containing legacy color codes ( § and & )
-     *
-     * @param text The text to parse
-     * @return The parsed text
-     */
-    public abstract String parseLegacy(String text);
-
-    /**
      * Send a generic ChatMessageInfo to all local players
      * Checks multicast permissions and mentions
      * (It calls sendComponentOrCache at the end)

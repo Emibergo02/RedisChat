@@ -3,13 +3,11 @@ package dev.unnm3d.redischat.datamanagers;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.api.DataManager;
 import dev.unnm3d.redischat.chat.ChatMessageInfo;
-import dev.unnm3d.redischat.mail.Mail;
 import dev.unnm3d.redischat.datamanagers.redistools.RedisAbstract;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.pubsub.RedisPubSubListener;
 import io.lettuce.core.pubsub.StatefulRedisPubSubConnection;
-import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.Arrays;
@@ -295,25 +293,6 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     }
 
     @Override
-    public CompletionStage<ItemStack> getPlayerItem(String playerName) {
-        return getConnectionAsync(connection ->
-                connection.hget(INVSHARE_ITEM.toString(), playerName)
-                        .thenApply(serializedInv -> {
-                            ItemStack[] itemStacks = deserialize(serializedInv == null ? "" : serializedInv);
-                            if (plugin.config.debug) {
-                                plugin.getLogger().info("04 Got item for " + playerName + " is " + (itemStacks.length != 0 ? itemStacks[0].toString() : "null"));
-                            }
-                            if (itemStacks.length == 0) return new ItemStack(Material.AIR);
-                            return itemStacks[0];
-                        }).exceptionally(throwable -> {
-                            throwable.printStackTrace();
-                            plugin.getLogger().warning("Error getting item");
-                            return null;
-                        })
-        );
-    }
-
-    @Override
     public CompletionStage<ItemStack[]> getPlayerInventory(String playerName) {
         return getConnectionAsync(connection ->
                 connection.hget(INVSHARE_INVENTORY.toString(), playerName)
@@ -329,73 +308,6 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
                             return null;
                         }));
 
-    }
-
-    @Override
-    public CompletionStage<ItemStack[]> getPlayerEnderchest(String playerName) {
-        return getConnectionAsync(connection ->
-                connection.hget(INVSHARE_ENDERCHEST.toString(), playerName)
-                        .thenApply(serializedInv -> {
-                            if (plugin.config.debug) {
-                                plugin.getLogger().info("13 Got enderchest for " + playerName + " is " + (serializedInv == null ? "null" : serializedInv));
-                            }
-                            return deserialize(serializedInv == null ? "" : serializedInv);
-                        })
-                        .exceptionally(throwable -> {
-                            throwable.printStackTrace();
-                            plugin.getLogger().warning("Error getting ec");
-                            return null;
-                        }));
-    }
-
-    @Override
-    public CompletionStage<List<Mail>> getPlayerPrivateMail(String playerName) {
-        return getConnectionAsync(connection ->
-                connection.hgetall(PRIVATE_MAIL_PREFIX + playerName)
-                        .thenApply(this::deserializeMails)
-                        .exceptionally(throwable -> {
-                            throwable.printStackTrace();
-                            plugin.getLogger().warning("Error getting private mails");
-                            return null;
-                        }));
-    }
-
-    @Override
-    public CompletionStage<Boolean> setPlayerPrivateMail(Mail mail) {
-        return getConnectionPipeline(connection -> {
-            connection.hset(PRIVATE_MAIL_PREFIX + mail.getReceiver(), String.valueOf(mail.getId()), mail.serialize());
-            mail.setCategory(Mail.MailCategory.SENT);
-            return connection.hset(PRIVATE_MAIL_PREFIX + mail.getSender(), String.valueOf(mail.getId()), mail.serialize()).exceptionally(throwable -> {
-                throwable.printStackTrace();
-                plugin.getLogger().warning("Error setting private mail");
-                return null;
-            });
-        }).exceptionally(throwable -> {
-            throwable.printStackTrace();
-            plugin.getLogger().warning("Error setting private mail");
-            return null;
-        });
-    }
-
-    @Override
-    public CompletionStage<Boolean> setPublicMail(Mail mail) {
-        return getConnectionAsync(connection ->
-                connection.hset(PUBLIC_MAIL.toString(), String.valueOf(mail.getId()), mail.serialize()).exceptionally(throwable -> {
-                    throwable.printStackTrace();
-                    plugin.getLogger().warning("Error setting public mail");
-                    return null;
-                }));
-    }
-
-    @Override
-    public CompletionStage<List<Mail>> getPublicMails() {
-        return getConnectionAsync(connection ->
-                connection.hgetall(PUBLIC_MAIL.toString())
-                        .thenApply(this::deserializeMails).exceptionally(throwable -> {
-                            throwable.printStackTrace();
-                            plugin.getLogger().warning("Error getting public mails");
-                            return null;
-                        }));
     }
 
     @Override

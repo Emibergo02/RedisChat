@@ -1,25 +1,22 @@
 package dev.unnm3d.redischat;
 
-import de.exlll.configlib.ConfigLib;
+
 import de.exlll.configlib.YamlConfigurationProperties;
 import de.exlll.configlib.YamlConfigurations;
 import dev.unnm3d.redischat.chat.ChatListener;
 import dev.unnm3d.redischat.chat.ComponentProvider;
 import dev.unnm3d.redischat.commands.*;
 import dev.unnm3d.redischat.configs.Config;
-import dev.unnm3d.redischat.configs.GuiSettings;
+
 import dev.unnm3d.redischat.configs.Messages;
 import dev.unnm3d.redischat.api.DataManager;
 import dev.unnm3d.redischat.datamanagers.LegacyDataManager;
 import dev.unnm3d.redischat.datamanagers.RedisDataManager;
 import dev.unnm3d.redischat.integrations.OraxenTagResolver;
 import dev.unnm3d.redischat.api.VanishIntegration;
-import dev.unnm3d.redischat.mail.MailCommand;
-import dev.unnm3d.redischat.mail.MailManager;
 import dev.unnm3d.redischat.moderation.SpyChatCommand;
 import dev.unnm3d.redischat.moderation.SpyManager;
 import dev.unnm3d.redischat.moderation.StaffChat;
-import dev.unnm3d.redischat.task.AnnounceManager;
 import dev.unnm3d.redischat.utils.AdventureWebuiEditorAPI;
 import dev.unnm3d.redischat.utils.Metrics;
 import io.lettuce.core.RedisClient;
@@ -42,14 +39,11 @@ public final class RedisChat extends JavaPlugin {
     private static RedisChat instance;
     public Config config;
     public Messages messages;
-    public GuiSettings guiSettings;
     private ChatListener chatListener;
     @Getter
     private DataManager dataManager;
     @Getter
     private PlayerListManager playerListManager;
-    @Getter
-    private AnnounceManager announceManager;
     @Getter
     private SpyManager spyManager;
     @Getter
@@ -90,17 +84,8 @@ public final class RedisChat extends JavaPlugin {
         this.chatListener = new ChatListener(this, staffChat);
         getServer().getPluginManager().registerEvents(this.chatListener, this);
 
-        //Mail section
-        if (config.enableMails) {
-            MailCommand mailCommand = new MailCommand(new MailManager(this));
-            loadCommand("rmail", mailCommand, mailCommand);
-        }
 
 
-        //Announce feature
-        this.announceManager = new AnnounceManager(this);
-        AnnounceCommand announceCommand = new AnnounceCommand(this, this.announceManager);
-        loadCommand("announce", announceCommand, announceCommand);
 
         //Commands section
         this.playerListManager = new PlayerListManager(this);
@@ -109,8 +94,6 @@ public final class RedisChat extends JavaPlugin {
 
         MainCommand mainCommand = new MainCommand(this, this.webEditorAPI);
         loadCommand("redischat", mainCommand, mainCommand);
-        SetItemCommand setItemCommand = new SetItemCommand(this);
-        loadCommand("redischat-setitem", setItemCommand, setItemCommand);
 
         this.spyManager = new SpyManager(this);
         loadCommand("spychat", new SpyChatCommand(this), null);
@@ -159,15 +142,6 @@ public final class RedisChat extends JavaPlugin {
                         .footer("Authors: Unnm3d")
                         .build()
         );
-        Path guiSettingsFile = new File(getDataFolder(), "guis.yml").toPath();
-        this.guiSettings = YamlConfigurations.update(
-                guiSettingsFile,
-                GuiSettings.class,
-                ConfigLib.BUKKIT_DEFAULT_PROPERTIES.toBuilder()
-                        .header("RedisChat guis")
-                        .footer("Authors: Unnm3d")
-                        .build()
-        );
 
     }
 
@@ -175,23 +149,12 @@ public final class RedisChat extends JavaPlugin {
         YamlConfigurations.save(new File(this.getDataFolder(), "messages.yml").toPath(), Messages.class, messages);
     }
 
-    public void saveGuiSettings() {
-        YamlConfigurations.save(
-                new File(this.getDataFolder(), "guis.yml").toPath(),
-                GuiSettings.class,
-                guiSettings,
-                ConfigLib.BUKKIT_DEFAULT_PROPERTIES.toBuilder()
-                        .header("RedisChat guis")
-                        .footer("Authors: Unnm3d")
-                        .build());
-    }
 
     @Override
     public void onDisable() {
         getLogger().warning("RedisChat is disabling...");
         this.playerListManager.stop();
         this.dataManager.close();
-        this.announceManager.cancelAll();
     }
 
     private void loadCommand(@NotNull String cmdName, @NotNull CommandExecutor executor, @Nullable TabCompleter tabCompleter) {

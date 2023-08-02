@@ -28,7 +28,6 @@ public class MainCommand implements CommandExecutor, TabCompleter {
 
         if (args[0].equalsIgnoreCase("reload")) {
             plugin.loadYML();
-            plugin.getAnnounceManager().reload();
             plugin.getComponentProvider().sendMessage(sender, "<green>Config reloaded");
             return true;
         }

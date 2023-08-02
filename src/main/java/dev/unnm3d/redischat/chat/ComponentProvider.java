@@ -1,12 +1,10 @@
 package dev.unnm3d.redischat.chat;
 
-import dev.unnm3d.redischat.Permission;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.api.RedisChatAPI;
 import dev.unnm3d.redischat.api.TagResolverIntegration;
 import lombok.AllArgsConstructor;
 import me.clip.placeholderapi.PlaceholderAPI;
-import net.kyori.adventure.inventory.Book;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -33,7 +31,7 @@ public class ComponentProvider extends RedisChatAPI {
     private final MiniMessage miniMessage;
     private final TagResolver standardTagResolver;
     private final ConcurrentHashMap<Player, List<Component>> cacheBlocked;
-    private final List<TagResolver.Single> customPlaceholderResolvers;
+
     private final List<TagResolverIntegration> tagResolverIntegrationList;
 
     public ComponentProvider(RedisChat plugin) {
@@ -42,16 +40,8 @@ public class ComponentProvider extends RedisChatAPI {
         this.audiences = BukkitAudiences.create(plugin);
         this.miniMessage = MiniMessage.miniMessage();
         this.cacheBlocked = new ConcurrentHashMap<>();
-        this.customPlaceholderResolvers = plugin.config.placeholders.entrySet()
-                .stream().map(entry ->
-                        Placeholder.component(entry.getKey(), MiniMessage.miniMessage().deserialize(entry.getValue()))
-                ).toList();
         this.standardTagResolver = StandardTags.defaults();
         this.tagResolverIntegrationList = new ArrayList<>();
-    }
-
-    public static ComponentProvider getInstance() {
-        return (ComponentProvider) INSTANCE;
     }
 
     public void addResolverIntegration(TagResolverIntegration integration) {
@@ -80,10 +70,6 @@ public class ComponentProvider extends RedisChatAPI {
         if (parseMentions) {
             text = parseMentions(text, plugin.config.formats.get(0));
         }
-        if (plugin.config.legacyColorCodesSupport && (player == null || //Is without permissions or if it has permissions
-                player.hasPermission(Permission.REDIS_CHAT_USE_FORMATTING.getPermission()))) {
-            text = parseLegacy(text);
-        }
 
         Component finalComponent = parsePlaceholders ?
                 parsePlaceholders(player, parseResolverIntegrations(text), tagResolvers) :
@@ -99,9 +85,6 @@ public class ComponentProvider extends RedisChatAPI {
     }
 
     public String replaceBukkitColorCodesWithSection(String text) {
-        if (!plugin.config.legacyColorCodesSupport) { // if legacy color codes support is disabled, we don't need to replace anything
-            return text;
-        }
         return ChatColor.translateAlternateColorCodes('&', text);
     }
 
@@ -159,55 +142,7 @@ public class ComponentProvider extends RedisChatAPI {
         toParseInv = toParseInv.replace("%command%", "/invshare " + player.getName() + "-inventory");
         TagResolver inv = Placeholder.component("inv", parse(player, toParseInv, true, false, false, this.standardTagResolver));
 
-        String toParseItem = chatFormat.item_format();
-        toParseItem = toParseItem.replace("%player%", player.getName());
-        toParseItem = toParseItem.replace("%command%", "/invshare " + player.getName() + "-item");
-        Component toParseItemComponent = parse(player, toParseItem, true, false, false, this.standardTagResolver);
-        if (player instanceof Player p) {
-            if (!p.getInventory().getItemInMainHand().getType().isAir()) {
-                if (p.getInventory().getItemInMainHand().getItemMeta() != null)
-                    if (p.getInventory().getItemInMainHand().getItemMeta().hasDisplayName()) {
-                        toParseItemComponent = toParseItemComponent.replaceText(rTextBuilder ->
-                                rTextBuilder.matchLiteral("%item_name%")
-                                        .replacement(
-                                                parse(player,
-                                                        parseLegacy(p.getInventory().getItemInMainHand().getItemMeta().getDisplayName()),
-                                                        false,
-                                                        false,
-                                                        false,
-                                                        this.standardTagResolver))
-                        );
-                    } else {
-                        toParseItemComponent = toParseItemComponent.replaceText(rTextBuilder ->
-                                rTextBuilder.matchLiteral("%item_name%")
-                                        .replacement(
-                                                parse(player,
-                                                        p.getInventory().getItemInMainHand().getType().name().toLowerCase().replace("_", " "),
-                                                        false,
-                                                        false,
-                                                        false,
-                                                        this.standardTagResolver))
-                        );
-                    }
-            } else {
-                toParseItemComponent = toParseItemComponent.replaceText(rTextBuilder ->
-                        rTextBuilder.matchLiteral("%item_name%")
-                                .replacement("Nothing")
-                );
-            }
-        }
-        TagResolver item = Placeholder.component("item", toParseItemComponent);
-
-        String toParseEnderChest = chatFormat.enderchest_format();
-        toParseEnderChest = toParseEnderChest.replace("%player%", player.getName());
-        toParseEnderChest = toParseEnderChest.replace("%command%", "/invshare " + player.getName() + "-enderchest");
-        TagResolver ec = Placeholder.component("ec", parse(player, toParseEnderChest, true, false, false, this.standardTagResolver));
-
-        customPlaceholderResolvers.forEach(builder::resolver);
-
         builder.resolver(inv);
-        builder.resolver(item);
-        builder.resolver(ec);
         return builder.build();
     }
 
@@ -269,16 +204,6 @@ public class ComponentProvider extends RedisChatAPI {
             if (Character.isUpperCase(c))
                 capsCount++;
         return capsCount > message.length() / 2 && message.length() > 20;//50% of the message is caps and the message is longer than 20 chars
-    }
-
-    public String parseLegacy(String text) {
-
-        text = miniMessage.serialize(LegacyComponentSerializer.legacySection().deserialize(replaceBukkitColorCodesWithSection(text)));
-        if (plugin.config.debug) {
-            Bukkit.getLogger().info("Parsed legacy: " + text);
-        }
-        return text.replace("\\", "");
-
     }
 
     @Override
@@ -373,8 +298,5 @@ public class ComponentProvider extends RedisChatAPI {
         audiences.sender(p).sendMessage(component);
     }
 
-    public void openBook(Player player, Book book) {
-        audiences.player(player).openBook(book);
-    }
 }
 

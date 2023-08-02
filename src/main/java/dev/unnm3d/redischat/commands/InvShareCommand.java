@@ -35,33 +35,14 @@ public class InvShareCommand implements CommandExecutor {
 
         String playername = splitted[0];
         InventoryType type = InventoryType.valueOf(splitted[1].toUpperCase());
-        switch (type) {
-            case ITEM -> plugin.getDataManager().getPlayerItem(playername)
-                    .thenAccept(item ->
-                            plugin.getServer().getScheduler().runTask(plugin, () ->
-                                    openInvShareGuiItem(p,
-                                            plugin.config.item_title.replace("%player%", playername),
-                                            item
-                                    )
-                            ));
-
-
-            case INVENTORY -> plugin.getDataManager().getPlayerInventory(playername)
+        if (type == InventoryType.INVENTORY) {
+            plugin.getDataManager().getPlayerInventory(playername)
                     .thenAccept(inventoryContents ->
                             plugin.getServer().getScheduler().runTask(plugin, () ->
                                     openInvShareGui(p,
                                             plugin.config.inv_title.replace("%player%", playername),
                                             5,
                                             inventoryContents
-                                    )
-                            ));
-            case ENDERCHEST -> plugin.getDataManager().getPlayerEnderchest(playername)
-                    .thenAccept(ecContents ->
-                            plugin.getServer().getScheduler().runTask(plugin, () ->
-                                    openInvShareGui(p,
-                                            plugin.config.ec_title.replace("%player%", playername),
-                                            3,
-                                            ecContents
                                     )
                             ));
         }
@@ -87,21 +68,8 @@ public class InvShareCommand implements CommandExecutor {
         }.runTaskLater(plugin, 1))).open(player);
     }
 
-    private void openInvShareGuiItem(Player player, String title, ItemStack item) {
-        Gui gui = Gui.empty(9, 3);
-        gui.setItem(13, new SimpleItem(item));
-        Window.single().setTitle(title).setGui(gui).setCloseHandlers(List.of(() -> new BukkitRunnable() {
-            @Override
-            public void run() {
-                player.updateInventory();
-            }
-        }.runTaskLater(plugin, 1))).open(player);
-    }
-
     public enum InventoryType {
         INVENTORY,
-        ENDERCHEST,
-        ITEM
     }
 
 }
