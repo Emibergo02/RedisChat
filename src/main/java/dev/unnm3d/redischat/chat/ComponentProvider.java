@@ -154,12 +154,12 @@ public class ComponentProvider extends RedisChatAPI {
 
         TagResolver.Builder builder = TagResolver.builder();
 
-        String toParseInv = chatFormat.getInventory_format();
+        String toParseInv = chatFormat.inventory_format();
         toParseInv = toParseInv.replace("%player%", player.getName());
         toParseInv = toParseInv.replace("%command%", "/invshare " + player.getName() + "-inventory");
         TagResolver inv = Placeholder.component("inv", parse(player, toParseInv, true, false, false, this.standardTagResolver));
 
-        String toParseItem = chatFormat.getItem_format();
+        String toParseItem = chatFormat.item_format();
         toParseItem = toParseItem.replace("%player%", player.getName());
         toParseItem = toParseItem.replace("%command%", "/invshare " + player.getName() + "-item");
         Component toParseItemComponent = parse(player, toParseItem, true, false, false, this.standardTagResolver);
@@ -198,7 +198,7 @@ public class ComponentProvider extends RedisChatAPI {
         }
         TagResolver item = Placeholder.component("item", toParseItemComponent);
 
-        String toParseEnderChest = chatFormat.getEnderchest_format();
+        String toParseEnderChest = chatFormat.enderchest_format();
         toParseEnderChest = toParseEnderChest.replace("%player%", player.getName());
         toParseEnderChest = toParseEnderChest.replace("%command%", "/invshare " + player.getName() + "-enderchest");
         TagResolver ec = Placeholder.component("ec", parse(player, toParseEnderChest, true, false, false, this.standardTagResolver));
@@ -219,7 +219,7 @@ public class ComponentProvider extends RedisChatAPI {
             Matcher m = p.matcher(text);
             if (m.find()) {
                 String replacing = m.group();
-                replacing = replacing.replace(playerName, format.getMention_format().replace("%player%", playerName));
+                replacing = replacing.replace(playerName, format.mention_format().replace("%player%", playerName));
                 toParse = toParse.replace(m.group(), replacing);
                 if (plugin.config.debug)
                     Bukkit.getLogger().info("mention parsed for " + playerName + " : " + toParse);
@@ -240,7 +240,7 @@ public class ComponentProvider extends RedisChatAPI {
                     linkString.substring(0, linkString.length() - 1) :
                     linkString;
             text = text.replace(m.group(), "%link%");//replace the link with a placeholder
-            linkComponent = miniMessage.deserialize(format.getLink_format().replace("%link%", linkString));
+            linkComponent = miniMessage.deserialize(format.link_format().replace("%link%", linkString));
         }
 
         if (plugin.config.debug)
@@ -323,7 +323,7 @@ public class ComponentProvider extends RedisChatAPI {
             if (p.isOnline()) {
                 List<ChatFormat> chatFormatList = plugin.config.getChatFormats(p);
                 if (chatFormatList.isEmpty()) return;
-                Component formatted = parse(null, chatFormatList.get(0).getReceive_private_format()
+                Component formatted = parse(null, chatFormatList.get(0).receive_private_format()
                         .replace("%receiver%", chatMessageInfo.getReceiverName())
                         .replace("%sender%", chatMessageInfo.getSenderName()));
                 Component toBeReplaced = parse(p, chatMessageInfo.getMessage(), false, false, false, this.standardTagResolver);

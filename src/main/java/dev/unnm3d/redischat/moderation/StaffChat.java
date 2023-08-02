@@ -30,7 +30,7 @@ public class StaffChat implements CommandExecutor {
         plugin.getDataManager().sendChatMessage(new ChatMessageInfo(
                 commandSender.getName(),
                 MiniMessage.miniMessage().serialize(
-                        plugin.getComponentProvider().parse(commandSender, chatFormat.getStaff_chat_format())
+                        plugin.getComponentProvider().parse(commandSender, chatFormat.staff_chat_format())
                 ),
                 message,
                 KnownChatEntities.PERMISSION_MULTICAST + Permission.REDIS_CHAT_ADMIN_STAFF_CHAT.getPermission()

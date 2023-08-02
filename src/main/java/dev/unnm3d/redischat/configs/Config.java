@@ -128,7 +128,7 @@ public final class Config {
     }
 
     public @NotNull List<ChatFormat> getChatFormats(CommandSender p) {
-        List<ChatFormat> chatFormatList = formats.stream().filter(format -> p.hasPermission(format.getPermission())).toList();
+        List<ChatFormat> chatFormatList = formats.stream().filter(format -> p.hasPermission(format.permission())).toList();
         if (chatFormatList.isEmpty()) {
             Bukkit.getLogger().info("No format found for " + p.getName());
             return List.of();

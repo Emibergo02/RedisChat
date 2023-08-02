@@ -1,19 +1,14 @@
 package dev.unnm3d.redischat.chat;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-
-@AllArgsConstructor
-@Getter
-public class ChatFormat {
-    private String permission;
-    private String format;
-    private String private_format;
-    private String receive_private_format;
-    private String inventory_format;
-    private String item_format;
-    private String enderchest_format;
-    private String mention_format;
-    private String link_format;
-    private String staff_chat_format;
+public record ChatFormat(
+        String permission,
+        String format,
+        String private_format,
+        String receive_private_format,
+        String inventory_format,
+        String item_format,
+        String enderchest_format,
+        String mention_format,
+        String link_format,
+        String staff_chat_format) {
 }
