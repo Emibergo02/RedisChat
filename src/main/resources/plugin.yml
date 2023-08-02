@@ -23,10 +23,6 @@ commands:
     description: RedisChat command
     usage: /redischat <reload>
     permission: redischat.admin
-  redischat-setitem:
-    description: Setitem command
-    usage: /redischat-setitem <item-name>
-    permission: redischat.setitem
   ignore:
     description: Ignore command
     permission: redischat.ignore
@@ -52,25 +48,11 @@ commands:
     permission: redischat.clearchat
   invshare:
     description: 'Invshare'
-  spychat:
-    description: Spychat command
-    aliases: [spyc]
-    permission: redischat.spycommand
   staffchat:
     description: Staffchat command
     aliases: [sc]
     permission: redischat.staffchat
-  announce:
-    description: RedisChat announce
-    usage: /announce <start/stop> announceName
-    permission: redischat.announce
-  rmail:
-    description: RedisChat mail
-    aliases: [mail]
 permissions:
-  redischat.spychat:
-    description: You are spying the chat if it is true
-    default: false
   redischat.useformatting:
     description: Allows to send formatted messages
     default: op
@@ -86,18 +68,12 @@ permissions:
   redischat.ignore:
     description: Allows to use the /ignore command
     default: op
-  redischat.spycommand:
-    description: Allows to use the /spychat command
-    default: op
   redischat.staffchat:
     description: Allows to use the /staffchat command
     default: op
   redischat.bypass_rate_limit:
     description: Bypass the rate limit
     default: false
-  redischat.setitem:
-    description: Allows to use the /setitem command
-    default: op
   redischat.admin:
     description: Allows to use the /redischat command
     default: op
@@ -108,10 +84,8 @@ permissions:
       - redischat.message
       - redischat.ignore
       - redischat.spycommand
-      - redischat.announce
       - redischat.bypass_rate_limit
       - redischat.editmessage
-      - redischat.setitem
       - redischat.staffchat
   redischat.default:
     description: Allows you to use default commands
