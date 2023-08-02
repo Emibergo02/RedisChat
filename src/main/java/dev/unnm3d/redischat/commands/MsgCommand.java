@@ -2,8 +2,8 @@ package dev.unnm3d.redischat.commands;
 
 import dev.unnm3d.redischat.Permission;
 import dev.unnm3d.redischat.RedisChat;
+import dev.unnm3d.redischat.chat.ChatFormat;
 import dev.unnm3d.redischat.chat.ChatMessageInfo;
-import dev.unnm3d.redischat.configs.Config;
 import lombok.AllArgsConstructor;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -33,10 +33,10 @@ public class MsgCommand implements CommandExecutor, TabCompleter {
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () ->
         {
             String message = String.join(" ", args);
-            List<Config.ChatFormat> chatFormatList = plugin.config.getChatFormats(sender);
+            List<ChatFormat> chatFormatList = plugin.config.getChatFormats(sender);
             if (chatFormatList.isEmpty()) return;
 
-            Component formatted = plugin.getComponentProvider().parse(sender, chatFormatList.get(0).private_format().replace("%receiver%", receiverName).replace("%sender%", sender.getName()));
+            Component formatted = plugin.getComponentProvider().parse(sender, chatFormatList.get(0).getPrivate_format().replace("%receiver%", receiverName).replace("%sender%", sender.getName()));
 
             //Check for minimessage tags permission
             boolean parsePlaceholders = true;
@@ -61,7 +61,7 @@ public class MsgCommand implements CommandExecutor, TabCompleter {
             }
 
             //Parse into minimessage (placeholders, tags and mentions)
-            Component toBeReplaced = plugin.getComponentProvider().parse(sender, message, parsePlaceholders, true, true, plugin.getComponentProvider().getInvShareTagResolver(sender, chatFormatList.get(0)));
+            Component toBeReplaced = plugin.getComponentProvider().parse(sender, message, parsePlaceholders, true, true, plugin.getComponentProvider().getRedisChatTagResolver(sender, chatFormatList.get(0)));
 
             //Send to other servers
             plugin.getDataManager().sendChatMessage(new ChatMessageInfo(sender.getName(),

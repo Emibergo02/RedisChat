@@ -1,7 +1,7 @@
 package dev.unnm3d.redischat.commands;
 
 import dev.unnm3d.redischat.RedisChat;
-import dev.unnm3d.redischat.integrations.VanishIntegration;
+import dev.unnm3d.redischat.api.VanishIntegration;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;

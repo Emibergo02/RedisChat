@@ -5,6 +5,7 @@ import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import com.zaxxer.hikari.HikariDataSource;
 import dev.unnm3d.redischat.RedisChat;
+import dev.unnm3d.redischat.api.DataManager;
 import dev.unnm3d.redischat.chat.ChatMessageInfo;
 import dev.unnm3d.redischat.mail.Mail;
 import org.bukkit.Bukkit;

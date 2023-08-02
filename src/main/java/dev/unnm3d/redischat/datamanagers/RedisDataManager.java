@@ -1,6 +1,7 @@
 package dev.unnm3d.redischat.datamanagers;
 
 import dev.unnm3d.redischat.RedisChat;
+import dev.unnm3d.redischat.api.DataManager;
 import dev.unnm3d.redischat.chat.ChatMessageInfo;
 import dev.unnm3d.redischat.mail.Mail;
 import dev.unnm3d.redischat.datamanagers.redistools.RedisAbstract;

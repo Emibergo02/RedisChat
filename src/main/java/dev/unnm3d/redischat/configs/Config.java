@@ -2,6 +2,7 @@ package dev.unnm3d.redischat.configs;
 
 import de.exlll.configlib.Comment;
 import de.exlll.configlib.Configuration;
+import dev.unnm3d.redischat.chat.ChatFormat;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
@@ -117,18 +118,6 @@ public final class Config {
             long poolTimeout) {
     }
 
-    public record ChatFormat(
-            String permission,
-            String format,
-            String private_format,
-            String receive_private_format,
-            String inventory_format,
-            String item_format,
-            String enderchest_format,
-            String mention_format,
-            String link_format,
-            String staff_chat_format) {
-    }
 
     public record Announce(
             String announceName,
@@ -139,7 +128,7 @@ public final class Config {
     }
 
     public @NotNull List<ChatFormat> getChatFormats(CommandSender p) {
-        List<Config.ChatFormat> chatFormatList = formats.stream().filter(format -> p.hasPermission(format.permission())).toList();
+        List<ChatFormat> chatFormatList = formats.stream().filter(format -> p.hasPermission(format.getPermission())).toList();
         if (chatFormatList.isEmpty()) {
             Bukkit.getLogger().info("No format found for " + p.getName());
             return List.of();

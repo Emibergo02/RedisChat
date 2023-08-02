@@ -1,4 +1,4 @@
-package dev.unnm3d.redischat.datamanagers;
+package dev.unnm3d.redischat.api;
 
 import dev.unnm3d.redischat.chat.ChatMessageInfo;
 import dev.unnm3d.redischat.mail.Mail;

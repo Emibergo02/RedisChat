@@ -1,4 +1,4 @@
-package dev.unnm3d.redischat.integrations;
+package dev.unnm3d.redischat.api;
 
 import org.bukkit.entity.Player;
 import org.bukkit.metadata.MetadataValue;

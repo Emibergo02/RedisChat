@@ -2,10 +2,9 @@ package dev.unnm3d.redischat.chat;
 
 import dev.unnm3d.redischat.Permission;
 import dev.unnm3d.redischat.RedisChat;
-import dev.unnm3d.redischat.configs.Config;
-import dev.unnm3d.redischat.integrations.TagResolverIntegration;
+import dev.unnm3d.redischat.api.RedisChatAPI;
+import dev.unnm3d.redischat.api.TagResolverIntegration;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.kyori.adventure.inventory.Book;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
@@ -21,31 +20,24 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.permissions.Permissible;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @AllArgsConstructor
-public class ComponentProvider {
+public class ComponentProvider extends RedisChatAPI {
     private final RedisChat plugin;
     private final BukkitAudiences audiences;
     private final MiniMessage miniMessage;
     private final TagResolver standardTagResolver;
     private final ConcurrentHashMap<Player, List<Component>> cacheBlocked;
-    @Getter
-    private static ComponentProvider instance;
     private final List<TagResolver.Single> customPlaceholderResolvers;
     private final List<TagResolverIntegration> tagResolverIntegrationList;
 
     public ComponentProvider(RedisChat plugin) {
-        instance = this;
+        INSTANCE = this;
         this.plugin = plugin;
         this.audiences = BukkitAudiences.create(plugin);
         this.miniMessage = MiniMessage.miniMessage();
@@ -56,6 +48,10 @@ public class ComponentProvider {
                 ).toList();
         this.standardTagResolver = StandardTags.defaults();
         this.tagResolverIntegrationList = new ArrayList<>();
+    }
+
+    public static ComponentProvider getInstance() {
+        return (ComponentProvider) INSTANCE;
     }
 
     public void addResolverIntegration(TagResolverIntegration integration) {
@@ -74,8 +70,9 @@ public class ComponentProvider {
         return parse(player, text, true, true, true, tagResolvers);
     }
 
+    @Override
     public Component parse(CommandSender player, String text, boolean parsePlaceholders, boolean parseMentions, boolean parseLinks, TagResolver... tagResolvers) {
-        AbstractMap.SimpleEntry<String, Component> parsedLinks = new AbstractMap.SimpleEntry<>(null, null);
+        Map.Entry<String, Component> parsedLinks = new AbstractMap.SimpleEntry<>(null, null);
         if (parseLinks) {
             parsedLinks = parseLinks(text, plugin.config.formats.get(0));
             text = parsedLinks.getKey();
@@ -83,8 +80,9 @@ public class ComponentProvider {
         if (parseMentions) {
             text = parseMentions(text, plugin.config.formats.get(0));
         }
-        if (plugin.config.legacyColorCodesSupport) {
-            text = parseLegacy(player, text);
+        if (plugin.config.legacyColorCodesSupport && (player == null || //Is without permissions or if it has permissions
+                player.hasPermission(Permission.REDIS_CHAT_USE_FORMATTING.getPermission()))) {
+            text = parseLegacy(text);
         }
 
         Component finalComponent = parsePlaceholders ?
@@ -92,7 +90,7 @@ public class ComponentProvider {
                 miniMessage.deserialize(text, tagResolvers);
 
         if (parsedLinks.getValue() != null) {
-            AbstractMap.SimpleEntry<String, Component> finalParsedLinks = parsedLinks;
+            Map.Entry<String, Component> finalParsedLinks = parsedLinks;
             finalComponent = finalComponent.replaceText(rTextBuilder ->
                     rTextBuilder.matchLiteral("%link%")
                             .replacement(finalParsedLinks.getValue()));
@@ -111,17 +109,8 @@ public class ComponentProvider {
         return parse(player, text, this.standardTagResolver);
     }
 
-    /**
-     * Parses PlaceholderAPI placeholders
-     * If a placeholder returns a colored string, we replace the placeholder as a component
-     * to not override the successive tag formatting
-     *
-     * @param cmdSender    Who is parsing the placeholders
-     * @param text         The text to parse
-     * @param tagResolvers The tag resolvers to use
-     * @return The parsed component
-     */
-    public Component parsePlaceholders(CommandSender cmdSender, String text, TagResolver[] tagResolvers) {
+    @Override
+    public Component parsePlaceholders(CommandSender cmdSender, String text, TagResolver... tagResolvers) {
         final String[] stringPlaceholders = text.split("%");
         final LinkedHashMap<String, Component> placeholders = new LinkedHashMap<>();
         int placeholderStep = 1;
@@ -155,20 +144,22 @@ public class ComponentProvider {
         return answer;
     }
 
+    @Override
     public String purgeTags(String text) {
         return miniMessage.stripTags(text, TagResolver.standard());
     }
 
-    public TagResolver getInvShareTagResolver(CommandSender player, Config.ChatFormat chatFormat) {
+    @Override
+    public TagResolver getRedisChatTagResolver(CommandSender player, ChatFormat chatFormat) {
 
         TagResolver.Builder builder = TagResolver.builder();
 
-        String toParseInv = chatFormat.inventory_format();
+        String toParseInv = chatFormat.getInventory_format();
         toParseInv = toParseInv.replace("%player%", player.getName());
         toParseInv = toParseInv.replace("%command%", "/invshare " + player.getName() + "-inventory");
         TagResolver inv = Placeholder.component("inv", parse(player, toParseInv, true, false, false, this.standardTagResolver));
 
-        String toParseItem = chatFormat.item_format();
+        String toParseItem = chatFormat.getItem_format();
         toParseItem = toParseItem.replace("%player%", player.getName());
         toParseItem = toParseItem.replace("%command%", "/invshare " + player.getName() + "-item");
         Component toParseItemComponent = parse(player, toParseItem, true, false, false, this.standardTagResolver);
@@ -180,7 +171,7 @@ public class ComponentProvider {
                                 rTextBuilder.matchLiteral("%item_name%")
                                         .replacement(
                                                 parse(player,
-                                                        parseLegacy(null, p.getInventory().getItemInMainHand().getItemMeta().getDisplayName()),
+                                                        parseLegacy(p.getInventory().getItemInMainHand().getItemMeta().getDisplayName()),
                                                         false,
                                                         false,
                                                         false,
@@ -207,7 +198,7 @@ public class ComponentProvider {
         }
         TagResolver item = Placeholder.component("item", toParseItemComponent);
 
-        String toParseEnderChest = chatFormat.enderchest_format();
+        String toParseEnderChest = chatFormat.getEnderchest_format();
         toParseEnderChest = toParseEnderChest.replace("%player%", player.getName());
         toParseEnderChest = toParseEnderChest.replace("%command%", "/invshare " + player.getName() + "-enderchest");
         TagResolver ec = Placeholder.component("ec", parse(player, toParseEnderChest, true, false, false, this.standardTagResolver));
@@ -220,7 +211,7 @@ public class ComponentProvider {
         return builder.build();
     }
 
-    public String parseMentions(String text, Config.ChatFormat format) {
+    private String parseMentions(String text, ChatFormat format) {
         String toParse = text;
         for (String playerName : plugin.getPlayerListManager().getPlayerList()) {
             playerName = playerName.replace("*", "\\*");
@@ -228,7 +219,7 @@ public class ComponentProvider {
             Matcher m = p.matcher(text);
             if (m.find()) {
                 String replacing = m.group();
-                replacing = replacing.replace(playerName, format.mention_format().replace("%player%", playerName));
+                replacing = replacing.replace(playerName, format.getMention_format().replace("%player%", playerName));
                 toParse = toParse.replace(m.group(), replacing);
                 if (plugin.config.debug)
                     Bukkit.getLogger().info("mention parsed for " + playerName + " : " + toParse);
@@ -238,7 +229,8 @@ public class ComponentProvider {
         return toParse;
     }
 
-    public AbstractMap.SimpleEntry<String, Component> parseLinks(String text, Config.ChatFormat format) {
+
+    private Map.Entry<String, Component> parseLinks(String text, ChatFormat format) {
         Component linkComponent = null;
         Pattern p = Pattern.compile("(https?://\\S+)");
         Matcher m = p.matcher(text);
@@ -248,7 +240,7 @@ public class ComponentProvider {
                     linkString.substring(0, linkString.length() - 1) :
                     linkString;
             text = text.replace(m.group(), "%link%");//replace the link with a placeholder
-            linkComponent = miniMessage.deserialize(format.link_format().replace("%link%", linkString));
+            linkComponent = miniMessage.deserialize(format.getLink_format().replace("%link%", linkString));
         }
 
         if (plugin.config.debug)
@@ -263,6 +255,7 @@ public class ComponentProvider {
         return text;
     }
 
+    @Override
     public String sanitize(String message) {
         for (String regex : plugin.config.regex_blacklist) {
             message = message.replaceAll(regex, "<obf>swear</obf>");
@@ -278,20 +271,17 @@ public class ComponentProvider {
         return capsCount > message.length() / 2 && message.length() > 20;//50% of the message is caps and the message is longer than 20 chars
     }
 
-    public String parseLegacy(@Nullable Permissible player, String text) {
-        if (
-                player == null || //Is without permissions or if it has permissions
-                        player.hasPermission(Permission.REDIS_CHAT_USE_FORMATTING.getPermission())
-        ) {
-            text = miniMessage.serialize(LegacyComponentSerializer.legacySection().deserialize(replaceBukkitColorCodesWithSection(text)));
-            if (plugin.config.debug) {
-                Bukkit.getLogger().info("Parsed legacy: " + text);
-            }
-            return text.replace("\\", "");
+    public String parseLegacy(String text) {
+
+        text = miniMessage.serialize(LegacyComponentSerializer.legacySection().deserialize(replaceBukkitColorCodesWithSection(text)));
+        if (plugin.config.debug) {
+            Bukkit.getLogger().info("Parsed legacy: " + text);
         }
-        return text;
+        return text.replace("\\", "");
+
     }
 
+    @Override
     public void sendGenericChat(ChatMessageInfo chatMessageInfo) {
         String multicastPermission = chatMessageInfo.getReceiverName().charAt(0) == '@' ? chatMessageInfo.getReceiverName().substring(1) : null;
         Component formattedComponent = MiniMessage.miniMessage().deserialize(chatMessageInfo.getFormatting()).replaceText(
@@ -312,12 +302,7 @@ public class ComponentProvider {
         }
     }
 
-    /**
-     * Sends a spy message to watchers
-     *
-     * @param chatMessageInfo The chat content to send
-     * @param watcher         The player who is spying the message
-     */
+    @Override
     public void sendSpyChat(ChatMessageInfo chatMessageInfo, Player watcher) {
         Component finalFormatted = MiniMessage.miniMessage().deserialize(
                         plugin.messages.spychat_format
@@ -331,19 +316,14 @@ public class ComponentProvider {
         sendComponentOrCache(watcher, finalFormatted);
     }
 
-    /**
-     * Sends a private message to the receiver
-     * It is the final step of the private message process
-     *
-     * @param chatMessageInfo The chat packet to send
-     */
+    @Override
     public void sendPrivateChat(ChatMessageInfo chatMessageInfo) {
         Player p = Bukkit.getPlayer(chatMessageInfo.getReceiverName());
         if (p != null)
             if (p.isOnline()) {
-                List<Config.ChatFormat> chatFormatList = plugin.config.getChatFormats(p);
+                List<ChatFormat> chatFormatList = plugin.config.getChatFormats(p);
                 if (chatFormatList.isEmpty()) return;
-                Component formatted = parse(null, chatFormatList.get(0).receive_private_format()
+                Component formatted = parse(null, chatFormatList.get(0).getReceive_private_format()
                         .replace("%receiver%", chatMessageInfo.getReceiverName())
                         .replace("%sender%", chatMessageInfo.getSenderName()));
                 Component toBeReplaced = parse(p, chatMessageInfo.getMessage(), false, false, false, this.standardTagResolver);
@@ -355,13 +335,8 @@ public class ComponentProvider {
             }
     }
 
-    /**
-     * Sends a message to the player, or caches it if the player is blocked
-     *
-     * @param player    The player to send the message to
-     * @param component The message to send
-     */
-    private void sendComponentOrCache(Player player, Component component) {
+    @Override
+    public void sendComponentOrCache(Player player, Component component) {
         if (cacheBlocked.computeIfPresent(player,
                 (player1, components) -> {
                     components.add(component);
@@ -371,24 +346,17 @@ public class ComponentProvider {
         }
     }
 
-    /**
-     * Pauses the chat for a player and caches all messages sent to them
-     *
-     * @param player The player to pause the chat for
-     */
+    @Override
     public void pauseChat(Player player) {
         cacheBlocked.put(player, new ArrayList<>());
     }
 
+    @Override
     public boolean isPaused(Player player) {
         return cacheBlocked.containsKey(player);
     }
 
-    /**
-     * Unpauses the chat for a player and sends all cached messages to them
-     *
-     * @param player The player to unpause the chat for
-     */
+    @Override
     public void unpauseChat(Player player) {
         if (cacheBlocked.containsKey(player)) {
             for (Component component : cacheBlocked.remove(player)) {

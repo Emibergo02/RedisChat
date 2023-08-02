@@ -2,7 +2,6 @@ package dev.unnm3d.redischat.chat;
 
 import dev.unnm3d.redischat.Permission;
 import dev.unnm3d.redischat.RedisChat;
-import dev.unnm3d.redischat.configs.Config;
 import dev.unnm3d.redischat.moderation.StaffChat;
 import lombok.AllArgsConstructor;
 import net.kyori.adventure.text.Component;
@@ -31,7 +30,7 @@ public class ChatListener implements Listener {
         long init = System.currentTimeMillis();
         int totalElapsed = 0;
 
-        List<Config.ChatFormat> chatFormatList = plugin.config.getChatFormats(event.getPlayer());
+        List<ChatFormat> chatFormatList = plugin.config.getChatFormats(event.getPlayer());
         if (chatFormatList.isEmpty()) return;
 
         if (event.getMessage().startsWith(plugin.config.staffChatPrefix)) {
@@ -50,7 +49,7 @@ public class ChatListener implements Listener {
         totalElapsed += debug("Rate limit timing: %time%ms", init);
         init = System.currentTimeMillis();
 
-        Component formatted = plugin.getComponentProvider().parse(event.getPlayer(), chatFormatList.get(0).format(), true, true, true);//Parse format without %message%
+        Component formatted = plugin.getComponentProvider().parse(event.getPlayer(), chatFormatList.get(0).getFormat(), true, true, true);//Parse format without %message%
         //Check for minimessage tags permission
         String message = event.getMessage();
         boolean parsePlaceholders = true;
@@ -82,7 +81,7 @@ public class ChatListener implements Listener {
         init = System.currentTimeMillis();
 
         //Parse to MiniMessage component (placeholders, tags and mentions)
-        Component toBeReplaced = plugin.getComponentProvider().parse(event.getPlayer(), message, parsePlaceholders, true, true, plugin.getComponentProvider().getInvShareTagResolver(event.getPlayer(), chatFormatList.get(0)));
+        Component toBeReplaced = plugin.getComponentProvider().parse(event.getPlayer(), message, parsePlaceholders, true, true, plugin.getComponentProvider().getRedisChatTagResolver(event.getPlayer(), chatFormatList.get(0)));
 
         totalElapsed += debug("Message parsing timing: %time%ms", init);
 
