@@ -8,14 +8,15 @@ import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.Map;
 
 @Configuration
 public final class Config {
 
-    @Comment({"RedisChat storage type, can be REDIS or MySQL+PM",
+    @Comment({"RedisChat storage type, can be REDIS , MySQL+PM or H2+PM (PM means PluginMessages)",
             "If you use Mysql you need a proxy. The plugin will send the data to the proxy via pluginmessages",
-            "If you use REDIS you don't need any proxy, this is the recommended option"})
-    public String dataMedium = DataType.REDIS.keyName;
+            "If you use REDIS you don't need any proxy, THIS IS THE RECOMMENDED AND MOST EFFICIENT OPTION"})
+    public String dataMedium = DataType.H2.keyName;
     @Comment("Leave password or user empty if you don't have a password or user")
     public RedisSettings redis = new RedisSettings("localhost",
             6379,
@@ -39,6 +40,9 @@ public final class Config {
             1800000,
             30000,
             20000);
+    @Comment({"The cluster id, if you have multiple servers you need to set a different id for each group of servers",
+            "Doesn't work completely if you're using something different than redis"})
+    public int clusterId = 0;
     @Comment("Webeditor URL")
     public String webEditorUrl = "https://webui.advntr.dev/";
     @Comment({"Here you can decide your chat format", "Permission format is overridden on descending order", "(if a player has default and vip, if default is the first element, vip will be ignored)"})
@@ -71,6 +75,8 @@ public final class Config {
     public String staffChatPrefix = "!";
     @Comment("Re-enables bukkit color glitches for colored placeholders")
     public boolean enablePlaceholderGlitch = false;
+    @Comment("Those commands will be disabled")
+    public List<String> disabledCommands = List.of();
     @Comment("Toggle debug mode (by default is false)")
     public boolean debug = false;
 
@@ -109,7 +115,9 @@ public final class Config {
 
     public enum DataType {
         MYSQL("MYSQL+PM"),
-        REDIS("REDIS");
+        REDIS("REDIS"),
+        H2("H2+PM"),
+        ;
         private final String keyName;
 
         /**

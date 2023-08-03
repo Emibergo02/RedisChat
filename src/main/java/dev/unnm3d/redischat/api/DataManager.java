@@ -1,45 +1,44 @@
 package dev.unnm3d.redischat.api;
 
 import dev.unnm3d.redischat.chat.ChatMessageInfo;
+import dev.unnm3d.redischat.mail.Mail;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.io.BukkitObjectInputStream;
 import org.bukkit.util.io.BukkitObjectOutputStream;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.util.Base64;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CompletionStage;
 
 public interface DataManager {
 
-    Optional<String> getReplyName(String requesterName);
+    Optional<String> getReplyName(@NotNull String requesterName);
 
-    void setReplyName(String nameReceiver, String requesterName);
+    void setReplyName(@NotNull String nameReceiver, @NotNull String requesterName);
 
-    boolean isRateLimited(String playerName);
+    boolean isRateLimited(@NotNull String playerName);
 
-    void setRateLimit(String playerName, int seconds);
+    void setRateLimit(@NotNull String playerName, int seconds);
 
-    CompletionStage<Boolean> toggleIgnoring(String playerName, String ignoringName);
+    CompletionStage<Boolean> toggleIgnoring(@NotNull String playerName, @NotNull String ignoringName);
 
-    CompletionStage<Boolean> isIgnoring(String playerName, String ignoringName);
+    CompletionStage<Boolean> isIgnoring(@NotNull String playerName, @NotNull String ignoringName);
 
-    CompletionStage<List<String>> ignoringList(String playerName);
+    CompletionStage<List<String>> ignoringList(@NotNull String playerName);
 
-    void addInventory(String name, ItemStack[] inv);
+    void addInventory(@NotNull String name, ItemStack[] inv);
 
-    void addItem(String name, ItemStack item);
+    void addItem(@NotNull String name, ItemStack item);
 
-    void addEnderchest(String name, ItemStack[] inv);
+    void addEnderchest(@NotNull String name, ItemStack[] inv);
 
-    CompletionStage<ItemStack[]> getPlayerInventory(String playerName);
+    CompletionStage<ItemStack[]> getPlayerInventory(@NotNull String playerName);
 
 
-    void sendChatMessage(ChatMessageInfo chatMessage);
+    void sendChatMessage(@NotNull ChatMessageInfo chatMessage);
 
-    void publishPlayerList(List<String> playerNames);
+    void publishPlayerList(@NotNull List<String> playerNames);
 
     void close();
 
@@ -73,6 +72,13 @@ public interface DataManager {
         } catch (Exception ignored) {
             return new ItemStack[0];
         }
+    }
+
+    default List<Mail> deserializeMails(Map<String, String> timestampMail) {
+        return timestampMail.entrySet().stream()
+                .map(entry -> new AbstractMap.SimpleEntry<>(Double.parseDouble(entry.getKey()), entry.getValue()))
+                .sorted(Map.Entry.comparingByKey())
+                .map(entry -> new Mail(entry.getKey(), entry.getValue())).toList();
     }
 
 

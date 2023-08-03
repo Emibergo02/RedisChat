@@ -5,11 +5,14 @@ import dev.unnm3d.redischat.api.DataManager;
 import dev.unnm3d.redischat.chat.ChatMessageInfo;
 import dev.unnm3d.redischat.datamanagers.redistools.RedisAbstract;
 import io.lettuce.core.RedisClient;
+import io.lettuce.core.RedisURI;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.pubsub.RedisPubSubListener;
 import io.lettuce.core.pubsub.StatefulRedisPubSubConnection;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +29,24 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
         super(redisClient);
         this.plugin = redisChat;
         listenSub();
+    }
+
+    public static RedisDataManager startup(RedisChat redisChat) {
+        RedisURI.Builder redisURIBuilder = RedisURI.builder()
+                .withHost(redisChat.config.redis.host())
+                .withPort(redisChat.config.redis.port())
+                .withDatabase(redisChat.config.redis.database())
+                .withTimeout(Duration.of(redisChat.config.redis.timeout(), TimeUnit.MILLISECONDS.toChronoUnit()))
+                .withClientName(redisChat.config.redis.clientName());
+        if (redisChat.config.redis.user().equals("changecredentials"))
+            redisChat.getServer().getLogger().warning("You are using default redis credentials. Please change them in the config.yml file!");
+        //Authentication params
+        redisURIBuilder = redisChat.config.redis.password().equals("") ?
+                redisURIBuilder :
+                redisChat.config.redis.user().equals("") ?
+                        redisURIBuilder.withPassword(redisChat.config.redis.password().toCharArray()) :
+                        redisURIBuilder.withAuthentication(redisChat.config.redis.user(), redisChat.config.redis.password());
+        return new RedisDataManager(RedisClient.create(redisURIBuilder.build()), redisChat);
     }
 
     private void listenSub() {
@@ -72,7 +93,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     }
 
     @Override
-    public Optional<String> getReplyName(String requesterName) {
+    public Optional<String> getReplyName(@NotNull String requesterName) {
         StatefulRedisConnection<String, String> connection = lettuceRedisClient.connect();
         String replyName = connection.sync().hget(REPLY.toString(), requesterName);
         connection.close();
@@ -81,14 +102,14 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     }
 
     @Override
-    public void setReplyName(String nameReceiver, String requesterName) {
+    public void setReplyName(@NotNull String nameReceiver, @NotNull String requesterName) {
         StatefulRedisConnection<String, String> connection = lettuceRedisClient.connect();
         connection.sync().hset(REPLY.toString(), nameReceiver, requesterName);
         connection.close();
     }
 
     @Override
-    public boolean isRateLimited(String playerName) {
+    public boolean isRateLimited(@NotNull String playerName) {
         StatefulRedisConnection<String, String> connection = lettuceRedisClient.connect();
         String result = connection.sync().get(RATE_LIMIT_PREFIX + playerName);
         connection.close();
@@ -98,7 +119,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     }
 
     @Override
-    public void setRateLimit(String playerName, int seconds) {
+    public void setRateLimit(@NotNull String playerName, int seconds) {
         getConnectionPipeline(connection -> {
             connection.incr(RATE_LIMIT_PREFIX + playerName);
             connection.expire(RATE_LIMIT_PREFIX + playerName, seconds);
@@ -107,7 +128,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     }
 
     @Override
-    public CompletionStage<Boolean> toggleIgnoring(String playerName, String ignoringName) {
+    public CompletionStage<Boolean> toggleIgnoring(@NotNull String playerName, @NotNull String ignoringName) {
         return getConnectionAsync(connection ->
                 connection.sadd(IGNORE_PREFIX + playerName, ignoringName)
                         .thenApply(response -> {
@@ -132,7 +153,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     }
 
     @Override
-    public CompletionStage<Boolean> isIgnoring(String playerName, String ignoringName) {
+    public CompletionStage<Boolean> isIgnoring(@NotNull String playerName, @NotNull String ignoringName) {
         return getConnectionAsync(connection ->
                 connection.smembers(IGNORE_PREFIX + playerName)
                         .thenApply(result -> {
@@ -148,7 +169,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     }
 
     @Override
-    public CompletionStage<List<String>> ignoringList(String playerName) {
+    public CompletionStage<List<String>> ignoringList(@NotNull String playerName) {
         return getConnectionAsync(connection ->
                 connection.smembers(IGNORE_PREFIX + playerName)
                         .thenApply(result -> {
@@ -165,7 +186,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     }
 
     @Override
-    public void addInventory(String name, ItemStack[] inv) {
+    public void addInventory(@NotNull String name, ItemStack[] inv) {
         getConnectionAsync(connection ->
                 connection.hset(INVSHARE_INVENTORY.toString(), name, serialize(inv))
                         .thenApply(response -> {
@@ -191,7 +212,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     }
 
     @Override
-    public void addItem(String name, ItemStack item) {
+    public void addItem(@NotNull String name, ItemStack item) {
         getConnectionAsync(connection ->
                 connection.hset(INVSHARE_ITEM.toString(), name, serialize(item))
                         .thenApply(response -> {
@@ -216,7 +237,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     }
 
     @Override
-    public void addEnderchest(String name, ItemStack[] inv) {
+    public void addEnderchest(@NotNull String name, ItemStack[] inv) {
         getConnectionAsync(connection ->
                 connection.hset(INVSHARE_ENDERCHEST.toString(), name, serialize(inv))
                         .thenApply(response -> {
@@ -241,7 +262,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     }
 
     @Override
-    public CompletionStage<ItemStack[]> getPlayerInventory(String playerName) {
+    public CompletionStage<ItemStack[]> getPlayerInventory(@NotNull String playerName) {
         return getConnectionAsync(connection ->
                 connection.hget(INVSHARE_INVENTORY.toString(), playerName)
                         .thenApply(serializedInv -> {
@@ -259,7 +280,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     }
 
     @Override
-    public void sendChatMessage(ChatMessageInfo packet) {
+    public void sendChatMessage(@NotNull ChatMessageInfo packet) {
         getConnectionAsync(conn ->
                 conn.publish(CHAT_CHANNEL.toString(), packet.serialize())
                         .thenApply(integer -> {
@@ -278,7 +299,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     }
 
     @Override
-    public void publishPlayerList(List<String> playerNames) {
+    public void publishPlayerList(@NotNull List<String> playerNames) {
         getConnectionAsync(connection ->
                 connection.publish(PLAYERLIST.toString(),
                         String.join("§", playerNames))

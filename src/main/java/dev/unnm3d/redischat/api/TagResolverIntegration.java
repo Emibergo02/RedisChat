@@ -1,5 +1,7 @@
 package dev.unnm3d.redischat.api;
 
+import org.jetbrains.annotations.NotNull;
+
 public interface TagResolverIntegration {
 
     /**
@@ -8,7 +10,7 @@ public interface TagResolverIntegration {
      * @param message The message to resolve
      * @return The resolved message
      */
-    default String parseTags(String message){
+    default @NotNull String parseTags(String message){
         return message;
     }
 

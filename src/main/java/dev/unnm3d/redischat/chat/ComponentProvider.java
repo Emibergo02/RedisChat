@@ -1,10 +1,12 @@
 package dev.unnm3d.redischat.chat;
 
+import dev.unnm3d.redischat.Permission;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.api.RedisChatAPI;
 import dev.unnm3d.redischat.api.TagResolverIntegration;
 import lombok.AllArgsConstructor;
 import me.clip.placeholderapi.PlaceholderAPI;
+import net.kyori.adventure.inventory.Book;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -44,6 +46,10 @@ public class ComponentProvider extends RedisChatAPI {
         this.tagResolverIntegrationList = new ArrayList<>();
     }
 
+    public static ComponentProvider getInstance() {
+        return (ComponentProvider) INSTANCE;
+    }
+
     public void addResolverIntegration(TagResolverIntegration integration) {
         this.tagResolverIntegrationList.add(integration);
     }
@@ -61,7 +67,7 @@ public class ComponentProvider extends RedisChatAPI {
     }
 
     @Override
-    public Component parse(CommandSender player, String text, boolean parsePlaceholders, boolean parseMentions, boolean parseLinks, TagResolver... tagResolvers) {
+    public @NotNull Component parse(@Nullable CommandSender player, @NotNull String text, boolean parsePlaceholders, boolean parseMentions, boolean parseLinks, @NotNull TagResolver... tagResolvers) {
         Map.Entry<String, Component> parsedLinks = new AbstractMap.SimpleEntry<>(null, null);
         if (parseLinks) {
             parsedLinks = parseLinks(text, plugin.config.formats.get(0));
@@ -93,7 +99,7 @@ public class ComponentProvider extends RedisChatAPI {
     }
 
     @Override
-    public Component parsePlaceholders(CommandSender cmdSender, String text, TagResolver... tagResolvers) {
+    public @NotNull Component parsePlaceholders(CommandSender cmdSender, @NotNull String text, TagResolver... tagResolvers) {
         final String[] stringPlaceholders = text.split("%");
         final LinkedHashMap<String, Component> placeholders = new LinkedHashMap<>();
         int placeholderStep = 1;
@@ -128,14 +134,14 @@ public class ComponentProvider extends RedisChatAPI {
     }
 
     @Override
-    public String purgeTags(String text) {
+    public @NotNull String purgeTags(@NotNull String text) {
         return miniMessage.stripTags(text, TagResolver.standard());
     }
 
     @Override
-    public TagResolver getRedisChatTagResolver(CommandSender player, ChatFormat chatFormat) {
+    public @NotNull TagResolver getRedisChatTagResolver(@NotNull CommandSender player, @NotNull ChatFormat chatFormat) {
 
-        TagResolver.Builder builder = TagResolver.builder();
+        final TagResolver.Builder builder = TagResolver.builder();
 
         String toParseInv = chatFormat.inventory_format();
         toParseInv = toParseInv.replace("%player%", player.getName());
@@ -146,7 +152,7 @@ public class ComponentProvider extends RedisChatAPI {
         return builder.build();
     }
 
-    private String parseMentions(String text, ChatFormat format) {
+    private String parseMentions(@NotNull String text, @NotNull ChatFormat format) {
         String toParse = text;
         for (String playerName : plugin.getPlayerListManager().getPlayerList()) {
             playerName = playerName.replace("*", "\\*");
@@ -165,7 +171,7 @@ public class ComponentProvider extends RedisChatAPI {
     }
 
 
-    private Map.Entry<String, Component> parseLinks(String text, ChatFormat format) {
+    private Map.Entry<String, Component> parseLinks(@NotNull String text, @NotNull ChatFormat format) {
         Component linkComponent = null;
         Pattern p = Pattern.compile("(https?://\\S+)");
         Matcher m = p.matcher(text);
@@ -191,14 +197,14 @@ public class ComponentProvider extends RedisChatAPI {
     }
 
     @Override
-    public String sanitize(String message) {
+    public @NotNull String sanitize(@NotNull String message) {
         for (String regex : plugin.config.regex_blacklist) {
             message = message.replaceAll(regex, "<obf>swear</obf>");
         }
         return message;
     }
 
-    public boolean antiCaps(String message) {
+    public boolean antiCaps(@NotNull String message) {
         int capsCount = 0;
         for (char c : message.toCharArray())
             if (Character.isUpperCase(c))
@@ -207,7 +213,7 @@ public class ComponentProvider extends RedisChatAPI {
     }
 
     @Override
-    public void sendGenericChat(ChatMessageInfo chatMessageInfo) {
+    public void sendGenericChat(@NotNull ChatMessageInfo chatMessageInfo) {
         String multicastPermission = chatMessageInfo.getReceiverName().charAt(0) == '@' ? chatMessageInfo.getReceiverName().substring(1) : null;
         Component formattedComponent = MiniMessage.miniMessage().deserialize(chatMessageInfo.getFormatting()).replaceText(
                 builder -> builder.matchLiteral("%message%").replacement(
@@ -228,7 +234,7 @@ public class ComponentProvider extends RedisChatAPI {
     }
 
     @Override
-    public void sendSpyChat(ChatMessageInfo chatMessageInfo, Player watcher) {
+    public void sendSpyChat(@NotNull ChatMessageInfo chatMessageInfo, @NotNull Player watcher) {
         Component finalFormatted = MiniMessage.miniMessage().deserialize(
                         plugin.messages.spychat_format
                                 .replace("%receiver%", chatMessageInfo.getReceiverName())
@@ -242,7 +248,7 @@ public class ComponentProvider extends RedisChatAPI {
     }
 
     @Override
-    public void sendPrivateChat(ChatMessageInfo chatMessageInfo) {
+    public void sendPrivateChat(@NotNull ChatMessageInfo chatMessageInfo) {
         Player p = Bukkit.getPlayer(chatMessageInfo.getReceiverName());
         if (p != null)
             if (p.isOnline()) {
@@ -261,7 +267,7 @@ public class ComponentProvider extends RedisChatAPI {
     }
 
     @Override
-    public void sendComponentOrCache(Player player, Component component) {
+    public void sendComponentOrCache(@NotNull Player player, @NotNull Component component) {
         if (cacheBlocked.computeIfPresent(player,
                 (player1, components) -> {
                     components.add(component);
@@ -272,17 +278,17 @@ public class ComponentProvider extends RedisChatAPI {
     }
 
     @Override
-    public void pauseChat(Player player) {
+    public void pauseChat(@NotNull Player player) {
         cacheBlocked.put(player, new ArrayList<>());
     }
 
     @Override
-    public boolean isPaused(Player player) {
+    public boolean isPaused(@NotNull Player player) {
         return cacheBlocked.containsKey(player);
     }
 
     @Override
-    public void unpauseChat(Player player) {
+    public void unpauseChat(@NotNull Player player) {
         if (cacheBlocked.containsKey(player)) {
             for (Component component : cacheBlocked.remove(player)) {
                 plugin.getComponentProvider().sendMessage(player, component);
