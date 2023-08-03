@@ -9,6 +9,7 @@ libraries:
   - org.snakeyaml:snakeyaml-engine:2.3
   - org.jetbrains:annotations:19.0.0
   - com.zaxxer:HikariCP:5.0.1
+  - com.h2database:h2:2.2.220
 depend:
   - PlaceholderAPI
 softdepend:

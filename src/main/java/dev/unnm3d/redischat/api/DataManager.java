@@ -5,6 +5,7 @@ import dev.unnm3d.redischat.mail.Mail;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.io.BukkitObjectInputStream;
 import org.bukkit.util.io.BukkitObjectOutputStream;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -13,47 +14,47 @@ import java.util.concurrent.CompletionStage;
 
 public interface DataManager {
 
-    Optional<String> getReplyName(String requesterName);
+    Optional<String> getReplyName(@NotNull String requesterName);
 
-    void setReplyName(String nameReceiver, String requesterName);
+    void setReplyName(@NotNull String nameReceiver, @NotNull String requesterName);
 
-    boolean isRateLimited(String playerName);
+    boolean isRateLimited(@NotNull String playerName);
 
-    void setRateLimit(String playerName, int seconds);
+    void setRateLimit(@NotNull String playerName, int seconds);
 
-    CompletionStage<Boolean> isSpying(String playerName);
+    CompletionStage<Boolean> isSpying(@NotNull String playerName);
 
-    void setSpying(String playerName, boolean spy);
+    void setSpying(@NotNull String playerName, boolean spy);
 
-    CompletionStage<Boolean> toggleIgnoring(String playerName, String ignoringName);
+    CompletionStage<Boolean> toggleIgnoring(@NotNull String playerName, @NotNull String ignoringName);
 
-    CompletionStage<Boolean> isIgnoring(String playerName, String ignoringName);
+    CompletionStage<Boolean> isIgnoring(@NotNull String playerName, @NotNull String ignoringName);
 
-    CompletionStage<List<String>> ignoringList(String playerName);
+    CompletionStage<List<String>> ignoringList(@NotNull String playerName);
 
-    void addInventory(String name, ItemStack[] inv);
+    void addInventory(@NotNull String name, ItemStack[] inv);
 
-    void addItem(String name, ItemStack item);
+    void addItem(@NotNull String name, ItemStack item);
 
-    void addEnderchest(String name, ItemStack[] inv);
+    void addEnderchest(@NotNull String name, ItemStack[] inv);
 
-    CompletionStage<ItemStack> getPlayerItem(String playerName);
+    CompletionStage<ItemStack> getPlayerItem(@NotNull String playerName);
 
-    CompletionStage<ItemStack[]> getPlayerInventory(String playerName);
+    CompletionStage<ItemStack[]> getPlayerInventory(@NotNull String playerName);
 
-    CompletionStage<ItemStack[]> getPlayerEnderchest(String playerName);
+    CompletionStage<ItemStack[]> getPlayerEnderchest(@NotNull String playerName);
 
-    CompletionStage<List<Mail>> getPlayerPrivateMail(String playerName);
+    CompletionStage<List<Mail>> getPlayerPrivateMail(@NotNull String playerName);
 
-    CompletionStage<Boolean> setPlayerPrivateMail(Mail mail);
+    CompletionStage<Boolean> setPlayerPrivateMail(@NotNull Mail mail);
 
-    CompletionStage<Boolean> setPublicMail(Mail mail);
+    CompletionStage<Boolean> setPublicMail(@NotNull Mail mail);
 
     CompletionStage<List<Mail>> getPublicMails();
 
-    void sendChatMessage(ChatMessageInfo chatMessage);
+    void sendChatMessage(@NotNull ChatMessageInfo chatMessage);
 
-    void publishPlayerList(List<String> playerNames);
+    void publishPlayerList(@NotNull List<String> playerNames);
 
     void close();
 

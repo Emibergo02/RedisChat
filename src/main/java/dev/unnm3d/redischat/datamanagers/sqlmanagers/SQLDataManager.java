@@ -1,67 +1,66 @@
-package dev.unnm3d.redischat.datamanagers;
+package dev.unnm3d.redischat.datamanagers.sqlmanagers;
 
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
-import com.zaxxer.hikari.HikariDataSource;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.api.DataManager;
 import dev.unnm3d.redischat.chat.ChatMessageInfo;
+import dev.unnm3d.redischat.datamanagers.DataKeys;
 import dev.unnm3d.redischat.mail.Mail;
 import org.bukkit.Bukkit;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 
-@SuppressWarnings("UnstableApiUsage")
-public class LegacyDataManager implements DataManager {
-    private final RedisChat plugin;
-    private HikariDataSource dataSource;
+public abstract class SQLDataManager implements DataManager {
+    protected final RedisChat plugin;
     private final ConcurrentHashMap<String, Map.Entry<Integer, Long>> rateLimit;
-    private static final String[] TABLE_DDL = {"""
+
+    protected SQLDataManager(RedisChat plugin) {
+        this.plugin = plugin;
+        this.rateLimit = new ConcurrentHashMap<>();
+    }
+
+    protected String[] getSQLSchema() {
+        return new String[]{"""
             create table if not exists mails
             (
-                id             double      not null,
-                recipient      varchar(16) null,
-                serializedMail text        not null,
-                primary key(id)
+                id              double      not null primary key,
+                recipient       varchar(16) default null,
+                serializedMail  text        not null
             );
             """, """
             create table if not exists player_data
             (
-                player_name     VARCHAR(16)          not null,
-                ignore_list     text                 null,
-                reply_player    varchar(16)          null,
-                is_spying       tinyint(1) default 0 not null,
-                inv_serialized  mediumtext           null,
-                item_serialized text                 null,
-                ec_serialized   mediumtext           null,
-                primary key(player_name),
-                foreign key (reply_player) references player_data (player_name)
+                player_name     varchar(16)     not null primary key,
+                ignore_list     TEXT            default NULL,
+                reply_player    varchar(16)     default NULL,
+                is_spying       BOOLEAN         default FALSE,
+                inv_serialized  MEDIUMTEXT      default NULL,
+                item_serialized TEXT            default NULL,
+                ec_serialized   MEDIUMTEXT      default NULL
             );
             """, """
             create table if not exists ignored_players
             (
                 player_name    varchar(16) not null,
                 ignored_player varchar(16) not null,
-                unique (player_name, ignored_player),
-                foreign key (player_name) references player_data (player_name),
-                foreign key (ignored_player) references player_data (player_name)
+                unique (player_name, ignored_player)
             );
             """};
-
-    public LegacyDataManager(RedisChat plugin) {
-        this.plugin = plugin;
-        this.rateLimit = new ConcurrentHashMap<>();
-        initialize();
-        listenPluginMessages();
     }
 
-    private void listenPluginMessages() {
+    @SuppressWarnings("UnstableApiUsage")
+    protected void listenPluginMessages() {
         plugin.getServer().getMessenger().registerOutgoingPluginChannel(plugin, "BungeeCord");
         plugin.getServer().getMessenger().registerIncomingPluginChannel(plugin, "BungeeCord", (channel, player, message) -> {
             if (!channel.equals("BungeeCord")) return;
@@ -79,72 +78,12 @@ public class LegacyDataManager implements DataManager {
         });
     }
 
-    private void initialize() throws IllegalStateException {
-        // Initialize the Hikari pooled connection
-        dataSource = new HikariDataSource();
-        dataSource.setJdbcUrl("jdbc:" + (plugin.config.mysql.driverClass().contains("mariadb") ? "mariadb" : "mysql")
-                + "://"
-                + plugin.config.mysql.host()
-                + ":"
-                + plugin.config.mysql.port()
-                + "/"
-                + plugin.config.mysql.database()
-                + plugin.config.mysql.connectionParameters()
-        );
+    protected abstract Connection getConnection() throws SQLException;
 
-        // Authenticate with the database
-        dataSource.setUsername(plugin.config.mysql.username());
-        dataSource.setPassword(plugin.config.mysql.password());
-
-        // Set connection pool options
-        dataSource.setMaximumPoolSize(plugin.config.mysql.poolSize());
-        dataSource.setMinimumIdle(plugin.config.mysql.poolIdle());
-        dataSource.setConnectionTimeout(plugin.config.mysql.poolTimeout());
-        dataSource.setMaxLifetime(plugin.config.mysql.poolLifetime());
-        dataSource.setKeepaliveTime(plugin.config.mysql.poolKeepAlive());
-
-        // Set additional connection pool properties
-        final Properties properties = new Properties();
-        properties.putAll(
-                Map.of("cachePrepStmts", "true",
-                        "prepStmtCacheSize", "250",
-                        "prepStmtCacheSqlLimit", "2048",
-                        "useServerPrepStmts", "true",
-                        "useLocalSessionState", "true",
-                        "useLocalTransactionState", "true"
-                ));
-        properties.putAll(
-                Map.of(
-                        "rewriteBatchedStatements", "true",
-                        "cacheResultSetMetadata", "true",
-                        "cacheServerConfiguration", "true",
-                        "elideSetAutoCommits", "true",
-                        "maintainTimeStats", "false")
-        );
-        dataSource.setDataSourceProperties(properties);
-
-        // Prepare database schema; make tables if they don't exist
-        try (Connection connection = dataSource.getConnection()) {
-            try (Statement statement = connection.createStatement()) {
-                for (String tableCreationStatement : TABLE_DDL) {
-                    statement.execute(tableCreationStatement);
-                }
-            } catch (SQLException e) {
-                throw new IllegalStateException("Failed to create database tables. Make sure you're running MySQL v8.0+"
-                        + "and that your connecting user account has privileges to create tables.", e);
-            }
-        } catch (SQLException e) {
-            throw new IllegalStateException("Failed to establish a connection to the MySQL database. "
-                    + "Please check the supplied database credentials in the config file", e);
-        }
-    }
-
-    private Connection getConnection() throws SQLException {
-        return dataSource.getConnection();
-    }
+    protected abstract void initialize() throws IllegalStateException;
 
     @Override
-    public Optional<String> getReplyName(String requesterName) {
+    public Optional<String> getReplyName(@NotNull String requesterName) {
         try (Connection connection = getConnection()) {
             try (PreparedStatement statement = connection.prepareStatement("""
                     SELECT `reply_player`
@@ -154,7 +93,7 @@ public class LegacyDataManager implements DataManager {
 
                 final ResultSet resultSet = statement.executeQuery();
                 if (resultSet.next()) {
-                    return Optional.of(resultSet.getString("reply_player"));
+                    return Optional.ofNullable(resultSet.getString("reply_player"));
                 }
             }
         } catch (SQLException e) {
@@ -164,7 +103,7 @@ public class LegacyDataManager implements DataManager {
     }
 
     @Override
-    public void setReplyName(String nameReceiver, String requesterName) {
+    public void setReplyName(@NotNull String nameReceiver, @NotNull String requesterName) {
         try (Connection connection = getConnection()) {
             try (PreparedStatement statement = connection.prepareStatement("""
                     INSERT INTO player_data
@@ -186,7 +125,7 @@ public class LegacyDataManager implements DataManager {
     }
 
     @Override
-    public boolean isRateLimited(String playerName) {
+    public boolean isRateLimited(@NotNull String playerName) {
         Map.Entry<Integer, Long> info = this.rateLimit.get(playerName);
         if (info != null)
             if (System.currentTimeMillis() - info.getValue() > plugin.config.rate_limit_time_seconds * 1000L) {
@@ -199,7 +138,7 @@ public class LegacyDataManager implements DataManager {
     }
 
     @Override
-    public void setRateLimit(String playerName, int seconds) {
+    public void setRateLimit(@NotNull String playerName, int seconds) {
         if (this.rateLimit.computeIfPresent(playerName, (k, v) -> {
             v.setValue(v.getValue() + 1);
             return v;
@@ -208,7 +147,7 @@ public class LegacyDataManager implements DataManager {
     }
 
     @Override
-    public CompletionStage<Boolean> isSpying(String playerName) {
+    public CompletionStage<Boolean> isSpying(@NotNull String playerName) {
         return CompletableFuture.supplyAsync(() -> {
             try (Connection connection = getConnection()) {
                 try (PreparedStatement statement = connection.prepareStatement("""
@@ -231,7 +170,7 @@ public class LegacyDataManager implements DataManager {
     }
 
     @Override
-    public void setSpying(String playerName, boolean spy) {
+    public void setSpying(@NotNull String playerName, boolean spy) {
         try (Connection connection = getConnection()) {
             try (PreparedStatement statement = connection.prepareStatement("""
                     INSERT INTO player_data
@@ -253,7 +192,7 @@ public class LegacyDataManager implements DataManager {
     }
 
     @Override
-    public CompletionStage<Boolean> toggleIgnoring(String playerName, String ignoringName) {
+    public CompletionStage<Boolean> toggleIgnoring(@NotNull String playerName, @NotNull String ignoringName) {
         return CompletableFuture.supplyAsync(() -> {
             try (Connection connection = getConnection()) {
                 try (PreparedStatement statement = connection.prepareStatement("""
@@ -261,7 +200,8 @@ public class LegacyDataManager implements DataManager {
                             delete from ignored_players where player_name = ? and ignored_player= ? RETURNING false result;
                         else
                             insert into ignored_players (player_name, ignored_player) VALUES (?,?) RETURNING true result;
-                        end if;""")) {
+                        end if
+                        """)) {
 
                     statement.setString(1, playerName);
                     statement.setString(2, ignoringName);
@@ -285,7 +225,7 @@ public class LegacyDataManager implements DataManager {
     }
 
     @Override
-    public CompletionStage<Boolean> isIgnoring(String playerName, String ignoringName) {
+    public CompletionStage<Boolean> isIgnoring(@NotNull String playerName, @NotNull String ignoringName) {
         return CompletableFuture.supplyAsync(() -> {
             try (Connection connection = getConnection()) {
                 try (PreparedStatement statement = connection.prepareStatement("""
@@ -306,7 +246,7 @@ public class LegacyDataManager implements DataManager {
     }
 
     @Override
-    public CompletionStage<List<String>> ignoringList(String playerName) {
+    public CompletionStage<List<String>> ignoringList(@NotNull String playerName) {
         return CompletableFuture.supplyAsync(() -> {
             try (Connection connection = getConnection()) {
                 try (PreparedStatement statement = connection.prepareStatement("""
@@ -330,7 +270,7 @@ public class LegacyDataManager implements DataManager {
     }
 
     @Override
-    public void addInventory(String name, ItemStack[] inv) {
+    public void addInventory(@NotNull String name, ItemStack[] inv) {
         try (Connection connection = getConnection()) {
             try (PreparedStatement statement = connection.prepareStatement("""
                     INSERT INTO player_data
@@ -352,7 +292,7 @@ public class LegacyDataManager implements DataManager {
 
 
     @Override
-    public void addItem(String name, ItemStack item) {
+    public void addItem(@NotNull String name, ItemStack item) {
         try (Connection connection = getConnection()) {
             try (PreparedStatement statement = connection.prepareStatement("""
                     INSERT INTO player_data
@@ -373,7 +313,7 @@ public class LegacyDataManager implements DataManager {
     }
 
     @Override
-    public void addEnderchest(String name, ItemStack[] inv) {
+    public void addEnderchest(@NotNull String name, ItemStack[] inv) {
         try (Connection connection = getConnection()) {
             try (PreparedStatement statement = connection.prepareStatement("""
                     INSERT INTO player_data
@@ -394,7 +334,7 @@ public class LegacyDataManager implements DataManager {
     }
 
     @Override
-    public CompletionStage<ItemStack> getPlayerItem(String playerName) {
+    public CompletionStage<ItemStack> getPlayerItem(@NotNull String playerName) {
         return CompletableFuture.supplyAsync(() -> {
             try (Connection connection = getConnection()) {
                 try (PreparedStatement statement = connection.prepareStatement("""
@@ -418,7 +358,7 @@ public class LegacyDataManager implements DataManager {
     }
 
     @Override
-    public CompletionStage<ItemStack[]> getPlayerInventory(String playerName) {
+    public CompletionStage<ItemStack[]> getPlayerInventory(@NotNull String playerName) {
         return CompletableFuture.supplyAsync(() -> {
             try (Connection connection = getConnection()) {
                 try (PreparedStatement statement = connection.prepareStatement("""
@@ -442,7 +382,7 @@ public class LegacyDataManager implements DataManager {
     }
 
     @Override
-    public CompletionStage<ItemStack[]> getPlayerEnderchest(String playerName) {
+    public CompletionStage<ItemStack[]> getPlayerEnderchest(@NotNull String playerName) {
         return CompletableFuture.supplyAsync(() -> {
             try (Connection connection = getConnection()) {
                 try (PreparedStatement statement = connection.prepareStatement("""
@@ -466,7 +406,7 @@ public class LegacyDataManager implements DataManager {
     }
 
     @Override
-    public CompletionStage<List<Mail>> getPlayerPrivateMail(String playerName) {
+    public CompletionStage<List<Mail>> getPlayerPrivateMail(@NotNull String playerName) {
         return CompletableFuture.supplyAsync(() -> {
             try (Connection connection = getConnection()) {
                 try (PreparedStatement statement = connection.prepareStatement("""
@@ -492,7 +432,7 @@ public class LegacyDataManager implements DataManager {
     }
 
     @Override
-    public CompletionStage<Boolean> setPlayerPrivateMail(Mail mail) {
+    public CompletionStage<Boolean> setPlayerPrivateMail(@NotNull Mail mail) {
         return CompletableFuture.supplyAsync(() -> {
             try (Connection connection = getConnection()) {
                 try (PreparedStatement statement = connection.prepareStatement("""
@@ -507,7 +447,7 @@ public class LegacyDataManager implements DataManager {
                     statement.setString(3, mail.serialize());
                     mail.setCategory(Mail.MailCategory.SENT);
                     statement.setDouble(4, mail.getId() + 0.001);
-                    statement.setString(5, mail.getReceiver());
+                    statement.setString(5, mail.getSender());
                     statement.setString(6, mail.serialize());
                     if (statement.executeUpdate() == 0) {
                         throw new SQLException("Failed to insert serialized private mail into database");
@@ -522,14 +462,14 @@ public class LegacyDataManager implements DataManager {
     }
 
     @Override
-    public CompletionStage<Boolean> setPublicMail(Mail mail) {
+    public CompletionStage<Boolean> setPublicMail(@NotNull Mail mail) {
         return CompletableFuture.supplyAsync(() -> {
             try (Connection connection = getConnection()) {
                 try (PreparedStatement statement = connection.prepareStatement("""
-                    INSERT INTO mails
-                        (`id`,`recipient`,`serializedMail`)
-                    VALUES
-                        (?,?,?);""")) {
+                        INSERT INTO mails
+                            (`id`,`recipient`,`serializedMail`)
+                        VALUES
+                            (?,?,?);""")) {
 
                     statement.setDouble(1, mail.getId());
                     statement.setString(2, mail.getReceiver());
@@ -573,8 +513,9 @@ public class LegacyDataManager implements DataManager {
         });
     }
 
+    @SuppressWarnings("UnstableApiUsage")
     @Override
-    public void sendChatMessage(ChatMessageInfo chatMessage) {
+    public void sendChatMessage(@NotNull ChatMessageInfo chatMessage) {
         if (plugin.getServer().getOnlinePlayers().size() == 0) return;
         ByteArrayDataOutput out = ByteStreams.newDataOutput();
         out.writeUTF("Forward");
@@ -586,8 +527,9 @@ public class LegacyDataManager implements DataManager {
         plugin.getChatListener().receiveChatMessage(chatMessage);
     }
 
+    @SuppressWarnings("UnstableApiUsage")
     @Override
-    public void publishPlayerList(List<String> playerNames) {
+    public void publishPlayerList(@NotNull List<String> playerNames) {
         if (plugin.getServer().getOnlinePlayers().size() == 0) return;
         ByteArrayDataOutput out = ByteStreams.newDataOutput();
         out.writeUTF("Forward");
@@ -600,10 +542,5 @@ public class LegacyDataManager implements DataManager {
 
         if (plugin.getPlayerListManager() != null)
             plugin.getPlayerListManager().updatePlayerList(playerNames);
-    }
-
-    @Override
-    public void close() {
-        dataSource.close();
     }
 }

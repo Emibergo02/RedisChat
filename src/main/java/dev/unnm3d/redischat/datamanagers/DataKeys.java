@@ -1,21 +1,24 @@
 package dev.unnm3d.redischat.datamanagers;
 
-public enum DataKeys {
+import dev.unnm3d.redischat.RedisChat;
 
-    CHAT_CHANNEL("redischat:g_chat"),
-    PLAYERLIST("redischat:playerlist"),
-    IGNORE_PREFIX("redischat:ignore_"),
-    RATE_LIMIT_PREFIX("redischat:ratelimit_"),
-    REPLY("redischat:reply"),
-    INVSHARE_ITEM("redischat:item"),
-    INVSHARE_INVENTORY("redischat:inventory"),
-    INVSHARE_ENDERCHEST("redischat:enderchest"),
-    SPYING_LIST("redischat:spying"),
-    PRIVATE_MAIL_PREFIX("redismail:"),
-    PUBLIC_MAIL("redismail:public"),
+public enum DataKeys {
+    CHAT_CHANNEL("rchat:g_chat"),
+    PLAYERLIST("rchat:playerlist"),
+    IGNORE_PREFIX("rchat:ignore_"),
+    RATE_LIMIT_PREFIX("rchat:ratelimit_"),
+    REPLY("rchat:reply"),
+    INVSHARE_ITEM("rchat:item"),
+    INVSHARE_INVENTORY("rchat:inventory"),
+    INVSHARE_ENDERCHEST("rchat:enderchest"),
+    SPYING_LIST("rchat:spying"),
+    PRIVATE_MAIL_PREFIX("rmail:"),
+    PUBLIC_MAIL("rmail:public"),
     ;
 
     private final String keyName;
+    private static final int CLUSTER_ID = RedisChat.getInstance().config.clusterId;
+
 
     /**
      * @param keyName the name of the key
@@ -26,7 +29,7 @@ public enum DataKeys {
 
     @Override
     public String toString() {
-        return keyName;
+        return CLUSTER_ID + keyName;
     }
 
 }
