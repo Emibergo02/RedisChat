@@ -15,8 +15,8 @@ public final class Config {
 
     @Comment({"RedisChat storage type, can be REDIS , MySQL+PM or H2+PM (PM means PluginMessages)",
             "If you use Mysql you need a proxy. The plugin will send the data to the proxy via pluginmessages",
-            "If you use REDIS you don't need any proxy, this is the recommended option"})
-    public String dataMedium = DataType.REDIS.keyName;
+            "If you use REDIS you don't need any proxy, THIS IS THE RECOMMENDED AND MOST EFFICIENT OPTION"})
+    public String dataMedium = DataType.H2.keyName;
     @Comment("Leave password or user empty if you don't have a password or user")
     public RedisSettings redis = new RedisSettings("localhost",
             6379,
