@@ -49,7 +49,6 @@ public class H2SQLDataManager extends SQLDataManager {
     @Override
     public void initialize() throws IllegalStateException {
         // Prepare the database flat file
-        System.out.println(databaseFile.getAbsolutePath());
         final String url = String.format("jdbc:h2:%s", databaseFile.getAbsolutePath());
         this.connectionPool = JdbcConnectionPool.create(url, "sa", "sa");
 
