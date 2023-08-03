@@ -1,10 +1,10 @@
 package dev.unnm3d.redischat.api;
 
 import dev.unnm3d.redischat.chat.ChatMessageInfo;
-import dev.unnm3d.redischat.mail.Mail;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.io.BukkitObjectInputStream;
 import org.bukkit.util.io.BukkitObjectOutputStream;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -72,13 +72,6 @@ public interface DataManager {
         } catch (Exception ignored) {
             return new ItemStack[0];
         }
-    }
-
-    default List<Mail> deserializeMails(Map<String, String> timestampMail) {
-        return timestampMail.entrySet().stream()
-                .map(entry -> new AbstractMap.SimpleEntry<>(Double.parseDouble(entry.getKey()), entry.getValue()))
-                .sorted(Map.Entry.comparingByKey())
-                .map(entry -> new Mail(entry.getKey(), entry.getValue())).toList();
     }
 
 

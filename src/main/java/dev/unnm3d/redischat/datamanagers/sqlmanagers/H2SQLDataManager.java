@@ -107,26 +107,6 @@ public class H2SQLDataManager extends SQLDataManager {
     }
 
     @Override
-    public void setSpying(@NotNull String playerName, boolean spy) {
-        try (Connection connection = getConnection()) {
-            try (PreparedStatement statement = connection.prepareStatement("""
-                    MERGE INTO PLAYER_DATA
-                        (PLAYER_NAME, IS_SPYING)
-                    VALUES
-                        (?,?)""")) {
-
-                statement.setString(1, playerName);
-                statement.setBoolean(2, spy);
-                if (statement.executeUpdate() == 0) {
-                    throw new SQLException("Failed to insert spy toggling into database");
-                }
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Override
     public void addInventory(@NotNull String name, ItemStack[] inv) {
         try (Connection connection = getConnection()) {
             try (PreparedStatement statement = connection.prepareStatement("""

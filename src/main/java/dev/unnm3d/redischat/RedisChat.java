@@ -1,29 +1,22 @@
 package dev.unnm3d.redischat;
 
-import de.exlll.configlib.ConfigLib;
+
 import de.exlll.configlib.YamlConfigurationProperties;
 import de.exlll.configlib.YamlConfigurations;
+import dev.unnm3d.redischat.api.DataManager;
+import dev.unnm3d.redischat.api.VanishIntegration;
 import dev.unnm3d.redischat.chat.ChatListener;
 import dev.unnm3d.redischat.chat.ComponentProvider;
 import dev.unnm3d.redischat.commands.*;
 import dev.unnm3d.redischat.configs.Config;
-import dev.unnm3d.redischat.configs.GuiSettings;
 import dev.unnm3d.redischat.configs.Messages;
-import dev.unnm3d.redischat.api.DataManager;
-import dev.unnm3d.redischat.datamanagers.LegacyDataManager;
 import dev.unnm3d.redischat.datamanagers.RedisDataManager;
+import dev.unnm3d.redischat.datamanagers.sqlmanagers.H2SQLDataManager;
+import dev.unnm3d.redischat.datamanagers.sqlmanagers.MySQLDataManager;
 import dev.unnm3d.redischat.integrations.OraxenTagResolver;
-import dev.unnm3d.redischat.api.VanishIntegration;
-import dev.unnm3d.redischat.mail.MailCommand;
-import dev.unnm3d.redischat.mail.MailManager;
-import dev.unnm3d.redischat.moderation.SpyChatCommand;
-import dev.unnm3d.redischat.moderation.SpyManager;
 import dev.unnm3d.redischat.moderation.StaffChat;
-import dev.unnm3d.redischat.task.AnnounceManager;
 import dev.unnm3d.redischat.utils.AdventureWebuiEditorAPI;
 import dev.unnm3d.redischat.utils.Metrics;
-import io.lettuce.core.RedisClient;
-import io.lettuce.core.RedisURI;
 import lombok.Getter;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.PluginCommand;
@@ -34,8 +27,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.time.Duration;
-import java.util.concurrent.TimeUnit;
 
 public final class RedisChat extends JavaPlugin {
 
@@ -69,8 +60,6 @@ public final class RedisChat extends JavaPlugin {
         StaffChat staffChat = new StaffChat(this);
         this.chatListener = new ChatListener(this, staffChat);
         getServer().getPluginManager().registerEvents(this.chatListener, this);
-
-
 
 
         //Commands section

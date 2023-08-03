@@ -1,12 +1,10 @@
 package dev.unnm3d.redischat.chat;
 
-import dev.unnm3d.redischat.Permission;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.api.RedisChatAPI;
 import dev.unnm3d.redischat.api.TagResolverIntegration;
 import lombok.AllArgsConstructor;
 import me.clip.placeholderapi.PlaceholderAPI;
-import net.kyori.adventure.inventory.Book;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -20,6 +18,8 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -44,10 +44,6 @@ public class ComponentProvider extends RedisChatAPI {
         this.cacheBlocked = new ConcurrentHashMap<>();
         this.standardTagResolver = StandardTags.defaults();
         this.tagResolverIntegrationList = new ArrayList<>();
-    }
-
-    public static ComponentProvider getInstance() {
-        return (ComponentProvider) INSTANCE;
     }
 
     public void addResolverIntegration(TagResolverIntegration integration) {
