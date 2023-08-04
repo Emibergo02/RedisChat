@@ -8,7 +8,6 @@ import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
-import java.util.Map;
 
 @Configuration
 public final class Config {
@@ -45,7 +44,10 @@ public final class Config {
     public int clusterId = 0;
     @Comment("Webeditor URL")
     public String webEditorUrl = "https://webui.advntr.dev/";
-    @Comment({"Here you can decide your chat format", "Permission format is overridden on descending order", "(if a player has default and vip, if default is the first element, vip will be ignored)"})
+    @Comment({"Here you can decide your chat format",
+            "Permission format is overridden on descending order",
+            "(if a player has default and vip, if default is the first element, vip will be ignored)",
+            "item_format and enderchest_format are not implemented in RedisChat Lite"})
     public List<ChatFormat> formats = List.of(new ChatFormat("redischat.default",
             "<click:suggest_command:/msg %player_name%><hover:show_text:'" +
                     "<reset>Information | <white>%player_displayname%<br>" +
@@ -55,6 +57,8 @@ public final class Config {
             "<dark_aqua>MSG <white>(<reset>You <white>to <green>%receiver%<white>)<reset>: <white>%message%",
             "<dark_aqua>MSG <white>(<green>%sender% <white>to <reset>You<white>)<reset>: <white>%message%",
             "<click:run_command:%command%>[Open the inventory of %player%]</click>",
+            "<click:run_command:%command%>[%item_name% of %player%]</click>",
+            "<click:run_command:%command%>[Open the enderchest of %player%]</click>",
             "<aqua>@%player%</aqua>",
             "<bold><click:open_url:%link%>[Click to open URL (be careful)]</click></bold>",
             "<gold>StaffChat <dark_gray>» <white>%message%"

@@ -100,7 +100,7 @@ public final class RedisChat extends JavaPlugin {
                 configFile,
                 Config.class,
                 YamlConfigurationProperties.newBuilder()
-                        .header("RedisChat config")
+                        .header("RedisChat Lite config")
                         .footer("Authors: Unnm3d")
                         .build()
         );
