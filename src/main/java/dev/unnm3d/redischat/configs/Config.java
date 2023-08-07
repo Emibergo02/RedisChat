@@ -76,6 +76,8 @@ public final class Config {
     public String inv_title = "Inventory of %player%";
     @Comment({"Title of the ShowItem GUI"})
     public String item_title = "Item of %player%";
+    @Comment({"Title of the ShowShulkerBox GUI"})
+    public String shulker_title = "Shulker of %player%";
     @Comment({"Title of the ShowEnderchest GUI"})
     public String ec_title = "Enderchest of %player%";
     @Comment("There are some others chat formats, like broadcast and clear chat messages")
