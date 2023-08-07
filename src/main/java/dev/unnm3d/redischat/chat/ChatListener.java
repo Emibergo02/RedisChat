@@ -68,6 +68,11 @@ public class ChatListener implements Listener {
         init = System.currentTimeMillis();
 
         //Check inv update
+        if(plugin.config.interactiveChatNostalgia){
+            message=message.replace("[inv]", "<inv>")
+                    .replace("[item]", "<item>")
+                    .replace("[ec]", "<ec>");
+        }
         if (message.contains("<inv>")) {
             plugin.getDataManager().addInventory(event.getPlayer().getName(), event.getPlayer().getInventory().getContents());
         }

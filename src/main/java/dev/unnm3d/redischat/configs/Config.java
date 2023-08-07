@@ -92,6 +92,8 @@ public final class Config {
     public boolean legacyColorCodesSupport = true;
     @Comment("Re-enables bukkit color glitches for colored placeholders")
     public boolean enablePlaceholderGlitch = false;
+    @Comment("The [inv], [item] and [ec] placeholders will be considered as minimessage tags")
+    public boolean interactiveChatNostalgia = false;
     @Comment("Enables /rmail /mail and the whole feature")
     public boolean enableMails = true;
     @Comment("The format of the timestamp in mails (by default is like 31/07/2023 15:24)")
