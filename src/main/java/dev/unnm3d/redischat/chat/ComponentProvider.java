@@ -35,7 +35,6 @@ public class ComponentProvider extends RedisChatAPI {
     private final MiniMessage miniMessage;
     private final TagResolver standardTagResolver;
     private final ConcurrentHashMap<Player, List<Component>> cacheBlocked;
-    private final List<TagResolver.Single> customPlaceholderResolvers;
     private final List<TagResolverIntegration> tagResolverIntegrationList;
 
     public ComponentProvider(RedisChat plugin) {
@@ -44,10 +43,6 @@ public class ComponentProvider extends RedisChatAPI {
         this.audiences = BukkitAudiences.create(plugin);
         this.miniMessage = MiniMessage.miniMessage();
         this.cacheBlocked = new ConcurrentHashMap<>();
-        this.customPlaceholderResolvers = plugin.config.placeholders.entrySet()
-                .stream().map(entry ->
-                        Placeholder.component(entry.getKey(), MiniMessage.miniMessage().deserialize(entry.getValue()))
-                ).toList();
         this.standardTagResolver = StandardTags.defaults();
         this.tagResolverIntegrationList = new ArrayList<>();
     }
@@ -58,6 +53,21 @@ public class ComponentProvider extends RedisChatAPI {
 
     public void addResolverIntegration(TagResolverIntegration integration) {
         this.tagResolverIntegrationList.add(integration);
+    }
+
+    public TagResolver getCustomPlaceholderResolver(CommandSender commandSender) {
+        TagResolver.Builder builder = TagResolver.builder();
+        for (Map.Entry<String, String> placeholderEntry : plugin.config.placeholders.entrySet()) {
+            builder.resolver(Placeholder.component(
+                    placeholderEntry.getKey(),
+                    parse(commandSender,
+                            placeholderEntry.getValue(),
+                            true,
+                            false,
+                            false,
+                            this.standardTagResolver)));
+        }
+        return builder.build();
     }
 
     public Component parse(String text, TagResolver... tagResolvers) {
@@ -156,60 +166,66 @@ public class ComponentProvider extends RedisChatAPI {
 
         final TagResolver.Builder builder = TagResolver.builder();
 
-        String toParseInv = chatFormat.inventory_format();
-        toParseInv = toParseInv.replace("%player%", player.getName());
-        toParseInv = toParseInv.replace("%command%", "/invshare " + player.getName() + "-inventory");
-        TagResolver inv = Placeholder.component("inv", parse(player, toParseInv, true, false, false, this.standardTagResolver));
-
-        String toParseItem = chatFormat.item_format();
-        toParseItem = toParseItem.replace("%player%", player.getName());
-        toParseItem = toParseItem.replace("%command%", "/invshare " + player.getName() + "-item");
-        Component toParseItemComponent = parse(player, toParseItem, true, false, false, this.standardTagResolver);
-        if (player instanceof Player p) {
-            if (!p.getInventory().getItemInMainHand().getType().isAir()) {
-                if (p.getInventory().getItemInMainHand().getItemMeta() != null)
-                    if (p.getInventory().getItemInMainHand().getItemMeta().hasDisplayName()) {
-                        toParseItemComponent = toParseItemComponent.replaceText(rTextBuilder ->
-                                rTextBuilder.matchLiteral("%item_name%")
-                                        .replacement(
-                                                parse(player,
-                                                        parseLegacy(p.getInventory().getItemInMainHand().getItemMeta().getDisplayName()),
-                                                        false,
-                                                        false,
-                                                        false,
-                                                        this.standardTagResolver))
-                        );
-                    } else {
-                        toParseItemComponent = toParseItemComponent.replaceText(rTextBuilder ->
-                                rTextBuilder.matchLiteral("%item_name%")
-                                        .replacement(
-                                                parse(player,
-                                                        p.getInventory().getItemInMainHand().getType().name().toLowerCase().replace("_", " "),
-                                                        false,
-                                                        false,
-                                                        false,
-                                                        this.standardTagResolver))
-                        );
-                    }
-            } else {
-                toParseItemComponent = toParseItemComponent.replaceText(rTextBuilder ->
-                        rTextBuilder.matchLiteral("%item_name%")
-                                .replacement("Nothing")
-                );
-            }
+        if (player.hasPermission(Permission.REDIS_CHAT_USE_INVENTORY.getPermission())) {
+            String toParseInv = chatFormat.inventory_format();
+            toParseInv = toParseInv.replace("%player%", player.getName());
+            toParseInv = toParseInv.replace("%command%", "/invshare " + player.getName() + "-inventory");
+            TagResolver inv = Placeholder.component("inv", parse(player, toParseInv, true, false, false, this.standardTagResolver));
+            builder.resolver(inv);
         }
-        TagResolver item = Placeholder.component("item", toParseItemComponent);
 
-        String toParseEnderChest = chatFormat.enderchest_format();
-        toParseEnderChest = toParseEnderChest.replace("%player%", player.getName());
-        toParseEnderChest = toParseEnderChest.replace("%command%", "/invshare " + player.getName() + "-enderchest");
-        TagResolver ec = Placeholder.component("ec", parse(player, toParseEnderChest, true, false, false, this.standardTagResolver));
+        if (player.hasPermission(Permission.REDIS_CHAT_USE_ITEM.getPermission())) {
+            String toParseItem = chatFormat.item_format();
+            toParseItem = toParseItem.replace("%player%", player.getName());
+            toParseItem = toParseItem.replace("%command%", "/invshare " + player.getName() + "-item");
+            Component toParseItemComponent = parse(player, toParseItem, true, false, false, this.standardTagResolver);
+            if (player instanceof Player p) {
+                if (!p.getInventory().getItemInMainHand().getType().isAir()) {
+                    if (p.getInventory().getItemInMainHand().getItemMeta() != null)
+                        if (p.getInventory().getItemInMainHand().getItemMeta().hasDisplayName()) {
+                            toParseItemComponent = toParseItemComponent.replaceText(rTextBuilder ->
+                                    rTextBuilder.matchLiteral("%item_name%")
+                                            .replacement(
+                                                    parse(player,
+                                                            parseLegacy(p.getInventory().getItemInMainHand().getItemMeta().getDisplayName()),
+                                                            false,
+                                                            false,
+                                                            false,
+                                                            this.standardTagResolver))
+                            );
+                        } else {
+                            toParseItemComponent = toParseItemComponent.replaceText(rTextBuilder ->
+                                    rTextBuilder.matchLiteral("%item_name%")
+                                            .replacement(
+                                                    parse(player,
+                                                            p.getInventory().getItemInMainHand().getType().name().toLowerCase().replace("_", " "),
+                                                            false,
+                                                            false,
+                                                            false,
+                                                            this.standardTagResolver))
+                            );
+                        }
+                } else {
+                    toParseItemComponent = toParseItemComponent.replaceText(rTextBuilder ->
+                            rTextBuilder.matchLiteral("%item_name%")
+                                    .replacement("Nothing")
+                    );
+                }
+            }
+            TagResolver item = Placeholder.component("item", toParseItemComponent);
+            builder.resolver(item);
+        }
 
-        customPlaceholderResolvers.forEach(builder::resolver);
+        if (player.hasPermission(Permission.REDIS_CHAT_USE_ENDERCHEST.getPermission())) {
+            String toParseEnderChest = chatFormat.enderchest_format();
+            toParseEnderChest = toParseEnderChest.replace("%player%", player.getName());
+            toParseEnderChest = toParseEnderChest.replace("%command%", "/invshare " + player.getName() + "-enderchest");
+            TagResolver ec = Placeholder.component("ec", parse(player, toParseEnderChest, true, false, false, this.standardTagResolver));
+            builder.resolver(ec);
+        }
+        if (player.hasPermission(Permission.REDIS_CHAT_USE_CUSTOM_PLACEHOLDERS.getPermission()))
+            builder.resolver(getCustomPlaceholderResolver(player));
 
-        builder.resolver(inv);
-        builder.resolver(item);
-        builder.resolver(ec);
         return builder.build();
     }
 

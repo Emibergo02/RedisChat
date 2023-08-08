@@ -6,7 +6,7 @@
 
     <groupId>dev.unnm3d</groupId>
     <artifactId>RedisChat</artifactId>
-    <version>3.2.2</version>
+    <version>3.3.0</version>
     <packaging>jar</packaging>
 
     <name>RedisChat</name>
@@ -103,7 +103,7 @@
         <dependency>
             <groupId>me.clip</groupId>
             <artifactId>placeholderapi</artifactId>
-            <version>2.11.1</version>
+            <version>2.11.3</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

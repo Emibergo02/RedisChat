@@ -22,11 +22,9 @@ loadbefore:
 commands:
   redischat:
     description: RedisChat command
-    usage: /redischat <reload>
     permission: redischat.admin
   redischat-setitem:
     description: Setitem command
-    usage: /redischat-setitem <item-name>
     permission: redischat.setitem
   ignore:
     description: Ignore command
@@ -35,7 +33,6 @@ commands:
     description: Sends a private message to a player
     aliases:
       - message
-    usage: /msg <player> <message>
     permission: redischat.message
   reply:
     description: Replies to the last player who sent you a message
@@ -44,12 +41,10 @@ commands:
   broadcast:
     description: Broadcasts a message to the server
     aliases: [bc]
-    usage: /broadcast <message>
     permission: redischat.broadcast
   clearchat:
     description: Clears the chat
     aliases: [cc]
-    usage: /clearchat
     permission: redischat.clearchat
   invshare:
     description: 'Invshare'
@@ -63,12 +58,20 @@ commands:
     permission: redischat.staffchat
   announce:
     description: RedisChat announce
-    usage: /announce <start/stop> announceName
     permission: redischat.announce
   rmail:
     description: RedisChat mail
     aliases: [mail]
 permissions:
+  redischat.showitem:
+    description: Allows to see the item in the chat
+    default: op
+  redischat.showinv:
+    description: Allows to see the inventories in the chat
+    default: op
+  redischat.showenderchest:
+    description: Allows to see the enderchests in the chat
+    default: op
   redischat.spychat:
     description: You are spying the chat if it is true
     default: false
@@ -120,3 +123,7 @@ permissions:
     children:
       - redischat.message
       - redischat.ignore
+      - redischat.usecustomplaceholders
+      - redischat.showitem
+      - redischat.showinv
+      - redischat.showenderchest
