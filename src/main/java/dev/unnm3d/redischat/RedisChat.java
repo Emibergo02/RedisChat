@@ -59,8 +59,7 @@ public final class RedisChat extends JavaPlugin {
 
     @Override
     public void onLoad() {
-        CommandAPI.onLoad(new CommandAPIBukkitConfig(this).verboseOutput(false));
-
+        CommandAPI.onLoad(new CommandAPIBukkitConfig(this).verboseOutput(true));
     }
 
     @Override
@@ -215,6 +214,7 @@ public final class RedisChat extends JavaPlugin {
         }
         CommandAPI.unregister(commandAPICommand.getName(), true);
         commandAPICommand.register();
+        getLogger().info("Command " + commandAPICommand.getName() + " registered on CommandAPI!");
     }
 
     public static RedisChat getInstance() {

@@ -495,7 +495,7 @@ public abstract class SQLDataManager implements DataManager {
             try (Connection connection = getConnection()) {
                 try (PreparedStatement statement = connection.prepareStatement("""
                         select id, serializedMail from mails
-                        where recipient = '#Public';""")) {
+                        where recipient = '-Public';""")) {
 
                     final ResultSet resultSet = statement.executeQuery();
                     List<Mail> mails = new ArrayList<>();

@@ -46,7 +46,7 @@ public class MailCommand {
                 .executesPlayer((sender, args) -> {
                     String recipient = (String) args.get(0);
                     assert recipient != null;
-                    if (recipient.equals("#Public") && !sender.hasPermission(Permission.REDIS_CHAT_MAIL_WRITE_PUBLIC.getPermission())) {
+                    if (recipient.equals("-Public") && !sender.hasPermission(Permission.REDIS_CHAT_MAIL_WRITE_PUBLIC.getPermission())) {
                         mailManager.getPlugin().getComponentProvider().sendMessage(sender, mailManager.getPlugin().messages.noPermission);
                         return;
                     }
@@ -104,7 +104,7 @@ public class MailCommand {
                                     .toList()
                     );
                     if (commandSenderSuggestionInfo.sender().hasPermission(Permission.REDIS_CHAT_MAIL_WRITE_PUBLIC.getPermission()))
-                        list.add("#Public");
+                        list.add("-Public");
                     return list.toArray(new String[0]);
                 });
     }

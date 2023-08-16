@@ -35,7 +35,7 @@ public class Mail extends AbstractItem {
 
     public Mail(String sender, String receiver, String title) {
         this.id = System.currentTimeMillis() + ((int) (Math.random() * 100.0) / 100.0);
-        this.category = receiver.equals("#Public") ? MailCategory.PUBLIC : MailCategory.PRIVATE;
+        this.category = receiver.equals("-Public") ? MailCategory.PUBLIC : MailCategory.PRIVATE;
         this.sender = sender;
         this.receiver = receiver;
         this.title = title;
