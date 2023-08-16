@@ -41,7 +41,7 @@ public class InvShareCommand implements CommandExecutor {
             case ITEM -> plugin.getDataManager().getPlayerItem(playername)
                     .thenAccept(item ->
                             plugin.getServer().getScheduler().runTask(plugin, () -> {
-                                        if (item.getType() == Material.SHULKER_BOX) {
+                                        if (item.getType().toString().endsWith("SHULKER_BOX")) {
                                             if (item.getItemMeta() instanceof BlockStateMeta bsm)
                                                 if (bsm.getBlockState() instanceof Container shulkerBox) {
                                                     openInvShareGui(p,

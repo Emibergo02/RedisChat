@@ -20,24 +20,12 @@ loadbefore:
   - Essentials
   - EssentialsChat
 commands:
-  redischat:
-    description: RedisChat command
-    permission: redischat.admin
   redischat-setitem:
     description: Setitem command
     permission: redischat.setitem
   ignore:
     description: Ignore command
     permission: redischat.ignore
-  msg:
-    description: Sends a private message to a player
-    aliases:
-      - message
-    permission: redischat.message
-  reply:
-    description: Replies to the last player who sent you a message
-    aliases: [r]
-    permission: redischat.message
   broadcast:
     description: Broadcasts a message to the server
     aliases: [bc]
@@ -52,17 +40,13 @@ commands:
     description: Spychat command
     aliases: [spyc]
     permission: redischat.spycommand
-  staffchat:
-    description: Staffchat command
-    aliases: [sc]
-    permission: redischat.staffchat
   announce:
     description: RedisChat announce
     permission: redischat.announce
-  rmail:
-    description: RedisChat mail
-    aliases: [mail]
 permissions:
+  redischat.usecustomplaceholders:
+    description: Allows to see the item in the chat
+    default: true
   redischat.showitem:
     description: Allows to see the item in the chat
     default: op

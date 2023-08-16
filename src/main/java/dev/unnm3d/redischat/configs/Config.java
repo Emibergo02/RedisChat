@@ -74,6 +74,8 @@ public final class Config {
             "position", "<white><blue>Server:</blue> %server_name% <aqua>World:</aqua> %player_world% <gold>X:</gold> %player_x% <gold>Y:</gold> %player_y% <gold>Z:</gold> %player_z%</white>");
     @Comment({"Here you can blacklist some terms (like swears, insults and unwanted urls)", "They will be replaced with a *", "You can use the regex syntax and the * wildcard"})
     public List<String> regex_blacklist = List.of("discord.gg/.*");
+    @Comment({"What to replace the blacklisted words with"})
+    public String blacklistReplacement = "<obf>*****</obf>";
     @Comment({"Title of the ShowInventory GUI"})
     public String inv_title = "Inventory of %player%";
     @Comment({"Title of the ShowItem GUI"})
@@ -98,6 +100,8 @@ public final class Config {
     public boolean enablePlaceholderGlitch = false;
     @Comment("The [inv], [item] and [ec] placeholders will be considered as minimessage tags")
     public boolean interactiveChatNostalgia = false;
+    @Comment("Reply only to the last player you have messaged")
+    public boolean replyToLastMessaged = false;
     @Comment("Enables /rmail /mail and the whole feature")
     public boolean enableMails = true;
     @Comment("The format of the timestamp in mails (by default is like 31/07/2023 15:24)")

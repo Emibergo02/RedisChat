@@ -3,6 +3,9 @@ package dev.unnm3d.redischat;
 import de.exlll.configlib.ConfigLib;
 import de.exlll.configlib.YamlConfigurationProperties;
 import de.exlll.configlib.YamlConfigurations;
+import dev.jorel.commandapi.CommandAPI;
+import dev.jorel.commandapi.CommandAPIBukkitConfig;
+import dev.jorel.commandapi.CommandAPICommand;
 import dev.unnm3d.redischat.api.DataManager;
 import dev.unnm3d.redischat.api.VanishIntegration;
 import dev.unnm3d.redischat.chat.ChatListener;
@@ -55,7 +58,14 @@ public final class RedisChat extends JavaPlugin {
     private AdventureWebuiEditorAPI webEditorAPI;
 
     @Override
+    public void onLoad() {
+        CommandAPI.onLoad(new CommandAPIBukkitConfig(this).verboseOutput(false));
+
+    }
+
+    @Override
     public void onEnable() {
+        CommandAPI.onEnable();
         instance = this;
         loadYML();
 
@@ -69,13 +79,13 @@ public final class RedisChat extends JavaPlugin {
         //Chat section
         this.componentProvider = new ComponentProvider(this);
         StaffChat staffChat = new StaffChat(this);
+        loadCommandAPICommand(staffChat.getCommand());
         this.chatListener = new ChatListener(this, staffChat);
         getServer().getPluginManager().registerEvents(this.chatListener, this);
 
         //Mail section
         if (config.enableMails) {
-            MailCommand mailCommand = new MailCommand(new MailManager(this));
-            loadCommand("rmail", mailCommand, mailCommand);
+            loadCommandAPICommand(new MailCommand(new MailManager(this)).getCommand());
         }
 
 
@@ -89,21 +99,21 @@ public final class RedisChat extends JavaPlugin {
 
         this.webEditorAPI = new AdventureWebuiEditorAPI(config.webEditorUrl);
 
-        MainCommand mainCommand = new MainCommand(this, this.webEditorAPI);
-        loadCommand("redischat", mainCommand, mainCommand);
+        //New command API
+        loadCommandAPICommand(new MainCommand(this, this.webEditorAPI).getCommand());
+        loadCommandAPICommand(new MsgCommand(this).getCommand());
+        loadCommandAPICommand(new ReplyCommand(this).getCommand());
+
+        //Old command API
         SetItemCommand setItemCommand = new SetItemCommand(this);
         loadCommand("redischat-setitem", setItemCommand, setItemCommand);
 
         this.spyManager = new SpyManager(this);
         loadCommand("spychat", new SpyChatCommand(this), null);
-        MsgCommand msgCommand = new MsgCommand(this);
-        loadCommand("msg", msgCommand, msgCommand);
         IgnoreCommand ignoreCommand = new IgnoreCommand(this);
         loadCommand("ignore", ignoreCommand, ignoreCommand);
-        loadCommand("reply", new ReplyCommand(this), null);
         loadCommand("broadcast", new BroadcastCommand(this), null);
         loadCommand("clearchat", new ClearChatCommand(this), null);
-        loadCommand("staffchat", staffChat, null);
 
 
         //InvShare part
@@ -171,6 +181,7 @@ public final class RedisChat extends JavaPlugin {
     @Override
     public void onDisable() {
         getLogger().warning("RedisChat is disabling...");
+        CommandAPI.onDisable();
         if (this.playerListManager != null)
             this.playerListManager.stop();
         if (this.dataManager != null)
@@ -191,6 +202,19 @@ public final class RedisChat extends JavaPlugin {
         } else {
             getLogger().warning("Command " + cmdName + " not found!");
         }
+    }
+
+    private void loadCommandAPICommand(CommandAPICommand commandAPICommand) {
+
+        if (config.disabledCommands.contains(commandAPICommand.getName())) {
+            getLogger().warning("Command " + commandAPICommand.getName() + " is disabled in the config.yml file!");
+            return;
+        }
+        for (String alias : commandAPICommand.getAliases()) {
+            CommandAPI.unregister(alias, true);
+        }
+        CommandAPI.unregister(commandAPICommand.getName(), true);
+        commandAPICommand.register();
     }
 
     public static RedisChat getInstance() {

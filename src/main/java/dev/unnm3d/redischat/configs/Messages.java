@@ -14,35 +14,35 @@ import java.lang.reflect.Field;
 @Configuration
 public final class Messages {
     private static final BukkitAudiences audiences = BukkitAudiences.create(RedisChat.getInstance());
-    public String player_not_online = "<red>The player %player% is not online</red>";
-    public String cannot_message_yourself = "<red>You cannot message yourself</red>";
-    public String missing_arguments = "<red>Missing arguments</red>";
-    public String action_completed_successfully = "<green>Action completed successfully</green>";
-    public String announce_not_found = "<red>The announce %name% does not exist</red>";
-    public String no_reply_found = "<red>You do not have any message to reply</red>";
-    public String reply_not_online = "<red>%player% is not online</red>";
-    public String rate_limited = "<red>You've been rate limited</red>";
-    public String caps = "<red>Don't use caps</red>";
+    public String player_not_online = "<yellow>RedisChat</yellow> <gray>»</gray> <red>The player %player% is not online</red>";
+    public String cannot_message_yourself = "<yellow>RedisChat</yellow> <gray>»</gray> <red>You cannot message yourself</red>";
+    public String missing_arguments = "<yellow>RedisChat</yellow> <gray>»</gray> <red>Missing arguments</red>";
+    public String action_completed_successfully = "<yellow>RedisChat</yellow> <gray>»</gray> <green>Action completed successfully</green>";
+    public String announce_not_found = "<yellow>RedisChat</yellow> <gray>»</gray> <red>The announce %name% does not exist</red>";
+    public String no_reply_found = "<yellow>RedisChat</yellow> <gray>»</gray> <red>You do not have any message to reply</red>";
+    public String reply_not_online = "<yellow>RedisChat</yellow> <gray>»</gray> <red>%player% is not online</red>";
+    public String rate_limited = "<yellow>RedisChat</yellow> <gray>»</gray> <red>You've been rate limited</red>";
+    public String caps = "<yellow>RedisChat</yellow> <gray>»</gray> <red>Don't use caps</red>";
     @Comment("%list% is the list of players (separated by commas)")
-    public String ignoring_list = "<aqua>Player ignored</aqua><br><green>%list%</green>";
-    public String ignoring_player = "<green>Ignoring %player%</green>";
-    public String not_ignoring_player = "<green>Ignore removed for %player%</green>";
-    public String spychat_format = "<red>%sender% said to %receiver% : %message%</red>";
-    public String spychat_enabled = "<green>Spychat enabled for %player%</green>";
-    public String spychat_disabled = "<red>Spychat disabled for %player%</red>";
-    public String editMessageError = "<red>This config entry is not a String or doesn't exist!";
+    public String ignoring_list = "<yellow>RedisChat</yellow> <gray>»</gray> <aqua>Player ignored</aqua><br><green>%list%</green>";
+    public String ignoring_player = "<yellow>RedisChat</yellow> <gray>»</gray> <green>Ignoring %player%</green>";
+    public String not_ignoring_player = "<yellow>RedisChat</yellow> <gray>»</gray> <green>Ignore removed for %player%</green>";
+    public String spychat_format = "<yellow>RedisChat</yellow> <gray>»</gray> <red>%sender% said to %receiver% : %message%</red>";
+    public String spychat_enabled = "<yellow>RedisChat</yellow> <gray>»</gray> <green>Spychat enabled for %player%</green>";
+    public String spychat_disabled = "<yellow>RedisChat</yellow> <gray>»</gray> <red>Spychat disabled for %player%</red>";
+    public String editMessageError = "<yellow>RedisChat</yellow> <gray>»</gray> <red>This config entry is not a String or doesn't exist!";
     @Comment("%url% is the url of the WebUI, %field% is the config field to edit")
-    public String editMessageClickHere = "<click:open_url:%url%>Click here to edit the message %field%!</click>";
+    public String editMessageClickHere = "<yellow>RedisChat</yellow> <gray>»</gray> <click:open_url:%url%>Click here to edit the message %field%!</click>";
     @Comment("%field% is the field edited")
-    public String editMessageSuccess = "<green>Saved successfully %field%!";
-    public String mailEditorStart = "<click:open_url:%link%><blue>Click here to start the mail editor!</blue></click>";
-    public String mailEditorConfirm = "Valid mail. What would you do?<br><click:run_command:/rmail webui %token% confirm>[<green>Confirm, send!</green>]</click>  <click:run_command:/rmail webui %token% preview>[<aqua>Preview</aqua>]</click>  <click:run_command:/rmail webui %token% abort>[<red>Dismiss</red>]</click>";
-    public String mailError = "<red>You do not have any pending mail!</red>";
-    public String mailEditorSent = "<green>Mail sent!</green>";
-    public String mailEditorAbort = "<red>Mail aborted!</red>";
-    public String noConsole = "<red>You cannot execute this command from console</red>";
-    public String itemSet = "<green>Item set!</green>";
-    public String noPermission = "<red>You do not have permission to execute this command</red>";
+    public String editMessageSuccess = "<yellow>RedisChat</yellow> <gray>»</gray> <green>Saved successfully %field%!";
+    public String mailEditorStart = "<yellow>RedisChat</yellow> <gray>»</gray> <click:open_url:%link%><blue>Click here to start the mail editor!</blue></click>";
+    public String mailEditorConfirm = "<yellow>RedisChat</yellow> <gray>»</gray> Valid mail. What would you do?<br><click:run_command:/rmail webui %token% confirm>[<green>Confirm, send!</green>]</click>  <click:run_command:/rmail webui %token% preview>[<aqua>Preview</aqua>]</click>  <click:run_command:/rmail webui %token% abort>[<red>Dismiss</red>]</click>";
+    public String mailError = "<yellow>RedisChat</yellow> <gray>»</gray> <red>You do not have any pending mail!</red>";
+    public String mailEditorSent = "<yellow>RedisChat</yellow> <gray>»</gray> <green>Mail sent!</green>";
+    public String mailEditorAbort = "<yellow>RedisChat</yellow> <gray>»</gray> <red>Mail aborted!</red>";
+    public String noConsole = "<yellow>RedisChat</yellow> <gray>»</gray> <red>You cannot execute this command from console</red>";
+    public String itemSet = "<yellow>RedisChat</yellow> <gray>»</gray> <green>Item set!</green>";
+    public String noPermission = "<yellow>RedisChat</yellow> <gray>»</gray> <red>You do not have permission to execute this command</red>";
 
     public void sendMessage(CommandSender p, String message) {
         audiences.sender(p).sendMessage(MiniMessage.miniMessage().deserialize(message));

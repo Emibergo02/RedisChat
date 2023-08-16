@@ -1,99 +1,112 @@
 package dev.unnm3d.redischat.mail;
 
+import dev.jorel.commandapi.CommandAPICommand;
+import dev.jorel.commandapi.SuggestionInfo;
+import dev.jorel.commandapi.arguments.ArgumentSuggestions;
+import dev.jorel.commandapi.arguments.GreedyStringArgument;
+import dev.jorel.commandapi.arguments.MultiLiteralArgument;
+import dev.jorel.commandapi.arguments.StringArgument;
 import dev.unnm3d.redischat.Permission;
 import lombok.AllArgsConstructor;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 
 @AllArgsConstructor
-public class MailCommand implements CommandExecutor, TabCompleter {
+public class MailCommand {
 
     private MailManager mailManager;
 
-    /**
-     * /mail send <player>
-     * /mail delete
-     *
-     * @param sender  Source of the command
-     * @param command Command which was executed
-     * @param label   Alias of the command which was used
-     * @param args    Passed command arguments
-     * @return true if the command was handled correctly. Returning false, or not
-     */
-    @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        if (!(sender instanceof Player)) return true;
-        if (!sender.hasPermission(Permission.REDIS_CHAT_MAIL_READ.getPermission())) {
-            mailManager.getPlugin().getComponentProvider().sendMessage(sender, mailManager.getPlugin().messages.noPermission);
-            return true;
-        }
-        if (args.length == 0) {
-            mailManager.getMailGUI().openPublicMailGui((Player) sender);
-            return true;
-        }
 
+    public CommandAPICommand getCommand() {
+        return new CommandAPICommand("rmail")
+                .withPermission(Permission.REDIS_CHAT_MAIL_READ.getPermission())
+                .withAliases("mail", "mails")
+                .withSubcommand(getSendSubCommand())
+                .withSubcommand(getWebUISubCommand())
+                .executesPlayer((sender, args) -> {
+                    mailManager.getMailGUI().openPublicMailGui(sender);
+                });
 
-        if (!sender.hasPermission(Permission.REDIS_CHAT_MAIL_WRITE.getPermission())) {
-            mailManager.getPlugin().getComponentProvider().sendMessage(sender, mailManager.getPlugin().messages.noPermission);
-            return true;
-        }
-        if (args[0].equalsIgnoreCase("send") && args.length >= 3) {
-            mailManager.getPlugin().getWebEditorAPI().startSession("Mail Content", "/rmail webui {token}", "RedisMail")
-                    .thenAccept(session -> mailManager.startEditorMode(
-                            (Player) sender,
-                            args[1],
-                            String.join(" ", Arrays.copyOfRange(args, 2, args.length)),
-                            session));
+    }
 
-            return true;
-        } else if (args[0].equalsIgnoreCase("webui") && args.length > 1) {
-            if (args.length == 3) {
-                if (args[2].equalsIgnoreCase("confirm")) {
-                    mailManager.confirmSendMail((Player) sender, true);
-                } else if (args[2].equalsIgnoreCase("abort")) {
-                    mailManager.confirmSendMail((Player) sender, false);
-                } else if (args[2].equalsIgnoreCase("preview")) {
-                    mailManager.previewMail((Player) sender);
-                }
-                return true;
-            }
-            mailManager.getPlugin().getWebEditorAPI().retrieveSession(args[1])
-                    .thenAccept(mailContent -> {
-                                mailManager.stopEditorMode((Player) sender, mailContent);
-                                mailManager.getPlugin().getComponentProvider().sendMessage(sender,
-                                        mailManager.getPlugin().messages.mailEditorConfirm
-                                                .replace("%token%", args[1])
+    public CommandAPICommand getSendSubCommand() {
+        return new CommandAPICommand("send")
+                .withPermission(Permission.REDIS_CHAT_MAIL_WRITE.getPermission())
+                .withArguments(
+                        new StringArgument("player")
+                                .replaceSuggestions(ArgumentSuggestions.stringsAsync(getPlayerRecipients())),
+                        new GreedyStringArgument("title")
+                                .replaceSuggestions(ArgumentSuggestions.strings("<aqua>Mail Object/Title</aqua>")))
+                .executesPlayer((sender, args) -> {
+                    String recipient = (String) args.get(0);
+                    assert recipient != null;
+                    if (recipient.equals("#Public") && !sender.hasPermission(Permission.REDIS_CHAT_MAIL_WRITE_PUBLIC.getPermission())) {
+                        mailManager.getPlugin().getComponentProvider().sendMessage(sender, mailManager.getPlugin().messages.noPermission);
+                        return;
+                    }
+
+                    mailManager.getPlugin().getWebEditorAPI().startSession("Mail Content", "/rmail webui {token}", "RedisMail")
+                            .thenAccept(session -> mailManager.startEditorMode(
+                                    sender,
+                                    recipient,
+                                    (String) args.get(1),
+                                    session));
+                });
+    }
+
+    public CommandAPICommand getWebUISubCommand() {
+        return new CommandAPICommand("webui")
+                .withArguments(new StringArgument("token"))
+                .withOptionalArguments(new MultiLiteralArgument("action", List.of("confirm", "abort", "preview")))
+                .executes((sender, args) -> {
+                    String token = (String) args.get(0);
+                    Optional<Object> action = args.getOptional(1);
+
+                    if (token == null) {
+                        mailManager.getPlugin().messages.sendMessage(sender, mailManager.getPlugin().messages.missing_arguments);
+                        return;
+                    }
+
+                    if (action.isEmpty()) {
+                        mailManager.getPlugin().getWebEditorAPI().retrieveSession(token)
+                                .thenAccept(mailContent -> {
+                                            mailManager.stopEditorMode((Player) sender, mailContent);
+                                            mailManager.getPlugin().getComponentProvider().sendMessage(sender,
+                                                    mailManager.getPlugin().messages.mailEditorConfirm
+                                                            .replace("%token%", token)
+                                            );
+                                        }
                                 );
-                            }
+                        return;
+                    }
+
+                    switch ((String) action.get()) {
+                        case "confirm" -> mailManager.confirmSendMail((Player) sender, true);
+                        case "abort" -> mailManager.confirmSendMail((Player) sender, false);
+                        case "preview" -> mailManager.previewMail((Player) sender);
+                    }
+
+                });
+    }
+
+    public Function<SuggestionInfo<CommandSender>, CompletableFuture<String[]>> getPlayerRecipients() {
+        return commandSenderSuggestionInfo ->
+                CompletableFuture.supplyAsync(() -> {
+                    List<String> list = new ArrayList<>(
+                            mailManager.getPlugin().getPlayerListManager().getPlayerList().stream()
+                                    .filter(s -> s.toLowerCase().startsWith(commandSenderSuggestionInfo.currentArg()))
+                                    .toList()
                     );
-            return true;
-        }
-
-        mailManager.getPlugin().getComponentProvider().sendMessage(sender, mailManager.getPlugin().messages.missing_arguments);
-        return true;
+                    if (commandSenderSuggestionInfo.sender().hasPermission(Permission.REDIS_CHAT_MAIL_WRITE_PUBLIC.getPermission()))
+                        list.add("#Public");
+                    return list.toArray(new String[0]);
+                });
     }
 
-    @Nullable
-    @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
-        if (!sender.hasPermission(Permission.REDIS_CHAT_MAIL_WRITE.getPermission())) return List.of();
-        if (args.length == 1) return List.of("send", "delete");
-        if (args.length == 2 && args[0].equalsIgnoreCase("send")) {
-            ArrayList<String> list = new ArrayList<>();
-            list.add("*public");
-            list.addAll(mailManager.getPlugin().getPlayerListManager().getPlayerList().stream().filter(s -> s.toLowerCase().startsWith(args[args.length - 1])).toList());
-            return list;
-        }
-        if (args.length == 3 && args[0].equalsIgnoreCase("send")) return List.of("<aqua>Mail Object/Title</aqua>");
-        return List.of();
-    }
 }

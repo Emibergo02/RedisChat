@@ -6,7 +6,7 @@
 
     <groupId>dev.unnm3d</groupId>
     <artifactId>RedisChat</artifactId>
-    <version>3.3.0</version>
+    <version>3.3.1</version>
     <packaging>jar</packaging>
 
     <name>RedisChat</name>
@@ -29,7 +29,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.3.0</version>
+                <version>3.4.0</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -41,15 +41,19 @@
                             <relocations>
                                 <relocation>
                                     <pattern>net.kyori</pattern>
-                                    <shadedPattern>net.kyori.shaded</shadedPattern>
+                                    <shadedPattern>dev.unnm3d.shaded.adventure</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>de.exlll</pattern>
-                                    <shadedPattern>de.exlll.shaded</shadedPattern>
+                                    <shadedPattern>dev.unnm3d.shaded.configlib</shadedPattern>
                                 </relocation>
                                 <relocation>
-                                    <pattern>xyz.xenondevs</pattern>
-                                    <shadedPattern>xyz.xenondevs.shaded</shadedPattern>
+                                    <pattern>xyz.xenondevs.invui</pattern>
+                                    <shadedPattern>dev.unnm3d.shaded.invui</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>dev.jorel.commandapi</pattern>
+                                    <shadedPattern>dev.unnm3d.shaded.commandapi</shadedPattern>
                                 </relocation>
                             </relocations>
                         </configuration>
@@ -232,6 +236,11 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>dev.jorel</groupId>
+            <artifactId>commandapi-bukkit-shade</artifactId>
+            <version>9.0.3</version>
         </dependency>
     </dependencies>
 

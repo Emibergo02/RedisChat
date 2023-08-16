@@ -276,7 +276,7 @@ public class ComponentProvider extends RedisChatAPI {
     @Override
     public @NotNull String sanitize(@NotNull String message) {
         for (String regex : plugin.config.regex_blacklist) {
-            message = message.replaceAll(regex, "<obf>swear</obf>");
+            message = message.replaceAll(regex, plugin.config.blacklistReplacement);
         }
         return message;
     }
