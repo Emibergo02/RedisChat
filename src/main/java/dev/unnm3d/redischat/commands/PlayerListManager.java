@@ -12,29 +12,34 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class PlayerListManager {
+    private final RedisChat plugin;
     private final BukkitTask task;
     private final ConcurrentHashMap<String, Long> playerList;
     private final List<VanishIntegration> vanishIntegrations;
 
+
     public PlayerListManager(RedisChat plugin) {
+        this.plugin = plugin;
         this.playerList = new ConcurrentHashMap<>();
         this.vanishIntegrations = new ArrayList<>();
         this.task = new BukkitRunnable() {
             @Override
             public void run() {
                 playerList.entrySet().removeIf(stringLongEntry -> System.currentTimeMillis() - stringLongEntry.getValue() > 1000 * 6);
-
-                List<String> tempList = new ArrayList<>();
-                plugin.getServer().getOnlinePlayers().stream()
-                        .filter(player -> vanishIntegrations.stream().noneMatch(integration -> integration.isVanished(player)))
-                        .map(HumanEntity::getName)
-                        .filter(s -> !s.isEmpty())
-                        .forEach(tempList::add);
-                plugin.getDataManager().publishPlayerList(tempList);
-
-                tempList.forEach(s -> playerList.put(s, System.currentTimeMillis()));
+                sendPlayerListUpdate();
             }
-        }.runTaskTimerAsynchronously(plugin, 0, 100);//5 seconds
+        }.runTaskTimerAsynchronously(plugin, 0, 80);//4 seconds
+    }
+
+    public void sendPlayerListUpdate() {
+        List<String> tempList = plugin.getServer().getOnlinePlayers().stream()
+                .filter(player -> vanishIntegrations.stream().noneMatch(integration -> integration.isVanished(player)))
+                .map(HumanEntity::getName)
+                .filter(s -> !s.isEmpty())
+                .toList();
+        plugin.getDataManager().publishPlayerList(tempList);
+
+        tempList.forEach(s -> playerList.put(s, System.currentTimeMillis()));
     }
 
     public void updatePlayerList(List<String> inPlayerList) {

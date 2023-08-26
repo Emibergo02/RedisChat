@@ -12,5 +12,7 @@ public record ChatFormat(
         @NotNull String enderchest_format,
         @NotNull String mention_format,
         @NotNull String link_format,
-        @NotNull String staff_chat_format) {
+        @NotNull String staff_chat_format,
+        @NotNull String join_format,
+        @NotNull String quit_format) {
 }

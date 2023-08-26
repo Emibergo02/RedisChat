@@ -10,6 +10,7 @@ import dev.unnm3d.redischat.api.DataManager;
 import dev.unnm3d.redischat.api.VanishIntegration;
 import dev.unnm3d.redischat.chat.ChatListener;
 import dev.unnm3d.redischat.chat.ComponentProvider;
+import dev.unnm3d.redischat.chat.JoinQuitManager;
 import dev.unnm3d.redischat.commands.*;
 import dev.unnm3d.redischat.configs.Config;
 import dev.unnm3d.redischat.configs.GuiSettings;
@@ -56,6 +57,8 @@ public final class RedisChat extends JavaPlugin {
     private ComponentProvider componentProvider;
     @Getter
     private AdventureWebuiEditorAPI webEditorAPI;
+    @Getter
+    private JoinQuitManager joinQuitManager;
 
     @Override
     public void onLoad() {
@@ -81,6 +84,12 @@ public final class RedisChat extends JavaPlugin {
         loadCommandAPICommand(staffChat.getCommand());
         this.chatListener = new ChatListener(this, staffChat);
         getServer().getPluginManager().registerEvents(this.chatListener, this);
+
+        if(config.enableQuitJoinMessages){
+            this.joinQuitManager = new JoinQuitManager(this);
+            getServer().getPluginManager().registerEvents(this.joinQuitManager, this);
+        }
+
 
         //Mail section
         if (config.enableMails) {

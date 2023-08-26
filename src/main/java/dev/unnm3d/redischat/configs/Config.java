@@ -59,7 +59,9 @@ public final class Config {
             "<click:run_command:%command%>[Open the enderchest of %player%]</click>",
             "<aqua>@%player%</aqua>",
             "<bold><click:open_url:%link%>[Click to open URL (be careful)]</click></bold>",
-            "<gold>StaffChat <dark_gray>» <white>%message%"
+            "<gold>StaffChat <dark_gray>» <white>%message%",
+            "<green>%player% joined the server",
+            "<red>%player% is no longer online"
     ));
     @Comment({
             "Announcer configurations",
@@ -100,6 +102,9 @@ public final class Config {
     public boolean enablePlaceholderGlitch = false;
     @Comment("The [inv], [item] and [ec] placeholders will be considered as minimessage tags")
     public boolean interactiveChatNostalgia = false;
+    @Comment({"Use RedisChat for join and quit messages",
+            "The quit message will be delayed because it might be a early reconnection to one of the servers using RedisChat"})
+    public boolean enableQuitJoinMessages = true;
     @Comment("Reply only to the last player you have messaged")
     public boolean replyToLastMessaged = false;
     @Comment("Enables /rmail /mail and the whole feature")
@@ -142,7 +147,7 @@ public final class Config {
             int interval) {
     }
 
-    public @NotNull List<ChatFormat> getChatFormats(CommandSender p) {
+    public @NotNull List<ChatFormat> getChatFormats(@NotNull CommandSender p) {
         List<ChatFormat> chatFormatList = formats.stream().filter(format -> p.hasPermission(format.permission())).toList();
         if (chatFormatList.isEmpty()) {
             Bukkit.getLogger().info("No format found for " + p.getName());

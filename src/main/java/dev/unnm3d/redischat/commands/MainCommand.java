@@ -10,6 +10,7 @@ import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.utils.AdventureWebuiEditorAPI;
 import lombok.AllArgsConstructor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.event.HandlerList;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
@@ -38,6 +39,12 @@ public class MainCommand {
     public CommandAPICommand getReloadSubcommand() {
         return new CommandAPICommand("reload")
                 .executes((commandExecutor) -> {
+                    if (plugin.config.enableQuitJoinMessages) {
+                        if(plugin.getJoinQuitManager() == null)
+                            plugin.getServer().getPluginManager().registerEvents(plugin.getJoinQuitManager(), plugin);
+                    }else if(plugin.getJoinQuitManager() != null){
+                        HandlerList.unregisterAll(plugin.getJoinQuitManager());
+                    }
                     plugin.loadYML();
                     plugin.getAnnounceManager().reload();
                     plugin.getComponentProvider().sendMessage(commandExecutor.sender(), "<green>Config reloaded");
