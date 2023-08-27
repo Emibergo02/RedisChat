@@ -12,34 +12,34 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class PlayerListManager {
-    private final RedisChat plugin;
     private final BukkitTask task;
     private final ConcurrentHashMap<String, Long> playerList;
     private final List<VanishIntegration> vanishIntegrations;
 
 
     public PlayerListManager(RedisChat plugin) {
-        this.plugin = plugin;
         this.playerList = new ConcurrentHashMap<>();
         this.vanishIntegrations = new ArrayList<>();
         this.task = new BukkitRunnable() {
             @Override
             public void run() {
-                playerList.entrySet().removeIf(stringLongEntry -> System.currentTimeMillis() - stringLongEntry.getValue() > 1000 * 6);
-                sendPlayerListUpdate();
+                playerList.entrySet().removeIf(stringLongEntry -> System.currentTimeMillis() - stringLongEntry.getValue() > 1000 * 5);
+
+                List<String> tempList = plugin.getServer().getOnlinePlayers().stream()
+                        //Accept only players that are not vanished in any integration
+                        .filter(player -> vanishIntegrations.stream().noneMatch(integration -> integration.isVanished(player)))
+                        .map(HumanEntity::getName)
+                        .filter(s -> !s.isEmpty())
+                        .toList();
+                plugin.getDataManager().publishPlayerList(tempList);
+
+                tempList.forEach(s -> playerList.put(s, System.currentTimeMillis()));
             }
         }.runTaskTimerAsynchronously(plugin, 0, 80);//4 seconds
     }
 
-    public void sendPlayerListUpdate() {
-        List<String> tempList = plugin.getServer().getOnlinePlayers().stream()
-                .filter(player -> vanishIntegrations.stream().noneMatch(integration -> integration.isVanished(player)))
-                .map(HumanEntity::getName)
-                .filter(s -> !s.isEmpty())
-                .toList();
-        plugin.getDataManager().publishPlayerList(tempList);
-
-        tempList.forEach(s -> playerList.put(s, System.currentTimeMillis()));
+    public void removeLocalPlayerName(String playerName) {
+        playerList.remove(playerName);
     }
 
     public void updatePlayerList(List<String> inPlayerList) {

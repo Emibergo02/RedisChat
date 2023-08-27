@@ -43,6 +43,18 @@ public final class Config {
     @Comment({"The cluster id, if you have multiple servers you need to set a different id for each group of servers",
             "Doesn't work completely if you're using something different than redis"})
     public int clusterId = 0;
+    public boolean legacyColorCodesSupport = true;
+    @Comment("Enables /rmail /mail and the whole feature")
+    public boolean enableMails = true;
+    @Comment({"Use RedisChat for join and quit messages",
+            "The quit message will be delayed because it might be a early reconnection to one of the servers using RedisChat"})
+    public boolean enableQuitJoinMessages = true;
+    @Comment("Re-enables bukkit color glitches for colored placeholders")
+    public boolean enablePlaceholderGlitch = false;
+    @Comment("The [inv], [item] and [ec] placeholders will be considered as minimessage tags")
+    public boolean interactiveChatNostalgia = false;
+    @Comment("Reply only to the last player you have messaged")
+    public boolean replyToLastMessaged = false;
     @Comment("Webeditor URL")
     public String webEditorUrl = "https://webui.advntr.dev/";
     @Comment({"Here you can decide your chat format", "Permission format is overridden on descending order", "(if a player has default and vip, if default is the first element, vip will be ignored)"})
@@ -60,8 +72,8 @@ public final class Config {
             "<aqua>@%player%</aqua>",
             "<bold><click:open_url:%link%>[Click to open URL (be careful)]</click></bold>",
             "<gold>StaffChat <dark_gray>» <white>%message%",
-            "<green>%player% joined the server",
-            "<red>%player% is no longer online"
+            "<green>%player_name% joined the server",
+            "<red>%player_name% is no longer online"
     ));
     @Comment({
             "Announcer configurations",
@@ -88,6 +100,9 @@ public final class Config {
     public String ec_title = "Enderchest of %player%";
     @Comment("There are some others chat formats, like broadcast and clear chat messages")
     public String broadcast_format = "<red>Announce <dark_gray>» <white>%message%";
+    @Comment({"This message will be sent when a player logs in for the first time",
+            "Put an empty string \"\" to disable this feature"})
+    public String first_join_message = "<red>Welcome to the server, <white>%player_name%<red>!";
     @Comment("This message will be sent to all players when the chat is cleared")
     public String clear_chat_message = "<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared";
     @Comment("Here you can set the number of messages that a player can send without being rate limited")
@@ -96,19 +111,6 @@ public final class Config {
     public int rate_limit_time_seconds = 5;
     @Comment("Messages with this prefix will be sent to staff chat")
     public String staffChatPrefix = "!";
-    @Comment("Enabling this")
-    public boolean legacyColorCodesSupport = true;
-    @Comment("Re-enables bukkit color glitches for colored placeholders")
-    public boolean enablePlaceholderGlitch = false;
-    @Comment("The [inv], [item] and [ec] placeholders will be considered as minimessage tags")
-    public boolean interactiveChatNostalgia = false;
-    @Comment({"Use RedisChat for join and quit messages",
-            "The quit message will be delayed because it might be a early reconnection to one of the servers using RedisChat"})
-    public boolean enableQuitJoinMessages = true;
-    @Comment("Reply only to the last player you have messaged")
-    public boolean replyToLastMessaged = false;
-    @Comment("Enables /rmail /mail and the whole feature")
-    public boolean enableMails = true;
     @Comment("The format of the timestamp in mails (by default is like 31/07/2023 15:24)")
     public String mailTimestampFormat = "dd/MM/yyyy HH:mm";
     @Comment("The timezone of the timestamp in mails (by default is Central European Time)")
