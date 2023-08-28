@@ -31,15 +31,12 @@ public class PlayerListManager {
                         .map(HumanEntity::getName)
                         .filter(s -> !s.isEmpty())
                         .toList();
-                plugin.getDataManager().publishPlayerList(tempList);
+                if(!tempList.isEmpty())
+                    plugin.getDataManager().publishPlayerList(tempList);
 
                 tempList.forEach(s -> playerList.put(s, System.currentTimeMillis()));
             }
         }.runTaskTimerAsynchronously(plugin, 0, 80);//4 seconds
-    }
-
-    public void removeLocalPlayerName(String playerName) {
-        playerList.remove(playerName);
     }
 
     public void updatePlayerList(List<String> inPlayerList) {

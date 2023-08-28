@@ -56,6 +56,8 @@ public interface DataManager {
 
     void publishPlayerList(@NotNull List<String> playerNames);
 
+    void sendRejoin(@NotNull String playerName);
+
     void close();
 
 

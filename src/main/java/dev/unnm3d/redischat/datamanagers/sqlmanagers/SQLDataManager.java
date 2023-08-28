@@ -543,4 +543,17 @@ public abstract class SQLDataManager implements DataManager {
         if (plugin.getPlayerListManager() != null)
             plugin.getPlayerListManager().updatePlayerList(playerNames);
     }
+
+    @Override
+    public void sendRejoin(@NotNull String playerName) {
+        if (plugin.getServer().getOnlinePlayers().size() == 0) return;
+        ByteArrayDataOutput out = ByteStreams.newDataOutput();
+        out.writeUTF("Forward");
+        out.writeUTF("ALL");
+        out.writeUTF(DataKeys.REJOIN_CHANNEL.toString());
+        out.writeUTF(playerName);
+
+        plugin.getServer().getOnlinePlayers().iterator().next()
+                .sendPluginMessage(plugin, "BungeeCord", out.toByteArray());
+    }
 }

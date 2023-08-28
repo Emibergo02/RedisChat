@@ -43,6 +43,9 @@ public final class Config {
     @Comment({"The cluster id, if you have multiple servers you need to set a different id for each group of servers",
             "Doesn't work completely if you're using something different than redis"})
     public int clusterId = 0;
+    @Comment("Webeditor URL")
+    public String webEditorUrl = "https://webui.advntr.dev/";
+    @Comment("Enables & (ampersand) and § (section) color codes")
     public boolean legacyColorCodesSupport = true;
     @Comment("Enables /rmail /mail and the whole feature")
     public boolean enableMails = true;
@@ -51,12 +54,6 @@ public final class Config {
     public boolean enableQuitJoinMessages = true;
     @Comment("Re-enables bukkit color glitches for colored placeholders")
     public boolean enablePlaceholderGlitch = false;
-    @Comment("The [inv], [item] and [ec] placeholders will be considered as minimessage tags")
-    public boolean interactiveChatNostalgia = false;
-    @Comment("Reply only to the last player you have messaged")
-    public boolean replyToLastMessaged = false;
-    @Comment("Webeditor URL")
-    public String webEditorUrl = "https://webui.advntr.dev/";
     @Comment({"Here you can decide your chat format", "Permission format is overridden on descending order", "(if a player has default and vip, if default is the first element, vip will be ignored)"})
     public List<ChatFormat> formats = List.of(new ChatFormat("redischat.default",
             "<click:suggest_command:/msg %player_name%><hover:show_text:'" +
@@ -117,6 +114,10 @@ public final class Config {
     public String mailTimestampZone = "UTC+1";
     @Comment("Those commands will be disabled")
     public List<String> disabledCommands = List.of();
+    @Comment("The [inv], [item] and [ec] placeholders will be considered as minimessage tags")
+    public boolean interactiveChatNostalgia = false;
+    @Comment("Reply only to the last player you have messaged")
+    public boolean replyToLastMessaged = false;
     @Comment("Toggle debug mode (by default is false)")
     public boolean debug = false;
 

@@ -58,9 +58,12 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
             public void message(String channel, String message) {
                 if (channel.equals(CHAT_CHANNEL.toString()))
                     plugin.getChatListener().receiveChatMessage(new ChatMessageInfo(message));
-                else if (channel.equals(PLAYERLIST.toString()))
+                else if (channel.equals(PLAYERLIST.toString())) {
                     if (plugin.getPlayerListManager() != null)
                         plugin.getPlayerListManager().updatePlayerList(Arrays.asList(message.split("§")));
+                } else if (channel.equals(REJOIN_CHANNEL.toString())) {
+                    plugin.getJoinQuitManager().rejoinRequest(message);
+                }
             }
 
             @Override
@@ -83,7 +86,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
             public void punsubscribed(String pattern, long count) {
             }
         });
-        pubSubConnection.async().subscribe(CHAT_CHANNEL.toString(), PLAYERLIST.toString())
+        pubSubConnection.async().subscribe(CHAT_CHANNEL.toString(), PLAYERLIST.toString(), REJOIN_CHANNEL.toString())
                 .exceptionally(throwable -> {
                     throwable.printStackTrace();
                     plugin.getLogger().warning("Error subscribing to chat channel");
@@ -439,13 +442,30 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     }
 
     @Override
+    public void sendRejoin(@NotNull String playerName) {
+        getConnectionAsync(connection ->
+                connection.publish(REJOIN_CHANNEL.toString(), playerName)
+                        .thenApply(integer -> {
+                            if (plugin.config.debug) {
+                                plugin.getLogger().warning("#" + (++pubSubIndex) + "received by " + integer + " servers");
+                            }
+                            return integer;
+                        })
+                        .exceptionally(exception -> {
+                            exception.printStackTrace();
+                            plugin.getLogger().warning("Error sending rejoin packet");
+                            return 0L;
+                        })
+        );
+    }
+
+    @Override
     public void publishPlayerList(@NotNull List<String> playerNames) {
         getConnectionAsync(connection ->
                 connection.publish(PLAYERLIST.toString(),
                         String.join("§", playerNames))
         );
     }
-
 
     @Override
     public void close() {

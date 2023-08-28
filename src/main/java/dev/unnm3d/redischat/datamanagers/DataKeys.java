@@ -4,6 +4,7 @@ import dev.unnm3d.redischat.RedisChat;
 
 public enum DataKeys {
     CHAT_CHANNEL("rchat:g_chat"),
+    REJOIN_CHANNEL("rchat:rejoin"),
     PLAYERLIST("rchat:playerlist"),
     IGNORE_PREFIX("rchat:ignore_"),
     RATE_LIMIT_PREFIX("rchat:ratelimit_"),
