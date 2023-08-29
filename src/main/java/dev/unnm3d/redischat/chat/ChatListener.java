@@ -22,7 +22,7 @@ public class ChatListener implements Listener {
     private final RedisChat plugin;
     private final StaffChat staffChat;
 
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onChat(AsyncPlayerChatEvent event) {
         if (event.isCancelled()) return;
         event.setCancelled(true);
