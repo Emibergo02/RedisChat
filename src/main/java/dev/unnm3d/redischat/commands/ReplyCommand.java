@@ -2,8 +2,9 @@ package dev.unnm3d.redischat.commands;
 
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.arguments.GreedyStringArgument;
-import dev.unnm3d.redischat.Permission;
+import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
+import dev.unnm3d.redischat.channels.KnownChannels;
 import dev.unnm3d.redischat.chat.ChatFormat;
 import dev.unnm3d.redischat.chat.ChatMessageInfo;
 import lombok.AllArgsConstructor;
@@ -22,7 +23,7 @@ public class ReplyCommand {
 
     public CommandAPICommand getCommand() {
         return new CommandAPICommand("reply")
-                .withPermission(Permission.REDIS_CHAT_MESSAGE.getPermission())
+                .withPermission(Permissions.MESSAGE.getPermission())
                 .withAliases("r")
                 .withArguments(new GreedyStringArgument("message"))
                 .executesPlayer((sender, args) -> {
@@ -53,7 +54,7 @@ public class ReplyCommand {
 
                             //Check for minimessage tags permission
                             boolean parsePlaceholders = true;
-                            if (!sender.hasPermission(Permission.REDIS_CHAT_USE_FORMATTING.getPermission())) {
+                            if (!sender.hasPermission(Permissions.USE_FORMATTING.getPermission())) {
                                 message = plugin.getComponentProvider().purgeTags(message);
                                 parsePlaceholders = false;
                             }
@@ -62,15 +63,15 @@ public class ReplyCommand {
 
 
                             //Parse into minimessage (placeholders, tags and mentions)
-                            Component toBeReplaced = plugin.getComponentProvider().parse(sender, message, parsePlaceholders, true, true, plugin.getComponentProvider().getRedisChatTagResolver(sender, chatFormatList.get(0)));
+                            Component toBeReplaced = plugin.getComponentProvider().parse(sender, message, parsePlaceholders, true, true, plugin.getComponentProvider().getRedisChatTagResolver(sender));
 
                             //Send to other servers
                             plugin.getDataManager().sendChatMessage(new ChatMessageInfo(sender.getName(),
                                     MiniMessage.miniMessage().serialize(formatted),
                                     MiniMessage.miniMessage().serialize(toBeReplaced),
-                                    receiver.get()));
+                                    KnownChannels.PRIVATE_MESSAGE_PREFIX + receiver.get()));
 
-                            plugin.getChatListener().onSenderPrivateChat(sender, formatted.replaceText(aBuilder -> aBuilder.matchLiteral("%message%").replacement(toBeReplaced)));
+                            plugin.getComponentProvider().sendMessage(sender, formatted.replaceText(aBuilder -> aBuilder.matchLiteral("%message%").replacement(toBeReplaced)));
                             if (!plugin.config.replyToLastMessaged) {
                                 plugin.getDataManager().setReplyName(receiver.get(), sender.getName());
                             }

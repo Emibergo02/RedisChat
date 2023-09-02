@@ -5,7 +5,7 @@ import dev.jorel.commandapi.SuggestionInfo;
 import dev.jorel.commandapi.arguments.ArgumentSuggestions;
 import dev.jorel.commandapi.arguments.StringArgument;
 import dev.jorel.commandapi.executors.ExecutorType;
-import dev.unnm3d.redischat.Permission;
+import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.utils.AdventureWebuiEditorAPI;
 import lombok.AllArgsConstructor;
@@ -26,7 +26,7 @@ public class MainCommand {
 
     public CommandAPICommand getCommand() {
         return new CommandAPICommand("redischat")
-                .withPermission(Permission.REDIS_CHAT_ADMIN.getPermission())
+                .withPermission(Permissions.ADMIN.getPermission())
                 .withSubcommand(getReloadSubcommand())
                 .withSubcommand(getEditMessageSubcommand())
                 .withSubcommand(getSaveMessageSubcommand())
@@ -40,13 +40,14 @@ public class MainCommand {
         return new CommandAPICommand("reload")
                 .executes((commandExecutor) -> {
                     if (plugin.config.enableQuitJoinMessages) {
-                        if(plugin.getJoinQuitManager() == null)
+                        if (plugin.getJoinQuitManager() == null)
                             plugin.getServer().getPluginManager().registerEvents(plugin.getJoinQuitManager(), plugin);
-                    }else if(plugin.getJoinQuitManager() != null){
+                    } else if (plugin.getJoinQuitManager() != null) {
                         HandlerList.unregisterAll(plugin.getJoinQuitManager());
                     }
                     plugin.loadYML();
                     plugin.getAnnounceManager().reload();
+                    plugin.getChannelManager().updateChannels();
                     plugin.getComponentProvider().sendMessage(commandExecutor.sender(), "<green>Config reloaded");
                 }, ExecutorType.CONSOLE, ExecutorType.PLAYER);
     }

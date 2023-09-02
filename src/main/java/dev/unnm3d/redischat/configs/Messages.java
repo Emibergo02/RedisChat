@@ -43,6 +43,12 @@ public final class Messages {
     public String noConsole = "<yellow>RedisChat</yellow> <gray>»</gray> <red>You cannot execute this command from console</red>";
     public String itemSet = "<yellow>RedisChat</yellow> <gray>»</gray> <green>Item set!</green>";
     public String noPermission = "<yellow>RedisChat</yellow> <gray>»</gray> <red>You do not have permission to execute this command</red>";
+    public String channelCreated = "<yellow>RedisChat</yellow> <gray>»</gray> <green>Channel created!</green>";
+    public String channelRemoved = "<yellow>RedisChat</yellow> <gray>»</gray> <red>Channel removed!</red>";
+    public String channelEnabled = "<yellow>RedisChat</yellow> <gray>»</gray> <green>Channel %channel% enabled for %player%!</green>";
+    public String channelDisabled = "<yellow>RedisChat</yellow> <gray>»</gray> <red>Channel %channel% disabled for %player%!</red>";
+    public String publicChannelMuted = "<yellow>RedisChat</yellow> <gray>»</gray> <aqua>You silenced the public channel!</aqua>";
+    public String publicChannelUnmuted = "<yellow>RedisChat</yellow> <gray>»</gray> <aqua>You unmuted the public channel!</aqua>";
 
     public void sendMessage(CommandSender p, String message) {
         audiences.sender(p).sendMessage(MiniMessage.miniMessage().deserialize(message));

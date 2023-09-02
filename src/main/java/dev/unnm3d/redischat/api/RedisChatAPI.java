@@ -1,13 +1,14 @@
 package dev.unnm3d.redischat.api;
 
-import dev.unnm3d.redischat.chat.ChatFormat;
+import dev.unnm3d.redischat.channels.Channel;
 import dev.unnm3d.redischat.chat.ChatMessageInfo;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
+import dev.unnm3d.redischat.chat.ComponentProvider;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.io.IOException;
 
 @SuppressWarnings("unused")
 public abstract class RedisChatAPI {
@@ -23,62 +24,69 @@ public abstract class RedisChatAPI {
     }
 
     /**
-     * Parse text with RedisEconomy tagresolvers
+     * Get the component provider
      *
-     * @param player            the player to parse the placeholders for
-     * @param text              the text to parse
-     * @param parsePlaceholders whether to parse placeholders
-     * @param parseMentions     whether to parse mentions
-     * @param parseLinks        whether to parse links
-     * @param tagResolvers      the additionals tag resolvers to use
-     * @return the component representing the text using RedisChat tag resolvers
+     * @return The component provider
      */
-    public abstract @NotNull Component parse(@Nullable CommandSender player, @NotNull String text, boolean parsePlaceholders, boolean parseMentions, boolean parseLinks, @NotNull TagResolver... tagResolvers);
+    public abstract ComponentProvider getComponentProvider();
 
     /**
-     * Parses PlaceholderAPI placeholders
-     * If a placeholder returns a colored string, we replace the placeholder as a component
-     * to not override the successive tag formatting
+     * Register a channel
      *
-     * @param cmdSender    Who is parsing the placeholders
-     * @param text         The text to parse
-     * @param tagResolvers The tag resolvers to use
-     * @return The parsed component
+     * @param channel The channel to register
      */
-    public abstract @NotNull Component parsePlaceholders(CommandSender cmdSender, @NotNull String text, @NotNull TagResolver... tagResolvers);
+    public abstract void registerChannel(Channel channel);
 
     /**
-     * Clean all MiniMessage tags from a text
+     * Unregister a channel
      *
-     * @param text The text to clean
-     * @return The cleaned text
+     * @param channelName The name of the channel to unregister
      */
-    public abstract @NotNull String purgeTags(@NotNull String text);
+    public abstract void unregisterChannel(String channelName);
 
     /**
-     * Get the RedisChat tag resolver for a player
+     * Open the channels GUI to a player
      *
-     * @param player     The player to get the tag resolver for
-     * @param chatFormat The chat format to use
-     * @return The tag resolver
+     * @param player The player to open the GUI to
      */
-    public abstract @NotNull TagResolver getRedisChatTagResolver(@NotNull CommandSender player, @NotNull ChatFormat chatFormat);
+    public abstract void openChannelsGUI(Player player);
 
     /**
-     * Clean a message from bad words using RedisChat blacklist
+     * Check if a player is rate-limited in a channel
+     * If the data medium is not REDIS, the rate-limit register will be local
      *
-     * @param message The message to clean
-     * @return The cleaned message
+     * @param player  The player
+     * @param channel The channel
+     * @return true if the player is rate-limited, false otherwise
      */
-    public abstract @NotNull String sanitize(@NotNull String message);
+    protected abstract boolean isRateLimited(CommandSender player, Channel channel);
 
     /**
-     * Parse a text containing legacy color codes ( § and & )
+     * Sends a message into the RedisChat system (cross-server)
      *
-     * @param text The text to parse
-     * @return The parsed text
+     * @param player  The player who sent the message
+     * @param message The message content
+     * @param channel The channel the message was sent to
      */
-    public abstract @NotNull String parseLegacy(@NotNull String text);
+    public abstract void playerChannelMessage(CommandSender player, @NotNull String message, Channel channel);
+
+    /**
+     * Sends the message to the discord webhook defined in the channel
+     *
+     * @param username The username of the player who sent the message
+     * @param format   The format of the message
+     * @param message  The message content
+     * @param channel  The channel the message was sent to
+     * @throws IOException If the webhook is invalid
+     */
+    public abstract void sendDiscordMessage(String username, String format, String message, Channel channel) throws IOException;
+
+    /**
+     * Sends a message inside the current server
+     *
+     * @param chatMessageInfo The ChatMessageInfo to send
+     */
+    public abstract void sendLocalChatMessage(ChatMessageInfo chatMessageInfo);
 
     /**
      * Send a generic ChatMessageInfo to all local players
@@ -105,13 +113,6 @@ public abstract class RedisChatAPI {
      */
     public abstract void sendPrivateChat(@NotNull ChatMessageInfo chatMessageInfo);
 
-    /**
-     * Sends a message to the player, or caches it if the player has the chat paused
-     *
-     * @param player    The player to send the message to
-     * @param component The message to send
-     */
-    public abstract void sendComponentOrCache(@NotNull Player player, @NotNull Component component);
 
     /**
      * Pauses the chat for a player and caches all messages sent to them
@@ -129,5 +130,28 @@ public abstract class RedisChatAPI {
      */
     public abstract void unpauseChat(@NotNull Player player);
 
+    /**
+     * Get a channel by name
+     *
+     * @param channelName The name of the channel
+     * @param player      The player needed to get the public chat format
+     * @return The channel
+     */
+    public abstract Channel getChannelOrPublic(@Nullable String channelName, Player player);
 
+    /**
+     * Get the public channel
+     * The format of the channel is defined by the player permissions
+     *
+     * @param player The player
+     * @return The public channel
+     */
+    public abstract Channel getPublicChannel(Player player);
+
+    /**
+     * Get the staff chat channel
+     *
+     * @return The staff chat channel
+     */
+    public abstract Channel getStaffChatChannel();
 }

@@ -5,6 +5,7 @@ import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.api.DataManager;
+import dev.unnm3d.redischat.channels.Channel;
 import dev.unnm3d.redischat.chat.ChatMessageInfo;
 import dev.unnm3d.redischat.datamanagers.DataKeys;
 import dev.unnm3d.redischat.mail.Mail;
@@ -72,7 +73,7 @@ public abstract class SQLDataManager implements DataManager {
                     plugin.getPlayerListManager().updatePlayerList(Arrays.asList(serializedPlayerList.split("§")));
             } else if (subchannel.equals(DataKeys.CHAT_CHANNEL.toString())) {
                 String messageString = in.readUTF();
-                plugin.getChatListener().receiveChatMessage(new ChatMessageInfo(messageString));
+                plugin.getChannelManager().sendLocalChatMessage(new ChatMessageInfo(messageString));
             }
 
         });
@@ -125,25 +126,16 @@ public abstract class SQLDataManager implements DataManager {
     }
 
     @Override
-    public boolean isRateLimited(@NotNull String playerName) {
+    public boolean isRateLimited(@NotNull String playerName, @NotNull Channel channel) {
         Map.Entry<Integer, Long> info = this.rateLimit.get(playerName);
         if (info != null)
-            if (System.currentTimeMillis() - info.getValue() > plugin.config.rate_limit_time_seconds * 1000L) {
+            if (System.currentTimeMillis() - info.getValue() > channel.getRateLimitPeriod() * 1000L) {
                 this.rateLimit.remove(playerName);
                 return false;
             } else {
                 return true;
             }
         return false;
-    }
-
-    @Override
-    public void setRateLimit(@NotNull String playerName, int seconds) {
-        if (this.rateLimit.computeIfPresent(playerName, (k, v) -> {
-            v.setValue(v.getValue() + 1);
-            return v;
-        }) == null)
-            this.rateLimit.put(playerName, new AbstractMap.SimpleEntry<>(1, System.currentTimeMillis()));
     }
 
     @Override
@@ -513,6 +505,16 @@ public abstract class SQLDataManager implements DataManager {
         });
     }
 
+    @Override
+    public void registerChannel(@NotNull Channel channel) {
+
+    }
+
+    @Override
+    public void unregisterChannel(@NotNull String channelName) {
+
+    }
+
     @SuppressWarnings("UnstableApiUsage")
     @Override
     public void sendChatMessage(@NotNull ChatMessageInfo chatMessage) {
@@ -524,7 +526,7 @@ public abstract class SQLDataManager implements DataManager {
         out.writeUTF(chatMessage.serialize());
         plugin.getServer().getOnlinePlayers().iterator().next()
                 .sendPluginMessage(plugin, "BungeeCord", out.toByteArray());
-        plugin.getChatListener().receiveChatMessage(chatMessage);
+        plugin.getChannelManager().sendLocalChatMessage(chatMessage);
     }
 
     @SuppressWarnings("UnstableApiUsage")

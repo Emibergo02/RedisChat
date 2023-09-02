@@ -111,3 +111,4 @@ permissions:
       - redischat.showitem
       - redischat.showinv
       - redischat.showenderchest
+      - redischat.channel.public

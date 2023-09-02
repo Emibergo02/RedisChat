@@ -1,5 +1,6 @@
 package dev.unnm3d.redischat.configs;
 
+import de.exlll.configlib.Comment;
 import de.exlll.configlib.Configuration;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -14,7 +15,7 @@ public final class GuiSettings {
     public String publicMailTabTitle = "Public Mail";
     public String privateMailTabTitle = "Private Mail";
 
-    public List<String> structure = List.of(
+    public List<String> mailGUIStructure = List.of(
             "x x x x x x x x x",
             "x x x x x x x x x",
             "x x x x x x x x x",
@@ -25,6 +26,69 @@ public final class GuiSettings {
     public ItemStack PublicButton = getPublicButton();
     public ItemStack privateButton = getPrivateButton();
 
+
+    @Comment("The structure of the channel GUI. Use 'x' for the channel slots, '<' for the back button, '>' for the forward button, 'U' for the unmute all button and 'S' for the silence public button")
+    public List<String> channelGUIStructure = List.of(
+            "x x x x x x x x x",
+            "x x x x x x x x x",
+            "x x x x x x x x x",
+            "# < # # S # # > #");
+    public ItemStack activeChannelButton = getActiveChannelButton();
+    public ItemStack idleChannel = getIdleChannelButton();
+    public ItemStack mutedChannel = getMutedChannelButton();
+    public ItemStack unmuteAllButton = getUnmuteAllButton();
+    public ItemStack silencePublicButton = getSilencePublicButton();
+    public ItemStack unSilencePublicButton = getUnSilencePublicButton();
+
+    private ItemStack getMutedChannelButton() {
+        ItemStack item = new ItemStack(Material.CYAN_DYE);
+        ItemMeta im = item.getItemMeta();
+        if (im == null) return item;
+        im.setLore(List.of("§9The channel is currently muted",
+                "§bRight click to unmute the channel"));
+        item.setItemMeta(im);
+        return item;
+    }
+
+    private ItemStack getIdleChannelButton() {
+        ItemStack item = new ItemStack(Material.GRAY_DYE);
+        ItemMeta im = item.getItemMeta();
+        if (im == null) return item;
+        im.setLore(List.of("§9Right click to mute the channel",
+                "§bLeft click to write on this channel"));
+        item.setItemMeta(im);
+        return item;
+    }
+
+    private ItemStack getActiveChannelButton() {
+        ItemStack item = new ItemStack(Material.LIME_DYE);
+        ItemMeta im = item.getItemMeta();
+        if (im == null) return item;
+        im.setLore(List.of("§2You're writing on this channel",
+                "§bLeft click to \"unlisten\" the channel"));
+        item.setItemMeta(im);
+        return item;
+    }
+
+    private ItemStack getSilencePublicButton() {
+        ItemStack item = new ItemStack(Material.WHITE_WOOL);
+        ItemMeta im = item.getItemMeta();
+        if (im == null) return item;
+        im.setDisplayName("§cSilence Public");
+        im.setLore(List.of("§7Click to silence",
+                "§7public messages"));
+        item.setItemMeta(im);
+        return item;
+    }
+
+    private ItemStack getUnSilencePublicButton() {
+        ItemStack item = new ItemStack(Material.GRAY_WOOL);
+        ItemMeta im = item.getItemMeta();
+        if (im == null) return item;
+        im.setDisplayName("§cActivate public chat");
+        item.setItemMeta(im);
+        return item;
+    }
 
     private ItemStack getBackButton() {
         ItemStack item = new ItemStack(Material.ARROW);
@@ -53,6 +117,15 @@ public final class GuiSettings {
         im.setDisplayName("§aPublic");
         im.setLore(List.of("§7Click to see",
                 "§7public announces and messages"));
+        item.setItemMeta(im);
+        return item;
+    }
+
+    private ItemStack getUnmuteAllButton() {
+        ItemStack item = new ItemStack(Material.TOTEM_OF_UNDYING);
+        ItemMeta im = item.getItemMeta();
+        if (im == null) return item;
+        im.setDisplayName("§aUnmute All");
         item.setItemMeta(im);
         return item;
     }

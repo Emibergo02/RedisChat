@@ -8,6 +8,8 @@ import dev.jorel.commandapi.CommandAPIBukkitConfig;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.unnm3d.redischat.api.DataManager;
 import dev.unnm3d.redischat.api.VanishIntegration;
+import dev.unnm3d.redischat.channels.ChannelCommand;
+import dev.unnm3d.redischat.channels.ChannelManager;
 import dev.unnm3d.redischat.chat.ChatListener;
 import dev.unnm3d.redischat.chat.ComponentProvider;
 import dev.unnm3d.redischat.chat.JoinQuitManager;
@@ -23,7 +25,10 @@ import dev.unnm3d.redischat.mail.MailCommand;
 import dev.unnm3d.redischat.mail.MailManager;
 import dev.unnm3d.redischat.moderation.SpyChatCommand;
 import dev.unnm3d.redischat.moderation.SpyManager;
-import dev.unnm3d.redischat.moderation.StaffChat;
+import dev.unnm3d.redischat.moderation.StaffChatCommand;
+import dev.unnm3d.redischat.permission.LuckPermsProvider;
+import dev.unnm3d.redischat.permission.PermissionProvider;
+import dev.unnm3d.redischat.permission.VaultPermissionProvider;
 import dev.unnm3d.redischat.task.AnnounceManager;
 import dev.unnm3d.redischat.utils.AdventureWebuiEditorAPI;
 import dev.unnm3d.redischat.utils.Metrics;
@@ -50,6 +55,8 @@ public final class RedisChat extends JavaPlugin {
     @Getter
     private PlayerListManager playerListManager;
     @Getter
+    private ChannelManager channelManager;
+    @Getter
     private AnnounceManager announceManager;
     @Getter
     private SpyManager spyManager;
@@ -59,6 +66,8 @@ public final class RedisChat extends JavaPlugin {
     private AdventureWebuiEditorAPI webEditorAPI;
     @Getter
     private JoinQuitManager joinQuitManager;
+    @Getter
+    private PermissionProvider permissionProvider;
 
     @Override
     public void onLoad() {
@@ -78,14 +87,30 @@ public final class RedisChat extends JavaPlugin {
             case H2 -> this.dataManager = new H2SQLDataManager(this);
         }
 
+        //Permission section
+        if (getServer().getPluginManager().getPlugin("LuckPerms") != null) {
+            getLogger().info("LuckPerms found, enabling integration");
+            this.permissionProvider = new LuckPermsProvider();
+        } else if (getServer().getPluginManager().getPlugin("Vault") != null) {
+            getLogger().info("Vault found, enabling integration");
+            this.permissionProvider = new VaultPermissionProvider();
+        } else {
+            this.permissionProvider = new PermissionProvider() {
+            };
+        }
+
         //Chat section
         this.componentProvider = new ComponentProvider(this);
-        StaffChat staffChat = new StaffChat(this);
-        loadCommandAPICommand(staffChat.getCommand());
-        this.chatListener = new ChatListener(this, staffChat);
+
+        this.chatListener = new ChatListener(this);
         getServer().getPluginManager().registerEvents(this.chatListener, this);
 
-        if(config.enableQuitJoinMessages){
+        loadCommandAPICommand(new StaffChatCommand(this).getCommand());
+
+        this.channelManager = new ChannelManager(this);
+        loadCommandAPICommand(new ChannelCommand(this).getCommand());
+
+        if (config.enableQuitJoinMessages) {
             this.joinQuitManager = new JoinQuitManager(this);
             getServer().getPluginManager().registerEvents(this.joinQuitManager, this);
         }
@@ -102,11 +127,11 @@ public final class RedisChat extends JavaPlugin {
         AnnounceCommand announceCommand = new AnnounceCommand(this, this.announceManager);
         loadCommand("announce", announceCommand, announceCommand);
 
-        //Commands section
-        this.playerListManager = new PlayerListManager(this);
 
+        this.playerListManager = new PlayerListManager(this);
         this.webEditorAPI = new AdventureWebuiEditorAPI(config.webEditorUrl);
 
+        //Commands section
         //New command API
         loadCommandAPICommand(new MainCommand(this, this.webEditorAPI).getCommand());
         loadCommandAPICommand(new MsgCommand(this).getCommand());
@@ -190,6 +215,7 @@ public final class RedisChat extends JavaPlugin {
     public void onDisable() {
         getLogger().warning("RedisChat is disabling...");
         CommandAPI.onDisable();
+
         if (this.playerListManager != null)
             this.playerListManager.stop();
         if (this.dataManager != null)

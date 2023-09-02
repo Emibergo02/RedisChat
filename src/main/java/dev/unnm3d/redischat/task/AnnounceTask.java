@@ -10,14 +10,14 @@ public class AnnounceTask extends BukkitRunnable {
 
     private final RedisChat plugin;
     private final String message;
-    private final String permission;
+    private final String channelName;
     private final int delay;
     private final int interval;
 
-    public AnnounceTask(RedisChat plugin, String message, String permission, int delay, int interval) {
+    public AnnounceTask(RedisChat plugin, String message, String channelName, int delay, int interval) {
         this.plugin = plugin;
         this.message = message;
-        this.permission = permission;
+        this.channelName = channelName;
         this.delay = delay;
         this.interval = interval;
     }
@@ -29,9 +29,10 @@ public class AnnounceTask extends BukkitRunnable {
     @Override
     public void run() {
         plugin.getDataManager().sendChatMessage(
-                new ChatMessageInfo(KnownChatEntities.SERVER_SENDER.toString(),
+                ChatMessageInfo.craftChannelChatMessage(
+                        KnownChatEntities.SERVER_SENDER.toString(),
                         message,
                         null,
-                        permission.isEmpty() ? KnownChatEntities.BROADCAST.toString() : KnownChatEntities.PERMISSION_MULTICAST + permission));
+                        channelName.isEmpty() ? null : channelName));
     }
 }

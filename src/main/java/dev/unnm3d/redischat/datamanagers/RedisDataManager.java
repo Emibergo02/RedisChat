@@ -2,6 +2,8 @@ package dev.unnm3d.redischat.datamanagers;
 
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.api.DataManager;
+import dev.unnm3d.redischat.channels.Channel;
+import dev.unnm3d.redischat.channels.PlayerChannel;
 import dev.unnm3d.redischat.chat.ChatMessageInfo;
 import dev.unnm3d.redischat.datamanagers.redistools.RedisAbstract;
 import dev.unnm3d.redischat.mail.Mail;
@@ -13,10 +15,12 @@ import io.lettuce.core.pubsub.StatefulRedisPubSubConnection;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
@@ -57,7 +61,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
             @Override
             public void message(String channel, String message) {
                 if (channel.equals(CHAT_CHANNEL.toString()))
-                    plugin.getChatListener().receiveChatMessage(new ChatMessageInfo(message));
+                    plugin.getChannelManager().sendLocalChatMessage(new ChatMessageInfo(message));
                 else if (channel.equals(PLAYERLIST.toString())) {
                     if (plugin.getPlayerListManager() != null)
                         plugin.getPlayerListManager().updatePlayerList(Arrays.asList(message.split("§")));
@@ -114,23 +118,21 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     }
 
     @Override
-    public boolean isRateLimited(@NotNull String playerName) {
+    public boolean isRateLimited(@NotNull String playerName, @NotNull Channel channel) {
+
+
         StatefulRedisConnection<String, String> connection = lettuceRedisClient.connect();
-        String result = connection.sync().get(RATE_LIMIT_PREFIX + playerName);
+        System.out.println("prima " + playerName + " " + channel.getName());
+        String result = connection.sync().get(RATE_LIMIT_PREFIX + playerName + channel.getName());
         connection.close();
 
+        System.out.println("isRateLimited " + playerName + " " + channel.getName() + " " + result);
         int nowMessages = result == null ? 0 : Integer.parseInt(result);//If null, then 0
-        return nowMessages >= plugin.config.rate_limit;//messages higher than limit
+        return nowMessages >= channel.getRateLimit();//messages higher than limit
+
+
     }
 
-    @Override
-    public void setRateLimit(@NotNull String playerName, int seconds) {
-        getConnectionPipeline(connection -> {
-            connection.incr(RATE_LIMIT_PREFIX + playerName);
-            connection.expire(RATE_LIMIT_PREFIX + playerName, seconds);
-            return null;
-        });
-    }
 
     @Override
     public CompletionStage<Boolean> isSpying(@NotNull String playerName) {
@@ -423,21 +425,176 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     }
 
     @Override
+    public void registerChannel(@NotNull Channel channel) {
+        getConnectionAsync(connection ->
+                connection.hset(CHANNELS.toString(), channel.getName(), channel.serialize())
+                        .exceptionally(throwable -> {
+                            throwable.printStackTrace();
+                            plugin.getLogger().warning("Error registering custom channel");
+                            return null;
+                        }));
+    }
+
+
+    @Override
+    public void unregisterChannel(@NotNull String channelName) {
+        getConnectionAsync(connection ->
+                connection.hdel(CHANNELS.toString(), channelName)
+                        .exceptionally(throwable -> {
+                            throwable.printStackTrace();
+                            plugin.getLogger().warning("Error registering custom channel");
+                            return null;
+                        }));
+    }
+
+    @Override
+    public CompletionStage<List<Channel>> getChannels() {
+        return getConnectionAsync(connection ->
+                connection.hgetall(CHANNELS.toString())
+                        .thenApply(channelMap -> channelMap.values().stream()
+                                .map(Channel::deserialize)
+                                .toList())
+                        .exceptionally(throwable -> {
+                            throwable.printStackTrace();
+                            plugin.getLogger().warning("Error registering custom channel");
+                            return null;
+                        }));
+    }
+
+    @Override
+    public CompletionStage<@Nullable Integer> getPlayerChannelStatus(@NotNull String playerName, @NotNull String channelName) {
+        return getConnectionAsync(connection ->
+                connection.hget(PLAYER_CHANNELS_PREFIX + playerName, channelName)
+                        .thenApply(channelStatus ->
+                                channelStatus == null ?
+                                        null :
+                                        Integer.parseInt(channelStatus)
+                        )
+                        .exceptionally(throwable -> {
+                            throwable.printStackTrace();
+                            plugin.getLogger().warning("Error getting player channel");
+                            return null;
+                        }));
+    }
+
+    @Override
+    public CompletionStage<@Nullable String> getActivePlayerChannel(@NotNull String playerName, Map<String, Channel> registeredChannels) {
+        return getPlayerChannelStatuses(playerName, registeredChannels)
+                .thenApply(playerChannels -> playerChannels.stream()
+                        .filter(PlayerChannel::isListening)
+                        .findFirst()
+                        .map(playerChannel -> playerChannel.getChannel().getName())
+                        .orElse(null));
+    }
+
+    @Override
+    public CompletionStage<Boolean> setActivePlayerChannel(@NotNull String playerName, @Nullable String channelName) {
+        if (channelName == null) {
+            return getConnectionAsync(connection ->
+                    connection.hdel(PLAYER_CHANNELS_PREFIX.toString(), playerName)
+                            .thenApply(theLong -> theLong != 0L)
+                            .exceptionally(throwable -> {
+                                throwable.printStackTrace();
+                                plugin.getLogger().warning("Error getting player channel");
+                                return null;
+                            }));
+        }
+        return getConnectionAsync(connection ->
+                connection.hset(PLAYER_ACTIVE_CHANNELS.toString(), playerName, channelName)
+                        .exceptionally(throwable -> {
+                            throwable.printStackTrace();
+                            plugin.getLogger().warning("Error getting player channel");
+                            return null;
+                        }));
+    }
+
+    @Override
+    public CompletionStage<List<PlayerChannel>> getPlayerChannelStatuses(@NotNull String playerName, Map<String, Channel> registeredChannels) {
+        return getConnectionAsync(connection ->
+                connection.hgetall(PLAYER_CHANNELS_PREFIX + playerName)
+                        .exceptionally(throwable -> {
+                            throwable.printStackTrace();
+                            plugin.getLogger().warning("Error getting player channel");
+                            return null;
+                        }))
+                .thenApply(allPlayerCh -> {//Get all player channels
+                    return allPlayerCh.entrySet().stream()//Get all player channels future
+                            .filter(entry -> registeredChannels.containsKey(entry.getKey()))//Filter only registered channels
+                            .map(entry -> {
+                                Channel channel = registeredChannels.get(entry.getKey());
+                                return new PlayerChannel(channel,
+                                        Integer.parseInt(entry.getValue()));
+                            }).toList();
+                });
+    }
+
+    @Override
+    public CompletionStage<String> setPlayerChannelStatuses(@NotNull String playerName, @NotNull Map<String, String> channelStatuses) {
+        return getConnectionAsync(connection ->
+                connection.hmset(PLAYER_CHANNELS_PREFIX + playerName, channelStatuses)
+                        .exceptionally(throwable -> {
+                            throwable.printStackTrace();
+                            plugin.getLogger().warning("Error registering custom channel");
+                            return null;
+                        }));
+    }
+
+    @Override
+    public CompletionStage<Long> removePlayerChannelStatus(@NotNull String playerName, @NotNull String channelName) {
+        return getConnectionAsync(connection ->
+                connection.hdel(PLAYER_CHANNELS_PREFIX + playerName, channelName)
+                        .exceptionally(throwable -> {
+                            throwable.printStackTrace();
+                            plugin.getLogger().warning("Error registering custom channel");
+                            return null;
+                        }));
+    }
+
+    @Override
     public void sendChatMessage(@NotNull ChatMessageInfo packet) {
-        getConnectionAsync(conn ->
-                conn.publish(CHAT_CHANNEL.toString(), packet.serialize())
-                        .thenApply(integer -> {
-                            if (plugin.config.debug) {
-                                plugin.getLogger().warning("#" + (++pubSubIndex) + "received by " + integer + " servers");
-                            }
-                            return integer;
-                        })
-                        .exceptionally(exception -> {
-                            exception.printStackTrace();
-                            plugin.getLogger().warning("Error sending object packet");
-                            return 0L;
-                        })
-        );
+        if (packet.isChannel())
+            getConnectionPipeline(conn -> {
+                        conn.publish(CHAT_CHANNEL.toString(), packet.serialize())
+                                .thenApply(integer -> {
+                                    if (plugin.config.debug) {
+                                        plugin.getLogger().warning("#" + (++pubSubIndex) + "received by " + integer + " servers");
+                                    }
+                                    return integer;
+                                })
+                                .exceptionally(exception -> {
+                                    exception.printStackTrace();
+                                    plugin.getLogger().warning("Error sending object packet");
+                                    return 0L;
+                                });
+                        if (packet.isChannel()) {
+                            String chName = packet.getReceiverName().substring(1);
+                            conn.incr(RATE_LIMIT_PREFIX + packet.getSenderName() + chName).thenApply(integer -> {
+                                if (plugin.config.debug) {
+                                    plugin.getLogger().warning("incr rate limir " + integer);
+                                }
+                                return integer;
+                            }).exceptionally(exception -> {
+                                exception.printStackTrace();
+                                plugin.getLogger().warning("Error sending object packet");
+                                return 0L;
+                            });
+                            conn.expire(RATE_LIMIT_PREFIX + packet.getSenderName() + chName,
+                                    plugin.getChannelManager().getRegisteredChannels().containsKey(chName) ?
+                                            plugin.getChannelManager().getRegisteredChannels().get(chName).getRateLimitPeriod() :
+                                            5).thenApply(integer -> {
+                                if (plugin.config.debug) {
+                                    plugin.getLogger().warning("expire rate limir" + integer);
+                                }
+                                return integer;
+                            }).exceptionally(exception -> {
+                                exception.printStackTrace();
+                                plugin.getLogger().warning("Error sending object packet");
+                                return null;
+                            });
+                        }
+                        return null;
+                    }
+            );
 
     }
 
@@ -458,6 +615,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
                         })
         );
     }
+
 
     @Override
     public void publishPlayerList(@NotNull List<String> playerNames) {

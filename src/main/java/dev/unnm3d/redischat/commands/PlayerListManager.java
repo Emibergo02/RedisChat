@@ -31,7 +31,7 @@ public class PlayerListManager {
                         .map(HumanEntity::getName)
                         .filter(s -> !s.isEmpty())
                         .toList();
-                if(!tempList.isEmpty())
+                if (!tempList.isEmpty())
                     plugin.getDataManager().publishPlayerList(tempList);
 
                 tempList.forEach(s -> playerList.put(s, System.currentTimeMillis()));

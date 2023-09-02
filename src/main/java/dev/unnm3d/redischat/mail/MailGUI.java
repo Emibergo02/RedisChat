@@ -53,7 +53,7 @@ public class MailGUI {
     private Gui getMailGui(List<Mail> list) {
         return PagedGui.items()
                 .setStructure(
-                        plugin.guiSettings.structure.toArray(new String[0])
+                        plugin.guiSettings.mailGUIStructure.toArray(new String[0])
                 )
                 .addIngredient('x', Markers.CONTENT_LIST_SLOT_HORIZONTAL) // where paged items should be put
                 .addIngredient('<', new PageItem(false) {

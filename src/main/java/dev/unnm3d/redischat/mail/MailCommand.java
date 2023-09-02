@@ -6,7 +6,7 @@ import dev.jorel.commandapi.arguments.ArgumentSuggestions;
 import dev.jorel.commandapi.arguments.GreedyStringArgument;
 import dev.jorel.commandapi.arguments.MultiLiteralArgument;
 import dev.jorel.commandapi.arguments.StringArgument;
-import dev.unnm3d.redischat.Permission;
+import dev.unnm3d.redischat.Permissions;
 import lombok.AllArgsConstructor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -25,7 +25,7 @@ public class MailCommand {
 
     public CommandAPICommand getCommand() {
         return new CommandAPICommand("rmail")
-                .withPermission(Permission.REDIS_CHAT_MAIL_READ.getPermission())
+                .withPermission(Permissions.MAIL_READ.getPermission())
                 .withAliases("mail", "mails")
                 .withSubcommand(getSendSubCommand())
                 .withSubcommand(getWebUISubCommand())
@@ -37,7 +37,7 @@ public class MailCommand {
 
     public CommandAPICommand getSendSubCommand() {
         return new CommandAPICommand("send")
-                .withPermission(Permission.REDIS_CHAT_MAIL_WRITE.getPermission())
+                .withPermission(Permissions.MAIL_WRITE.getPermission())
                 .withArguments(
                         new StringArgument("player")
                                 .replaceSuggestions(ArgumentSuggestions.stringsAsync(getPlayerRecipients())),
@@ -46,7 +46,7 @@ public class MailCommand {
                 .executesPlayer((sender, args) -> {
                     String recipient = (String) args.get(0);
                     assert recipient != null;
-                    if (recipient.equals("-Public") && !sender.hasPermission(Permission.REDIS_CHAT_MAIL_WRITE_PUBLIC.getPermission())) {
+                    if (recipient.equals("-Public") && !sender.hasPermission(Permissions.MAIL_WRITE_PUBLIC.getPermission())) {
                         mailManager.getPlugin().getComponentProvider().sendMessage(sender, mailManager.getPlugin().messages.noPermission);
                         return;
                     }
@@ -103,7 +103,7 @@ public class MailCommand {
                                     .filter(s -> s.toLowerCase().startsWith(commandSenderSuggestionInfo.currentArg()))
                                     .toList()
                     );
-                    if (commandSenderSuggestionInfo.sender().hasPermission(Permission.REDIS_CHAT_MAIL_WRITE_PUBLIC.getPermission()))
+                    if (commandSenderSuggestionInfo.sender().hasPermission(Permissions.MAIL_WRITE_PUBLIC.getPermission()))
                         list.add("-Public");
                     return list.toArray(new String[0]);
                 });

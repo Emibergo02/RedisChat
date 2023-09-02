@@ -1,11 +1,14 @@
 package dev.unnm3d.redischat.api;
 
+import dev.unnm3d.redischat.channels.Channel;
+import dev.unnm3d.redischat.channels.PlayerChannel;
 import dev.unnm3d.redischat.chat.ChatMessageInfo;
 import dev.unnm3d.redischat.mail.Mail;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.io.BukkitObjectInputStream;
 import org.bukkit.util.io.BukkitObjectOutputStream;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -14,13 +17,27 @@ import java.util.concurrent.CompletionStage;
 
 public interface DataManager {
 
+
+    void registerChannel(@NotNull Channel channel);
+
+    void unregisterChannel(@NotNull String channelName);
+
+    CompletionStage<@Nullable Integer> getPlayerChannelStatus(@NotNull String playerName, @NotNull String channelName);
+
+
+    CompletionStage<@Nullable String> getActivePlayerChannel(@NotNull String playerName, Map<String, Channel> registeredChannels);
+
+    CompletionStage<Boolean> setActivePlayerChannel(@NotNull String playerName, @Nullable String channelName);
+
+    CompletionStage<List<PlayerChannel>> getPlayerChannelStatuses(@NotNull String playerName, Map<String, Channel> registeredChannels);
+
+    CompletionStage<List<Channel>> getChannels();
+
     Optional<String> getReplyName(@NotNull String requesterName);
 
     void setReplyName(@NotNull String nameReceiver, @NotNull String requesterName);
 
-    boolean isRateLimited(@NotNull String playerName);
-
-    void setRateLimit(@NotNull String playerName, int seconds);
+    boolean isRateLimited(@NotNull String playerName, @NotNull Channel channel);
 
     CompletionStage<Boolean> isSpying(@NotNull String playerName);
 
@@ -51,6 +68,10 @@ public interface DataManager {
     CompletionStage<Boolean> setPublicMail(@NotNull Mail mail);
 
     CompletionStage<List<Mail>> getPublicMails();
+
+    CompletionStage<String> setPlayerChannelStatuses(@NotNull String playerName, @NotNull Map<String, String> channelStatuses);
+
+    CompletionStage<Long> removePlayerChannelStatus(@NotNull String playerName, @NotNull String channelName);
 
     void sendChatMessage(@NotNull ChatMessageInfo chatMessage);
 

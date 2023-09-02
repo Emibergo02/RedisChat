@@ -1,9 +1,10 @@
 package dev.unnm3d.redischat.chat;
 
 public enum KnownChatEntities {
-    BROADCAST("*"),
+    PUBLIC_CHAT("public"),
     SERVER_SENDER("*Server*"),
-    PERMISSION_MULTICAST("@"),
+    CHANNEL_PREFIX("@"),
+    STAFFCHAT_CHANNEL_NAME("sf"),
     ;
 
     private final String keyName;

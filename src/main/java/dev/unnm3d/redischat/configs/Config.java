@@ -22,7 +22,7 @@ public final class Config {
             6379,
             "",
             "",
-            1,
+            0,
             1000,
             "RedisChat");
     public Mysql mysql = new Mysql("127.0.0.1",
@@ -63,12 +63,8 @@ public final class Config {
                     "'><white>%vault_prefix%%player_displayname%%luckperms_suffix%</click> <dark_gray>» <reset>%message%",
             "<dark_aqua>MSG <white>(<reset>You <white>to <green>%receiver%<white>)<reset>: <white>%message%",
             "<dark_aqua>MSG <white>(<green>%sender% <white>to <reset>You<white>)<reset>: <white>%message%",
-            "<click:run_command:%command%>[Open the inventory of %player%]</click>",
-            "<click:run_command:%command%>[%item_name% of %player%]</click>",
-            "<click:run_command:%command%>[Open the enderchest of %player%]</click>",
             "<aqua>@%player%</aqua>",
             "<bold><click:open_url:%link%>[Click to open URL (be careful)]</click></bold>",
-            "<gold>StaffChat <dark_gray>» <white>%message%",
             "<green>%player_name% joined the server",
             "<red>%player_name% is no longer online"
     ));
@@ -108,6 +104,15 @@ public final class Config {
     public int rate_limit_time_seconds = 5;
     @Comment("Messages with this prefix will be sent to staff chat")
     public String staffChatPrefix = "!";
+    @Comment("The format of the staff chat messages")
+    public String staffChatFormat = "<gold>StaffChat </gold> : %message%";
+    @Comment("The discord webhook of the staff chat")
+    public String staffChatDiscordWebhook = "";
+    public String inventoryFormat = "<click:run_command:%command%>[Open the inventory of %player%]</click>";
+    public String itemFormat = "<click:run_command:%command%>[%item_name% of %player%]</click>";
+    public String enderChestFormat = "<click:run_command:%command%>[Open the enderchest of %player%]</click>";
+    @Comment("The discord webhook of the public chat")
+    public String publicDiscordWebhook = "";
     @Comment("The format of the timestamp in mails (by default is like 31/07/2023 15:24)")
     public String mailTimestampFormat = "dd/MM/yyyy HH:mm";
     @Comment("The timezone of the timestamp in mails (by default is Central European Time)")
@@ -145,7 +150,7 @@ public final class Config {
     public record Announce(
             String announceName,
             String message,
-            String permission,
+            String channelName,
             int delay,
             int interval) {
     }

@@ -1,7 +1,6 @@
 package dev.unnm3d.redischat.mail;
 
 import dev.unnm3d.redischat.RedisChat;
-import dev.unnm3d.redischat.chat.ComponentProvider;
 import lombok.Getter;
 import lombok.Setter;
 import net.kyori.adventure.inventory.Book;
@@ -63,8 +62,8 @@ public class Mail extends AbstractItem {
 
         String timestampFormat = " <aqua>" + DateTimeFormatter.ofPattern(RedisChat.getInstance().config.mailTimestampFormat).format(cal);
         return new ItemBuilder(RedisChat.getInstance().guiSettings.mailItem)
-                .setDisplayName(new AdventureComponentWrapper(ComponentProvider.getInstance().parse("<yellow>" + title + timestampFormat)))
-                .addLoreLines(new AdventureComponentWrapper(ComponentProvider.getInstance().parse("<grey>" + content)));
+                .setDisplayName(new AdventureComponentWrapper(RedisChat.getInstance().getComponentProvider().parse("<yellow>" + title + timestampFormat)))
+                .addLoreLines(new AdventureComponentWrapper(RedisChat.getInstance().getComponentProvider().parse("<grey>" + content)));
     }
 
     @Override
@@ -75,9 +74,9 @@ public class Mail extends AbstractItem {
     public void openPreview(@NotNull Player player) {
         player.closeInventory();
         //Craft written book with mail contents
-        ComponentProvider.getInstance().openBook(player, Book.builder()
-                .title(ComponentProvider.getInstance().parse(title))
-                .addPage(ComponentProvider.getInstance().parse(content))
+        RedisChat.getInstance().getComponentProvider().openBook(player, Book.builder()
+                .title(RedisChat.getInstance().getComponentProvider().parse(title))
+                .addPage(RedisChat.getInstance().getComponentProvider().parse(content))
                 .build());
     }
 

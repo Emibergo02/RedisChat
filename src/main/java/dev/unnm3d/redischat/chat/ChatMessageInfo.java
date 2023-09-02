@@ -1,6 +1,7 @@
 package dev.unnm3d.redischat.chat;
 
 import com.google.common.base.Strings;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
 
@@ -19,7 +20,7 @@ public class ChatMessageInfo implements Serializable {
      * @param message    The message content
      */
     public ChatMessageInfo(String senderName, String formatting, String message) {
-        this(senderName, formatting, message, KnownChatEntities.BROADCAST.toString());
+        this(senderName, formatting, message, KnownChatEntities.CHANNEL_PREFIX + KnownChatEntities.PUBLIC_CHAT.toString());
     }
 
     /**
@@ -50,6 +51,11 @@ public class ChatMessageInfo implements Serializable {
         this.receiverName = splitted[3];
     }
 
+    public static ChatMessageInfo craftChannelChatMessage(String senderName, String formatting, String message, @Nullable String channelName) {
+        if (channelName == null) return new ChatMessageInfo(senderName, formatting, message);
+        return new ChatMessageInfo(senderName, formatting, message, KnownChatEntities.CHANNEL_PREFIX + channelName);
+    }
+
 
     public String getSenderName() {
         return senderName;
@@ -69,7 +75,11 @@ public class ChatMessageInfo implements Serializable {
      * @return true if the message isn't a multicast or broadcast
      */
     public boolean isPrivate() {
-        return !(receiverName.equals(KnownChatEntities.BROADCAST.toString()) || receiverName.startsWith(KnownChatEntities.PERMISSION_MULTICAST.toString()));
+        return !(receiverName.equals(KnownChatEntities.PUBLIC_CHAT.toString()) || isChannel());
+    }
+
+    public boolean isChannel() {
+        return receiverName.startsWith(KnownChatEntities.CHANNEL_PREFIX.toString());
     }
 
     public String getReceiverName() {
