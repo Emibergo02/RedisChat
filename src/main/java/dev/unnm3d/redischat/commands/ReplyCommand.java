@@ -4,7 +4,6 @@ import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.arguments.GreedyStringArgument;
 import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
-import dev.unnm3d.redischat.channels.KnownChannels;
 import dev.unnm3d.redischat.chat.ChatFormat;
 import dev.unnm3d.redischat.chat.ChatMessageInfo;
 import lombok.AllArgsConstructor;
@@ -69,7 +68,7 @@ public class ReplyCommand {
                             plugin.getDataManager().sendChatMessage(new ChatMessageInfo(sender.getName(),
                                     MiniMessage.miniMessage().serialize(formatted),
                                     MiniMessage.miniMessage().serialize(toBeReplaced),
-                                    KnownChannels.PRIVATE_MESSAGE_PREFIX + receiver.get()));
+                                    receiver.get()));
 
                             plugin.getComponentProvider().sendMessage(sender, formatted.replaceText(aBuilder -> aBuilder.matchLiteral("%message%").replacement(toBeReplaced)));
                             if (!plugin.config.replyToLastMessaged) {

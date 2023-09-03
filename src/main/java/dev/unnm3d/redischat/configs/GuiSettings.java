@@ -30,13 +30,12 @@ public final class GuiSettings {
     @Comment("The structure of the channel GUI. Use 'x' for the channel slots, '<' for the back button, '>' for the forward button, 'U' for the unmute all button and 'S' for the silence public button")
     public List<String> channelGUIStructure = List.of(
             "x x x x x x x x x",
-            "x x x x x x x x x",
+            "x x x x U x x x x",
             "x x x x x x x x x",
             "# < # # S # # > #");
     public ItemStack activeChannelButton = getActiveChannelButton();
     public ItemStack idleChannel = getIdleChannelButton();
     public ItemStack mutedChannel = getMutedChannelButton();
-    public ItemStack unmuteAllButton = getUnmuteAllButton();
     public ItemStack silencePublicButton = getSilencePublicButton();
     public ItemStack unSilencePublicButton = getUnSilencePublicButton();
 
@@ -117,15 +116,6 @@ public final class GuiSettings {
         im.setDisplayName("§aPublic");
         im.setLore(List.of("§7Click to see",
                 "§7public announces and messages"));
-        item.setItemMeta(im);
-        return item;
-    }
-
-    private ItemStack getUnmuteAllButton() {
-        ItemStack item = new ItemStack(Material.TOTEM_OF_UNDYING);
-        ItemMeta im = item.getItemMeta();
-        if (im == null) return item;
-        im.setDisplayName("§aUnmute All");
         item.setItemMeta(im);
         return item;
     }

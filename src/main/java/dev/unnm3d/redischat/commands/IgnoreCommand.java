@@ -56,7 +56,11 @@ public class IgnoreCommand implements CommandExecutor, TabCompleter {
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
         if (!sender.hasPermission(Permissions.IGNORE.getPermission())) return List.of();
         List<String> temp = new ArrayList<>(List.of("list", "all"));
-        temp.addAll(plugin.getPlayerListManager().getPlayerList().stream().filter(s -> s.toLowerCase().startsWith(args[args.length - 1])).toList());
+        temp.addAll(
+                plugin.getPlayerListManager().getPlayerList()
+                        .stream().filter(s ->
+                                s.toLowerCase().startsWith(args[args.length - 1].toLowerCase())
+                        ).toList());
         return temp;
     }
 }

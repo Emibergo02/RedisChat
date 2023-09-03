@@ -4,7 +4,7 @@ public enum KnownChatEntities {
     PUBLIC_CHAT("public"),
     SERVER_SENDER("*Server*"),
     CHANNEL_PREFIX("@"),
-    STAFFCHAT_CHANNEL_NAME("sf"),
+    STAFFCHAT_CHANNEL_NAME("staffchat"),
     ;
 
     private final String keyName;

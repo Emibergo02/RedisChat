@@ -3,6 +3,7 @@ package dev.unnm3d.redischat.channels;
 import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.api.RedisChatAPI;
+import dev.unnm3d.redischat.api.RedisChatMessageEvent;
 import dev.unnm3d.redischat.chat.ChatFormat;
 import dev.unnm3d.redischat.chat.ChatMessageInfo;
 import dev.unnm3d.redischat.chat.ComponentProvider;
@@ -157,20 +158,28 @@ public class ChannelManager extends RedisChatAPI {
         if (plugin.config.debug) {
             plugin.getLogger().info("2) Format + message parsing: " + (System.currentTimeMillis() - init) + "ms");
         }
+        final String finalFormat = MiniMessage.miniMessage().serialize(formatted);
+        final String finalMessage = MiniMessage.miniMessage().serialize(toBeReplaced);
+
+        //Call event and check cancellation
+        RedisChatMessageEvent event = new RedisChatMessageEvent(channel, finalFormat, finalMessage);
+        plugin.getServer().getPluginManager().callEvent(event);
+        if (event.isCancelled()) return;
 
         // Send to other servers
         plugin.getDataManager().sendChatMessage(ChatMessageInfo.craftChannelChatMessage(
                 player.getName(),
-                MiniMessage.miniMessage().serialize(formatted),
-                MiniMessage.miniMessage().serialize(toBeReplaced),
-                channel.getName()));
+                event.getFormat(),
+                event.getMessage(),
+                event.getChannel().getName()));
 
         // Send to discord via webhook
         try {
-            sendDiscordMessage(player.getName(), MiniMessage.miniMessage().serialize(formatted), MiniMessage.miniMessage().serialize(toBeReplaced), channel);
+            sendDiscordMessage(player.getName(), event.getFormat(), event.getMessage(), event.getChannel());
         } catch (IOException e) {
             e.printStackTrace();
         }
+
 
         if (plugin.config.debug) {
             plugin.getLogger().info("2) Send (Redis): " + (System.currentTimeMillis() - init) + "ms");

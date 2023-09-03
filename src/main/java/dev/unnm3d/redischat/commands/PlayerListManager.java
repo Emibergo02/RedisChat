@@ -23,7 +23,7 @@ public class PlayerListManager {
         this.task = new BukkitRunnable() {
             @Override
             public void run() {
-                playerList.entrySet().removeIf(stringLongEntry -> System.currentTimeMillis() - stringLongEntry.getValue() > 1000 * 5);
+                playerList.entrySet().removeIf(stringLongEntry -> System.currentTimeMillis() - stringLongEntry.getValue() > 1000 * 4);
 
                 List<String> tempList = plugin.getServer().getOnlinePlayers().stream()
                         //Accept only players that are not vanished in any integration
@@ -36,7 +36,7 @@ public class PlayerListManager {
 
                 tempList.forEach(s -> playerList.put(s, System.currentTimeMillis()));
             }
-        }.runTaskTimerAsynchronously(plugin, 0, 80);//4 seconds
+        }.runTaskTimerAsynchronously(plugin, 0, 60);//3 seconds
     }
 
     public void updatePlayerList(List<String> inPlayerList) {

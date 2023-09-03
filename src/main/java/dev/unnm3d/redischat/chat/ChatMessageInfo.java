@@ -75,7 +75,7 @@ public class ChatMessageInfo implements Serializable {
      * @return true if the message isn't a multicast or broadcast
      */
     public boolean isPrivate() {
-        return !(receiverName.equals(KnownChatEntities.PUBLIC_CHAT.toString()) || isChannel());
+        return !isChannel();
     }
 
     public boolean isChannel() {

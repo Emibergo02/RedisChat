@@ -100,7 +100,7 @@ public class MailCommand {
                 CompletableFuture.supplyAsync(() -> {
                     List<String> list = new ArrayList<>(
                             mailManager.getPlugin().getPlayerListManager().getPlayerList().stream()
-                                    .filter(s -> s.toLowerCase().startsWith(commandSenderSuggestionInfo.currentArg()))
+                                    .filter(s -> s.toLowerCase().startsWith(commandSenderSuggestionInfo.currentArg().toLowerCase()))
                                     .toList()
                     );
                     if (commandSenderSuggestionInfo.sender().hasPermission(Permissions.MAIL_WRITE_PUBLIC.getPermission()))

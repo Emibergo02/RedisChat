@@ -29,7 +29,7 @@ public class JoinQuitManager implements Listener {
 
         //Join event happens at the same time as the quit event in the other server (we need to delay it)
         redisChat.getServer().getScheduler().runTaskLater(redisChat, () ->
-                redisChat.getDataManager().sendRejoin(joinEvent.getPlayer().getName()), 10);
+                redisChat.getDataManager().sendRejoin(joinEvent.getPlayer().getName()), 5);
 
         if (redisChat.getPlayerListManager().getPlayerList().contains(joinEvent.getPlayer().getName())) return;
 
@@ -86,7 +86,7 @@ public class JoinQuitManager implements Listener {
     private CompletableFuture<Void> craftRejoinFuture(String playerName, String parsedQuitMessage) {
         return new CompletableFuture<>()
                 .thenAccept(aVoid -> findPlayerRequests.remove(playerName)) //Remove from map, player rejoined
-                .orTimeout(2, TimeUnit.SECONDS)
+                .orTimeout(1, TimeUnit.SECONDS)
                 .exceptionally(onTimeout -> {                               //Timeout, player quit
                     redisChat.getDataManager().sendChatMessage(
                             new ChatMessageInfo(null,

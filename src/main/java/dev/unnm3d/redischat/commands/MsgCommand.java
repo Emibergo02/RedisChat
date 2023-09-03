@@ -6,7 +6,6 @@ import dev.jorel.commandapi.arguments.GreedyStringArgument;
 import dev.jorel.commandapi.arguments.StringArgument;
 import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
-import dev.unnm3d.redischat.channels.KnownChannels;
 import dev.unnm3d.redischat.chat.ChatFormat;
 import dev.unnm3d.redischat.chat.ChatMessageInfo;
 import lombok.AllArgsConstructor;
@@ -29,7 +28,7 @@ public class MsgCommand {
                 .withArguments(new StringArgument("player")
                                 .replaceSuggestions(ArgumentSuggestions.strings(commandSenderSuggestionInfo ->
                                         plugin.getPlayerListManager().getPlayerList().stream()
-                                                .filter(s -> s.toLowerCase().startsWith(commandSenderSuggestionInfo.currentArg()))
+                                                .filter(s -> s.toLowerCase().startsWith(commandSenderSuggestionInfo.currentArg().toLowerCase()))
                                                 .toArray(String[]::new))),
                         new GreedyStringArgument("message"))
                 .executes((sender, args) -> {
@@ -89,7 +88,7 @@ public class MsgCommand {
                             plugin.getDataManager().sendChatMessage(new ChatMessageInfo(sender.getName(),
                                     MiniMessage.miniMessage().serialize(formatted),
                                     MiniMessage.miniMessage().serialize(toBeReplaced),
-                                    KnownChannels.PRIVATE_MESSAGE_PREFIX + receiverName));
+                                    receiverName));
 
                             plugin.getComponentProvider().sendMessage(sender, formatted.replaceText(aBuilder -> aBuilder.matchLiteral("%message%").replacement(toBeReplaced)));
                             //Set reply name for /reply

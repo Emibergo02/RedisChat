@@ -120,13 +120,10 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     @Override
     public boolean isRateLimited(@NotNull String playerName, @NotNull Channel channel) {
 
-
         StatefulRedisConnection<String, String> connection = lettuceRedisClient.connect();
-        System.out.println("prima " + playerName + " " + channel.getName());
         String result = connection.sync().get(RATE_LIMIT_PREFIX + playerName + channel.getName());
         connection.close();
 
-        System.out.println("isRateLimited " + playerName + " " + channel.getName() + " " + result);
         int nowMessages = result == null ? 0 : Integer.parseInt(result);//If null, then 0
         return nowMessages >= channel.getRateLimit();//messages higher than limit
 
@@ -552,49 +549,29 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
 
     @Override
     public void sendChatMessage(@NotNull ChatMessageInfo packet) {
-        if (packet.isChannel())
-            getConnectionPipeline(conn -> {
-                        conn.publish(CHAT_CHANNEL.toString(), packet.serialize())
-                                .thenApply(integer -> {
-                                    if (plugin.config.debug) {
-                                        plugin.getLogger().warning("#" + (++pubSubIndex) + "received by " + integer + " servers");
-                                    }
-                                    return integer;
-                                })
-                                .exceptionally(exception -> {
-                                    exception.printStackTrace();
-                                    plugin.getLogger().warning("Error sending object packet");
-                                    return 0L;
-                                });
-                        if (packet.isChannel()) {
-                            String chName = packet.getReceiverName().substring(1);
-                            conn.incr(RATE_LIMIT_PREFIX + packet.getSenderName() + chName).thenApply(integer -> {
-                                if (plugin.config.debug) {
-                                    plugin.getLogger().warning("incr rate limir " + integer);
-                                }
-                                return integer;
-                            }).exceptionally(exception -> {
-                                exception.printStackTrace();
-                                plugin.getLogger().warning("Error sending object packet");
-                                return 0L;
-                            });
-                            conn.expire(RATE_LIMIT_PREFIX + packet.getSenderName() + chName,
-                                    plugin.getChannelManager().getRegisteredChannels().containsKey(chName) ?
-                                            plugin.getChannelManager().getRegisteredChannels().get(chName).getRateLimitPeriod() :
-                                            5).thenApply(integer -> {
-                                if (plugin.config.debug) {
-                                    plugin.getLogger().warning("expire rate limir" + integer);
-                                }
-                                return integer;
-                            }).exceptionally(exception -> {
-                                exception.printStackTrace();
-                                plugin.getLogger().warning("Error sending object packet");
-                                return null;
-                            });
+        getConnectionPipeline(conn -> {
+            conn.publish(CHAT_CHANNEL.toString(), packet.serialize())
+                    .thenApply(integer -> {
+                        if (plugin.config.debug) {
+                            plugin.getLogger().warning("#" + (++pubSubIndex) + "received by " + integer + " servers");
                         }
-                        return null;
-                    }
-            );
+                        return integer;
+                    })
+                    .exceptionally(exception -> {
+                        exception.printStackTrace();
+                        plugin.getLogger().warning("Error sending object packet");
+                        return 0L;
+                    });
+            if (packet.isChannel()) {
+                String chName = packet.getReceiverName().substring(1);
+                conn.incr(RATE_LIMIT_PREFIX + packet.getSenderName() + chName);
+                conn.expire(RATE_LIMIT_PREFIX + packet.getSenderName() + chName,
+                        plugin.getChannelManager().getRegisteredChannels().containsKey(chName) ?
+                                plugin.getChannelManager().getRegisteredChannels().get(chName).getRateLimitPeriod() :
+                                5);
+            }
+            return null;
+        });
 
     }
 
