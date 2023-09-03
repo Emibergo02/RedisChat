@@ -162,7 +162,7 @@ public class ChannelManager extends RedisChatAPI {
         final String finalMessage = MiniMessage.miniMessage().serialize(toBeReplaced);
 
         //Call event and check cancellation
-        RedisChatMessageEvent event = new RedisChatMessageEvent(channel, finalFormat, finalMessage);
+        RedisChatMessageEvent event = new RedisChatMessageEvent(player, channel, finalFormat, finalMessage);
         plugin.getServer().getPluginManager().callEvent(event);
         if (event.isCancelled()) return;
 
