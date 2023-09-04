@@ -159,8 +159,6 @@ public final class RedisChat extends JavaPlugin {
             getLogger().info("Oraxen found, enabling integration");
             componentProvider.addResolverIntegration(new OraxenTagResolver());
         }
-        playerListManager.addVanishIntegration(new VanishIntegration() {
-        }); //PremiumVanish standard
     }
 
 

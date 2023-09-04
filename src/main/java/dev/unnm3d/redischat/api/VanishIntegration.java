@@ -11,9 +11,6 @@ public interface VanishIntegration {
      * @param viewer     The player who is viewing the possible vanished player
      * @return true if the viewer can see the player
      */
-    default boolean canSee(CommandSender viewer, String playerName) {
-
-        return true;
-    }
+    boolean canSee(CommandSender viewer, String playerName);
 
 }
