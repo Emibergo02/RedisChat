@@ -163,6 +163,7 @@ public class ChannelManager extends RedisChatAPI {
 
         //Call event and check cancellation
         RedisChatMessageEvent event = new RedisChatMessageEvent(player, channel, finalFormat, finalMessage);
+        plugin.getServer().getScheduler().runTask(plugin, () -> {
         plugin.getServer().getPluginManager().callEvent(event);
         if (event.isCancelled()) return;
 
@@ -184,6 +185,7 @@ public class ChannelManager extends RedisChatAPI {
         if (plugin.config.debug) {
             plugin.getLogger().info("2) Send (Redis): " + (System.currentTimeMillis() - init) + "ms");
         }
+        });
     }
 
     public void playerChat(Player player, @NotNull final String finalMessage) {
