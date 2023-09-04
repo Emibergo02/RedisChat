@@ -2,8 +2,8 @@ package dev.unnm3d.redischat.channels;
 
 import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
+import dev.unnm3d.redischat.api.AsyncRedisChatMessageEvent;
 import dev.unnm3d.redischat.api.RedisChatAPI;
-import dev.unnm3d.redischat.api.RedisChatMessageEvent;
 import dev.unnm3d.redischat.chat.ChatFormat;
 import dev.unnm3d.redischat.chat.ChatMessageInfo;
 import dev.unnm3d.redischat.chat.ComponentProvider;
@@ -162,8 +162,7 @@ public class ChannelManager extends RedisChatAPI {
         final String finalMessage = MiniMessage.miniMessage().serialize(toBeReplaced);
 
         //Call event and check cancellation
-        RedisChatMessageEvent event = new RedisChatMessageEvent(player, channel, finalFormat, finalMessage);
-        plugin.getServer().getScheduler().runTask(plugin, () -> {
+        AsyncRedisChatMessageEvent event = new AsyncRedisChatMessageEvent(player, channel, finalFormat, finalMessage);
         plugin.getServer().getPluginManager().callEvent(event);
         if (event.isCancelled()) return;
 
@@ -185,7 +184,6 @@ public class ChannelManager extends RedisChatAPI {
         if (plugin.config.debug) {
             plugin.getLogger().info("2) Send (Redis): " + (System.currentTimeMillis() - init) + "ms");
         }
-        });
     }
 
     public void playerChat(Player player, @NotNull final String finalMessage) {

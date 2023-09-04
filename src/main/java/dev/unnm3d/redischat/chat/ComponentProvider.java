@@ -99,7 +99,7 @@ public class ComponentProvider {
         }
         if (plugin.config.legacyColorCodesSupport && (player == null || //Is without permissions or if it has permissions
                 player.hasPermission(Permissions.USE_FORMATTING.getPermission()))) {
-            text = parseLegacy(text);
+            text = parseLegacy(text, true);
         }
 
         Component finalComponent = parsePlaceholders ?
@@ -210,7 +210,7 @@ public class ComponentProvider {
                                     rTextBuilder.matchLiteral("%item_name%")
                                             .replacement(
                                                     parse(player,
-                                                            parseLegacy(p.getInventory().getItemInMainHand().getItemMeta().getDisplayName()),
+                                                            parseLegacy(p.getInventory().getItemInMainHand().getItemMeta().getDisplayName(), false),
                                                             false,
                                                             false,
                                                             false,
@@ -348,9 +348,11 @@ public class ComponentProvider {
      * @param text The text to parse
      * @return The parsed text
      */
-    public @NotNull String parseLegacy(@NotNull String text) {
+    public @NotNull String parseLegacy(@NotNull String text, boolean parseAmpersand) {
 
-        text = miniMessage.serialize(LegacyComponentSerializer.legacySection().deserialize(replaceBukkitColorCodesWithSection(text)));
+        text = miniMessage.serialize(LegacyComponentSerializer.legacySection().deserialize(
+                parseAmpersand ? replaceBukkitColorCodesWithSection(text) : text
+        ));
         if (plugin.config.debug) {
             Bukkit.getLogger().info("Parsed legacy: " + text);
         }

@@ -7,7 +7,7 @@ import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 
-public class RedisChatMessageEvent extends Event implements Cancellable {
+public class AsyncRedisChatMessageEvent extends Event implements Cancellable {
 
     private static final HandlerList HANDLERS = new HandlerList();
     private final CommandSender sender;
@@ -18,12 +18,14 @@ public class RedisChatMessageEvent extends Event implements Cancellable {
 
     /**
      * Creates a RedisChatMessageEvent
-     * @param sender The sender of the message
+     *
+     * @param sender  The sender of the message
      * @param channel The channel of the message
-     * @param format The format of the message
+     * @param format  The format of the message
      * @param message The message content
      */
-    public RedisChatMessageEvent(CommandSender sender, Channel channel, String format, String message) {
+    public AsyncRedisChatMessageEvent(CommandSender sender, Channel channel, String format, String message) {
+        super(true);
         this.sender = sender;
         this.channel = channel;
         this.format = format;

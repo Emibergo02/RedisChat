@@ -24,7 +24,8 @@ public class StaffChatCommand {
                     if (chatFormatList.isEmpty()) return;
                     String message = (String) args.get(0);
                     if (message == null) return;
-                    plugin.getChannelManager().playerChannelMessage(sender, message, plugin.getChannelManager().getStaffChatChannel());
+                    plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () ->
+                            plugin.getChannelManager().playerChannelMessage(sender, message, plugin.getChannelManager().getStaffChatChannel()));
                 });
     }
 }
