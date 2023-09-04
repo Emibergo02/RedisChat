@@ -4,6 +4,7 @@ import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.api.AsyncRedisChatMessageEvent;
 import dev.unnm3d.redischat.api.RedisChatAPI;
+import dev.unnm3d.redischat.api.VanishIntegration;
 import dev.unnm3d.redischat.chat.ChatFormat;
 import dev.unnm3d.redischat.chat.ChatMessageInfo;
 import dev.unnm3d.redischat.chat.ComponentProvider;
@@ -25,10 +26,10 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ChannelManager extends RedisChatAPI {
+
     private final RedisChat plugin;
     @Getter
     private final ConcurrentHashMap<String, Channel> registeredChannels;
-
     @Getter
     private final ChannelGUI channelGUI;
 
@@ -358,6 +359,11 @@ public class ChannelManager extends RedisChatAPI {
                 plugin.config.staffChatDiscordWebhook,
                 false,
                 null);
+    }
+
+    @Override
+    public void addVanishIntegration(VanishIntegration vanishIntegration) {
+        plugin.getPlayerListManager().addVanishIntegration(vanishIntegration);
     }
 
 }

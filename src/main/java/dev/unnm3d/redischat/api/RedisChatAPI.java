@@ -154,4 +154,11 @@ public abstract class RedisChatAPI {
      * @return The staff chat channel
      */
     public abstract Channel getStaffChatChannel();
+
+    /**
+     * Add vanish "canSee" integration
+     * @param vanishIntegration The vanish integration
+     */
+    public abstract void addVanishIntegration(VanishIntegration vanishIntegration);
+
 }

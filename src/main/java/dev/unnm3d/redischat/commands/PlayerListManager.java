@@ -9,6 +9,7 @@ import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -52,7 +53,7 @@ public class PlayerListManager {
     }
 
     public Set<String> getPlayerList(@Nullable CommandSender sender) {
-        ConcurrentHashMap.KeySetView<String, Long> keySet = playerList.keySet();
+        Set<String> keySet = new HashSet<>(playerList.keySet());
         if (sender != null)
             vanishIntegrations.forEach(vanishIntegration ->
                     keySet.removeIf(pName -> !vanishIntegration.canSee(sender, pName)));
