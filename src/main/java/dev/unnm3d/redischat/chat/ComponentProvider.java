@@ -261,7 +261,7 @@ public class ComponentProvider {
      */
     private String parseMentions(@NotNull String text, @NotNull ChatFormat format) {
         String toParse = text;
-        for (String playerName : plugin.getPlayerListManager().getPlayerList()) {
+        for (String playerName : plugin.getPlayerListManager().getPlayerList(null)) {
             playerName = playerName.replace("*", "\\*");
             Pattern p = Pattern.compile("(^" + playerName + "|" + playerName + "$|\\s" + playerName + "\\s)"); //
             Matcher m = p.matcher(text);

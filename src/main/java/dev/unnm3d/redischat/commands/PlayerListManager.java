@@ -2,9 +2,11 @@ package dev.unnm3d.redischat.commands;
 
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.api.VanishIntegration;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,8 +28,6 @@ public class PlayerListManager {
                 playerList.entrySet().removeIf(stringLongEntry -> System.currentTimeMillis() - stringLongEntry.getValue() > 1000 * 4);
 
                 List<String> tempList = plugin.getServer().getOnlinePlayers().stream()
-                        //Accept only players that are not vanished in any integration
-                        .filter(player -> vanishIntegrations.stream().noneMatch(integration -> integration.isVanished(player)))
                         .map(HumanEntity::getName)
                         .filter(s -> !s.isEmpty())
                         .toList();
@@ -51,8 +51,12 @@ public class PlayerListManager {
         vanishIntegrations.add(vanishIntegration);
     }
 
-    public Set<String> getPlayerList() {
-        return playerList.keySet();
+    public Set<String> getPlayerList(@Nullable CommandSender sender) {
+        ConcurrentHashMap.KeySetView<String, Long> keySet = playerList.keySet();
+        if (sender != null)
+            vanishIntegrations.forEach(vanishIntegration ->
+                    keySet.removeIf(pName -> !vanishIntegration.canSee(sender, pName)));
+        return keySet;
     }
 
     public void stop() {

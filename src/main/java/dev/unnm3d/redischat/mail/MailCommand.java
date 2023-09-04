@@ -99,7 +99,7 @@ public class MailCommand {
         return commandSenderSuggestionInfo ->
                 CompletableFuture.supplyAsync(() -> {
                     List<String> list = new ArrayList<>(
-                            mailManager.getPlugin().getPlayerListManager().getPlayerList().stream()
+                            mailManager.getPlugin().getPlayerListManager().getPlayerList(commandSenderSuggestionInfo.sender()).stream()
                                     .filter(s -> s.toLowerCase().startsWith(commandSenderSuggestionInfo.currentArg().toLowerCase()))
                                     .toList()
                     );

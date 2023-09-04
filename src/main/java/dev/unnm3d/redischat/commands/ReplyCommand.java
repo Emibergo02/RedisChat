@@ -36,7 +36,7 @@ public class ReplyCommand {
                             if (receiver.isEmpty()) {
                                 plugin.getComponentProvider().sendMessage(sender, plugin.messages.no_reply_found);
                                 return;
-                            } else if (!plugin.getPlayerListManager().getPlayerList().contains(receiver.get())) {
+                            } else if (!plugin.getPlayerListManager().getPlayerList(sender).contains(receiver.get())) {
                                 plugin.getComponentProvider().sendMessage(sender, plugin.messages.reply_not_online.replace("%player%", receiver.get()));
                                 return;
                             }

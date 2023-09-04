@@ -27,7 +27,7 @@ public class MsgCommand {
                 .withPermission(Permissions.MESSAGE.getPermission())
                 .withArguments(new StringArgument("player")
                                 .replaceSuggestions(ArgumentSuggestions.strings(commandSenderSuggestionInfo ->
-                                        plugin.getPlayerListManager().getPlayerList().stream()
+                                        plugin.getPlayerListManager().getPlayerList(commandSenderSuggestionInfo.sender()).stream()
                                                 .filter(s -> s.toLowerCase().startsWith(commandSenderSuggestionInfo.currentArg().toLowerCase()))
                                                 .toArray(String[]::new))),
                         new GreedyStringArgument("message"))
@@ -46,7 +46,7 @@ public class MsgCommand {
                                 return;
                             }
 
-                            if (!plugin.getPlayerListManager().getPlayerList().contains(receiverName)) {
+                            if (!plugin.getPlayerListManager().getPlayerList(sender).contains(receiverName)) {
                                 plugin.messages.sendMessage(sender, plugin.messages.player_not_online.replace("%player%", receiverName));
                                 return;
                             }
