@@ -17,6 +17,7 @@ public class ChannelCommand {
         return new CommandAPICommand("channel")
                 .withAliases("ch", "channels")
                 .withSubcommand(getCreateSubCommand())
+                .withSubcommand(getSetFormatSubCommand())
                 .withSubcommand(getDeleteSubCommand())
                 .withSubcommand(getEnableSubCommand())
                 .withSubcommand(getDisableSubCommand())
@@ -41,16 +42,26 @@ public class ChannelCommand {
                 .executesPlayer((sender, args) -> {
                     Optional<Object> discordWebhook= args.getOptional("discord-webhook");
                     Optional<Object> proximityDistance= args.getOptional("proximity-distance");
+                    if(args.count()<4){
+                        plugin.messages.sendMessage(sender, plugin.messages.missing_arguments);
+                        return;
+                    }
 
-                    Channel channel = new Channel((String) args.get(0),
-                            (int) args.get(1),
-                            (int) args.get(2),
-                            (boolean) args.get(3),
-                            (int) args.getOptional(3),
-                            (boolean) args.get(3)
-                    )
+                    int rateLimit = (int) args.get(1);
+                    int rateLimitPeriod = (int) args.get(2);
+                    boolean filtered = (boolean) args.get(3);
 
-                    plugin.getChannelManager().registerChannel(new Channel((String) args.get(0), (String) args.get(1)));
+                    plugin.getChannelManager().registerChannel(new Channel(
+                            (String) args.get(0),
+                            "No format, use /channel setformat <name> <format> -> %message%",
+                            rateLimit,
+                            rateLimitPeriod,
+                            proximityDistance.map(o -> (int) o).orElse(-1),
+                            discordWebhook.map(o -> (String) o).orElse(""),
+                            filtered,
+                            null
+                    ));
+
                     plugin.messages.sendMessage(sender, plugin.messages.channelCreated);
                 });
     }
@@ -79,6 +90,11 @@ public class ChannelCommand {
                                         .toArray(String[]::new)
                         )))
                 .executesPlayer((sender, args) -> {
+                    if(args.count()<2){
+                        plugin.messages.sendMessage(sender, plugin.messages.missing_arguments);
+                        return;
+                    }
+
                     plugin.getDataManager().setPlayerChannelStatuses((String) args.get(0), Map.of((String) args.get(1), "0"));
                     plugin.messages.sendMessage(sender, plugin.messages.channelEnabled
                             .replace("%channel%", (String) args.get(1))
@@ -98,6 +114,10 @@ public class ChannelCommand {
                                         .toArray(String[]::new)
                         )))
                 .executesPlayer((sender, args) -> {
+                    if(args.count()<2){
+                        plugin.messages.sendMessage(sender, plugin.messages.missing_arguments);
+                        return;
+                    }
                     plugin.getDataManager().removePlayerChannelStatus((String) args.get(0), (String) args.get(1));
                     plugin.messages.sendMessage(sender, plugin.messages.channelDisabled
                             .replace("%channel%", (String) args.get(1))
