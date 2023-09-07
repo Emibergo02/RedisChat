@@ -33,7 +33,7 @@ public interface DataManager {
 
     CompletionStage<List<Channel>> getChannels();
 
-    Optional<String> getReplyName(@NotNull String requesterName);
+    CompletionStage<Optional<String>> getReplyName(@NotNull String requesterName);
 
     void setReplyName(@NotNull String nameReceiver, @NotNull String requesterName);
 

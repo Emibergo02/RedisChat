@@ -10,10 +10,8 @@ import lombok.AllArgsConstructor;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.List;
-import java.util.Optional;
 
 @AllArgsConstructor
 public class ReplyCommand {
@@ -27,57 +25,52 @@ public class ReplyCommand {
                 .withArguments(new GreedyStringArgument("message"))
                 .executesPlayer((sender, args) -> {
                     long init = System.currentTimeMillis();
-                    new BukkitRunnable() {
-                        @Override
-                        public void run() {
+                    plugin.getDataManager().getReplyName(sender.getName())
+                            .thenAccept(receiver -> {
+                                if (receiver.isEmpty()) {
+                                    plugin.getComponentProvider().sendMessage(sender, plugin.messages.no_reply_found);
+                                    return;
+                                } else if (!plugin.getPlayerListManager().getPlayerList(sender).contains(receiver.get())) {
+                                    plugin.getComponentProvider().sendMessage(sender, plugin.messages.reply_not_online.replace("%player%", receiver.get()));
+                                    return;
+                                }
+                                if (plugin.config.debug)
+                                    Bukkit.getLogger().info("ReplyCommand redis: " + (System.currentTimeMillis() - init) + "ms");
 
-                            Optional<String> receiver = plugin.getDataManager().getReplyName(sender.getName());
+                                String message = (String) args.get(0);
+                                assert message != null;
 
-                            if (receiver.isEmpty()) {
-                                plugin.getComponentProvider().sendMessage(sender, plugin.messages.no_reply_found);
-                                return;
-                            } else if (!plugin.getPlayerListManager().getPlayerList(sender).contains(receiver.get())) {
-                                plugin.getComponentProvider().sendMessage(sender, plugin.messages.reply_not_online.replace("%player%", receiver.get()));
-                                return;
-                            }
-                            if (plugin.config.debug)
-                                Bukkit.getLogger().info("ReplyCommand redis: " + (System.currentTimeMillis() - init) + "ms");
+                                List<ChatFormat> chatFormatList = plugin.config.getChatFormats(sender);
+                                if (chatFormatList.isEmpty()) return;
 
-                            String message = (String) args.get(0);
-                            assert message != null;
+                                Component formatted = plugin.getComponentProvider().parse(sender, chatFormatList.get(0).private_format().replace("%receiver%", receiver.get()).replace("%sender%", sender.getName()));
 
-                            List<ChatFormat> chatFormatList = plugin.config.getChatFormats(sender);
-                            if (chatFormatList.isEmpty()) return;
+                                //Check for minimessage tags permission
+                                boolean parsePlaceholders = sender.hasPermission(Permissions.USE_FORMATTING.getPermission());
+                                if (!parsePlaceholders) {
+                                    message = plugin.getComponentProvider().purgeTags(message);
+                                }
 
-                            Component formatted = plugin.getComponentProvider().parse(sender, chatFormatList.get(0).private_format().replace("%receiver%", receiver.get()).replace("%sender%", sender.getName()));
+                                // remove blacklisted stuff
+                                message = plugin.getComponentProvider().sanitize(message);
 
-                            //Check for minimessage tags permission
-                            boolean parsePlaceholders = true;
-                            if (!sender.hasPermission(Permissions.USE_FORMATTING.getPermission())) {
-                                message = plugin.getComponentProvider().purgeTags(message);
-                                parsePlaceholders = false;
-                            }
-                            // remove blacklisted stuff
-                            message = plugin.getComponentProvider().sanitize(message);
+                                //Parse into minimessage (placeholders, tags and mentions)
+                                Component toBeReplaced = plugin.getComponentProvider().parse(sender, message, parsePlaceholders, true, true, plugin.getComponentProvider().getRedisChatTagResolver(sender));
 
+                                //Send to other servers
+                                plugin.getDataManager().sendChatMessage(new ChatMessageInfo(sender.getName(),
+                                        MiniMessage.miniMessage().serialize(formatted),
+                                        MiniMessage.miniMessage().serialize(toBeReplaced),
+                                        receiver.get()));
 
-                            //Parse into minimessage (placeholders, tags and mentions)
-                            Component toBeReplaced = plugin.getComponentProvider().parse(sender, message, parsePlaceholders, true, true, plugin.getComponentProvider().getRedisChatTagResolver(sender));
+                                plugin.getComponentProvider().sendMessage(sender, formatted.replaceText(aBuilder -> aBuilder.matchLiteral("%message%").replacement(toBeReplaced)));
 
-                            //Send to other servers
-                            plugin.getDataManager().sendChatMessage(new ChatMessageInfo(sender.getName(),
-                                    MiniMessage.miniMessage().serialize(formatted),
-                                    MiniMessage.miniMessage().serialize(toBeReplaced),
-                                    receiver.get()));
-
-                            plugin.getComponentProvider().sendMessage(sender, formatted.replaceText(aBuilder -> aBuilder.matchLiteral("%message%").replacement(toBeReplaced)));
-                            if (!plugin.config.replyToLastMessaged) {
-                                plugin.getDataManager().setReplyName(receiver.get(), sender.getName());
-                            }
-                            if (plugin.config.debug)
-                                Bukkit.getLogger().info("ReplyCommand: " + (System.currentTimeMillis() - init) + "ms");
-                        }
-                    }.runTaskAsynchronously(plugin);
+                                if (!plugin.config.replyToLastMessaged) {
+                                    plugin.getDataManager().setReplyName(receiver.get(), sender.getName());
+                                }
+                                if (plugin.config.debug)
+                                    Bukkit.getLogger().info("ReplyCommand: " + (System.currentTimeMillis() - init) + "ms");
+                            });
                 });
     }
 }

@@ -84,23 +84,25 @@ public abstract class SQLDataManager implements DataManager {
     protected abstract void initialize() throws IllegalStateException;
 
     @Override
-    public Optional<String> getReplyName(@NotNull String requesterName) {
-        try (Connection connection = getConnection()) {
-            try (PreparedStatement statement = connection.prepareStatement("""
-                    SELECT `reply_player`
-                    FROM player_data
-                    WHERE `player_name`=?""")) {
-                statement.setString(1, requesterName);
+    public CompletionStage<Optional<String>> getReplyName(@NotNull String requesterName) {
+        return CompletableFuture.supplyAsync(() -> {
+            try (Connection connection = getConnection()) {
+                try (PreparedStatement statement = connection.prepareStatement("""
+                        SELECT `reply_player`
+                        FROM player_data
+                        WHERE `player_name`=?""")) {
+                    statement.setString(1, requesterName);
 
-                final ResultSet resultSet = statement.executeQuery();
-                if (resultSet.next()) {
-                    return Optional.ofNullable(resultSet.getString("reply_player"));
+                    final ResultSet resultSet = statement.executeQuery();
+                    if (resultSet.next()) {
+                        return Optional.ofNullable(resultSet.getString("reply_player"));
+                    }
                 }
+            } catch (SQLException e) {
+                Bukkit.getLogger().severe("Failed to fetch a reply name from the database");
             }
-        } catch (SQLException e) {
-            Bukkit.getLogger().severe("Failed to fetch a reply name from the database");
-        }
-        return Optional.empty();
+            return Optional.empty();
+        });
     }
 
     @Override

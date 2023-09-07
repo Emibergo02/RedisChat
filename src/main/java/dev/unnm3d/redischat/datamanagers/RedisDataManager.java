@@ -102,11 +102,14 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     }
 
     @Override
-    public Optional<String> getReplyName(@NotNull String requesterName) {
-        StatefulRedisConnection<String, String> connection = lettuceRedisClient.connect();
-        String replyName = connection.sync().hget(REPLY.toString(), requesterName);
-        connection.close();
-        return Optional.ofNullable(replyName);
+    public CompletionStage<Optional<String>> getReplyName(@NotNull String requesterName) {
+        return getConnectionAsync(connection -> connection.hget(REPLY.toString(), requesterName))
+                .thenApply(Optional::ofNullable)
+                .exceptionally(throwable -> {
+                    throwable.printStackTrace();
+                    plugin.getLogger().warning("Error getting reply name from redis");
+                    return Optional.empty();
+                });
 
     }
 

@@ -7,7 +7,6 @@ import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIBukkitConfig;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.unnm3d.redischat.api.DataManager;
-import dev.unnm3d.redischat.api.VanishIntegration;
 import dev.unnm3d.redischat.channels.ChannelCommand;
 import dev.unnm3d.redischat.channels.ChannelManager;
 import dev.unnm3d.redischat.chat.ChatListener;
@@ -42,11 +41,14 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class RedisChat extends JavaPlugin {
 
     private static RedisChat instance;
     public Config config;
+    private List<String> registeredCommands;
     public Messages messages;
     public GuiSettings guiSettings;
     private ChatListener chatListener;
@@ -77,6 +79,7 @@ public final class RedisChat extends JavaPlugin {
     @Override
     public void onEnable() {
         CommandAPI.onEnable();
+        registeredCommands = new ArrayList<>();
         instance = this;
         loadYML();
 
@@ -212,6 +215,7 @@ public final class RedisChat extends JavaPlugin {
     @Override
     public void onDisable() {
         getLogger().warning("RedisChat is disabling...");
+        registeredCommands.forEach(CommandAPI::unregister);
         CommandAPI.onDisable();
 
         if (this.playerListManager != null)
@@ -242,11 +246,10 @@ public final class RedisChat extends JavaPlugin {
             getLogger().warning("Command " + commandAPICommand.getName() + " is disabled in the config.yml file!");
             return;
         }
-        for (String alias : commandAPICommand.getAliases()) {
-            CommandAPI.unregister(alias, true);
-        }
+
         CommandAPI.unregister(commandAPICommand.getName(), true);
         commandAPICommand.register();
+        registeredCommands.add(commandAPICommand.getName());
         getLogger().info("Command " + commandAPICommand.getName() + " registered on CommandAPI!");
     }
 
