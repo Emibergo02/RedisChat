@@ -22,7 +22,7 @@ public class ReplyCommand {
         return new CommandAPICommand("reply")
                 .withPermission(Permissions.MESSAGE.getPermission())
                 .withAliases("r")
-                .withArguments(new GreedyStringArgument("message"))
+                .withArguments(new GreedyStringArgument(plugin.config.replySuggestion))
                 .executesPlayer((sender, args) -> {
                     long init = System.currentTimeMillis();
                     plugin.getDataManager().getReplyName(sender.getName())

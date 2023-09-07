@@ -121,6 +121,18 @@ public final class Config {
     public List<String> disabledCommands = List.of();
     @Comment("The [inv], [item] and [ec] placeholders will be considered as minimessage tags")
     public boolean interactiveChatNostalgia = false;
+    @Comment("The greedy string after the /msg command (example: /msg <player> <message> will be -> /msg <user> <message>")
+    public String msgPlayerSuggestions = "player";
+    @Comment("The greedy string after the /msg command (example: /msg <player> <message> will be -> /msg <player> <text>")
+    public String msgMessageSuggestion = "message";
+    @Comment("The greedy string after the /r command (example: /r <message> will be -> /r <text>")
+    public String replySuggestion = "message";
+    @Comment("The string for title in command suggestion (example: <title> will be -> <supertitle>")
+    public String mailTitleSuggestion = "title";
+    @Comment("The greedy string after the /mail command (example: /mail send <player> will be -> /mail send <user>")
+    public String mailStringPlayer = "player";
+    @Comment("The greedy string after the /staffchat command (example: /staffchat <message> will be -> /staffchat <text>")
+    public String staffChatSuggestion = "message";
     @Comment("Reply only to the last player you have messaged")
     public boolean replyToLastMessaged = false;
     @Comment("Toggle debug mode (by default is false)")

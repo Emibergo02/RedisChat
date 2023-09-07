@@ -25,12 +25,12 @@ public class MsgCommand {
         return new CommandAPICommand("msg")
                 .withAliases("rmsg", "rpm", "msg", "pm", "rmessage")
                 .withPermission(Permissions.MESSAGE.getPermission())
-                .withArguments(new StringArgument("player")
+                .withArguments(new StringArgument(plugin.config.msgPlayerSuggestions)
                                 .replaceSuggestions(ArgumentSuggestions.strings(commandSenderSuggestionInfo ->
                                         plugin.getPlayerListManager().getPlayerList(commandSenderSuggestionInfo.sender()).stream()
                                                 .filter(s -> s.toLowerCase().startsWith(commandSenderSuggestionInfo.currentArg().toLowerCase()))
                                                 .toArray(String[]::new))),
-                        new GreedyStringArgument("message"))
+                        new GreedyStringArgument(plugin.config.msgMessageSuggestion))
                 .executes((sender, args) -> {
                     Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
                         final String receiverName = (String) args.get(0);

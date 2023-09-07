@@ -7,6 +7,7 @@ import dev.jorel.commandapi.arguments.GreedyStringArgument;
 import dev.jorel.commandapi.arguments.MultiLiteralArgument;
 import dev.jorel.commandapi.arguments.StringArgument;
 import dev.unnm3d.redischat.Permissions;
+import dev.unnm3d.redischat.RedisChat;
 import lombok.AllArgsConstructor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -21,6 +22,8 @@ import java.util.function.Function;
 public class MailCommand {
 
     private MailManager mailManager;
+
+    private RedisChat plugin;
 
 
     public CommandAPICommand getCommand() {
@@ -39,9 +42,9 @@ public class MailCommand {
         return new CommandAPICommand("send")
                 .withPermission(Permissions.MAIL_WRITE.getPermission())
                 .withArguments(
-                        new StringArgument("player")
+                        new StringArgument(plugin.config.mailStringPlayer)
                                 .replaceSuggestions(ArgumentSuggestions.stringsAsync(getPlayerRecipients())),
-                        new GreedyStringArgument("title")
+                        new GreedyStringArgument(plugin.config.mailTitleSuggestion)
                                 .replaceSuggestions(ArgumentSuggestions.strings("<aqua>Mail Object/Title</aqua>")))
                 .executesPlayer((sender, args) -> {
                     String recipient = (String) args.get(0);
