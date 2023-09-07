@@ -320,13 +320,13 @@ public class ChannelManager extends RedisChatAPI {
     }
 
     @Override
-    public Channel getChannelOrPublic(@Nullable String channelName, Player player) {
+    public Channel getChannelOrPublic(@Nullable String channelName, CommandSender player) {
         if (channelName == null) return getPublicChannel(player);
         return registeredChannels.getOrDefault(channelName, getPublicChannel(player));
     }
 
     @Override
-    public Channel getPublicChannel(Player player) {
+    public Channel getPublicChannel(CommandSender player) {
         List<ChatFormat> chatFormatList = plugin.config.getChatFormats(player);
         if (chatFormatList.isEmpty())
             return new Channel(

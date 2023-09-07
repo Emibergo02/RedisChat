@@ -7,7 +7,7 @@ import org.jetbrains.annotations.Nullable;
 public class Channel {
     @NotNull
     private final String name;
-    private final String format;
+    private String format;
     private final int rateLimit;
     private final int rateLimitPeriod;
     private final int proximityDistance;
@@ -36,6 +36,10 @@ public class Channel {
 
     public String getFormat() {
         return format;
+    }
+
+    public void setFormat(String format){
+        this.format=format;
     }
 
     public int getRateLimit() {

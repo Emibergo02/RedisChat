@@ -137,7 +137,7 @@ public abstract class RedisChatAPI {
      * @param player      The player needed to get the public chat format
      * @return The channel
      */
-    public abstract Channel getChannelOrPublic(@Nullable String channelName, Player player);
+    public abstract Channel getChannelOrPublic(@Nullable String channelName, CommandSender player);
 
     /**
      * Get the public channel
@@ -146,7 +146,7 @@ public abstract class RedisChatAPI {
      * @param player The player
      * @return The public channel
      */
-    public abstract Channel getPublicChannel(Player player);
+    public abstract Channel getPublicChannel(CommandSender player);
 
     /**
      * Get the staff chat channel

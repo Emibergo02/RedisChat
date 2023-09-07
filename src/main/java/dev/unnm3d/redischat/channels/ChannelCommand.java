@@ -1,14 +1,13 @@
 package dev.unnm3d.redischat.channels;
 
 import dev.jorel.commandapi.CommandAPICommand;
-import dev.jorel.commandapi.arguments.ArgumentSuggestions;
-import dev.jorel.commandapi.arguments.GreedyStringArgument;
-import dev.jorel.commandapi.arguments.StringArgument;
+import dev.jorel.commandapi.arguments.*;
 import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
 import lombok.AllArgsConstructor;
 
 import java.util.Map;
+import java.util.Optional;
 
 @AllArgsConstructor
 public class ChannelCommand {
@@ -34,9 +33,37 @@ public class ChannelCommand {
         return new CommandAPICommand("create")
                 .withPermission(Permissions.CHANNEL_CREATE.getPermission())
                 .withArguments(new StringArgument("name"))
+                .withArguments(new IntegerArgument("rate-limit"))
+                .withArguments(new IntegerArgument("rate-limit-period"))
+                .withArguments(new BooleanArgument("filtered"))
+                .withOptionalArguments(new StringArgument("discord-webhook"))
+                .withOptionalArguments(new IntegerArgument("proximity-distance"))
+                .executesPlayer((sender, args) -> {
+                    Optional<Object> discordWebhook= args.getOptional("discord-webhook");
+                    Optional<Object> proximityDistance= args.getOptional("proximity-distance");
+
+                    Channel channel = new Channel((String) args.get(0),
+                            (int) args.get(1),
+                            (int) args.get(2),
+                            (boolean) args.get(3),
+                            (int) args.getOptional(3),
+                            (boolean) args.get(3)
+                    )
+
+                    plugin.getChannelManager().registerChannel(new Channel((String) args.get(0), (String) args.get(1)));
+                    plugin.messages.sendMessage(sender, plugin.messages.channelCreated);
+                });
+    }
+
+    public CommandAPICommand getSetFormatSubCommand() {
+        return new CommandAPICommand("setformat")
+                .withPermission(Permissions.CHANNEL_CREATE.getPermission())
+                .withArguments(new StringArgument("name"))
                 .withArguments(new GreedyStringArgument("format"))
                 .executesPlayer((sender, args) -> {
-                    plugin.getChannelManager().registerChannel(new Channel((String) args.get(0), (String) args.get(1)));
+                    Channel channel = plugin.getChannelManager().getRegisteredChannels().get((String) args.get(0));
+                    channel.setFormat((String) args.get(1));
+                    plugin.getChannelManager().registerChannel(channel);
                     plugin.messages.sendMessage(sender, plugin.messages.channelCreated);
                 });
     }
