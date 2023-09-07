@@ -54,6 +54,14 @@ public class ComponentProvider {
     public void addResolverIntegration(TagResolverIntegration integration) {
         this.tagResolverIntegrationList.add(integration);
     }
+    /**
+     * Remove a custom tag resolver integration
+     *
+     * @param integration The integration to add
+     */
+    public void removeResolverIntegration(TagResolverIntegration integration) {
+        this.tagResolverIntegrationList.remove(integration);
+    }
 
     /**
      * Gets the custom placeholder resolver for a player

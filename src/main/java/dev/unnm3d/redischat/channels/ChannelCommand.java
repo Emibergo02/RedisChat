@@ -40,9 +40,9 @@ public class ChannelCommand {
                 .withOptionalArguments(new StringArgument("discord-webhook"))
                 .withOptionalArguments(new IntegerArgument("proximity-distance"))
                 .executesPlayer((sender, args) -> {
-                    Optional<Object> discordWebhook= args.getOptional("discord-webhook");
-                    Optional<Object> proximityDistance= args.getOptional("proximity-distance");
-                    if(args.count()<4){
+                    Optional<Object> discordWebhook = args.getOptional("discord-webhook");
+                    Optional<Object> proximityDistance = args.getOptional("proximity-distance");
+                    if (args.count() < 4) {
                         plugin.messages.sendMessage(sender, plugin.messages.missing_arguments);
                         return;
                     }
@@ -90,7 +90,7 @@ public class ChannelCommand {
                                         .toArray(String[]::new)
                         )))
                 .executesPlayer((sender, args) -> {
-                    if(args.count()<2){
+                    if (args.count() < 2) {
                         plugin.messages.sendMessage(sender, plugin.messages.missing_arguments);
                         return;
                     }
@@ -114,7 +114,7 @@ public class ChannelCommand {
                                         .toArray(String[]::new)
                         )))
                 .executesPlayer((sender, args) -> {
-                    if(args.count()<2){
+                    if (args.count() < 2) {
                         plugin.messages.sendMessage(sender, plugin.messages.missing_arguments);
                         return;
                     }

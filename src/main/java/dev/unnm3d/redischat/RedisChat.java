@@ -51,7 +51,6 @@ public final class RedisChat extends JavaPlugin {
     private List<String> registeredCommands;
     public Messages messages;
     public GuiSettings guiSettings;
-    private ChatListener chatListener;
     @Getter
     private DataManager dataManager;
     @Getter
@@ -105,8 +104,7 @@ public final class RedisChat extends JavaPlugin {
         //Chat section
         this.componentProvider = new ComponentProvider(this);
 
-        this.chatListener = new ChatListener(this);
-        getServer().getPluginManager().registerEvents(this.chatListener, this);
+        getServer().getPluginManager().registerEvents(new ChatListener(this), this);
 
         loadCommandAPICommand(new StaffChatCommand(this).getCommand());
 
@@ -257,8 +255,4 @@ public final class RedisChat extends JavaPlugin {
         return instance;
     }
 
-
-    public ChatListener getChatListener() {
-        return chatListener;
-    }
 }

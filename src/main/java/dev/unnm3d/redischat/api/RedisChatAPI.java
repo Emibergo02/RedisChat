@@ -161,4 +161,10 @@ public abstract class RedisChatAPI {
      */
     public abstract void addVanishIntegration(VanishIntegration vanishIntegration);
 
+    /**
+     * Remove vanish "canSee" integration
+     * @param vanishIntegration The vanish integration
+     */
+    public abstract void removeVanishIntegration(VanishIntegration vanishIntegration);
+
 }
