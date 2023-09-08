@@ -12,6 +12,7 @@ import lombok.AllArgsConstructor;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.List;
@@ -67,36 +68,8 @@ public class MsgCommand {
                         // remove blacklisted stuff
                         message = plugin.getComponentProvider().sanitize(message);
 
-                        if (plugin.config.interactiveChatNostalgia) {
-                            message.replace("[inv]", "<inv>")
-                                    .replace("[i]", "<item>")
-                                    .replace("[enderchest]", "<ec>")
-                                    .replace("[inventory]", "<inv>")
-                                    .replace("[item]", "<item>")
-                                    .replace("[ec]", "<ec>");
-                        }
-
-                        //Check inv update
-                        if (sender instanceof Player player) {
-                            if (message.contains("<inv>")) {
-                                plugin.getDataManager().addInventory(player.getName(), player.getInventory().getContents());
-                            }
-                            if (message.contains("<inventory>")) {
-                                plugin.getDataManager().addInventory(player.getName(), player.getInventory().getContents());
-                            }
-                            if (message.contains("<i>")) {
-                                plugin.getDataManager().addItem(player.getName(), player.getInventory().getItemInMainHand());
-                            }
-                            if (message.contains("<item>")) {
-                                plugin.getDataManager().addItem(player.getName(), player.getInventory().getItemInMainHand());
-                            }
-                            if (message.contains("<ec>")) {
-                                plugin.getDataManager().addEnderchest(player.getName(), player.getEnderChest().getContents());
-                            }
-                            if (message.contains("<enderchest>")) {
-                                plugin.getDataManager().addEnderchest(player.getName(), player.getEnderChest().getContents());
-                            }
-                        }
+                        // inv share formatting
+                        message = invShareFormatting(sender, message);
 
                         //Parse to minimessage (placeholders, tags and mentions)
                         Component toBeReplaced = plugin.getComponentProvider().parse(sender, message, parsePlaceholders, true, true, plugin.getComponentProvider().getRedisChatTagResolver(sender));
@@ -115,5 +88,38 @@ public class MsgCommand {
                 });
 
 
+    }
+
+    private String invShareFormatting(CommandSender sender, String message) {
+        if (!(sender instanceof Player player)) return message;
+
+        if (plugin.config.interactiveChatNostalgia) {
+            message = message.replace("[inv]", "<inv>")
+                    .replace("[i]", "<item>")
+                    .replace("[enderchest]", "<ec>")
+                    .replace("[inventory]", "<inv>")
+                    .replace("[item]", "<item>")
+                    .replace("[ec]", "<ec>");
+        }
+
+        if (message.contains("<inv>")) {
+            plugin.getDataManager().addInventory(player.getName(), player.getInventory().getContents());
+        }
+        if (message.contains("<inventory>")) {
+            plugin.getDataManager().addInventory(player.getName(), player.getInventory().getContents());
+        }
+        if (message.contains("<i>")) {
+            plugin.getDataManager().addItem(player.getName(), player.getInventory().getItemInMainHand());
+        }
+        if (message.contains("<item>")) {
+            plugin.getDataManager().addItem(player.getName(), player.getInventory().getItemInMainHand());
+        }
+        if (message.contains("<ec>")) {
+            plugin.getDataManager().addEnderchest(player.getName(), player.getEnderChest().getContents());
+        }
+        if (message.contains("<enderchest>")) {
+            plugin.getDataManager().addEnderchest(player.getName(), player.getEnderChest().getContents());
+        }
+        return message;
     }
 }

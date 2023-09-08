@@ -99,6 +99,16 @@ public class ChannelManager extends RedisChatAPI {
 
     private String invShareFormatting(CommandSender sender, String message) {
         if (!(sender instanceof Player player)) return message;
+
+        if (plugin.config.interactiveChatNostalgia) {
+            message = message.replace("[inv]", "<inv>")
+                    .replace("[i]", "<item>")
+                    .replace("[enderchest]", "<ec>")
+                    .replace("[inventory]", "<inv>")
+                    .replace("[item]", "<item>")
+                    .replace("[ec]", "<ec>");
+        }
+
         if (message.contains("<inv>")) {
             plugin.getDataManager().addInventory(player.getName(), player.getInventory().getContents());
         }
@@ -116,14 +126,6 @@ public class ChannelManager extends RedisChatAPI {
         }
         if (message.contains("<enderchest>")) {
             plugin.getDataManager().addEnderchest(player.getName(), player.getEnderChest().getContents());
-        }
-        if (plugin.config.interactiveChatNostalgia) {
-            return message.replace("[inv]", "<inv>")
-                    .replace("[i]", "<item>")
-                    .replace("[enderchest]", "<ec>")
-                    .replace("[inventory]", "<inv>")
-                    .replace("[item]", "<item>")
-                    .replace("[ec]", "<ec>");
         }
         return message;
     }
