@@ -6,7 +6,6 @@ import io.lettuce.core.api.async.RedisAsyncCommands;
 import io.lettuce.core.pubsub.StatefulRedisPubSubConnection;
 import org.bukkit.Bukkit;
 
-import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.function.Function;
@@ -50,9 +49,9 @@ public abstract class RedisAbstract {
     public void close() {
         pubSubConnections.forEach(StatefulRedisPubSubConnection::close);
         Bukkit.getLogger().info("Closing pubsub connection");
-        lettuceRedisClient.shutdown(Duration.ofSeconds(1), Duration.ofSeconds(1));
+        lettuceRedisClient.shutdown();
         Bukkit.getLogger().info("Lettuce shutdown connection");
-        executorService.shutdown();
+        executorService.shutdownNow();
         Bukkit.getLogger().info("Executor service shutdown");
     }
 

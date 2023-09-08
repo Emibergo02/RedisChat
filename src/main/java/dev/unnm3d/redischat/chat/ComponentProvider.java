@@ -103,7 +103,7 @@ public class ComponentProvider {
             text = parsedLinks.getKey();
         }
         if (parseMentions) {
-            text = parseMentions(text, plugin.config.formats.get(0));
+            text = parseMentions(text, plugin.config.formats.get(0), player);
         }
         if (plugin.config.legacyColorCodesSupport && (player == null || //Is without permissions or if it has permissions
                 player.hasPermission(Permissions.USE_FORMATTING.getPermission()))) {
@@ -267,9 +267,9 @@ public class ComponentProvider {
      * @param format The format to use
      * @return The parsed text
      */
-    private String parseMentions(@NotNull String text, @NotNull ChatFormat format) {
+    private String parseMentions(@NotNull String text, @NotNull ChatFormat format, CommandSender mentioner) {
         String toParse = text;
-        for (String playerName : plugin.getPlayerListManager().getPlayerList(null)) {
+        for (String playerName : plugin.getPlayerListManager().getPlayerList(mentioner)) {
             playerName = playerName.replace("*", "\\*");
             Pattern p = Pattern.compile("(^" + playerName + "|" + playerName + "$|\\s" + playerName + "\\s)"); //
             Matcher m = p.matcher(text);

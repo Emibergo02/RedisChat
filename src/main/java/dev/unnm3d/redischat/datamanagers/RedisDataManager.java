@@ -97,8 +97,6 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
                     return null;
                 })
                 .thenAccept(subscription -> plugin.getLogger().info("Subscribed to channel: " + CHAT_CHANNEL));
-
-
     }
 
     @Override
@@ -122,15 +120,12 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
 
     @Override
     public boolean isRateLimited(@NotNull String playerName, @NotNull Channel channel) {
-
         StatefulRedisConnection<String, String> connection = lettuceRedisClient.connect();
         String result = connection.sync().get(RATE_LIMIT_PREFIX + playerName + channel.getName());
         connection.close();
 
         int nowMessages = result == null ? 0 : Integer.parseInt(result);//If null, then 0
         return nowMessages >= channel.getRateLimit();//messages higher than limit
-
-
     }
 
 
@@ -190,7 +185,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     public CompletionStage<Boolean> toggleIgnoring(@NotNull String playerName, @NotNull String ignoringName) {
         return getConnectionAsync(connection ->
                 connection.sadd(IGNORE_PREFIX + playerName, ignoringName)
-                        .thenApply(response -> {
+                        .thenApplyAsync(response -> {
                             if (plugin.config.debug) {
                                 plugin.getLogger().info("02 Toggling ignoring " + ignoringName + " for " + playerName);
                             }
@@ -248,7 +243,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     public void addInventory(@NotNull String name, ItemStack[] inv) {
         getConnectionAsync(connection ->
                 connection.hset(INVSHARE_INVENTORY.toString(), name, serialize(inv))
-                        .thenApply(response -> {
+                        .thenApplyAsync(response -> {
                             if (plugin.config.debug) {
                                 plugin.getLogger().info("05 Added inventory for " + name);
                             }
@@ -274,7 +269,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     public void addItem(@NotNull String name, ItemStack item) {
         getConnectionAsync(connection ->
                 connection.hset(INVSHARE_ITEM.toString(), name, serialize(item))
-                        .thenApply(response -> {
+                        .thenApplyAsync(response -> {
                             if (plugin.config.debug) {
                                 plugin.getLogger().info("08 Added item for " + name);
                             }
@@ -299,7 +294,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     public void addEnderchest(@NotNull String name, ItemStack[] inv) {
         getConnectionAsync(connection ->
                 connection.hset(INVSHARE_ENDERCHEST.toString(), name, serialize(inv))
-                        .thenApply(response -> {
+                        .thenApplyAsync(response -> {
                             if (plugin.config.debug) {
                                 plugin.getLogger().info("10 Added enderchest for " + name);
                             }

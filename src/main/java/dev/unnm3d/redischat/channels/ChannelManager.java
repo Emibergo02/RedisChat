@@ -365,6 +365,7 @@ public class ChannelManager extends RedisChatAPI {
     public void addVanishIntegration(VanishIntegration vanishIntegration) {
         plugin.getPlayerListManager().addVanishIntegration(vanishIntegration);
     }
+
     @Override
     public void removeVanishIntegration(VanishIntegration vanishIntegration) {
         plugin.getPlayerListManager().removeVanishIntegration(vanishIntegration);
