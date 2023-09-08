@@ -97,25 +97,6 @@ public class ChannelManager extends RedisChatAPI {
         return message;
     }
 
-    private String invShareFormatting(CommandSender sender, String message) {
-        if (!(sender instanceof Player player)) return message;
-        if (message.contains("<inv>")) {
-            plugin.getDataManager().addInventory(player.getName(), player.getInventory().getContents());
-        }
-        if (message.contains("<item>")) {
-            plugin.getDataManager().addItem(player.getName(), player.getInventory().getItemInMainHand());
-        }
-        if (message.contains("<ec>")) {
-            plugin.getDataManager().addEnderchest(player.getName(), player.getEnderChest().getContents());
-        }
-        if (plugin.config.interactiveChatNostalgia) {
-            return message.replace("[inv]", "<inv>")
-                    .replace("[item]", "<item>")
-                    .replace("[ec]", "<ec>");
-        }
-        return message;
-    }
-
     @Override
     public void playerChannelMessage(CommandSender player, @NotNull String message, Channel channel) {
         final long init = System.currentTimeMillis();
@@ -148,7 +129,7 @@ public class ChannelManager extends RedisChatAPI {
         }
 
         //Check inv update
-        message = invShareFormatting(player, message);
+        message = plugin.getComponentProvider().invShareFormatting(player, message);
 
         Component formatted = getComponentProvider().parse(player, channel.getFormat(), true, false, false);
 

@@ -12,7 +12,6 @@ import lombok.AllArgsConstructor;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 
 import java.util.List;
 
@@ -68,17 +67,7 @@ public class MsgCommand {
                         message = plugin.getComponentProvider().sanitize(message);
 
                         //Check inv update
-                        if (sender instanceof Player player) {
-                            if (message.contains("<inv>")) {
-                                plugin.getDataManager().addInventory(player.getName(), player.getInventory().getContents());
-                            }
-                            if (message.contains("<item>")) {
-                                plugin.getDataManager().addItem(player.getName(), player.getInventory().getItemInMainHand());
-                            }
-                            if (message.contains("<ec>")) {
-                                plugin.getDataManager().addEnderchest(player.getName(), player.getEnderChest().getContents());
-                            }
-                        }
+                        message = plugin.getComponentProvider().invShareFormatting(sender, message);
 
                         //Parse to minimessage (placeholders, tags and mentions)
                         Component toBeReplaced = plugin.getComponentProvider().parse(sender, message, parsePlaceholders, true, true, plugin.getComponentProvider().getRedisChatTagResolver(sender));

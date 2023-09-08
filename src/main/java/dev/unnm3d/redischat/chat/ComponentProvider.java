@@ -54,6 +54,7 @@ public class ComponentProvider {
     public void addResolverIntegration(TagResolverIntegration integration) {
         this.tagResolverIntegrationList.add(integration);
     }
+
     /**
      * Remove a custom tag resolver integration
      *
@@ -382,6 +383,34 @@ public class ComponentProvider {
                 }) == null) {//If the player is not blocked
             plugin.getComponentProvider().sendMessage(player, component);
         }
+    }
+
+    public String invShareFormatting(CommandSender sender, String message) {
+        if (!(sender instanceof Player player)) return message;
+
+        //Placeholder aliases
+        message = message.replace("<inventory>", "<inv>")
+                .replace("<i>", "<item>")
+                .replace("<enderchest>", "<ec>");
+
+        if (plugin.config.interactiveChatNostalgia) {
+            return message.replace("[inv]", "<inv>")
+                    .replace("[inventory]", "<inv>")
+                    .replace("[i]", "<item>")
+                    .replace("[item]", "<item>")
+                    .replace("[enderchest]", "<ec>")
+                    .replace("[ec]", "<ec>");
+        }
+        if (message.contains("<inv>")) {
+            plugin.getDataManager().addInventory(player.getName(), player.getInventory().getContents());
+        }
+        if (message.contains("<item>")) {
+            plugin.getDataManager().addItem(player.getName(), player.getInventory().getItemInMainHand());
+        }
+        if (message.contains("<ec>")) {
+            plugin.getDataManager().addEnderchest(player.getName(), player.getEnderChest().getContents());
+        }
+        return message;
     }
 
     public void logToConsole(Component component) {
