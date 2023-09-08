@@ -102,14 +102,26 @@ public class ChannelManager extends RedisChatAPI {
         if (message.contains("<inv>")) {
             plugin.getDataManager().addInventory(player.getName(), player.getInventory().getContents());
         }
+        if (message.contains("<inventory>")) {
+            plugin.getDataManager().addInventory(player.getName(), player.getInventory().getContents());
+        }
+        if (message.contains("<i>")) {
+            plugin.getDataManager().addItem(player.getName(), player.getInventory().getItemInMainHand());
+        }
         if (message.contains("<item>")) {
             plugin.getDataManager().addItem(player.getName(), player.getInventory().getItemInMainHand());
         }
         if (message.contains("<ec>")) {
             plugin.getDataManager().addEnderchest(player.getName(), player.getEnderChest().getContents());
         }
+        if (message.contains("<enderchest>")) {
+            plugin.getDataManager().addEnderchest(player.getName(), player.getEnderChest().getContents());
+        }
         if (plugin.config.interactiveChatNostalgia) {
             return message.replace("[inv]", "<inv>")
+                    .replace("[i]", "<item>")
+                    .replace("[enderchest]", "<ec>")
+                    .replace("[inventory]", "<inv>")
                     .replace("[item]", "<item>")
                     .replace("[ec]", "<ec>");
         }
