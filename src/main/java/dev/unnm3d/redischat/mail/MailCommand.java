@@ -42,9 +42,9 @@ public class MailCommand {
         return new CommandAPICommand("send")
                 .withPermission(Permissions.MAIL_WRITE.getPermission())
                 .withArguments(
-                        new StringArgument(plugin.config.mailStringPlayer)
+                        new StringArgument(plugin.messages.mailStringPlayer)
                                 .replaceSuggestions(ArgumentSuggestions.stringsAsync(getPlayerRecipients())),
-                        new GreedyStringArgument(plugin.config.mailTitleSuggestion)
+                        new GreedyStringArgument(plugin.messages.mailTitleSuggestion)
                                 .replaceSuggestions(ArgumentSuggestions.strings("<aqua>Mail Object/Title</aqua>")))
                 .executesPlayer((sender, args) -> {
                     String recipient = (String) args.get(0);

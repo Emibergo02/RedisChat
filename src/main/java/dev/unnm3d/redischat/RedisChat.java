@@ -119,7 +119,7 @@ public final class RedisChat extends JavaPlugin {
 
         //Mail section
         if (config.enableMails) {
-            loadCommandAPICommand(new MailCommand(new MailManager(this)).getCommand());
+            loadCommandAPICommand(new MailCommand(new MailManager(this),this).getCommand());
         }
 
 

@@ -52,6 +52,10 @@ public class PlayerListManager {
         vanishIntegrations.add(vanishIntegration);
     }
 
+    public void removeVanishIntegration(VanishIntegration vanishIntegration) {
+        vanishIntegrations.remove(vanishIntegration);
+    }
+
     public Set<String> getPlayerList(@Nullable CommandSender sender) {
         Set<String> keySet = new HashSet<>(playerList.keySet());
         if (sender != null)

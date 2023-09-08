@@ -49,6 +49,19 @@ public final class Messages {
     public String channelDisabled = "<yellow>RedisChat</yellow> <gray>»</gray> <red>Channel %channel% disabled for %player%!</red>";
     public String publicChannelMuted = "<yellow>RedisChat</yellow> <gray>»</gray> <aqua>You silenced the public channel!</aqua>";
     public String publicChannelUnmuted = "<yellow>RedisChat</yellow> <gray>»</gray> <aqua>You unmuted the public channel!</aqua>";
+    @Comment("The text after the /msg command (example: /msg <player> <message> will be -> /msg <user> <message>")
+    public String msgPlayerSuggestions = "player";
+    @Comment("The text after the /msg command (example: /msg <player> <message> will be -> /msg <player> <text>")
+    public String msgMessageSuggestion = "message";
+    @Comment("The text after the /r command (example: /r <message> will be -> /r <text>")
+    public String replySuggestion = "message";
+    @Comment("The string for title in command suggestion (example: <title> will be -> <supertitle>")
+    public String mailTitleSuggestion = "title";
+    @Comment("The text after the /mail command (example: /mail send <player> will be -> /mail send <user>")
+    public String mailStringPlayer = "player";
+    @Comment("The text after the /staffchat command (example: /staffchat <message> will be -> /staffchat <text>")
+    public String staffChatSuggestion = "message";
+
 
     public void sendMessage(CommandSender p, String message) {
         audiences.sender(p).sendMessage(MiniMessage.miniMessage().deserialize(message));
