@@ -394,7 +394,7 @@ public class ComponentProvider {
                 .replace("<enderchest>", "<ec>");
 
         if (plugin.config.interactiveChatNostalgia) {
-            return message.replace("[inv]", "<inv>")
+            message = message.replace("[inv]", "<inv>")
                     .replace("[inventory]", "<inv>")
                     .replace("[i]", "<item>")
                     .replace("[item]", "<item>")
