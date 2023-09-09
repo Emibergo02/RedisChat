@@ -6,12 +6,14 @@ import com.google.common.io.ByteStreams;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.api.DataManager;
 import dev.unnm3d.redischat.channels.Channel;
+import dev.unnm3d.redischat.channels.PlayerChannel;
 import dev.unnm3d.redischat.chat.ChatMessageInfo;
 import dev.unnm3d.redischat.datamanagers.DataKeys;
 import dev.unnm3d.redischat.mail.Mail;
 import org.bukkit.Bukkit;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -49,6 +51,30 @@ public abstract class SQLDataManager implements DataManager {
                 inv_serialized  MEDIUMTEXT      default NULL,
                 item_serialized TEXT            default NULL,
                 ec_serialized   MEDIUMTEXT      default NULL
+            );
+            """, """
+            create table if not exists channels
+            (
+                name                varchar(16)     not null primary key,
+                format              TEXT            default 'No format -> %message%',
+                rate_limit          int             default 5,
+                rate_limit_period   int             default 3,
+                proximity_distance  int             default -1,
+                discordWebhook      varchar(128)    default '',
+                filtered            BOOLEAN         default 1,
+                notificationSound   int             default NULL
+            );
+            """, """
+            create table if not exists player_channels
+            (
+                player_name  varchar(16)   not null,
+                channel_name varchar(16)   not null,
+                status       int default 0 not null,
+                primary key (player_name, channel_name),
+                constraint player_channels_channels_name_fk
+                    foreign key (channel_name) references channels (name),
+                constraint player_channels_player_data_player_name_fk
+                    foreign key (player_name) references player_data (player_name)
             );
             """, """
             create table if not exists ignored_players
@@ -516,6 +542,32 @@ public abstract class SQLDataManager implements DataManager {
     public void unregisterChannel(@NotNull String channelName) {
 
     }
+    @Override
+    public CompletionStage<@Nullable String> getActivePlayerChannel(@NotNull String playerName, Map<String, Channel> registeredChannels) {
+        return null;
+    }
+
+    @Override
+    public CompletionStage<List<PlayerChannel>> getPlayerChannelStatuses(@NotNull String playerName, Map<String, Channel> registeredChannels) {
+        return null;
+    }
+
+
+    @Override
+    public CompletionStage<List<Channel>> getChannels() {
+        return null;
+    }
+
+    @Override
+    public CompletionStage<String> setPlayerChannelStatuses(@NotNull String playerName, @NotNull Map<String, String> channelStatuses) {
+        return null;
+    }
+
+    @Override
+    public CompletionStage<Long> removePlayerChannelStatus(@NotNull String playerName, @NotNull String channelName) {
+        return null;
+    }
+
 
     @SuppressWarnings("UnstableApiUsage")
     @Override

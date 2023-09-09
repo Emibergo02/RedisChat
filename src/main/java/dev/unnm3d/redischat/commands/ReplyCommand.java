@@ -26,7 +26,7 @@ public class ReplyCommand {
                 .executesPlayer((sender, args) -> {
                     long init = System.currentTimeMillis();
                     plugin.getDataManager().getReplyName(sender.getName())
-                            .thenAccept(receiver -> {
+                            .thenAcceptAsync(receiver -> {
                                 if (receiver.isEmpty()) {
                                     plugin.getComponentProvider().sendMessage(sender, plugin.messages.no_reply_found);
                                     return;

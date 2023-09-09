@@ -22,12 +22,7 @@ public interface DataManager {
 
     void unregisterChannel(@NotNull String channelName);
 
-    CompletionStage<@Nullable Integer> getPlayerChannelStatus(@NotNull String playerName, @NotNull String channelName);
-
-
     CompletionStage<@Nullable String> getActivePlayerChannel(@NotNull String playerName, Map<String, Channel> registeredChannels);
-
-    CompletionStage<Boolean> setActivePlayerChannel(@NotNull String playerName, @Nullable String channelName);
 
     CompletionStage<List<PlayerChannel>> getPlayerChannelStatuses(@NotNull String playerName, Map<String, Channel> registeredChannels);
 

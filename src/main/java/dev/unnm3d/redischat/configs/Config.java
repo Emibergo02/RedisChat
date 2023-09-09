@@ -24,7 +24,8 @@ public final class Config {
             "",
             0,
             1000,
-            "RedisChat");
+            "RedisChat",
+            3);
     public Mysql mysql = new Mysql("127.0.0.1",
             3306,
             "redischat",
@@ -129,7 +130,7 @@ public final class Config {
 
 
     public record RedisSettings(String host, int port, String user, String password, int database, int timeout,
-                                String clientName) {
+                                String clientName,int poolSize) {
     }
 
     public record Mysql(

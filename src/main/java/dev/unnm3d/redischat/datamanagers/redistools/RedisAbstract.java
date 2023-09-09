@@ -17,9 +17,9 @@ public abstract class RedisAbstract {
     private final List<StatefulRedisPubSubConnection<String, String>> pubSubConnections;
     protected RedisClient lettuceRedisClient;
 
-    public RedisAbstract(RedisClient lettuceRedisClient) {
+    public RedisAbstract(RedisClient lettuceRedisClient,int poolSize) {
         this.lettuceRedisClient = lettuceRedisClient;
-        this.roundRobinConnectionPool = new RoundRobinConnectionPool<>(lettuceRedisClient::connect, 5);
+        this.roundRobinConnectionPool = new RoundRobinConnectionPool<>(lettuceRedisClient::connect, poolSize);
         pubSubConnections = new CopyOnWriteArrayList<>();
     }
 

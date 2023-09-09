@@ -2,18 +2,12 @@ package dev.unnm3d.redischat.datamanagers.sqlmanagers;
 
 import com.zaxxer.hikari.HikariDataSource;
 import dev.unnm3d.redischat.RedisChat;
-import dev.unnm3d.redischat.channels.Channel;
-import dev.unnm3d.redischat.channels.PlayerChannel;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.CompletionStage;
 
 public class MySQLDataManager extends SQLDataManager {
     private HikariDataSource dataSource;
@@ -88,44 +82,6 @@ public class MySQLDataManager extends SQLDataManager {
     @Override
     protected Connection getConnection() throws SQLException {
         return dataSource.getConnection();
-    }
-
-
-    @Override
-    public CompletionStage<@Nullable Integer> getPlayerChannelStatus(@NotNull String playerName, @NotNull String channelName) {
-        return null;
-    }
-
-    @Override
-    public CompletionStage<@Nullable String> getActivePlayerChannel(@NotNull String playerName, Map<String, Channel> registeredChannels) {
-        return null;
-    }
-
-
-    @Override
-    public CompletionStage<Boolean> setActivePlayerChannel(@NotNull String playerName, String channelName) {
-        return null;
-    }
-
-    @Override
-    public CompletionStage<List<PlayerChannel>> getPlayerChannelStatuses(@NotNull String playerName, Map<String, Channel> registeredChannels) {
-        return null;
-    }
-
-
-    @Override
-    public CompletionStage<List<Channel>> getChannels() {
-        return null;
-    }
-
-    @Override
-    public CompletionStage<String> setPlayerChannelStatuses(@NotNull String playerName, @NotNull Map<String, String> channelStatuses) {
-        return null;
-    }
-
-    @Override
-    public CompletionStage<Long> removePlayerChannelStatus(@NotNull String playerName, @NotNull String channelName) {
-        return null;
     }
 
     @Override
