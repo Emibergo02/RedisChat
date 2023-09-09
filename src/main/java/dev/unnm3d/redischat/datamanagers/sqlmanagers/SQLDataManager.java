@@ -11,6 +11,7 @@ import dev.unnm3d.redischat.chat.ChatMessageInfo;
 import dev.unnm3d.redischat.datamanagers.DataKeys;
 import dev.unnm3d.redischat.mail.Mail;
 import org.bukkit.Bukkit;
+import org.bukkit.Sound;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -62,7 +63,7 @@ public abstract class SQLDataManager implements DataManager {
                 proximity_distance  int             default -1,
                 discordWebhook      varchar(128)    default '',
                 filtered            BOOLEAN         default 1,
-                notificationSound   int             default NULL
+                notificationSound   varchar(32)     default NULL
             );
             """, """
             create table if not exists player_channels
@@ -535,32 +536,163 @@ public abstract class SQLDataManager implements DataManager {
 
     @Override
     public void registerChannel(@NotNull Channel channel) {
+        CompletableFuture.supplyAsync(() -> {
+            try (Connection connection = getConnection()) {
+                try (PreparedStatement statement = connection.prepareStatement("""
+                        INSERT INTO channels
+                            (`name`,`format`,`rate_limit`,`rate_limit_period`,`proximity_distance`,`discordWebhook`,`filtered`,`notificationSound`)
+                        VALUES
+                            (?,?,?,?,?,?,?,?);""")) {
 
+                    statement.setString(1, channel.getName());
+                    statement.setString(2, channel.getFormat());
+                    statement.setInt(3, channel.getRateLimit());
+                    statement.setInt(4, channel.getRateLimitPeriod());
+                    statement.setInt(5, channel.getProximityDistance());
+                    statement.setString(6, channel.getDiscordWebhook());
+                    statement.setBoolean(7, channel.isFiltered());
+                    statement.setString(8, channel.getNotificationSound().toString());
+                    if (statement.executeUpdate() == 0) {
+                        throw new SQLException("Failed to register channel to database");
+                    }
+                    return true;
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            return false;
+        }).exceptionally(e -> {
+            e.printStackTrace();
+            return false;
+        });
     }
 
     @Override
     public void unregisterChannel(@NotNull String channelName) {
+        CompletableFuture.supplyAsync(() -> {
+            try (Connection connection = getConnection()) {
+                try (PreparedStatement statement = connection.prepareStatement("""
+                        DELETE FROM channels
+                            where name = ?;""")) {
 
+                    statement.setString(1, channelName);
+                    if (statement.executeUpdate() == 0) {
+                        throw new SQLException("Failed to register channel to database");
+                    }
+                    return true;
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            return false;
+        }).exceptionally(e -> {
+            e.printStackTrace();
+            return false;
+        });
     }
+
     @Override
     public CompletionStage<@Nullable String> getActivePlayerChannel(@NotNull String playerName, Map<String, Channel> registeredChannels) {
-        return null;
+        return CompletableFuture.supplyAsync(() -> {
+            try (Connection connection = getConnection()) {
+                try (PreparedStatement statement = connection.prepareStatement("""
+                        select channel_name, status from player_channels
+                        where player_name = ?;""")) {
+
+                    final ResultSet resultSet = statement.executeQuery();
+
+                    while (resultSet.next()) {
+                        if (resultSet.getInt("status") == 1)
+                            return resultSet.getString("channel_name");
+                    }
+                }
+            } catch (SQLException e) {
+                Bukkit.getLogger().warning("Failed to fetch active channel from database");
+            }
+            return "public";
+        });
     }
 
     @Override
     public CompletionStage<List<PlayerChannel>> getPlayerChannelStatuses(@NotNull String playerName, Map<String, Channel> registeredChannels) {
-        return null;
+        return CompletableFuture.supplyAsync(() -> {
+            try (Connection connection = getConnection()) {
+                try (PreparedStatement statement = connection.prepareStatement("""
+                        select channel_name, status from player_channels
+                        where player_name = ?;""")) {
+
+                    final ResultSet resultSet = statement.executeQuery();
+                    final List<PlayerChannel> playerChannels = new ArrayList<>();
+                    while (resultSet.next()) {
+                        Channel channel = registeredChannels.get(resultSet.getString("channel_name"));
+                        if (channel != null)
+                            playerChannels.add(new PlayerChannel(
+                                    channel,
+                                    resultSet.getInt("status")));
+                    }
+                    return playerChannels;
+                }
+            } catch (SQLException e) {
+                Bukkit.getLogger().warning("Failed to fetch channel statuses from database");
+            }
+            return List.of();
+        });
     }
 
 
     @Override
     public CompletionStage<List<Channel>> getChannels() {
-        return null;
+        return CompletableFuture.supplyAsync(() -> {
+            try (Connection connection = getConnection()) {
+                try (PreparedStatement statement = connection.prepareStatement("""
+                        select * from channels;""")) {
+
+                    final ResultSet resultSet = statement.executeQuery();
+                    final List<Channel> channels = new ArrayList<>();
+                    while (resultSet.next()) {
+                        String notificationSoundString = resultSet.getString("notificationSound");
+                        channels.add(new Channel(
+                                resultSet.getString("name"),
+                                resultSet.getString("format"),
+                                resultSet.getInt("rate_limit"),
+                                resultSet.getInt("rate_limit_period"),
+                                resultSet.getInt("proximity_distance"),
+                                resultSet.getString("discordWebhook"),
+                                resultSet.getBoolean("filtered"),
+                                notificationSoundString == null ? null : Sound.valueOf(notificationSoundString)));
+                    }
+                    return channels;
+                }
+            } catch (SQLException e) {
+                Bukkit.getLogger().warning("Failed to fetch channel statuses from database");
+            }
+            return List.of();
+        });
     }
 
     @Override
     public CompletionStage<String> setPlayerChannelStatuses(@NotNull String playerName, @NotNull Map<String, String> channelStatuses) {
-        return null;
+        return CompletableFuture.supplyAsync(() -> {
+            try (Connection connection = getConnection()) {
+                try (PreparedStatement statement = connection.prepareStatement("""
+                        UPDATE player_channels
+                            SET status = ?
+                            WHERE player_name = ? and channel_name = ?;""")) {
+
+
+                    if (statement.executeUpdate() == 0) {
+                        throw new SQLException("Failed to register channel to database");
+                    }
+                    return "true";
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            return "false";
+        }).exceptionally(e -> {
+            e.printStackTrace();
+            return "false";
+        });
     }
 
     @Override
