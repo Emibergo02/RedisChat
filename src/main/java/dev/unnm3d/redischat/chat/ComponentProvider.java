@@ -124,7 +124,7 @@ public class ComponentProvider {
         return finalComponent;
     }
 
-    public String replaceBukkitColorCodesWithSection(String text) {
+    public String replaceAmpersandCodesWithSection(String text) {
         if (!plugin.config.legacyColorCodesSupport) { // if legacy color codes support is disabled, we don't need to replace anything
             return text;
         }
@@ -151,7 +151,7 @@ public class ComponentProvider {
         for (int i = 0; i < stringPlaceholders.length; i++) {
             if (i % 2 == placeholderStep) {
                 final String reformattedPlaceholder = "%" + stringPlaceholders[i] + "%";
-                final String parsedPlaceH = replaceBukkitColorCodesWithSection(
+                final String parsedPlaceH = replaceAmpersandCodesWithSection(
                         cmdSender instanceof OfflinePlayer offlinePlayer
                                 ? PlaceholderAPI.setPlaceholders(offlinePlayer, reformattedPlaceholder)
                                 : PlaceholderAPI.setPlaceholders(null, reformattedPlaceholder)
@@ -360,7 +360,7 @@ public class ComponentProvider {
     public @NotNull String parseLegacy(@NotNull String text, boolean parseAmpersand) {
 
         text = miniMessage.serialize(LegacyComponentSerializer.legacySection().deserialize(
-                parseAmpersand ? replaceBukkitColorCodesWithSection(text) : text
+                parseAmpersand ? replaceAmpersandCodesWithSection(text) : text
         ));
         if (plugin.config.debug) {
             Bukkit.getLogger().info("Parsed legacy: " + text);

@@ -118,7 +118,7 @@
         <dependency>
             <groupId>com.github.Emibergo02.ConfigLib</groupId>
             <artifactId>configlib-paper</artifactId>
-            <version>master-6be5fb9cab-1</version>
+            <version>master-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>net.kyori</groupId>

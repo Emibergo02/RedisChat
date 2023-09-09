@@ -64,9 +64,9 @@ public interface DataManager {
 
     CompletionStage<List<Mail>> getPublicMails();
 
-    CompletionStage<String> setPlayerChannelStatuses(@NotNull String playerName, @NotNull Map<String, String> channelStatuses);
+    void setPlayerChannelStatuses(@NotNull String playerName, @NotNull Map<String, String> channelStatuses);
 
-    CompletionStage<Long> removePlayerChannelStatus(@NotNull String playerName, @NotNull String channelName);
+    void removePlayerChannelStatus(@NotNull String playerName, @NotNull String channelName);
 
     void sendChatMessage(@NotNull ChatMessageInfo chatMessage);
 

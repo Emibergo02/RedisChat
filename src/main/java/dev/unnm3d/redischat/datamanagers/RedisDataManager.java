@@ -510,8 +510,8 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     }
 
     @Override
-    public CompletionStage<String> setPlayerChannelStatuses(@NotNull String playerName, @NotNull Map<String, String> channelStatuses) {
-        return getConnectionAsync(connection ->
+    public void setPlayerChannelStatuses(@NotNull String playerName, @NotNull Map<String, String> channelStatuses) {
+        getConnectionAsync(connection ->
                 connection.hmset(PLAYER_CHANNELS_PREFIX + playerName, channelStatuses)
                         .exceptionally(throwable -> {
                             throwable.printStackTrace();
@@ -521,8 +521,8 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     }
 
     @Override
-    public CompletionStage<Long> removePlayerChannelStatus(@NotNull String playerName, @NotNull String channelName) {
-        return getConnectionAsync(connection ->
+    public void removePlayerChannelStatus(@NotNull String playerName, @NotNull String channelName) {
+        getConnectionAsync(connection ->
                 connection.hdel(PLAYER_CHANNELS_PREFIX + playerName, channelName)
                         .exceptionally(throwable -> {
                             throwable.printStackTrace();

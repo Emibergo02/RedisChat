@@ -671,33 +671,61 @@ public abstract class SQLDataManager implements DataManager {
     }
 
     @Override
-    public CompletionStage<String> setPlayerChannelStatuses(@NotNull String playerName, @NotNull Map<String, String> channelStatuses) {
-        return CompletableFuture.supplyAsync(() -> {
+    public void setPlayerChannelStatuses(@NotNull String playerName, @NotNull Map<String, String> channelStatuses) {
+        CompletableFuture.supplyAsync(() -> {
             try (Connection connection = getConnection()) {
                 try (PreparedStatement statement = connection.prepareStatement("""
-                        UPDATE player_channels
-                            SET status = ?
-                            WHERE player_name = ? and channel_name = ?;""")) {
-
-
+                        INSERT INTO player_channels (player_name, channel_name, status)
+                        VALUES
+                        """ +
+                        String.join(",", Collections.nCopies(channelStatuses.size(), "(?,?,?)")) +
+                        """
+                                ON DUPLICATE KEY UPDATE
+                                 status=VALUES(status);""")) {
+                    int i = 0;
+                    for (Map.Entry<String, String> stringStringEntry : channelStatuses.entrySet()) {
+                        statement.setString(i * 3 + 1, playerName);
+                        statement.setString(i * 3 + 2, stringStringEntry.getKey());
+                        statement.setInt(i * 3 + 3, Integer.parseInt(stringStringEntry.getValue()));
+                        i++;
+                    }
                     if (statement.executeUpdate() == 0) {
                         throw new SQLException("Failed to register channel to database");
                     }
-                    return "true";
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
             }
-            return "false";
+            return null;
         }).exceptionally(e -> {
             e.printStackTrace();
-            return "false";
+            return null;
         });
     }
 
     @Override
-    public CompletionStage<Long> removePlayerChannelStatus(@NotNull String playerName, @NotNull String channelName) {
-        return null;
+    public void removePlayerChannelStatus(@NotNull String playerName, @NotNull String channelName) {
+        CompletableFuture.supplyAsync(() -> {
+            try (Connection connection = getConnection()) {
+                try (PreparedStatement statement = connection.prepareStatement("""
+                        DELETE FROM player_channels
+                        WHERE player_name = ? and channel_name = ?;""")) {
+
+                        statement.setString(1, playerName);
+                        statement.setString(2, channelName);
+
+                    if (statement.executeUpdate() == 0) {
+                        throw new SQLException("Failed to register channel to database");
+                    }
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }).exceptionally(e -> {
+            e.printStackTrace();
+            return null;
+        });
     }
 
 
