@@ -50,6 +50,8 @@ public interface DataManager {
 
     void addEnderchest(@NotNull String name, ItemStack[] inv);
 
+    void clearInvShareCache();
+
     CompletionStage<ItemStack> getPlayerItem(@NotNull String playerName);
 
     CompletionStage<ItemStack[]> getPlayerInventory(@NotNull String playerName);
@@ -88,7 +90,8 @@ public interface DataManager {
 
             return Base64.getEncoder().encodeToString(outputStream.toByteArray());
 
-        } catch (Exception ignored) {
+        } catch (Exception exception) {
+            exception.printStackTrace();
             return "";
         }
     }
@@ -103,7 +106,8 @@ public interface DataManager {
                 items[i] = (ItemStack) dataInput.readObject();
 
             return items;
-        } catch (Exception ignored) {
+        } catch (Exception exception) {
+            exception.printStackTrace();
             return new ItemStack[0];
         }
     }

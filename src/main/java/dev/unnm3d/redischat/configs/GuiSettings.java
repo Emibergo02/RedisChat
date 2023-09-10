@@ -30,7 +30,7 @@ public final class GuiSettings {
     @Comment("The structure of the channel GUI. Use 'x' for the channel slots, '<' for the back button, '>' for the forward button, 'U' for the unmute all button and 'S' for the silence public button")
     public List<String> channelGUIStructure = List.of(
             "x x x x x x x x x",
-            "x x x x U x x x x",
+            "x x x x x x x x x",
             "x x x x x x x x x",
             "# < # # S # # > #");
     public ItemStack activeChannelButton = getActiveChannelButton();

@@ -33,7 +33,12 @@ public class ChannelCommand {
     public CommandAPICommand getCreateSubCommand() {
         return new CommandAPICommand("create")
                 .withPermission(Permissions.CHANNEL_CREATE.getPermission())
-                .withArguments(new StringArgument("name"))
+                .withArguments(new StringArgument("name")
+                        .replaceSuggestions(ArgumentSuggestions.strings(commandSenderSuggestionInfo ->
+                                plugin.getChannelManager().getRegisteredChannels().keySet().stream()
+                                        .filter(s -> s.toLowerCase().startsWith(commandSenderSuggestionInfo.currentArg()))
+                                        .toArray(String[]::new)
+                        )))
                 .withArguments(new IntegerArgument("rate-limit"))
                 .withArguments(new IntegerArgument("rate-limit-period"))
                 .withArguments(new BooleanArgument("filtered"))
@@ -69,7 +74,12 @@ public class ChannelCommand {
     public CommandAPICommand getSetFormatSubCommand() {
         return new CommandAPICommand("setformat")
                 .withPermission(Permissions.CHANNEL_CREATE.getPermission())
-                .withArguments(new StringArgument("name"))
+                .withArguments(new StringArgument("name")
+                        .replaceSuggestions(ArgumentSuggestions.strings(commandSenderSuggestionInfo ->
+                                plugin.getChannelManager().getRegisteredChannels().keySet().stream()
+                                        .filter(s -> s.toLowerCase().startsWith(commandSenderSuggestionInfo.currentArg()))
+                                        .toArray(String[]::new)
+                        )))
                 .withArguments(new GreedyStringArgument("format"))
                 .executesPlayer((sender, args) -> {
                     Channel channel = plugin.getChannelManager().getRegisteredChannels().get((String) args.get(0));
@@ -82,7 +92,11 @@ public class ChannelCommand {
     public CommandAPICommand getEnableSubCommand() {
         return new CommandAPICommand("enable")
                 .withPermission(Permissions.CHANNEL_TOGGLE_PLAYER.getPermission())
-                .withArguments(new StringArgument("playerName"))
+                .withArguments(new StringArgument("playerName")
+                        .replaceSuggestions(ArgumentSuggestions.strings(commandSenderSuggestionInfo ->
+                                plugin.getPlayerListManager().getPlayerList(commandSenderSuggestionInfo.sender()).stream()
+                                        .filter(s -> s.toLowerCase().startsWith(commandSenderSuggestionInfo.currentArg().toLowerCase()))
+                                        .toArray(String[]::new))))
                 .withArguments(new StringArgument("channelName")
                         .replaceSuggestions(ArgumentSuggestions.strings(commandSenderSuggestionInfo ->
                                 plugin.getChannelManager().getRegisteredChannels().keySet().stream()
@@ -106,7 +120,11 @@ public class ChannelCommand {
     public CommandAPICommand getDisableSubCommand() {
         return new CommandAPICommand("disable")
                 .withPermission(Permissions.CHANNEL_TOGGLE_PLAYER.getPermission())
-                .withArguments(new StringArgument("playerName"))
+                .withArguments(new StringArgument("playerName")
+                        .replaceSuggestions(ArgumentSuggestions.strings(commandSenderSuggestionInfo ->
+                                plugin.getPlayerListManager().getPlayerList(commandSenderSuggestionInfo.sender()).stream()
+                                        .filter(s -> s.toLowerCase().startsWith(commandSenderSuggestionInfo.currentArg().toLowerCase()))
+                                        .toArray(String[]::new))))
                 .withArguments(new StringArgument("channelName")
                         .replaceSuggestions(ArgumentSuggestions.strings(commandSenderSuggestionInfo ->
                                 plugin.getChannelManager().getRegisteredChannels().keySet().stream()
@@ -129,7 +147,12 @@ public class ChannelCommand {
     public CommandAPICommand getDeleteSubCommand() {
         return new CommandAPICommand("delete")
                 .withPermission(Permissions.CHANNEL_DELETE.getPermission())
-                .withArguments(new StringArgument("name"))
+                .withArguments(new StringArgument("name")
+                        .replaceSuggestions(ArgumentSuggestions.strings(commandSenderSuggestionInfo ->
+                                plugin.getChannelManager().getRegisteredChannels().keySet().stream()
+                                        .filter(s -> s.toLowerCase().startsWith(commandSenderSuggestionInfo.currentArg()))
+                                        .toArray(String[]::new)
+                        )))
                 .executesPlayer((sender, args) -> {
                     plugin.getChannelManager().unregisterChannel((String) args.get(0));
                     plugin.messages.sendMessage(sender, plugin.messages.channelRemoved);

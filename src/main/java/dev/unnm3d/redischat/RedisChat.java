@@ -72,7 +72,7 @@ public final class RedisChat extends JavaPlugin {
 
     @Override
     public void onLoad() {
-        CommandAPI.onLoad(new CommandAPIBukkitConfig(this).verboseOutput(true));
+        CommandAPI.onLoad(new CommandAPIBukkitConfig(this).silentLogs(true).verboseOutput(false));
     }
 
     @Override
@@ -119,7 +119,7 @@ public final class RedisChat extends JavaPlugin {
 
         //Mail section
         if (config.enableMails) {
-            loadCommandAPICommand(new MailCommand(new MailManager(this),this).getCommand());
+            loadCommandAPICommand(new MailCommand(new MailManager(this), this).getCommand());
         }
 
 
@@ -213,6 +213,8 @@ public final class RedisChat extends JavaPlugin {
     @Override
     public void onDisable() {
         getLogger().warning("RedisChat is disabling...");
+        this.dataManager.clearInvShareCache();
+
         registeredCommands.forEach(CommandAPI::unregister);
         CommandAPI.onDisable();
 

@@ -140,11 +140,11 @@ public class ChannelManager extends RedisChatAPI {
         if (plugin.config.debug) {
             plugin.getLogger().info("2) Format + message parsing: " + (System.currentTimeMillis() - init) + "ms");
         }
-        final String finalFormat = MiniMessage.miniMessage().serialize(formatted);
-        final String finalMessage = MiniMessage.miniMessage().serialize(toBeReplaced);
 
         //Call event and check cancellation
-        AsyncRedisChatMessageEvent event = new AsyncRedisChatMessageEvent(player, channel, finalFormat, finalMessage);
+        AsyncRedisChatMessageEvent event = new AsyncRedisChatMessageEvent(player, channel,
+                MiniMessage.miniMessage().serialize(formatted),
+                MiniMessage.miniMessage().serialize(toBeReplaced));
         plugin.getServer().getPluginManager().callEvent(event);
         if (event.isCancelled()) return;
 

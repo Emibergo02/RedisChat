@@ -69,7 +69,7 @@ public class H2SQLDataManager extends SQLDataManager {
     public void initialize() throws IllegalStateException {
         // Prepare the database flat file
         final String url = String.format("jdbc:h2:%s", databaseFile.getAbsolutePath());
-        this.connectionPool = JdbcConnectionPool.create(url, "sa", "sa");
+        this.connectionPool = JdbcConnectionPool.create(url + ";mode=MySQL", "sa", "sa");
 
         // Prepare database schema; make tables if they don't exist
         try (Connection connection = getConnection()) {

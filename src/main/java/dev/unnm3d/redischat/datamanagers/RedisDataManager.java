@@ -266,18 +266,10 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     public void addInventory(@NotNull String name, ItemStack[] inv) {
         getConnectionAsync(connection ->
                 connection.hset(INVSHARE_INVENTORY.toString(), name, serialize(inv))
-                        .thenApplyAsync(response -> {
+                        .thenApply(response -> {
                             if (plugin.config.debug) {
                                 plugin.getLogger().info("05 Added inventory for " + name);
                             }
-                            scheduleConnection(scheduled -> {
-                                scheduled.async().hdel(INVSHARE_INVENTORY.toString(), name).thenAccept(response2 -> {
-                                    if (plugin.config.debug) {
-                                        plugin.getLogger().warning("06 Removing inv");
-                                    }
-                                });
-                                return null;
-                            }, 120, TimeUnit.SECONDS);
                             return response;
                         })
                         .exceptionally(throwable -> {
@@ -292,18 +284,10 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     public void addItem(@NotNull String name, ItemStack item) {
         getConnectionAsync(connection ->
                 connection.hset(INVSHARE_ITEM.toString(), name, serialize(item))
-                        .thenApplyAsync(response -> {
+                        .thenApply(response -> {
                             if (plugin.config.debug) {
                                 plugin.getLogger().info("08 Added item for " + name);
                             }
-                            scheduleConnection(scheduled -> {
-                                scheduled.async().hdel(INVSHARE_ITEM.toString(), name).thenAccept(response2 -> {
-                                    if (plugin.config.debug) {
-                                        plugin.getLogger().warning("09 Removing item");
-                                    }
-                                });
-                                return null;
-                            }, 120, TimeUnit.SECONDS);
                             return response;
                         }).exceptionally(throwable -> {
                             throwable.printStackTrace();
@@ -317,18 +301,10 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     public void addEnderchest(@NotNull String name, ItemStack[] inv) {
         getConnectionAsync(connection ->
                 connection.hset(INVSHARE_ENDERCHEST.toString(), name, serialize(inv))
-                        .thenApplyAsync(response -> {
+                        .thenApply(response -> {
                             if (plugin.config.debug) {
                                 plugin.getLogger().info("10 Added enderchest for " + name);
                             }
-                            scheduleConnection(scheduled -> {
-                                scheduled.async().hdel(INVSHARE_ENDERCHEST.toString(), name).thenAccept(response2 -> {
-                                    if (plugin.config.debug) {
-                                        plugin.getLogger().warning("11 Removing enderchest");
-                                    }
-                                });
-                                return null;
-                            }, 120, TimeUnit.SECONDS);
                             return response;
                         }).exceptionally(throwable -> {
                             throwable.printStackTrace();
@@ -339,14 +315,25 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     }
 
     @Override
+    public void clearInvShareCache() {
+        getConnectionPipeline(connection -> {
+            connection.del(INVSHARE_INVENTORY.toString());
+            connection.del(INVSHARE_ENDERCHEST.toString());
+            connection.del(INVSHARE_ITEM.toString());
+            return null;
+        });
+    }
+
+    @Override
     public CompletionStage<ItemStack> getPlayerItem(@NotNull String playerName) {
         return getConnectionAsync(connection ->
                 connection.hget(INVSHARE_ITEM.toString(), playerName)
                         .thenApply(serializedInv -> {
-                            ItemStack[] itemStacks = deserialize(serializedInv == null ? "" : serializedInv);
                             if (plugin.config.debug) {
-                                plugin.getLogger().info("04 Got item for " + playerName + " is " + (itemStacks.length != 0 ? itemStacks[0].toString() : "null"));
+                                plugin.getLogger().info("04 Got item for " + playerName + " is " + serializedInv);
                             }
+                            ItemStack[] itemStacks = deserialize(serializedInv == null ? "" : serializedInv);
+
                             if (itemStacks.length == 0) return new ItemStack(Material.AIR);
                             return itemStacks[0];
                         }).exceptionally(throwable -> {

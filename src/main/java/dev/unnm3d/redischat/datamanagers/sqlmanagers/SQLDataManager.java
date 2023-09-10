@@ -13,6 +13,7 @@ import dev.unnm3d.redischat.mail.Mail;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.inventory.ItemStack;
+import org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -126,7 +127,10 @@ public abstract class SQLDataManager implements DataManager {
                     }
                 }
             } catch (SQLException e) {
-                Bukkit.getLogger().severe("Failed to fetch a reply name from the database");
+                if (plugin.config.debug) {
+                    e.printStackTrace();
+                }
+                Bukkit.getLogger().warning("Failed to fetch a reply name from the database");
             }
             return Optional.empty();
         });
@@ -150,7 +154,10 @@ public abstract class SQLDataManager implements DataManager {
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            if (plugin.config.debug) {
+                e.printStackTrace();
+            }
+            plugin.getServer().getLogger().warning("Failed to insert reply name into database");
         }
     }
 
@@ -184,7 +191,10 @@ public abstract class SQLDataManager implements DataManager {
                     }
                 }
             } catch (SQLException e) {
-                Bukkit.getLogger().severe("Failed to fetch if a player is spying from the database");
+                if (plugin.config.debug) {
+                    e.printStackTrace();
+                }
+                plugin.getServer().getLogger().warning("Failed to fetch if player is spying from the database");
             }
             return false;
         });
@@ -208,7 +218,10 @@ public abstract class SQLDataManager implements DataManager {
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            if (plugin.config.debug) {
+                e.printStackTrace();
+            }
+            plugin.getServer().getLogger().warning("Failed to insert spy toggling into database");
         }
     }
 
@@ -239,7 +252,10 @@ public abstract class SQLDataManager implements DataManager {
                     throw new SQLException("Failed to insert player ignore into database");
                 }
             } catch (SQLException e) {
-                e.printStackTrace();
+                if (plugin.config.debug) {
+                    e.printStackTrace();
+                }
+                plugin.getServer().getLogger().warning("Failed to insert player ignore into database");
             }
             return false;
         });
@@ -260,7 +276,10 @@ public abstract class SQLDataManager implements DataManager {
                     return resultSet.next();
                 }
             } catch (SQLException e) {
-                Bukkit.getLogger().severe("Failed to fetch if player is ignoring from the database");
+                if (plugin.config.debug) {
+                    e.printStackTrace();
+                }
+                plugin.getServer().getLogger().warning("Failed to fetch player ignore from the database");
             }
             return false;
         });
@@ -284,7 +303,10 @@ public abstract class SQLDataManager implements DataManager {
                     return ignoredPlayers;
                 }
             } catch (SQLException e) {
-                Bukkit.getLogger().severe("Failed to fetch a ignoring list from the database");
+                if (plugin.config.debug) {
+                    e.printStackTrace();
+                }
+                plugin.getServer().getLogger().warning("Failed to fetch ignored players from the database");
             }
             return null;
         });
@@ -307,7 +329,10 @@ public abstract class SQLDataManager implements DataManager {
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            if (plugin.config.debug) {
+                e.printStackTrace();
+            }
+            plugin.getServer().getLogger().warning("Failed to insert serialized inventory into database");
         }
     }
 
@@ -329,7 +354,10 @@ public abstract class SQLDataManager implements DataManager {
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            if (plugin.config.debug) {
+                e.printStackTrace();
+            }
+            plugin.getServer().getLogger().warning("Failed to insert serialized item into database");
         }
     }
 
@@ -350,7 +378,27 @@ public abstract class SQLDataManager implements DataManager {
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            if (plugin.config.debug) {
+                e.printStackTrace();
+            }
+            plugin.getServer().getLogger().warning("Failed to insert serialized enderchest into database");
+        }
+    }
+
+    @Override
+    public void clearInvShareCache() {
+        try (Connection connection = getConnection()) {
+            try (PreparedStatement statement = connection.prepareStatement("""
+                    UPDATE player_data SET inv_serialized = NULL, item_serialized = NULL, ec_serialized = NULL;
+                    """)) {
+                statement.executeUpdate();
+
+            }
+        } catch (SQLException e) {
+            if (plugin.config.debug) {
+                e.printStackTrace();
+            }
+            plugin.getServer().getLogger().warning("Failed to clear inv share cache");
         }
     }
 
@@ -372,7 +420,10 @@ public abstract class SQLDataManager implements DataManager {
                     }
                 }
             } catch (SQLException e) {
-                Bukkit.getLogger().severe("Failed to fetch a player item from the database");
+                if (plugin.config.debug) {
+                    e.printStackTrace();
+                }
+                plugin.getServer().getLogger().warning("Failed to fetch a player item from the database");
             }
             return null;
         });
@@ -396,7 +447,10 @@ public abstract class SQLDataManager implements DataManager {
                     }
                 }
             } catch (SQLException e) {
-                Bukkit.getLogger().severe("Failed to fetch a player inventory from the database");
+                if (plugin.config.debug) {
+                    e.printStackTrace();
+                }
+                plugin.getServer().getLogger().warning("Failed to fetch serialized inventory from the database");
             }
             return null;
         });
@@ -420,7 +474,10 @@ public abstract class SQLDataManager implements DataManager {
                     }
                 }
             } catch (SQLException e) {
-                Bukkit.getLogger().severe("Failed to fetch serialized enderchest from the database");
+                if (plugin.config.debug) {
+                    e.printStackTrace();
+                }
+                plugin.getServer().getLogger().warning("Failed to fetch serialized enderchest from the database");
             }
             return null;
         });
@@ -446,7 +503,10 @@ public abstract class SQLDataManager implements DataManager {
                     return mails;
                 }
             } catch (SQLException e) {
-                Bukkit.getLogger().severe("Failed to fetch serialized private mails from the database");
+                if (plugin.config.debug) {
+                    e.printStackTrace();
+                }
+                plugin.getServer().getLogger().warning("Failed to fetch serialized private mails from the database");
             }
             return List.of();
         });
@@ -476,7 +536,10 @@ public abstract class SQLDataManager implements DataManager {
                     return true;
                 }
             } catch (SQLException e) {
-                e.printStackTrace();
+                if (plugin.config.debug) {
+                    e.printStackTrace();
+                }
+                plugin.getServer().getLogger().warning("Failed to insert serialized private mail into database");
             }
             return false;
         });
@@ -501,11 +564,11 @@ public abstract class SQLDataManager implements DataManager {
                     return true;
                 }
             } catch (SQLException e) {
-                e.printStackTrace();
+                if (plugin.config.debug) {
+                    e.printStackTrace();
+                }
+                plugin.getServer().getLogger().warning("Failed to insert serialized public mail into database");
             }
-            return false;
-        }).exceptionally(e -> {
-            e.printStackTrace();
             return false;
         });
     }
@@ -528,7 +591,10 @@ public abstract class SQLDataManager implements DataManager {
                     return mails;
                 }
             } catch (SQLException e) {
-                Bukkit.getLogger().severe("Failed to fetch serialized public mails from the database");
+                if (plugin.config.debug) {
+                    e.printStackTrace();
+                }
+                plugin.getServer().getLogger().warning("Failed to fetch serialized public mails from the database");
             }
             return List.of();
         });
@@ -551,18 +617,20 @@ public abstract class SQLDataManager implements DataManager {
                     statement.setInt(5, channel.getProximityDistance());
                     statement.setString(6, channel.getDiscordWebhook());
                     statement.setBoolean(7, channel.isFiltered());
-                    statement.setString(8, channel.getNotificationSound().toString());
+                    final String soundString = channel.getNotificationSound() == null ? null : channel.getNotificationSound().toString();
+                    statement.setString(8, soundString);
                     if (statement.executeUpdate() == 0) {
                         throw new SQLException("Failed to register channel to database");
                     }
                     return true;
                 }
             } catch (SQLException e) {
-                e.printStackTrace();
+                if (e instanceof JdbcSQLIntegrityConstraintViolationException)
+                    Bukkit.getLogger().warning("Channel " + channel.getName() + "already exists in database");
+                if (plugin.config.debug) {
+                    e.printStackTrace();
+                }
             }
-            return false;
-        }).exceptionally(e -> {
-            e.printStackTrace();
             return false;
         });
     }
@@ -577,16 +645,16 @@ public abstract class SQLDataManager implements DataManager {
 
                     statement.setString(1, channelName);
                     if (statement.executeUpdate() == 0) {
-                        throw new SQLException("Failed to register channel to database");
+                        throw new SQLException("Failed to unregister channel to database");
                     }
                     return true;
                 }
             } catch (SQLException e) {
-                e.printStackTrace();
+                if (plugin.config.debug) {
+                    e.printStackTrace();
+                }
+                plugin.getServer().getLogger().warning("Failed to unregister channel from database");
             }
-            return false;
-        }).exceptionally(e -> {
-            e.printStackTrace();
             return false;
         });
     }
@@ -599,6 +667,8 @@ public abstract class SQLDataManager implements DataManager {
                         select channel_name, status from player_channels
                         where player_name = ?;""")) {
 
+                    statement.setString(1, playerName);
+
                     final ResultSet resultSet = statement.executeQuery();
 
                     while (resultSet.next()) {
@@ -607,7 +677,10 @@ public abstract class SQLDataManager implements DataManager {
                     }
                 }
             } catch (SQLException e) {
-                Bukkit.getLogger().warning("Failed to fetch active channel from database");
+                if (plugin.config.debug) {
+                    e.printStackTrace();
+                }
+                plugin.getServer().getLogger().warning("Failed to fetch active channel from database");
             }
             return "public";
         });
@@ -621,6 +694,8 @@ public abstract class SQLDataManager implements DataManager {
                         select channel_name, status from player_channels
                         where player_name = ?;""")) {
 
+                    statement.setString(1, playerName);
+
                     final ResultSet resultSet = statement.executeQuery();
                     final List<PlayerChannel> playerChannels = new ArrayList<>();
                     while (resultSet.next()) {
@@ -633,7 +708,10 @@ public abstract class SQLDataManager implements DataManager {
                     return playerChannels;
                 }
             } catch (SQLException e) {
-                Bukkit.getLogger().warning("Failed to fetch channel statuses from database");
+                if (plugin.config.debug) {
+                    e.printStackTrace();
+                }
+                plugin.getServer().getLogger().warning("Failed to fetch channel statuses from database");
             }
             return List.of();
         });
@@ -664,7 +742,10 @@ public abstract class SQLDataManager implements DataManager {
                     return channels;
                 }
             } catch (SQLException e) {
-                Bukkit.getLogger().warning("Failed to fetch channel statuses from database");
+                if (plugin.config.debug) {
+                    e.printStackTrace();
+                }
+                plugin.getServer().getLogger().warning("Failed fetch channels from database");
             }
             return List.of();
         });
@@ -675,13 +756,12 @@ public abstract class SQLDataManager implements DataManager {
         CompletableFuture.supplyAsync(() -> {
             try (Connection connection = getConnection()) {
                 try (PreparedStatement statement = connection.prepareStatement("""
-                        INSERT INTO player_channels (player_name, channel_name, status)
-                        VALUES
+                        INSERT INTO player_channels (player_name, channel_name, status) VALUES
                         """ +
-                        String.join(",", Collections.nCopies(channelStatuses.size(), "(?,?,?)")) +
+                        String.join(",", Collections.nCopies(channelStatuses.size(), " (?,?,?)")) +
                         """
-                                ON DUPLICATE KEY UPDATE
-                                 status=VALUES(status);""")) {
+                                ON DUPLICATE KEY UPDATE status = VALUES(status);
+                                """)) {
                     int i = 0;
                     for (Map.Entry<String, String> stringStringEntry : channelStatuses.entrySet()) {
                         statement.setString(i * 3 + 1, playerName);
@@ -694,11 +774,11 @@ public abstract class SQLDataManager implements DataManager {
                     }
                 }
             } catch (SQLException e) {
-                e.printStackTrace();
+                if (plugin.config.debug) {
+                    e.printStackTrace();
+                }
+                plugin.getServer().getLogger().warning("Failed to register channel to database");
             }
-            return null;
-        }).exceptionally(e -> {
-            e.printStackTrace();
             return null;
         });
     }
@@ -711,19 +791,19 @@ public abstract class SQLDataManager implements DataManager {
                         DELETE FROM player_channels
                         WHERE player_name = ? and channel_name = ?;""")) {
 
-                        statement.setString(1, playerName);
-                        statement.setString(2, channelName);
+                    statement.setString(1, playerName);
+                    statement.setString(2, channelName);
 
                     if (statement.executeUpdate() == 0) {
                         throw new SQLException("Failed to register channel to database");
                     }
                 }
             } catch (SQLException e) {
-                e.printStackTrace();
+                if (plugin.config.debug) {
+                    e.printStackTrace();
+                }
+                plugin.getServer().getLogger().warning("Failed to register channel to database");
             }
-            return null;
-        }).exceptionally(e -> {
-            e.printStackTrace();
             return null;
         });
     }

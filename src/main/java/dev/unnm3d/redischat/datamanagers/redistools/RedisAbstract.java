@@ -7,24 +7,20 @@ import io.lettuce.core.pubsub.StatefulRedisPubSubConnection;
 import org.bukkit.Bukkit;
 
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Function;
 
 
 public abstract class RedisAbstract {
-    protected static final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
     private final RoundRobinConnectionPool<String, String> roundRobinConnectionPool;
     private final List<StatefulRedisPubSubConnection<String, String>> pubSubConnections;
     protected RedisClient lettuceRedisClient;
 
-    public RedisAbstract(RedisClient lettuceRedisClient,int poolSize) {
+    public RedisAbstract(RedisClient lettuceRedisClient, int poolSize) {
         this.lettuceRedisClient = lettuceRedisClient;
         this.roundRobinConnectionPool = new RoundRobinConnectionPool<>(lettuceRedisClient::connect, poolSize);
         pubSubConnections = new CopyOnWriteArrayList<>();
-    }
-
-    public <T> ScheduledFuture<T> scheduleConnection(Function<StatefulRedisConnection<String, String>, T> function, int timeout, TimeUnit timeUnit) {
-        return executorService.schedule(() -> function.apply(roundRobinConnectionPool.get()), timeout, timeUnit);
     }
 
     public <T> CompletionStage<T> getConnectionAsync(Function<RedisAsyncCommands<String, String>, CompletionStage<T>> redisCallBack) {
@@ -51,8 +47,6 @@ public abstract class RedisAbstract {
         Bukkit.getLogger().info("Closing pubsub connection");
         lettuceRedisClient.shutdown();
         Bukkit.getLogger().info("Lettuce shutdown connection");
-        executorService.shutdownNow();
-        Bukkit.getLogger().info("Executor service shutdown");
     }
 
 

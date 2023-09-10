@@ -57,15 +57,15 @@ public final class Config {
     public boolean enablePlaceholderGlitch = false;
     @Comment({"Here you can decide your chat format", "Permission format is overridden on descending order", "(if a player has default and vip, if default is the first element, vip will be ignored)"})
     public List<ChatFormat> formats = List.of(new ChatFormat("redischat.default",
-            "<click:suggest_command:/msg %player_name%><hover:show_text:'" +
-                    "<reset>Information | <white>%player_displayname%<br>" +
-                    "<gold><bold>➧</bold> Money<reset>: <white>%vault_eco_balance% <gold>✵<br>" +
-                    "<br><reset><underlined>Click to send a message" +
-                    "'><white>%vault_prefix%%player_displayname%%luckperms_suffix%</click> <dark_gray>» <reset>%message%",
-            "<dark_aqua>MSG <white>(<reset>You <white>to <green>%receiver%<white>)<reset>: <white>%message%",
-            "<dark_aqua>MSG <white>(<green>%sender% <white>to <reset>You<white>)<reset>: <white>%message%",
+            "<click:suggest_command:/msg %player_name%><hover:show_text:'<gray>Info" +
+                    "|</gray> <white>%player_displayname%</white> <br>↪ <gold>Money</gold>: <white>%vault_eco_balance%$</white>" +
+                    "<br>↪ <green>Server</green>: <white>%server_name%</white> <br><br><gray>Click" +
+                    "to send a private message</gray>'>%vault_prefix% %player_name% %vault_suffix%</click>" +
+                    "<dark_gray>» <reset><gray>%message%",
+            "<white>✉<green>⬆</green></white> <dark_aqua>MSG <grey>(Me ➺ <green>%receiver%<grey>): <white>%message%",
+            "<white>✉<green>⬇</green></white> <dark_aqua>MSG <grey>(<green>%sender%<grey> ➺ Me): <white>%message%",
             "<aqua>@%player%</aqua>",
-            "<bold><click:open_url:%link%>[Click to open URL (be careful)]</click></bold>",
+            "<aqua><click:open_url:%link%>[Open web page <red>(be careful)</red>]</aqua>",
             "<green>%player_name% joined the server",
             "<red>%player_name% is no longer online"
     ));
@@ -75,7 +75,7 @@ public final class Config {
             "If you want to disable an announce, just remove it from the list, remember that in yaml [] is an empty list",
             "If you specify a permission, only players with that permission will see the announce. Keep it empty to make it public",
     })
-    public List<Announce> announces = List.of(new Announce("default", "<red>RedisChat Announce: <br><white>lorem ipsum dolor sit amet", "", 5, 300));
+    public List<Announce> announces = List.of(new Announce("default", "<red>To EssentialsX and CMI users: <aqua><br>disable <gold>/msg, /reply, /broadcast, /ignore, etc</gold> commands inside CMI and EssentialsX<br>Or RedisChat commands <red>will <u>not</u> work</red>!!!</aqua>", "", 5, 300));
     @Comment({"Here you can create your own placeholders", "You can give them an identifier, which will go under the format <>", "You can give them actions, like click url"})
     public Map<String, String> placeholders = Map.of(
             "discord", "<click:open_url:https://discord.gg/C8d7EqQz>Click to join our discord server</click>",
@@ -109,9 +109,9 @@ public final class Config {
     public String staffChatFormat = "<gold>StaffChat </gold> : %message%";
     @Comment("The discord webhook of the staff chat")
     public String staffChatDiscordWebhook = "";
-    public String inventoryFormat = "<click:run_command:%command%>[Open the inventory of %player%]</click>";
-    public String itemFormat = "<click:run_command:%command%>[%item_name% of %player%]</click>";
-    public String enderChestFormat = "<click:run_command:%command%>[Open the enderchest of %player%]</click>";
+    public String inventoryFormat = "<click:run_command:%command%><gold>[%player%'s Inventory]</gold></click>";
+    public String itemFormat = "<click:run_command:%command%>[%item_name%]</click>";
+    public String enderChestFormat = "<click:run_command:%command%><light_purple>[%player%'s EnderChest]</light_purple></click>";
     @Comment("The discord webhook of the public chat")
     public String publicDiscordWebhook = "";
     @Comment("The format of the timestamp in mails (by default is like 31/07/2023 15:24)")
@@ -130,7 +130,7 @@ public final class Config {
 
 
     public record RedisSettings(String host, int port, String user, String password, int database, int timeout,
-                                String clientName,int poolSize) {
+                                String clientName, int poolSize) {
     }
 
     public record Mysql(
