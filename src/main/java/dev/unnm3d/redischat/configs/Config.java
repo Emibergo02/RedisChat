@@ -55,6 +55,8 @@ public final class Config {
     public boolean enableQuitJoinMessages = true;
     @Comment("Re-enables bukkit color glitches for colored placeholders")
     public boolean enablePlaceholderGlitch = false;
+    @Comment("If true, RedisChat will log public chat messages")
+    public boolean chatLogging = false;
     @Comment({"Here you can decide your chat format", "Permission format is overridden on descending order", "(if a player has default and vip, if default is the first element, vip will be ignored)"})
     public List<ChatFormat> formats = List.of(new ChatFormat("redischat.default",
             "<click:suggest_command:/msg %player_name%><hover:show_text:'<gray>Info" +
@@ -75,7 +77,7 @@ public final class Config {
             "If you want to disable an announce, just remove it from the list, remember that in yaml [] is an empty list",
             "If you specify a permission, only players with that permission will see the announce. Keep it empty to make it public",
     })
-    public List<Announce> announces = List.of(new Announce("default", "<red>To EssentialsX and CMI users: <aqua><br>disable <gold>/msg, /reply, /broadcast, /ignore, etc</gold> commands inside CMI and EssentialsX<br>Or RedisChat commands <red>will <u>not</u> work</red>!!!</aqua>", "", 5, 300));
+    public List<Announce> announces = List.of(new Announce("default", "<yellow>RedisChat</yellow> <gray>»</gray><red>To EssentialsX and CMI users: <aqua><br>disable <gold>/msg, /reply, /broadcast, /ignore, etc</gold> commands inside CMI and EssentialsX<br>Or RedisChat commands <red>will <u>not</u> work</red>!!!</aqua>", "", 5, 300));
     @Comment({"Here you can create your own placeholders", "You can give them an identifier, which will go under the format <>", "You can give them actions, like click url"})
     public Map<String, String> placeholders = Map.of(
             "discord", "<click:open_url:https://discord.gg/C8d7EqQz>Click to join our discord server</click>",
@@ -166,7 +168,7 @@ public final class Config {
         return chatFormatList;
     }
 
-    public DataType getDataMedium() {
+    public DataType getDataType() {
         return DataType.fromString(dataMedium.toUpperCase());
     }
 

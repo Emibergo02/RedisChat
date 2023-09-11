@@ -23,7 +23,7 @@ public class JoinQuitManager implements Listener {
         this.findPlayerRequests = new ConcurrentHashMap<>();
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.HIGH)
     public void onJoin(PlayerJoinEvent joinEvent) {
         joinEvent.setJoinMessage(null);
 
@@ -31,7 +31,8 @@ public class JoinQuitManager implements Listener {
         redisChat.getServer().getScheduler().runTaskLater(redisChat, () ->
                 redisChat.getDataManager().sendRejoin(joinEvent.getPlayer().getName()), 5);
 
-        if (redisChat.getPlayerListManager().getPlayerList(null).contains(joinEvent.getPlayer().getName())) return;
+        if (redisChat.getPlayerListManager().getPlayerList(joinEvent.getPlayer())
+                .contains(joinEvent.getPlayer().getName())) return;
 
         if (!joinEvent.getPlayer().hasPlayedBefore() && !redisChat.config.first_join_message.isEmpty()) {
             redisChat.getDataManager().sendChatMessage(new ChatMessageInfo(

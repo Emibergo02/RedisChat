@@ -33,7 +33,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     public static int pubSubIndex = 0;
 
     public RedisDataManager(RedisClient redisClient, RedisChat redisChat) {
-        super(redisClient, redisChat.config.redis.poolSize());
+        super(redisClient, redisChat.config.redis.poolSize() <= 0 ? 1 : redisChat.config.redis.poolSize());
         this.plugin = redisChat;
         listenSub();
     }

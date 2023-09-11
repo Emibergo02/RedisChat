@@ -17,6 +17,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.xenondevs.invui.window.Window;
@@ -76,6 +77,12 @@ public class ChannelManager extends RedisChatAPI {
                                 Window.single()
                                         .setTitle("Channels")
                                         .setGui(channelGUI.getChannelsGUI(player, playerChannelInfo))
+                                        .setCloseHandlers(List.of(() -> new BukkitRunnable() {
+                                            @Override
+                                            public void run() {
+                                                player.updateInventory();
+                                            }
+                                        }.runTaskLater(plugin, 1)))
                                         .open(player)));
     }
 
@@ -240,7 +247,11 @@ public class ChannelManager extends RedisChatAPI {
                 )
         );
 
-        getComponentProvider().logToConsole(formattedComponent);//send to console for logging purposes
+        if (!plugin.config.chatLogging) {
+            getComponentProvider().logToConsole(formattedComponent);//send to console for logging purposes
+        } else {
+            getComponentProvider().logToHistory(formattedComponent);
+        }
 
         for (Player onlinePlayer : plugin.getServer().getOnlinePlayers()) {
             if (!onlinePlayer.hasPermission(channelPermission)) continue;

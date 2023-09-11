@@ -95,13 +95,14 @@ public abstract class SQLDataManager implements DataManager {
             if (!channel.equals("BungeeCord")) return;
             ByteArrayDataInput in = ByteStreams.newDataInput(message);
             String subchannel = in.readUTF();
+            String messageString = in.readUTF();
             if (subchannel.equals(DataKeys.PLAYERLIST.toString())) {
-                String serializedPlayerList = in.readUTF();
                 if (plugin.getPlayerListManager() != null)
-                    plugin.getPlayerListManager().updatePlayerList(Arrays.asList(serializedPlayerList.split("§")));
+                    plugin.getPlayerListManager().updatePlayerList(Arrays.asList(messageString.split("§")));
             } else if (subchannel.equals(DataKeys.CHAT_CHANNEL.toString())) {
-                String messageString = in.readUTF();
                 plugin.getChannelManager().sendLocalChatMessage(new ChatMessageInfo(messageString));
+            }else if (subchannel.equals(DataKeys.REJOIN_CHANNEL.toString())) {
+                plugin.getJoinQuitManager().rejoinRequest(messageString);
             }
 
         });
@@ -127,10 +128,7 @@ public abstract class SQLDataManager implements DataManager {
                     }
                 }
             } catch (SQLException e) {
-                if (plugin.config.debug) {
-                    e.printStackTrace();
-                }
-                Bukkit.getLogger().warning("Failed to fetch a reply name from the database");
+                errWarn("Failed to fetch a reply name from the database", e);
             }
             return Optional.empty();
         });
@@ -154,10 +152,7 @@ public abstract class SQLDataManager implements DataManager {
                 }
             }
         } catch (SQLException e) {
-            if (plugin.config.debug) {
-                e.printStackTrace();
-            }
-            plugin.getServer().getLogger().warning("Failed to insert reply name into database");
+            errWarn("Failed to insert reply name into database", e);
         }
     }
 
@@ -191,10 +186,7 @@ public abstract class SQLDataManager implements DataManager {
                     }
                 }
             } catch (SQLException e) {
-                if (plugin.config.debug) {
-                    e.printStackTrace();
-                }
-                plugin.getServer().getLogger().warning("Failed to fetch if player is spying from the database");
+                errWarn("Failed to fetch if player is spying from the database", e);
             }
             return false;
         });
@@ -218,10 +210,7 @@ public abstract class SQLDataManager implements DataManager {
                 }
             }
         } catch (SQLException e) {
-            if (plugin.config.debug) {
-                e.printStackTrace();
-            }
-            plugin.getServer().getLogger().warning("Failed to insert spy toggling into database");
+            errWarn("Failed to insert spy toggling into database", e);
         }
     }
 
@@ -252,10 +241,7 @@ public abstract class SQLDataManager implements DataManager {
                     throw new SQLException("Failed to insert player ignore into database");
                 }
             } catch (SQLException e) {
-                if (plugin.config.debug) {
-                    e.printStackTrace();
-                }
-                plugin.getServer().getLogger().warning("Failed to insert player ignore into database");
+                errWarn("Failed to insert player ignore into database", e);
             }
             return false;
         });
@@ -276,10 +262,7 @@ public abstract class SQLDataManager implements DataManager {
                     return resultSet.next();
                 }
             } catch (SQLException e) {
-                if (plugin.config.debug) {
-                    e.printStackTrace();
-                }
-                plugin.getServer().getLogger().warning("Failed to fetch player ignore from the database");
+                errWarn("Failed to fetch player ignore from the database", e);
             }
             return false;
         });
@@ -303,10 +286,7 @@ public abstract class SQLDataManager implements DataManager {
                     return ignoredPlayers;
                 }
             } catch (SQLException e) {
-                if (plugin.config.debug) {
-                    e.printStackTrace();
-                }
-                plugin.getServer().getLogger().warning("Failed to fetch ignored players from the database");
+                errWarn("Failed to fetch ignored players from the database", e);
             }
             return null;
         });
@@ -329,10 +309,7 @@ public abstract class SQLDataManager implements DataManager {
                 }
             }
         } catch (SQLException e) {
-            if (plugin.config.debug) {
-                e.printStackTrace();
-            }
-            plugin.getServer().getLogger().warning("Failed to insert serialized inventory into database");
+            errWarn("Failed to insert serialized inventory into database", e);
         }
     }
 
@@ -354,10 +331,7 @@ public abstract class SQLDataManager implements DataManager {
                 }
             }
         } catch (SQLException e) {
-            if (plugin.config.debug) {
-                e.printStackTrace();
-            }
-            plugin.getServer().getLogger().warning("Failed to insert serialized item into database");
+            errWarn("Failed to insert serialized item into database", e);
         }
     }
 
@@ -378,10 +352,7 @@ public abstract class SQLDataManager implements DataManager {
                 }
             }
         } catch (SQLException e) {
-            if (plugin.config.debug) {
-                e.printStackTrace();
-            }
-            plugin.getServer().getLogger().warning("Failed to insert serialized enderchest into database");
+            errWarn("Failed to insert serialized enderchest into database", e);
         }
     }
 
@@ -395,10 +366,7 @@ public abstract class SQLDataManager implements DataManager {
 
             }
         } catch (SQLException e) {
-            if (plugin.config.debug) {
-                e.printStackTrace();
-            }
-            plugin.getServer().getLogger().warning("Failed to clear inv share cache");
+            errWarn("Failed to clear inv share cache", e);
         }
     }
 
@@ -420,10 +388,7 @@ public abstract class SQLDataManager implements DataManager {
                     }
                 }
             } catch (SQLException e) {
-                if (plugin.config.debug) {
-                    e.printStackTrace();
-                }
-                plugin.getServer().getLogger().warning("Failed to fetch a player item from the database");
+                errWarn("Failed to fetch serialized item from the database", e);
             }
             return null;
         });
@@ -447,10 +412,7 @@ public abstract class SQLDataManager implements DataManager {
                     }
                 }
             } catch (SQLException e) {
-                if (plugin.config.debug) {
-                    e.printStackTrace();
-                }
-                plugin.getServer().getLogger().warning("Failed to fetch serialized inventory from the database");
+                errWarn("Failed to fetch serialized inventory from the database", e);
             }
             return null;
         });
@@ -474,10 +436,7 @@ public abstract class SQLDataManager implements DataManager {
                     }
                 }
             } catch (SQLException e) {
-                if (plugin.config.debug) {
-                    e.printStackTrace();
-                }
-                plugin.getServer().getLogger().warning("Failed to fetch serialized enderchest from the database");
+                errWarn("Failed to fetch serialized enderchest from the database", e);
             }
             return null;
         });
@@ -503,10 +462,7 @@ public abstract class SQLDataManager implements DataManager {
                     return mails;
                 }
             } catch (SQLException e) {
-                if (plugin.config.debug) {
-                    e.printStackTrace();
-                }
-                plugin.getServer().getLogger().warning("Failed to fetch serialized private mails from the database");
+                errWarn("Failed to fetch serialized private mails from the database", e);
             }
             return List.of();
         });
@@ -536,10 +492,7 @@ public abstract class SQLDataManager implements DataManager {
                     return true;
                 }
             } catch (SQLException e) {
-                if (plugin.config.debug) {
-                    e.printStackTrace();
-                }
-                plugin.getServer().getLogger().warning("Failed to insert serialized private mail into database");
+                errWarn("Failed to insert serialized private mail into database", e);
             }
             return false;
         });
@@ -564,10 +517,7 @@ public abstract class SQLDataManager implements DataManager {
                     return true;
                 }
             } catch (SQLException e) {
-                if (plugin.config.debug) {
-                    e.printStackTrace();
-                }
-                plugin.getServer().getLogger().warning("Failed to insert serialized public mail into database");
+                errWarn("Failed to insert serialized public mail into database", e);
             }
             return false;
         });
@@ -591,10 +541,7 @@ public abstract class SQLDataManager implements DataManager {
                     return mails;
                 }
             } catch (SQLException e) {
-                if (plugin.config.debug) {
-                    e.printStackTrace();
-                }
-                plugin.getServer().getLogger().warning("Failed to fetch serialized public mails from the database");
+                errWarn("Failed to fetch serialized public mails from the database", e);
             }
             return List.of();
         });
@@ -650,10 +597,7 @@ public abstract class SQLDataManager implements DataManager {
                     return true;
                 }
             } catch (SQLException e) {
-                if (plugin.config.debug) {
-                    e.printStackTrace();
-                }
-                plugin.getServer().getLogger().warning("Failed to unregister channel from database");
+                errWarn("Failed to unregister channel to database", e);
             }
             return false;
         });
@@ -677,10 +621,7 @@ public abstract class SQLDataManager implements DataManager {
                     }
                 }
             } catch (SQLException e) {
-                if (plugin.config.debug) {
-                    e.printStackTrace();
-                }
-                plugin.getServer().getLogger().warning("Failed to fetch active channel from database");
+                errWarn("Failed to fetch active channel from database", e);
             }
             return "public";
         });
@@ -708,10 +649,7 @@ public abstract class SQLDataManager implements DataManager {
                     return playerChannels;
                 }
             } catch (SQLException e) {
-                if (plugin.config.debug) {
-                    e.printStackTrace();
-                }
-                plugin.getServer().getLogger().warning("Failed to fetch channel statuses from database");
+                errWarn("Failed to fetch channel statuses from database", e);
             }
             return List.of();
         });
@@ -742,10 +680,7 @@ public abstract class SQLDataManager implements DataManager {
                     return channels;
                 }
             } catch (SQLException e) {
-                if (plugin.config.debug) {
-                    e.printStackTrace();
-                }
-                plugin.getServer().getLogger().warning("Failed fetch channels from database");
+                errWarn("Failed fetch channels from database", e);
             }
             return List.of();
         });
@@ -774,10 +709,7 @@ public abstract class SQLDataManager implements DataManager {
                     }
                 }
             } catch (SQLException e) {
-                if (plugin.config.debug) {
-                    e.printStackTrace();
-                }
-                plugin.getServer().getLogger().warning("Failed to register channel to database");
+                errWarn("Failed to register channel to database", e);
             }
             return null;
         });
@@ -799,13 +731,18 @@ public abstract class SQLDataManager implements DataManager {
                     }
                 }
             } catch (SQLException e) {
-                if (plugin.config.debug) {
-                    e.printStackTrace();
-                }
-                plugin.getServer().getLogger().warning("Failed to register channel to database");
+                errWarn("Failed to register channel to database", e);
             }
             return null;
         });
+    }
+
+    private void errWarn(String msg, Exception exception) {
+        if (plugin.config.debug) {
+            exception.printStackTrace();
+            return;
+        }
+        plugin.getServer().getLogger().warning(msg);
     }
 
 

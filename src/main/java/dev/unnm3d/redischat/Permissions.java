@@ -12,6 +12,7 @@ public enum Permissions {
     USE_ENDERCHEST("redischat.showenderchest"),
     USE_CUSTOM_PLACEHOLDERS("redischat.usecustomplaceholders"),
     BROADCAST("redischat.broadcast"),
+    ANNOUNCE("redischat.announce"),
     CLEARCHAT("redischat.clearchat"),
     ADMIN("redischat.admin"),
     ADMIN_EDIT("redischat.editmessage"),

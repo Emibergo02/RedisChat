@@ -7,6 +7,7 @@ import dev.jorel.commandapi.arguments.StringArgument;
 import dev.jorel.commandapi.executors.ExecutorType;
 import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
+import dev.unnm3d.redischat.configs.Config;
 import dev.unnm3d.redischat.utils.AdventureWebuiEditorAPI;
 import lombok.AllArgsConstructor;
 import org.bukkit.command.CommandSender;
@@ -40,8 +41,12 @@ public class MainCommand {
         return new CommandAPICommand("reload")
                 .executes((commandExecutor) -> {
                     if (plugin.config.enableQuitJoinMessages) {
-                        if (plugin.getJoinQuitManager() == null)
-                            plugin.getServer().getPluginManager().registerEvents(plugin.getJoinQuitManager(), plugin);
+                        if (plugin.config.getDataType() == Config.DataType.REDIS) {
+                            if (plugin.getJoinQuitManager() == null)
+                                plugin.getServer().getPluginManager().registerEvents(plugin.getJoinQuitManager(), plugin);
+                        } else {
+                            plugin.getLogger().warning("Join/Quit messages are not supported with H2 or MySQL");
+                        }
                     } else if (plugin.getJoinQuitManager() != null) {
                         HandlerList.unregisterAll(plugin.getJoinQuitManager());
                     }

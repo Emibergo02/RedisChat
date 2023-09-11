@@ -34,7 +34,6 @@ public class PlayerListManager {
                         .toList();
                 if (!tempList.isEmpty())
                     plugin.getDataManager().publishPlayerList(tempList);
-
                 tempList.forEach(s -> playerList.put(s, System.currentTimeMillis()));
             }
         }.runTaskTimerAsynchronously(plugin, 0, 60);//3 seconds

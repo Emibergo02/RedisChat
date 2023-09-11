@@ -83,7 +83,7 @@ public final class RedisChat extends JavaPlugin {
         loadYML();
 
         //Redis section
-        switch (config.getDataMedium()) {
+        switch (config.getDataType()) {
             case REDIS -> this.dataManager = RedisDataManager.startup(this);
             case MYSQL -> this.dataManager = new MySQLDataManager(this);
             case H2 -> this.dataManager = new H2SQLDataManager(this);
@@ -112,8 +112,12 @@ public final class RedisChat extends JavaPlugin {
         loadCommandAPICommand(new ChannelCommand(this).getCommand());
 
         if (config.enableQuitJoinMessages) {
-            this.joinQuitManager = new JoinQuitManager(this);
-            getServer().getPluginManager().registerEvents(this.joinQuitManager, this);
+            if(config.getDataType() == Config.DataType.REDIS) {
+                this.joinQuitManager = new JoinQuitManager(this);
+                getServer().getPluginManager().registerEvents(this.joinQuitManager, this);
+            }else{
+                getLogger().warning("Join/Quit messages are not supported with H2 or MySQL");
+            }
         }
 
 
@@ -125,8 +129,7 @@ public final class RedisChat extends JavaPlugin {
 
         //Announce feature
         this.announceManager = new AnnounceManager(this);
-        AnnounceCommand announceCommand = new AnnounceCommand(this, this.announceManager);
-        loadCommand("announce", announceCommand, announceCommand);
+        loadCommandAPICommand(new AnnounceCommand(this, this.announceManager).getCommand());
 
 
         this.playerListManager = new PlayerListManager(this);

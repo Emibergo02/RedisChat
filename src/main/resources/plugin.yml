@@ -38,9 +38,6 @@ commands:
     description: Spychat command
     aliases: [spyc]
     permission: redischat.spycommand
-  announce:
-    description: RedisChat announce
-    permission: redischat.announce
 permissions:
   redischat.usecustomplaceholders:
     description: Allows to see the item in the chat

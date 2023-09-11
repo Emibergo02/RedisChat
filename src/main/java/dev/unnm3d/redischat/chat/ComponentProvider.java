@@ -14,6 +14,7 @@ import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.minimessage.tag.standard.StandardTags;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
@@ -22,6 +23,11 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
@@ -415,6 +421,27 @@ public class ComponentProvider {
 
     public void logToConsole(Component component) {
         audiences.sender(plugin.getServer().getConsoleSender()).sendMessage(component);
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    public void logToHistory(Component component) {
+        Date now = new Date();
+        File logFile = new File(plugin.getDataFolder(), "logs" + File.separator +
+                "chatlog_" + new SimpleDateFormat("dd-MM-yyyy").format(now) + ".log");
+        logFile.getParentFile().mkdirs();
+
+        FileWriter fw;
+        try {
+            fw = new FileWriter(logFile, true);
+
+            BufferedWriter bw = new BufferedWriter(fw);
+            bw.write("[" + new SimpleDateFormat("HH:mm:ss").format(now) + "] " + PlainTextComponentSerializer.plainText().serialize(component));
+            bw.newLine();
+            bw.close();
+
+        } catch (IOException e) {
+            plugin.getLogger().warning("Error while logging to history: " + e.getMessage());
+        }
     }
 
     public void pauseChat(@NotNull Player player) {

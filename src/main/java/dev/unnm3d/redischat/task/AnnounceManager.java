@@ -30,8 +30,12 @@ public class AnnounceManager {
     }
 
     public AnnounceTask cancelAnnounce(String name) {
-        AnnounceTask at = task.get(name);
-        if (at != null) at.cancel();
+        AnnounceTask at = task.remove(name);
+        if(at==null) return null;
+        at.cancel();
+
+        at = new AnnounceTask(plugin, at.getMessage(), at.getChannelName(), at.getDelay(), at.getInterval());
+        task.put(name, at);
         return at;
     }
 

@@ -24,7 +24,7 @@ public final class Messages {
     public String rate_limited = "<yellow>RedisChat</yellow> <gray>»</gray> <red>You've been rate limited</red>";
     public String caps = "<yellow>RedisChat</yellow> <gray>»</gray> <red>Don't use caps</red>";
     @Comment("%list% is the list of players (separated by commas)")
-    public String ignoring_list = "<yellow>RedisChat</yellow> <gray>»</gray> <aqua>Player ignored</aqua><br><green>%list%</green>";
+    public String ignoring_list = "<yellow>RedisChat</yellow> <gray>»</gray> <aqua>Ignored players:</aqua><br><green>%list%</green>";
     public String ignoring_player = "<yellow>RedisChat</yellow> <gray>»</gray> <green>Ignoring %player%</green>";
     public String not_ignoring_player = "<yellow>RedisChat</yellow> <gray>»</gray> <green>Ignore removed for %player%</green>";
     public String spychat_format = "<yellow>RedisChat</yellow> <gray>»</gray> <red>%sender% said to %receiver% : %message%</red>";
