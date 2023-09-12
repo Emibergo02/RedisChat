@@ -293,6 +293,8 @@ public class ChannelManager extends RedisChatAPI {
                         builder -> builder.matchLiteral("%message%").replacement(toBeReplaced)
                 );
                 getComponentProvider().sendComponentOrCache(p, formatted);
+                if (!plugin.config.privateMessageNotificationSound.isEmpty())
+                    p.playSound(p.getLocation(), Sound.valueOf(plugin.config.privateMessageNotificationSound), 1, 1.0f);
             }
     }
 

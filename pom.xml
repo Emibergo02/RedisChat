@@ -6,7 +6,7 @@
 
     <groupId>dev.unnm3d</groupId>
     <artifactId>RedisChat</artifactId>
-    <version>4.0.3</version>
+    <version>4.0.4</version>
     <packaging>jar</packaging>
 
     <name>RedisChat</name>

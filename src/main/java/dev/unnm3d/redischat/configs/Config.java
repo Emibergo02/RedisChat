@@ -86,6 +86,10 @@ public final class Config {
     public List<String> regex_blacklist = List.of("discord.gg/.*");
     @Comment({"What to replace the blacklisted words with"})
     public String blacklistReplacement = "<obf>*****</obf>";
+    @Comment({"Private message notification sound",
+            "You can find the list of sounds here: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Sound.html",
+            "Leave it empty to disable the sound"})
+    public String privateMessageNotificationSound = "BLOCK_NOTE_BLOCK_BELL";
     @Comment({"Title of the ShowInventory GUI"})
     public String inv_title = "Inventory of %player%";
     @Comment({"Title of the ShowItem GUI"})

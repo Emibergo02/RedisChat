@@ -101,8 +101,6 @@ public abstract class SQLDataManager implements DataManager {
                     plugin.getPlayerListManager().updatePlayerList(Arrays.asList(messageString.split("§")));
             } else if (subchannel.equals(DataKeys.CHAT_CHANNEL.toString())) {
                 plugin.getChannelManager().sendLocalChatMessage(new ChatMessageInfo(messageString));
-            }else if (subchannel.equals(DataKeys.REJOIN_CHANNEL.toString())) {
-                plugin.getJoinQuitManager().rejoinRequest(messageString);
             }
 
         });
