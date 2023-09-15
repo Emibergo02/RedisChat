@@ -278,11 +278,11 @@ public class ComponentProvider {
         String toParse = text;
         for (String playerName : plugin.getPlayerListManager().getPlayerList(mentioner)) {
             playerName = playerName.replace("*", "\\*");
-            Pattern p = Pattern.compile("(^" + playerName + "|" + playerName + "$|\\s" + playerName + "\\s)"); //
+            Pattern p = Pattern.compile("(^" + playerName + "|" + playerName + "$|\\s" + playerName + "\\s)");
             Matcher m = p.matcher(text);
             if (m.find()) {
                 String replacing = m.group();
-                replacing = replacing.replace(playerName, format.mention_format().replace("%player%", playerName));
+                replacing = replacing.replace(m.group(), format.mention_format().replace("%player%", playerName));
                 toParse = toParse.replace(m.group(), replacing);
                 if (plugin.config.debug)
                     Bukkit.getLogger().info("mention parsed for " + playerName + " : " + toParse);

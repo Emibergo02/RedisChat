@@ -67,7 +67,8 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
                     if (plugin.getPlayerListManager() != null)
                         plugin.getPlayerListManager().updatePlayerList(Arrays.asList(message.split("§")));
                 } else if (channel.equals(REJOIN_CHANNEL.toString())) {
-                    plugin.getJoinQuitManager().rejoinRequest(message);
+                    if(plugin.getJoinQuitManager() != null)
+                        plugin.getJoinQuitManager().rejoinRequest(message);
                 }
             }
 

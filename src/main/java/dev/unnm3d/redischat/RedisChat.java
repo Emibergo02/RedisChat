@@ -20,6 +20,7 @@ import dev.unnm3d.redischat.datamanagers.RedisDataManager;
 import dev.unnm3d.redischat.datamanagers.sqlmanagers.H2SQLDataManager;
 import dev.unnm3d.redischat.datamanagers.sqlmanagers.MySQLDataManager;
 import dev.unnm3d.redischat.integrations.OraxenTagResolver;
+import dev.unnm3d.redischat.integrations.PremiumVanishIntegration;
 import dev.unnm3d.redischat.mail.MailCommand;
 import dev.unnm3d.redischat.mail.MailManager;
 import dev.unnm3d.redischat.moderation.SpyChatCommand;
@@ -162,6 +163,10 @@ public final class RedisChat extends JavaPlugin {
         if (getServer().getPluginManager().getPlugin("Oraxen") != null) {
             getLogger().info("Oraxen found, enabling integration");
             componentProvider.addResolverIntegration(new OraxenTagResolver());
+        }
+        if (getServer().getPluginManager().getPlugin("PremiumVanish") != null) {
+            getLogger().info("PremiumVanish found, enabling integration");
+            playerListManager.addVanishIntegration(new PremiumVanishIntegration(this));
         }
     }
 

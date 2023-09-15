@@ -50,7 +50,7 @@ public final class Messages {
     public String publicChannelMuted = "<yellow>RedisChat</yellow> <gray>»</gray> <aqua>You silenced the public channel!</aqua>";
     public String publicChannelUnmuted = "<yellow>RedisChat</yellow> <gray>»</gray> <aqua>You unmuted the public channel!</aqua>";
     @Comment("The text after the /msg command (example: /msg <player> <message> will be -> /msg <user> <message>")
-    public String msgPlayerSuggestions = "player";
+    public String msgPlayerSuggestion = "player";
     @Comment("The text after the /msg command (example: /msg <player> <message> will be -> /msg <player> <text>")
     public String msgMessageSuggestion = "message";
     @Comment("The text after the /r command (example: /r <message> will be -> /r <text>")
