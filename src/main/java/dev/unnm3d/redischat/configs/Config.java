@@ -6,6 +6,7 @@ import dev.unnm3d.redischat.chat.ChatFormat;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
@@ -109,6 +110,10 @@ public final class Config {
     public int rate_limit = 3;
     @Comment("Here you can set the time in seconds that a player can send the number of messages specified in rate_limit")
     public int rate_limit_time_seconds = 5;
+    @Comment("Rejoin delay in milliseconds")
+    public int rejoinSendDelay = 500;
+    @Comment("Quit delay in milliseconds")
+    public int quitSendWaiting = 3000;
     @Comment("Messages with this prefix will be sent to staff chat")
     public String staffChatPrefix = "!";
     @Comment("The format of the staff chat messages")
@@ -128,9 +133,6 @@ public final class Config {
     public List<String> disabledCommands = List.of();
     @Comment("The [inv], [item] and [ec] placeholders will be considered as minimessage tags")
     public boolean interactiveChatNostalgia = false;
-
-    @Comment("Reply only to the last player you have messaged")
-    public boolean replyToLastMessaged = false;
     @Comment("Toggle debug mode (by default is false)")
     public boolean debug = false;
 
@@ -163,7 +165,8 @@ public final class Config {
             int interval) {
     }
 
-    public @NotNull List<ChatFormat> getChatFormats(@NotNull CommandSender p) {
+    public @NotNull List<ChatFormat> getChatFormats(@Nullable CommandSender p) {
+        if (p == null) return List.of();
         List<ChatFormat> chatFormatList = formats.stream().filter(format -> p.hasPermission(format.permission())).toList();
         if (chatFormatList.isEmpty()) {
             Bukkit.getLogger().info("No format found for " + p.getName());

@@ -65,9 +65,8 @@ public class ReplyCommand {
 
                                 plugin.getComponentProvider().sendMessage(sender, formatted.replaceText(aBuilder -> aBuilder.matchLiteral("%message%").replacement(toBeReplaced)));
 
-                                if (!plugin.config.replyToLastMessaged) {
-                                    plugin.getDataManager().setReplyName(receiver.get(), sender.getName());
-                                }
+                                plugin.getDataManager().setReplyName(receiver.get(), sender.getName());
+
                                 if (plugin.config.debug)
                                     Bukkit.getLogger().info("ReplyCommand: " + (System.currentTimeMillis() - init) + "ms");
                             });

@@ -24,6 +24,7 @@ import xyz.xenondevs.invui.window.Window;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ChannelManager extends RedisChatAPI {
@@ -47,7 +48,8 @@ public class ChannelManager extends RedisChatAPI {
         plugin.getDataManager().getChannels()
                 .thenAccept(channels -> {
                     registeredChannels.clear();
-                    channels.forEach(ch -> plugin.getLogger().info("Channel: " + ch.getName()));
+                    if (plugin.config.debug)
+                        channels.forEach(ch -> plugin.getLogger().info("Channel: " + ch.getName()));
                     channels.forEach(channel -> registeredChannels.put(channel.getName(), channel));
                 });
     }
@@ -155,12 +157,21 @@ public class ChannelManager extends RedisChatAPI {
         plugin.getServer().getPluginManager().callEvent(event);
         if (event.isCancelled()) return;
 
-        // Send to other servers
-        plugin.getDataManager().sendChatMessage(ChatMessageInfo.craftChannelChatMessage(
+
+        ChatMessageInfo cmi = ChatMessageInfo.craftChannelChatMessage(
                 player.getName(),
                 event.getFormat(),
                 event.getMessage(),
-                event.getChannel().getName()));
+                event.getChannel().getName());
+
+        if (channel.getProximityDistance() > 0) {// Send to local server
+            sendGenericChat(cmi);
+            return;
+        }
+
+        // Send to other servers
+        plugin.getDataManager().sendChatMessage(cmi);
+
 
         // Send to discord via webhook
         try {
@@ -169,9 +180,8 @@ public class ChannelManager extends RedisChatAPI {
             e.printStackTrace();
         }
 
-
         if (plugin.config.debug) {
-            plugin.getLogger().info("2) Send (Redis): " + (System.currentTimeMillis() - init) + "ms");
+            plugin.getLogger().info("2) Send (Redis): " + (System.currentTimeMillis() - init) + "ms, Millis: " + System.currentTimeMillis());
         }
     }
 
@@ -236,17 +246,21 @@ public class ChannelManager extends RedisChatAPI {
 
     @Override
     public void sendGenericChat(@NotNull ChatMessageInfo chatMessageInfo) {
+        long init = System.currentTimeMillis();
+        Optional<Channel> optChannel = Optional.ofNullable(registeredChannels.get(chatMessageInfo.getReceiverName().substring(1)));
+        if (plugin.config.debug) {
+            plugin.getLogger().info("R2) Permission check");
+        }
 
-        String channelPermission = chatMessageInfo.isChannel() ?
-                Permissions.CHANNEL_PREFIX.getPermission() + chatMessageInfo.getReceiverName().substring(1) :
-                Permissions.CHANNEL_PREFIX.getPermission() + KnownChatEntities.PUBLIC_CHAT;
 
         Component formattedComponent = MiniMessage.miniMessage().deserialize(chatMessageInfo.getFormatting()).replaceText(
                 builder -> builder.matchLiteral("%message%").replacement(
                         MiniMessage.miniMessage().deserialize(chatMessageInfo.getMessage())
                 )
         );
-
+        if (plugin.config.debug) {
+            plugin.getLogger().info("R3) Componentize message: " + (System.currentTimeMillis() - init) + "ms");
+        }
         if (!plugin.config.chatLogging) {
             getComponentProvider().logToConsole(formattedComponent);//send to console for logging purposes
         } else {
@@ -254,13 +268,27 @@ public class ChannelManager extends RedisChatAPI {
         }
 
         for (Player onlinePlayer : plugin.getServer().getOnlinePlayers()) {
-            if (!onlinePlayer.hasPermission(channelPermission)) continue;
+            if (optChannel.isPresent() && !onlinePlayer.hasPermission(Permissions.CHANNEL_PREFIX.getPermission() + optChannel.get().getName()))
+                continue;
+            if (optChannel.isPresent() && !checkProximity(onlinePlayer, chatMessageInfo.getSenderName(), optChannel.get()))
+                continue;
 
             if (chatMessageInfo.getMessage().contains(onlinePlayer.getName())) {
                 onlinePlayer.playSound(onlinePlayer.getLocation(), Sound.BLOCK_NOTE_BLOCK_GUITAR, 1, 2.0f);
             }
             getComponentProvider().sendComponentOrCache(onlinePlayer, formattedComponent);
         }
+        if (plugin.config.debug) {
+            plugin.getLogger().info("R4) Log and send message: " + (System.currentTimeMillis() - init) + "ms");
+        }
+    }
+
+    private boolean checkProximity(@NotNull Player receiver, String senderName, Channel channel) {
+        if (channel.getProximityDistance() <= 0) return true;
+        Player sender = Bukkit.getPlayer(senderName);
+        if (sender == null) return false;
+        if (!sender.getWorld().equals(receiver.getWorld())) return false;
+        return !(sender.getLocation().distance(receiver.getLocation()) > channel.getProximityDistance());
     }
 
     @Override
@@ -314,13 +342,15 @@ public class ChannelManager extends RedisChatAPI {
     }
 
     @Override
-    public Channel getChannelOrPublic(@Nullable String channelName, CommandSender player) {
+    public Channel getChannelOrPublic(@Nullable String channelName, @Nullable CommandSender player) {
         if (channelName == null) return getPublicChannel(player);
+        if (channelName.equals(KnownChatEntities.STAFFCHAT_CHANNEL_NAME.toString()))
+            return getStaffChatChannel();
         return registeredChannels.getOrDefault(channelName, getPublicChannel(player));
     }
 
     @Override
-    public Channel getPublicChannel(CommandSender player) {
+    public Channel getPublicChannel(@Nullable CommandSender player) {
         List<ChatFormat> chatFormatList = plugin.config.getChatFormats(player);
         if (chatFormatList.isEmpty())
             return new Channel(
@@ -353,6 +383,17 @@ public class ChannelManager extends RedisChatAPI {
                 plugin.config.staffChatDiscordWebhook,
                 false,
                 null);
+    }
+
+    public void setActiveChannel(String playerName, String channelName) {
+        java.util.HashMap<String, String> playerChannelsMap = new java.util.HashMap<>();
+        playerChannelsMap.put(channelName, "1");
+        plugin.getDataManager().getActivePlayerChannel(playerName, plugin.getChannelManager().getRegisteredChannels())
+                .thenAcceptAsync(channel -> {
+                    if (channel != null)
+                        playerChannelsMap.put(channel, "0");
+                    plugin.getDataManager().setPlayerChannelStatuses(playerName, playerChannelsMap);
+                });
     }
 
     @Override

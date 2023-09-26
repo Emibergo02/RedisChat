@@ -6,7 +6,7 @@
 
     <groupId>dev.unnm3d</groupId>
     <artifactId>RedisChat</artifactId>
-    <version>4.0.6</version>
+    <version>4.0.8</version>
     <packaging>jar</packaging>
 
     <name>RedisChat</name>
@@ -124,6 +124,7 @@
             <groupId>com.github.Emibergo02.ConfigLib</groupId>
             <artifactId>configlib-paper</artifactId>
             <version>master-SNAPSHOT</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>net.kyori</groupId>

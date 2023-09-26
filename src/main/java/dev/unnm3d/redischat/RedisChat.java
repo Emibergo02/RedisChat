@@ -76,6 +76,7 @@ public final class RedisChat extends JavaPlugin {
         CommandAPI.onLoad(new CommandAPIBukkitConfig(this).silentLogs(true).verboseOutput(false));
     }
 
+
     @Override
     public void onEnable() {
         CommandAPI.onEnable();

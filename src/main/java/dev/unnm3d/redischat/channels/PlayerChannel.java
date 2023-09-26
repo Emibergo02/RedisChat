@@ -9,6 +9,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
+import xyz.xenondevs.invui.gui.GuiParent;
 import xyz.xenondevs.invui.item.ItemProvider;
 import xyz.xenondevs.invui.item.builder.ItemBuilder;
 import xyz.xenondevs.invui.item.impl.AbstractItem;
@@ -62,7 +63,14 @@ public class PlayerChannel extends AbstractItem {
         if (clickType.isLeftClick()) {
             if (status == 0) {
                 status = 1;
-                RedisChat.getInstance().getDataManager().setPlayerChannelStatuses(player.getName(), Map.of(channel.getName(), "1"));
+                RedisChat.getInstance().getChannelManager().setActiveChannel(player.getName(), channel.getName());
+                getWindows().stream().findFirst()
+                        .map(w -> (GuiParent) w)
+                        .ifPresent(abstractWindow -> {
+                            for (int i = 0; i < 36; i++) {
+                                abstractWindow.handleSlotElementUpdate(null, i);
+                            }
+                        });
             } else if (status == 1) {
                 status = 0;
                 RedisChat.getInstance().getDataManager().setPlayerChannelStatuses(player.getName(), Map.of(channel.getName(), "0"));

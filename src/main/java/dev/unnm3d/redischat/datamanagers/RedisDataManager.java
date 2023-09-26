@@ -61,13 +61,16 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
         pubSubConnection.addListener(new RedisPubSubListener<>() {
             @Override
             public void message(String channel, String message) {
-                if (channel.equals(CHAT_CHANNEL.toString()))
+                if (channel.equals(CHAT_CHANNEL.toString())) {
+                    if (plugin.config.debug) {
+                        plugin.getLogger().info("R1) Received message from redis: " + System.currentTimeMillis());
+                    }
                     plugin.getChannelManager().sendLocalChatMessage(new ChatMessageInfo(message));
-                else if (channel.equals(PLAYERLIST.toString())) {
+                } else if (channel.equals(PLAYERLIST.toString())) {
                     if (plugin.getPlayerListManager() != null)
                         plugin.getPlayerListManager().updatePlayerList(Arrays.asList(message.split("§")));
                 } else if (channel.equals(REJOIN_CHANNEL.toString())) {
-                    if(plugin.getJoinQuitManager() != null)
+                    if (plugin.getJoinQuitManager() != null)
                         plugin.getJoinQuitManager().rejoinRequest(message);
                 }
             }
@@ -103,6 +106,9 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
 
     @Override
     public CompletionStage<Optional<String>> getReplyName(@NotNull String requesterName) {
+        if (plugin.config.debug) {
+            plugin.getLogger().info("Getting reply name for " + requesterName);
+        }
         return getConnectionAsync(connection -> connection.hget(REPLY.toString(), requesterName))
                 .thenApply(Optional::ofNullable)
                 .exceptionally(throwable -> {
@@ -115,15 +121,21 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
 
     @Override
     public void setReplyName(@NotNull String nameReceiver, @NotNull String requesterName) {
-        getConnectionAsync(conn ->
-                conn.hset(REPLY.toString(), nameReceiver, requesterName)
-                        .toCompletableFuture().orTimeout(1, TimeUnit.SECONDS)
-                        .exceptionally(exception -> {
-                            exception.printStackTrace();
-                            plugin.getLogger().warning("Error when setting reply name");
-                            return null;
-                        })
-        );
+        getConnectionPipeline(conn -> {
+            conn.hset(REPLY.toString(), nameReceiver, requesterName)
+                    .exceptionally(exception -> {
+                        exception.printStackTrace();
+                        plugin.getLogger().warning("Error when setting reply name");
+                        return null;
+                    });
+            conn.hset(REPLY.toString(), requesterName, nameReceiver)
+                    .exceptionally(exception -> {
+                        exception.printStackTrace();
+                        plugin.getLogger().warning("Error when setting reply name");
+                        return null;
+                    });
+            return null;
+        });
     }
 
     @Override
@@ -469,12 +481,15 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
 
     @Override
     public CompletionStage<@Nullable String> getActivePlayerChannel(@NotNull String playerName, Map<String, Channel> registeredChannels) {
-        return getPlayerChannelStatuses(playerName, registeredChannels)
-                .thenApply(playerChannels -> playerChannels.stream()
-                        .filter(PlayerChannel::isListening)
-                        .findFirst()
-                        .map(playerChannel -> playerChannel.getChannel().getName())
-                        .orElse(null));
+        return getConnectionAsync(conn ->
+                conn.hgetall(PLAYER_CHANNELS_PREFIX + playerName)
+                        .thenApply(result -> {
+                            for (Map.Entry<String, String> channelStatus : result.entrySet()) {
+                                if (channelStatus.getValue().equals("1"))
+                                    return channelStatus.getKey();
+                            }
+                            return null;
+                        }));
     }
 
     @Override

@@ -20,6 +20,7 @@ public class ChannelCommand {
                 .withSubcommand(getSetFormatSubCommand())
                 .withSubcommand(getDeleteSubCommand())
                 .withSubcommand(getEnableSubCommand())
+                .withSubcommand(getListenSubCommand())
                 .withSubcommand(getDisableSubCommand())
                 .executesPlayer((sender, args) -> {
                     try {
@@ -42,8 +43,10 @@ public class ChannelCommand {
                 .withArguments(new IntegerArgument("rate-limit"))
                 .withArguments(new IntegerArgument("rate-limit-period"))
                 .withArguments(new BooleanArgument("filtered"))
-                .withOptionalArguments(new StringArgument("discord-webhook"))
-                .withOptionalArguments(new IntegerArgument("proximity-distance"))
+                .withOptionalArguments(new IntegerArgument("proximity-distance")
+                        .replaceSuggestions(ArgumentSuggestions.strings("-1", "100")))
+                .withOptionalArguments(new TextArgument("discord-webhook")
+                        .replaceSuggestions(ArgumentSuggestions.strings("\"https://discord.com/api/webhooks/...\"")))
                 .executesPlayer((sender, args) -> {
                     Optional<Object> discordWebhook = args.getOptional("discord-webhook");
                     Optional<Object> proximityDistance = args.getOptional("proximity-distance");
@@ -111,6 +114,33 @@ public class ChannelCommand {
 
                     plugin.getDataManager().setPlayerChannelStatuses((String) args.get(0), Map.of((String) args.get(1), "0"));
                     plugin.messages.sendMessage(sender, plugin.messages.channelEnabled
+                            .replace("%channel%", (String) args.get(1))
+                            .replace("%player%", (String) args.get(0))
+                    );
+                });
+    }
+
+    public CommandAPICommand getListenSubCommand() {
+        return new CommandAPICommand("force-listen")
+                .withPermission(Permissions.CHANNEL_TOGGLE_PLAYER.getPermission())
+                .withArguments(new StringArgument("playerName")
+                        .replaceSuggestions(ArgumentSuggestions.strings(commandSenderSuggestionInfo ->
+                                plugin.getPlayerListManager().getPlayerList(commandSenderSuggestionInfo.sender()).stream()
+                                        .filter(s -> s.toLowerCase().startsWith(commandSenderSuggestionInfo.currentArg().toLowerCase()))
+                                        .toArray(String[]::new))))
+                .withArguments(new StringArgument("channelName")
+                        .replaceSuggestions(ArgumentSuggestions.strings(commandSenderSuggestionInfo ->
+                                plugin.getChannelManager().getRegisteredChannels().keySet().stream()
+                                        .filter(s -> s.toLowerCase().startsWith(commandSenderSuggestionInfo.currentArg()))
+                                        .toArray(String[]::new)
+                        )))
+                .executesPlayer((sender, args) -> {
+                    if (args.count() < 2) {
+                        plugin.messages.sendMessage(sender, plugin.messages.missing_arguments);
+                        return;
+                    }
+                    plugin.getChannelManager().setActiveChannel((String) args.get(0), (String) args.get(1));
+                    plugin.messages.sendMessage(sender, plugin.messages.channelForceListen
                             .replace("%channel%", (String) args.get(1))
                             .replace("%player%", (String) args.get(0))
                     );

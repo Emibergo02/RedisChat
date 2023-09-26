@@ -20,8 +20,6 @@ public class StaffChatCommand {
                 .withAliases("sc")
                 .withArguments(new GreedyStringArgument(plugin.messages.staffChatSuggestion))
                 .executes((sender, args) -> {
-                    List<ChatFormat> chatFormatList = plugin.config.getChatFormats(sender);
-                    if (chatFormatList.isEmpty()) return;
                     String message = (String) args.get(0);
                     if (message == null) return;
                     plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () ->

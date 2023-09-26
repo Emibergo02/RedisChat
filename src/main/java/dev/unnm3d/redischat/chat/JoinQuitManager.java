@@ -29,10 +29,12 @@ public class JoinQuitManager implements Listener {
 
         //Join event happens at the same time as the quit event in the other server (we need to delay it)
         redisChat.getServer().getScheduler().runTaskLater(redisChat, () ->
-                redisChat.getDataManager().sendRejoin(joinEvent.getPlayer().getName()), 5);
+                redisChat.getDataManager().sendRejoin(joinEvent.getPlayer().getName()), redisChat.config.rejoinSendDelay / 50L);
 
         if (redisChat.getPlayerListManager().getPlayerList(joinEvent.getPlayer())
                 .contains(joinEvent.getPlayer().getName())) return;
+
+        if(redisChat.getPlayerListManager().isVanished(joinEvent.getPlayer())) return;
 
         if (!joinEvent.getPlayer().hasPlayedBefore() && !redisChat.config.first_join_message.isEmpty()) {
             redisChat.getDataManager().sendChatMessage(new ChatMessageInfo(
@@ -69,6 +71,8 @@ public class JoinQuitManager implements Listener {
     public void onQuit(PlayerQuitEvent quitEvent) {
         quitEvent.setQuitMessage(null);
 
+        if(redisChat.getPlayerListManager().isVanished(quitEvent.getPlayer())) return;
+
         //Get quit message
         List<ChatFormat> chatFormatList = redisChat.config.getChatFormats(quitEvent.getPlayer());
         if (chatFormatList.isEmpty()) return;
@@ -87,7 +91,7 @@ public class JoinQuitManager implements Listener {
     private CompletableFuture<Void> craftRejoinFuture(String playerName, String parsedQuitMessage) {
         return new CompletableFuture<>()
                 .thenAccept(aVoid -> findPlayerRequests.remove(playerName)) //Remove from map, player rejoined
-                .orTimeout(1, TimeUnit.SECONDS)
+                .orTimeout(redisChat.config.quitSendWaiting, TimeUnit.MILLISECONDS)
                 .exceptionally(onTimeout -> {                               //Timeout, player quit
                     redisChat.getDataManager().sendChatMessage(
                             new ChatMessageInfo(null,

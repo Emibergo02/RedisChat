@@ -67,12 +67,12 @@ public class Channel {
     }
 
     public String serialize() {
-        return name + "§§§" + format + "§§§" + rateLimit + "§§§" + rateLimitPeriod + "§§§" + proximityDistance + "§§§" + discordWebhook + "§§§" + (filtered ? "0" : "1") + "§§§" + (notificationSound == null ? "" : notificationSound.toString());
+        return name + "§§§" + format + "§§§" + rateLimit + "§§§" + rateLimitPeriod + "§§§" + proximityDistance + "§§§" + discordWebhook + "§§§" + (filtered ? "0" : "1") + (notificationSound == null ? "" : "§§§" + notificationSound);
     }
 
     public static Channel deserialize(String serialized) {
         String[] split = serialized.split("§§§");
-        String soundString = split[7];
-        return new Channel(split[0], split[1], Integer.parseInt(split[2]), Integer.parseInt(split[3]), Integer.parseInt(split[4]), split[5], split[6].equals("0"), soundString.equals("") ? null : Sound.valueOf(soundString));
+        return new Channel(split[0], split[1], Integer.parseInt(split[2]), Integer.parseInt(split[3]), Integer.parseInt(split[4]), split[5], split[6].equals("0"), split.length == 8 ? Sound.valueOf(split[7]) : null);
     }
+
 }

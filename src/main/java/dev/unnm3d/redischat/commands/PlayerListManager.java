@@ -4,6 +4,7 @@ import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.api.VanishIntegration;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.Nullable;
@@ -57,10 +58,16 @@ public class PlayerListManager {
 
     public Set<String> getPlayerList(@Nullable CommandSender sender) {
         Set<String> keySet = new HashSet<>(playerList.keySet());
-        if (sender != null)
+
+        if (sender != null) {
             vanishIntegrations.forEach(vanishIntegration ->
                     keySet.removeIf(pName -> !vanishIntegration.canSee(sender, pName)));
+        }
         return keySet;
+    }
+
+    public boolean isVanished(Player player) {
+        return vanishIntegrations.stream().anyMatch(vanishIntegration -> vanishIntegration.isVanished(player));
     }
 
     public void stop() {

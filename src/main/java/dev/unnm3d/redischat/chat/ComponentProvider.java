@@ -282,14 +282,14 @@ public class ComponentProvider {
             Matcher m = p.matcher(text);
             if (m.find()) {
                 String replacing = m.group();
-                replacing = replacing.replace(m.group(), format.mention_format().replace("%player%", playerName));
+                replacing = replacing.replace(m.group().trim(), format.mention_format().replace("%player%", playerName));
                 toParse = toParse.replace(m.group(), replacing);
                 if (plugin.config.debug)
                     Bukkit.getLogger().info("mention parsed for " + playerName + " : " + toParse);
             }
         }
 
-        return toParse;
+        return toParse.replace("\\*", "*");
     }
 
     /**

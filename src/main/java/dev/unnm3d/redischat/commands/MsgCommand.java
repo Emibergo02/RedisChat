@@ -22,7 +22,7 @@ public class MsgCommand {
 
     public CommandAPICommand getCommand() {
         return new CommandAPICommand("msg")
-                .withAliases("rmsg", "rpm", "msg", "pm", "rmessage")
+                .withAliases("rmsg", "whisper", "msg", "pm", "w")
                 .withPermission(Permissions.MESSAGE.getPermission())
                 .withArguments(new GreedyStringArgument(plugin.messages.msgPlayerSuggestion + " " + plugin.messages.msgMessageSuggestion)
                         .replaceSuggestions(ArgumentSuggestions.strings(commandSenderSuggestionInfo ->
