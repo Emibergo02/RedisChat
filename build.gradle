@@ -1,0 +1,67 @@
+plugins {
+    id 'java'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+}
+
+repositories {
+    mavenLocal()
+    maven { url 'https://jitpack.io' }
+    maven { url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
+    maven { url 'https://repo.extendedclip.com/content/repositories/placeholderapi/' }
+    maven { url 'https://repo.xenondevs.xyz/releases' }
+    maven { url 'https://repo.maven.apache.org/maven2/' }
+    maven { url 'https://repo.codemc.org/repository/maven-public/' }
+}
+
+dependencies {
+    implementation 'net.kyori:adventure-text-minimessage:4.14.0'
+    implementation 'net.kyori:adventure-text-serializer-plain:4.14.0'
+    implementation 'com.github.Emibergo02.ConfigLib:configlib-paper:master-SNAPSHOT'
+    implementation 'net.kyori:adventure-platform-bukkit:4.3.0'
+    implementation 'xyz.xenondevs.invui:invui-core:1.17'
+    implementation 'xyz.xenondevs.invui:inventory-access-r5:1.17'
+    implementation 'xyz.xenondevs.invui:inventory-access-r7:1.17'
+    implementation 'xyz.xenondevs.invui:inventory-access-r9:1.17'
+    implementation 'xyz.xenondevs.invui:inventory-access-r13:1.17'
+    implementation 'xyz.xenondevs.invui:inventory-access-r14:1.17'
+    implementation 'dev.jorel:commandapi-bukkit-shade:9.2.0'
+
+    compileOnly 'org.spigotmc:spigot-api:1.16.5-R0.1-SNAPSHOT'
+    compileOnly 'me.clip:placeholderapi:2.11.3'
+    compileOnly 'io.lettuce:lettuce-core:6.2.5.RELEASE'
+    compileOnly 'org.yaml:snakeyaml:2.0'
+    compileOnly 'org.snakeyaml:snakeyaml-engine:2.3'
+    compileOnly 'org.jetbrains:annotations:24.0.1'
+    compileOnly 'com.zaxxer:HikariCP:5.0.1'
+    compileOnly 'org.mariadb.jdbc:mariadb-java-client:3.1.4'
+    compileOnly 'com.h2database:h2:2.2.220'
+    compileOnly 'net.luckperms:api:5.4'
+    compileOnly 'com.github.MilkBowl:VaultAPI:1.7'
+    compileOnly 'com.github.oraxen:oraxen:1.162.0'
+    compileOnly 'com.github.LeonMangler:PremiumVanishAPI:2.8.8'
+    compileOnly 'org.projectlombok:lombok:1.18.26'
+
+    annotationProcessor('org.projectlombok:lombok:1.18.26')
+}
+
+shadowJar {
+    dependencies {
+        include dependency("dev.jorel:commandapi-bukkit-shade:9.2.0")
+    }
+    relocate 'net.kyori', 'dev.unnm3d.redischat.libraries'
+    relocate 'de.exlll.configlib', 'dev.unnm3d.redischat.libraries.configlib'
+    relocate 'xyz.xenondevs.invui', 'dev.unnm3d.redischat.libraries.invui'
+    relocate 'xyz.xenondevs.inventoryaccess', 'dev.unnm3d.redischat.libraries.inventoryaccess'
+    relocate 'dev.jorel.commandapi', 'dev.unnm3d.redischat.libraries.commandapi'
+}
+
+group = 'dev.unnm3d'
+version = '4.0.8'
+description = 'RedisChat'
+
+compileJava.options.encoding = 'UTF-8'
+compileJava.options.release.set 16
+javadoc.options.encoding = 'UTF-8'
+javadoc.options.addStringOption('Xdoclint:none', '-quiet')
+
+jar.dependsOn(shadowJar)

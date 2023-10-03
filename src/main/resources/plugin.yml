@@ -4,12 +4,13 @@ main: dev.unnm3d.redischat.RedisChat
 author: Unnm3d
 api-version: 1.16
 libraries:
-  - io.lettuce:lettuce-core:6.2.4.RELEASE
+  - io.lettuce:lettuce-core:6.2.5.RELEASE
   - org.yaml:snakeyaml:1.27
   - org.snakeyaml:snakeyaml-engine:2.3
-  - org.jetbrains:annotations:19.0.0
+  - org.jetbrains:annotations:24.0.1
   - com.zaxxer:HikariCP:5.0.1
   - com.h2database:h2:2.2.220
+  - org.projectlombok:lombok:1.18.26
 depend:
   - PlaceholderAPI
 softdepend:

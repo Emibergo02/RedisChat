@@ -312,10 +312,17 @@ public class ChannelManager extends RedisChatAPI {
             if (p.isOnline()) {
                 List<ChatFormat> chatFormatList = plugin.config.getChatFormats(p);
                 if (chatFormatList.isEmpty()) return;
-                Component formatted = getComponentProvider().parse(null, chatFormatList.get(0).receive_private_format()
-                        .replace("%receiver%", chatMessageInfo.getReceiverName())
-                        .replace("%sender%", chatMessageInfo.getSenderName()));
-                Component toBeReplaced = getComponentProvider().parse(p, chatMessageInfo.getMessage(), false, false, false, getComponentProvider().getStandardTagResolver());
+                Component formatted = getComponentProvider().parse(null,
+                        chatFormatList.get(0).receive_private_format()
+                                .replace("%receiver%", chatMessageInfo.getReceiverName())
+                                .replace("%sender%", chatMessageInfo.getSenderName()),
+                        //Parameters disabled: already parsed on sender side
+                        false, false, false,
+                        getComponentProvider().getStandardTagResolver());
+
+                Component toBeReplaced = getComponentProvider().parse(p, chatMessageInfo.getMessage(),
+                        false, false, false,
+                        getComponentProvider().getStandardTagResolver());
                 //Put message into format
                 formatted = formatted.replaceText(
                         builder -> builder.matchLiteral("%message%").replacement(toBeReplaced)

@@ -21,7 +21,7 @@ public class AnnounceCommand {
     public CommandAPICommand getCommand() {
         return new CommandAPICommand("announce")
                 .withPermission(Permissions.ANNOUNCE.getPermission())
-                .withArguments(new MultiLiteralArgument("action", List.of("stop", "start")))
+                .withArguments(new MultiLiteralArgument("action", "stop", "start"))
                 .withArguments(new StringArgument("announceName")
                         .replaceSuggestions(ArgumentSuggestions.strings(commandSenderSuggestionInfo ->
                                 plugin.config.announces.stream()

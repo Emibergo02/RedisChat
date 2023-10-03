@@ -66,7 +66,7 @@ public class MailCommand {
     public CommandAPICommand getWebUISubCommand() {
         return new CommandAPICommand("webui")
                 .withArguments(new StringArgument("token"))
-                .withOptionalArguments(new MultiLiteralArgument("action", List.of("confirm", "abort", "preview")))
+                .withOptionalArguments(new MultiLiteralArgument("action", "confirm", "abort", "preview"))
                 .executes((sender, args) -> {
                     String token = (String) args.get(0);
                     Optional<Object> action = args.getOptional(1);
