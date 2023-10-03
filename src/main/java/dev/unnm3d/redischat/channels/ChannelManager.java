@@ -120,7 +120,7 @@ public class ChannelManager extends RedisChatAPI {
         if (!parsePlaceholders) {
             message = getComponentProvider().purgeTags(message);
         }
-        if (message.trim().equals("")) return;//Check if message is empty after purging tags
+        if (message.trim().isEmpty()) return;//Check if message is empty after purging tags
 
         if (plugin.config.debug) {
             plugin.getLogger().info("2) Placeholders or purge tags: " + (System.currentTimeMillis() - init) + "ms");

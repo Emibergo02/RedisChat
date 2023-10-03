@@ -11,8 +11,6 @@ import dev.unnm3d.redischat.configs.Config;
 import dev.unnm3d.redischat.task.AnnounceManager;
 import lombok.AllArgsConstructor;
 
-import java.util.List;
-
 @AllArgsConstructor
 public class AnnounceCommand {
     private final RedisChat plugin;
