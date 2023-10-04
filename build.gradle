@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'com.github.johnrengelman.shadow' version '8.1.1'
+    id 'maven-publish'
 }
 group = 'dev.unnm3d'
 version = '4.1.1'
@@ -99,6 +100,7 @@ tasks.withType(JavaCompile).configureEach {
     options.release.set targetJavaVersion
     options.encoding = 'UTF-8'
 }
+
 
 processResources {
     def props = [version: version]
