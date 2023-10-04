@@ -51,6 +51,8 @@ public final class Config {
     public boolean legacyColorCodesSupport = true;
     @Comment("Enables /rmail /mail and the whole feature")
     public boolean enableMails = true;
+    @Comment("Register tag integrations (Like Oraxen Integration which is internal)")
+    public boolean useTagsIntegration = true;
     @Comment({"Use RedisChat for join and quit messages",
             "The quit message will be delayed because it might be a early reconnection to one of the servers using RedisChat"})
     public boolean enableQuitJoinMessages = true;

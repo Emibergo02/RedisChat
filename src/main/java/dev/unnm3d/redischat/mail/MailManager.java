@@ -26,7 +26,7 @@ public class MailManager {
         this.publicMailList = new ArrayList<>();
         this.editorMode = new HashMap<>();
         this.mailGUI = new MailGUI(plugin);
-        plugin.getDataManager().getPublicMails().toCompletableFuture()
+        plugin.getDataManager().getPublicMails()
                 .thenAccept(list -> publicMailList = list);
     }
 

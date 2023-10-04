@@ -168,11 +168,9 @@ public class ComponentProvider {
                 }
                 if (plugin.config.enablePlaceholderGlitch) {
                     text = text.replace(reformattedPlaceholder, miniMessage.serialize(LegacyComponentSerializer.legacySection().deserialize(parsedPlaceH)));
-                } else if (parsedPlaceH.contains("§")) {
+                } else {
                     //Colored placeholder needs to be pasted after the normal text is parsed
                     placeholders.put(reformattedPlaceholder, LegacyComponentSerializer.legacySection().deserialize(parsedPlaceH));
-                } else {
-                    text = text.replace(reformattedPlaceholder, parsedPlaceH);
                 }
             }
         }
@@ -324,8 +322,14 @@ public class ComponentProvider {
      * @return The parsed text
      */
     private String parseResolverIntegrations(String text) {
-        for (TagResolverIntegration resolver : this.tagResolverIntegrationList) {
-            text = resolver.parseTags(text).replace("\\", "");
+        if (!plugin.config.useTagsIntegration) return text;
+        try {
+            for (TagResolverIntegration resolver : this.tagResolverIntegrationList) {
+                text = resolver.parseTags(text).replace("\\", "");
+            }
+        } catch (Exception e) {
+            Bukkit.getLogger().warning("Error while parsing tags: " + e.getMessage());
+            Bukkit.getLogger().warning("If you don't want any tag integration disable it in the config");
         }
         return text;
     }

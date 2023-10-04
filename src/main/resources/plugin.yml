@@ -1,5 +1,5 @@
 name: RedisChat
-version: '${project.version}'
+version: '${version}'
 main: dev.unnm3d.redischat.RedisChat
 author: Unnm3d
 api-version: 1.16
