@@ -6,6 +6,8 @@ plugins {
 group = 'dev.unnm3d'
 version = '4.1.1'
 
+defaultTasks 'build'
+
 repositories {
     mavenLocal()
     maven { url 'https://jitpack.io' }
@@ -110,5 +112,16 @@ processResources {
         expand props
     }
 }
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            groupId = 'dev.unnm3d'
+            artifactId = 'RedisChat'
+            version = "$rootProject.version"
+            artifact shadowJar
+        }
+    }
+}
+
 jar.dependsOn shadowJar
 clean.delete "$rootDir/target"
