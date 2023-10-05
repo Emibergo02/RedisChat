@@ -1,12 +1,13 @@
 plugins {
-    id 'java'
     id 'com.github.johnrengelman.shadow' version '8.1.1'
     id 'maven-publish'
+    id 'java'
 }
+
+
 group = 'dev.unnm3d'
 version = '4.1.1'
 
-defaultTasks 'build'
 
 repositories {
     mavenLocal()
@@ -96,6 +97,10 @@ java {
     if (JavaVersion.current() < javaVersion) {
         toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
     }
+
+    withSourcesJar()
+    withJavadocJar()
+
 }
 
 tasks.withType(JavaCompile).configureEach {
@@ -112,13 +117,16 @@ processResources {
         expand props
     }
 }
+
 publishing {
     publications {
         mavenJava(MavenPublication) {
             groupId = 'dev.unnm3d'
-            artifactId = 'RedisChat'
-            version = "$rootProject.version"
+            artifactId = 'redischat'
+            version = "$version"
             artifact shadowJar
+            artifact javadocJar
+            artifact sourcesJar
         }
     }
 }

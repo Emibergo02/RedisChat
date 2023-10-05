@@ -362,7 +362,7 @@ public class ComponentProvider {
     }
 
     /**
-     * Parse legacy color codes (§ and &)
+     * Parse legacy color codes (§ and ampersand)
      *
      * @param text The text to parse
      * @return The parsed text
