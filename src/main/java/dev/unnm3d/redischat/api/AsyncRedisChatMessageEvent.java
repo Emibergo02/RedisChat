@@ -1,6 +1,7 @@
 package dev.unnm3d.redischat.api;
 
 import dev.unnm3d.redischat.channels.Channel;
+import lombok.Getter;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
@@ -10,9 +11,13 @@ import org.jetbrains.annotations.NotNull;
 public class AsyncRedisChatMessageEvent extends Event implements Cancellable {
 
     private static final HandlerList HANDLERS = new HandlerList();
+    @Getter
     private final CommandSender sender;
+    @Getter
     private Channel channel;
+    @Getter
     private final String format;
+    @Getter
     private final String message;
     private boolean cancelled;
 
@@ -33,24 +38,8 @@ public class AsyncRedisChatMessageEvent extends Event implements Cancellable {
         this.cancelled = false;
     }
 
-    public CommandSender getSender() {
-        return sender;
-    }
-
-    public Channel getChannel() {
-        return channel;
-    }
-
     public void setChannel(Channel channel) {
         this.channel = channel;
-    }
-
-    public String getFormat() {
-        return format;
-    }
-
-    public String getMessage() {
-        return message;
     }
 
     @Override

@@ -134,7 +134,14 @@ public class ComponentProvider {
         if (!plugin.config.legacyColorCodesSupport) { // if legacy color codes support is disabled, we don't need to replace anything
             return text;
         }
-        return ChatColor.translateAlternateColorCodes('&', text);
+        char[] b = text.toCharArray();
+        for (int i = 0; i < b.length - 1; i++) {
+            if (b[i] == '&' && "0123456789AaBbCcDdEeFfKkLlMmNnOoRrXx#".indexOf(b[i + 1]) > -1) {
+                b[i] = ChatColor.COLOR_CHAR;
+                b[i + 1] = Character.toLowerCase(b[i + 1]);
+            }
+        }
+        return new String(b);
     }
 
     public Component parse(CommandSender player, String text) {
@@ -166,14 +173,18 @@ public class ComponentProvider {
                     placeholderStep = Math.abs(placeholderStep - 1);
                     continue;
                 }
+
                 if (plugin.config.enablePlaceholderGlitch) {
                     text = text.replace(reformattedPlaceholder, miniMessage.serialize(LegacyComponentSerializer.legacySection().deserialize(parsedPlaceH)));
-                } else {
+                } else if (parsedPlaceH.contains("§")) {
                     //Colored placeholder needs to be pasted after the normal text is parsed
                     placeholders.put(reformattedPlaceholder, LegacyComponentSerializer.legacySection().deserialize(parsedPlaceH));
+                } else {
+                    text = text.replace(reformattedPlaceholder, parsedPlaceH);
                 }
             }
         }
+
         Component answer = miniMessage.deserialize(text, tagResolvers);
         for (String placeholder : placeholders.keySet()) {
             answer = answer.replaceText(rBuilder -> rBuilder.matchLiteral(placeholder).replacement(placeholders.get(placeholder)));

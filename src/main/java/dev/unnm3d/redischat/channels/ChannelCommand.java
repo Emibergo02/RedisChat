@@ -15,7 +15,7 @@ public class ChannelCommand {
 
     public CommandAPICommand getCommand() {
         return new CommandAPICommand("channel")
-                .withAliases("ch", "channels")
+                .withAliases(plugin.config.getCommandAliases("channel"))
                 .withSubcommand(getCreateSubCommand())
                 .withSubcommand(getSetFormatSubCommand())
                 .withSubcommand(getDeleteSubCommand())

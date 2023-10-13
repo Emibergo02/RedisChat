@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
+import java.util.Optional;
 
 @SuppressWarnings("unused")
 public abstract class RedisChatAPI {
@@ -131,13 +132,12 @@ public abstract class RedisChatAPI {
     public abstract void unpauseChat(@NotNull Player player);
 
     /**
-     * Get a channel by name
+     * Get a channel by name null if not found
      *
      * @param channelName The name of the channel
-     * @param player      The player needed to get the public chat format
      * @return The channel
      */
-    public abstract Channel getChannelOrPublic(@Nullable String channelName, CommandSender player);
+    public abstract Optional<Channel> getChannel(@Nullable String channelName);
 
     /**
      * Get the public channel

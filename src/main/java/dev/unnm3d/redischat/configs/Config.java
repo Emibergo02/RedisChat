@@ -135,6 +135,14 @@ public final class Config {
     public List<String> disabledCommands = List.of();
     @Comment("The [inv], [item] and [ec] placeholders will be considered as minimessage tags")
     public boolean interactiveChatNostalgia = false;
+    @Comment("Command aliases (works for msg, mail, reply, staffchat and channel)")
+    public Map<String, List<String>> commandAliases = Map.of(
+            "msg", List.of("rmsg", "whisper", "msg", "pm", "w"),
+            "rmail", List.of("mail", "mails"),
+            "reply", List.of("r"),
+            "channel", List.of("ch", "channels"),
+            "staffchat", List.of("sc")
+    );
     @Comment("Toggle debug mode (by default is false)")
     public boolean debug = false;
 
@@ -142,6 +150,7 @@ public final class Config {
     public record RedisSettings(String host, int port, String user, String password, int database, int timeout,
                                 String clientName, int poolSize) {
     }
+
 
     public record Mysql(
             String host,
@@ -175,6 +184,10 @@ public final class Config {
             return List.of();
         }
         return chatFormatList;
+    }
+
+    public String[] getCommandAliases(String command) {
+        return commandAliases.getOrDefault(command, List.of()).toArray(new String[0]);
     }
 
     public DataType getDataType() {

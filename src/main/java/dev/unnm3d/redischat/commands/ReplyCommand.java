@@ -21,7 +21,7 @@ public class ReplyCommand {
     public CommandAPICommand getCommand() {
         return new CommandAPICommand("reply")
                 .withPermission(Permissions.MESSAGE.getPermission())
-                .withAliases("r")
+                .withAliases(plugin.config.getCommandAliases("reply"))
                 .withArguments(new GreedyStringArgument(plugin.messages.replySuggestion))
                 .executesPlayer((sender, args) -> {
                     long init = System.currentTimeMillis();
@@ -53,6 +53,9 @@ public class ReplyCommand {
 
                                 // remove blacklisted stuff
                                 message = plugin.getComponentProvider().sanitize(message);
+
+                                //Check inv update
+                                message = plugin.getComponentProvider().invShareFormatting(sender, message);
 
                                 //Parse into minimessage (placeholders, tags and mentions)
                                 Component toBeReplaced = plugin.getComponentProvider().parse(sender, message, parsePlaceholders, true, true, plugin.getComponentProvider().getRedisChatTagResolver(sender));

@@ -29,7 +29,7 @@ public class MailCommand {
     public CommandAPICommand getCommand() {
         return new CommandAPICommand("rmail")
                 .withPermission(Permissions.MAIL_READ.getPermission())
-                .withAliases("mail", "mails")
+                .withAliases(plugin.config.getCommandAliases("rmail"))
                 .withSubcommand(getSendSubCommand())
                 .withSubcommand(getWebUISubCommand())
                 .executesPlayer((sender, args) -> {

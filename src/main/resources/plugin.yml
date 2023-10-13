@@ -97,6 +97,7 @@ permissions:
       - redischat.editmessage
       - redischat.setitem
       - redischat.staffchat
+      - redischat.channel.staffchat
   redischat.default:
     description: Allows you to use default commands
     default: true

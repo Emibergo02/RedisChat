@@ -177,7 +177,7 @@ public class ChannelManager extends RedisChatAPI {
         try {
             sendDiscordMessage(player.getName(), event.getFormat(), event.getMessage(), event.getChannel());
         } catch (IOException e) {
-            e.printStackTrace();
+            plugin.getLogger().warning("Error sending discord message: " + e.getMessage());
         }
 
         if (plugin.config.debug) {
@@ -196,7 +196,7 @@ public class ChannelManager extends RedisChatAPI {
                         chatChannel = getStaffChatChannel();
                         message = message.substring(1);
                     } else {
-                        chatChannel = getChannelOrPublic(channelName, player);
+                        chatChannel = getChannel(channelName).orElse(getPublicChannel(player));
                     }
                     if (plugin.config.debug) {
                         plugin.getLogger().info("1) Active channel (Redis) + channel parsing: " + (System.currentTimeMillis() - init) + "ms");
@@ -204,7 +204,7 @@ public class ChannelManager extends RedisChatAPI {
                     playerChannelMessage(player, message, chatChannel);
                 })
                 .exceptionally(throwable -> {
-                    throwable.printStackTrace();
+                    plugin.getLogger().warning("Error getting active channel: " + throwable.getMessage());
                     return null;
                 });
     }
@@ -247,7 +247,8 @@ public class ChannelManager extends RedisChatAPI {
     @Override
     public void sendGenericChat(@NotNull ChatMessageInfo chatMessageInfo) {
         long init = System.currentTimeMillis();
-        Optional<Channel> optChannel = Optional.ofNullable(registeredChannels.get(chatMessageInfo.getReceiverName().substring(1)));
+
+        Optional<Channel> optChannel = plugin.getChannelManager().getChannel(chatMessageInfo.getReceiverName().substring(1));
         if (plugin.config.debug) {
             plugin.getLogger().info("R2) Permission check");
         }
@@ -349,11 +350,11 @@ public class ChannelManager extends RedisChatAPI {
     }
 
     @Override
-    public Channel getChannelOrPublic(@Nullable String channelName, @Nullable CommandSender player) {
-        if (channelName == null) return getPublicChannel(player);
+    public Optional<Channel> getChannel(@Nullable String channelName) {
+        if (channelName == null) return Optional.empty();
         if (channelName.equals(KnownChatEntities.STAFFCHAT_CHANNEL_NAME.toString()))
-            return getStaffChatChannel();
-        return registeredChannels.getOrDefault(channelName, getPublicChannel(player));
+            return Optional.of(getStaffChatChannel());
+        else return Optional.ofNullable(registeredChannels.get(channelName));
     }
 
     @Override
