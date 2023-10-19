@@ -346,13 +346,12 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
                                 plugin.getLogger().info("04 Got item for " + playerName + " is " + serializedInv);
                             }
                             ItemStack[] itemStacks = deserialize(serializedInv == null ? "" : serializedInv);
-
                             if (itemStacks.length == 0) return new ItemStack(Material.AIR);
                             return itemStacks[0];
                         }).exceptionally(throwable -> {
                             throwable.printStackTrace();
                             plugin.getLogger().warning("Error getting item");
-                            return null;
+                            return new ItemStack(Material.AIR);
                         })
         );
     }
@@ -370,7 +369,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
                         .exceptionally(throwable -> {
                             throwable.printStackTrace();
                             plugin.getLogger().warning("Error getting inv");
-                            return null;
+                            return new ItemStack[0];
                         }));
 
     }
@@ -388,7 +387,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
                         .exceptionally(throwable -> {
                             throwable.printStackTrace();
                             plugin.getLogger().warning("Error getting ec");
-                            return null;
+                            return new ItemStack[0];
                         }));
     }
 
