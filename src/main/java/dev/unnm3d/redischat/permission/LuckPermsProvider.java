@@ -1,6 +1,7 @@
 package dev.unnm3d.redischat.permission;
 
 import net.luckperms.api.LuckPerms;
+import net.luckperms.api.context.MutableContextSet;
 import net.luckperms.api.node.Node;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -16,22 +17,22 @@ public class LuckPermsProvider implements PermissionProvider {
     }
 
     public void setPermission(Player player, String permission) {
-        if (perms != null)
-            perms.getUserManager().modifyUser(player.getUniqueId(), user ->
-                    user.data().add(
-                            Node.builder(permission)
-                                    .context(perms.getContextManager().getStaticContext())
-                                    .value(true)
-                                    .build()));
+        if (perms == null) return;
+        perms.getUserManager().modifyUser(player.getUniqueId(), user ->
+                user.data().add(
+                        Node.builder(permission)
+                                .context(perms.getContextManager().getStaticContext())
+                                .value(true)
+                                .build()));
     }
 
     public void unsetPermission(Player player, String permission) {
-        if (perms != null)
-            perms.getUserManager().modifyUser(player.getUniqueId(), user ->
-                    user.data().remove(
-                            Node.builder(permission)
-                                    .context(perms.getContextManager().getStaticContext())
-                                    .value(false)
-                                    .build()));
+        if (perms == null) return;
+        perms.getUserManager().modifyUser(player.getUniqueId(), user ->
+                user.data().add(
+                        Node.builder(permission)
+                                .context(perms.getContextManager().getStaticContext())
+                                .value(false)
+                                .build()));
     }
 }

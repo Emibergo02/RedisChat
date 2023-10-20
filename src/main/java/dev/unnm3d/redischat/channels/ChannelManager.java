@@ -248,7 +248,7 @@ public class ChannelManager extends RedisChatAPI {
     public void sendGenericChat(@NotNull ChatMessageInfo chatMessageInfo) {
         long init = System.currentTimeMillis();
 
-        Optional<Channel> optChannel = plugin.getChannelManager().getChannel(chatMessageInfo.getReceiverName().substring(1));
+        Channel channel = plugin.getChannelManager().getChannel(chatMessageInfo.getReceiverName().substring(1)).orElse(getGenericPublic());
         if (plugin.config.debug) {
             plugin.getLogger().info("R2) Permission check");
         }
@@ -269,9 +269,9 @@ public class ChannelManager extends RedisChatAPI {
         }
 
         for (Player onlinePlayer : plugin.getServer().getOnlinePlayers()) {
-            if (optChannel.isPresent() && !onlinePlayer.hasPermission(Permissions.CHANNEL_PREFIX.getPermission() + optChannel.get().getName()))
+            if (!onlinePlayer.hasPermission(Permissions.CHANNEL_PREFIX.getPermission() + channel.getName()))
                 continue;
-            if (optChannel.isPresent() && !checkProximity(onlinePlayer, chatMessageInfo.getSenderName(), optChannel.get()))
+            if (!checkProximity(onlinePlayer, chatMessageInfo.getSenderName(), channel))
                 continue;
 
             if (chatMessageInfo.getMessage().contains(onlinePlayer.getName())) {
@@ -379,6 +379,10 @@ public class ChannelManager extends RedisChatAPI {
                 plugin.config.publicDiscordWebhook,
                 true,
                 null);
+    }
+
+    private Channel getGenericPublic(){
+        return new Channel("public","");
     }
 
     @Override
