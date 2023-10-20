@@ -65,6 +65,14 @@ public class ChannelManager extends RedisChatAPI {
         plugin.getDataManager().registerChannel(channel);
     }
 
+    public void updateChannel(String channelName, @Nullable Channel channel) {
+        if(channel == null) {
+            registeredChannels.remove(channelName);
+            return;
+        }
+        registeredChannels.put(channelName, channel);
+    }
+
     @Override
     public void unregisterChannel(String channelName) {
         registeredChannels.remove(channelName);

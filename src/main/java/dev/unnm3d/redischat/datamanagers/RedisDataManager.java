@@ -72,6 +72,13 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
                 } else if (channel.equals(REJOIN_CHANNEL.toString())) {
                     if (plugin.getJoinQuitManager() != null)
                         plugin.getJoinQuitManager().rejoinRequest(message);
+                } else if (channel.equals(CHANNEL_UPDATE.toString())) {
+                    if (message.startsWith("delete§")) {
+                        plugin.getChannelManager().updateChannel(message.substring(7), null);
+                    } else {
+                        Channel ch = Channel.deserialize(message);
+                        plugin.getChannelManager().updateChannel(ch.getName(), ch);
+                    }
                 }
             }
 
@@ -95,7 +102,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
             public void punsubscribed(String pattern, long count) {
             }
         });
-        pubSubConnection.async().subscribe(CHAT_CHANNEL.toString(), PLAYERLIST.toString(), REJOIN_CHANNEL.toString())
+        pubSubConnection.async().subscribe(CHAT_CHANNEL.toString(), PLAYERLIST.toString(), REJOIN_CHANNEL.toString(), CHANNEL_UPDATE.toString())
                 .exceptionally(throwable -> {
                     throwable.printStackTrace();
                     plugin.getLogger().warning("Error subscribing to chat channel");
@@ -443,25 +450,29 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
 
     @Override
     public void registerChannel(@NotNull Channel channel) {
-        getConnectionAsync(connection ->
-                connection.hset(CHANNELS.toString(), channel.getName(), channel.serialize())
-                        .exceptionally(throwable -> {
-                            throwable.printStackTrace();
-                            plugin.getLogger().warning("Error registering custom channel");
-                            return null;
-                        }));
+        getConnectionPipeline(connection -> {
+            connection.hset(CHANNELS.toString(), channel.getName(), channel.serialize()).exceptionally(throwable -> {
+                throwable.printStackTrace();
+                plugin.getLogger().warning("Error registering custom channel");
+                return null;
+            });
+            connection.publish(CHANNEL_UPDATE.toString(), channel.serialize());
+            return null;
+        });
     }
 
 
     @Override
     public void unregisterChannel(@NotNull String channelName) {
-        getConnectionAsync(connection ->
-                connection.hdel(CHANNELS.toString(), channelName)
-                        .exceptionally(throwable -> {
-                            throwable.printStackTrace();
-                            plugin.getLogger().warning("Error registering custom channel");
-                            return null;
-                        }));
+        getConnectionPipeline(connection -> {
+            connection.hdel(CHANNELS.toString(), channelName).exceptionally(throwable -> {
+                throwable.printStackTrace();
+                plugin.getLogger().warning("Error registering custom channel");
+                return null;
+            });
+            connection.publish(CHANNEL_UPDATE.toString(), "delete§" + channelName);
+            return null;
+        });
     }
 
     @Override
