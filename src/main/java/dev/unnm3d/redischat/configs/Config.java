@@ -52,7 +52,7 @@ public final class Config {
     @Comment("Enables /rmail /mail and the whole feature")
     public boolean enableMails = true;
     @Comment("Register tag integrations (Like Oraxen Integration which is internal)")
-    public boolean useTagsIntegration = true;
+    public boolean useTagsIntegration = false;
     @Comment({"Use RedisChat for join and quit messages",
             "The quit message will be delayed because it might be a early reconnection to one of the servers using RedisChat"})
     public boolean enableQuitJoinMessages = true;
@@ -145,12 +145,17 @@ public final class Config {
     );
     @Comment("Toggle debug mode (by default is false)")
     public boolean debug = false;
+    @Comment({"botName is the botId associated to the bot inside the spicord configuration",
+            "Every channel of RedisChat is linked with a channel on Discord",
+            "The first element is a RedisChat channel, the second one is a Discord channel id",
+            "You can find the Discord channel id by right clicking on the channel and clicking on 'Copy ID'"})
+    public SpicordSettings spicord = new SpicordSettings("main", Map.of("public", "1127207189547847740"));
 
 
-    public record RedisSettings(String host, int port, String user, String password, int database, int timeout,
+    public record RedisSettings(String host, int port, String user, String password,
+                                int database, int timeout,
                                 String clientName, int poolSize) {
     }
-
 
     public record Mysql(
             String host,
@@ -174,6 +179,12 @@ public final class Config {
             String channelName,
             int delay,
             int interval) {
+    }
+
+    public record SpicordSettings(
+            String botName,
+            Map<String, String> spicordChannelLink
+    ) {
     }
 
     public @NotNull List<ChatFormat> getChatFormats(@Nullable CommandSender p) {

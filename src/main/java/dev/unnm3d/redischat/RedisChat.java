@@ -19,6 +19,9 @@ import dev.unnm3d.redischat.configs.Messages;
 import dev.unnm3d.redischat.datamanagers.RedisDataManager;
 import dev.unnm3d.redischat.datamanagers.sqlmanagers.H2SQLDataManager;
 import dev.unnm3d.redischat.datamanagers.sqlmanagers.MySQLDataManager;
+import dev.unnm3d.redischat.discord.DiscordWebhook;
+import dev.unnm3d.redischat.discord.IDiscordHook;
+import dev.unnm3d.redischat.discord.SpicordHook;
 import dev.unnm3d.redischat.integrations.OraxenTagResolver;
 import dev.unnm3d.redischat.integrations.PremiumVanishIntegration;
 import dev.unnm3d.redischat.mail.MailCommand;
@@ -70,6 +73,8 @@ public final class RedisChat extends JavaPlugin {
     private JoinQuitManager joinQuitManager;
     @Getter
     private PermissionProvider permissionProvider;
+    @Getter
+    private IDiscordHook discordHook;
 
     @Override
     public void onLoad() {
@@ -169,6 +174,20 @@ public final class RedisChat extends JavaPlugin {
             getLogger().info("PremiumVanish found, enabling integration");
             playerListManager.addVanishIntegration(new PremiumVanishIntegration(this));
         }
+        if (getServer().getPluginManager().getPlugin("Spicord") != null) {
+            getLogger().info("Spicord found, enabling integration");
+            this.discordHook = new SpicordHook(this);
+        }else{
+            getLogger().info("Spicord not found, using default DiscordWebhook");
+            this.discordHook = new DiscordWebhook(this);
+        }
+
+        new UpdateCheck(this).getVersion(version -> {
+            if (!this.getDescription().getVersion().equalsIgnoreCase(version)) {
+                getLogger().info("§k*******§r §6New version available: " + version+" §k*******");
+                getLogger().info("Check it on https://www.spigotmc.org/resources/redischat%E2%9A%A1simple-intuitive-chat-suite%E2%9A%A1cross-server-support.111015/");
+            }
+        });
     }
 
 

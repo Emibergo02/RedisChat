@@ -1,0 +1,17 @@
+{
+  "avatar_url": "https://www.spigotmc.org/data/resource_icons/111/111015.jpg",
+  "username": "RedisChat",
+  "content": null,
+  "allowed_mentions": { "parse": [] },
+  "embeds": [
+    {
+      "description": "{CHAT_MESSAGE}",
+      "color": 64410,
+      "footer": {
+        "text": "{SENDER_USERNAME} • {SENDER_CHANNEL}",
+        "icon_url": "https://crafatar.com/avatars/{SENDER_UUID}?size=64"
+      },
+      "timestamp": "{CURRENT_TIMESTAMP}"
+    }
+  ]
+}

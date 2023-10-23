@@ -7,6 +7,6 @@ import org.jetbrains.annotations.NotNull;
 public class OraxenTagResolver implements TagResolverIntegration {
     @Override
     public @NotNull String parseTags(String message) {
-        return AdventureUtils.parseMiniMessage(message, AdventureUtils.OraxenTagResolver);
+        return AdventureUtils.parseMiniMessage(message);
     }
 }

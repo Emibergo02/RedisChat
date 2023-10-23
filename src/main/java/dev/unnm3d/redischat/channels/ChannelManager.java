@@ -9,7 +9,7 @@ import dev.unnm3d.redischat.chat.ChatFormat;
 import dev.unnm3d.redischat.chat.ChatMessageInfo;
 import dev.unnm3d.redischat.chat.ComponentProvider;
 import dev.unnm3d.redischat.chat.KnownChatEntities;
-import dev.unnm3d.redischat.utils.DiscordWebhook;
+import dev.unnm3d.redischat.discord.DiscordWebhook;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -22,7 +22,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.xenondevs.invui.window.Window;
 
-import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -66,7 +66,7 @@ public class ChannelManager extends RedisChatAPI {
     }
 
     public void updateChannel(String channelName, @Nullable Channel channel) {
-        if(channel == null) {
+        if (channel == null) {
             registeredChannels.remove(channelName);
             return;
         }
@@ -180,13 +180,8 @@ public class ChannelManager extends RedisChatAPI {
         // Send to other servers
         plugin.getDataManager().sendChatMessage(cmi);
 
-
-        // Send to discord via webhook
-        try {
-            sendDiscordMessage(player.getName(), event.getFormat(), event.getMessage(), event.getChannel());
-        } catch (IOException e) {
-            plugin.getLogger().warning("Error sending discord message: " + e.getMessage());
-        }
+        // Send to discord integration
+        plugin.getDiscordHook().sendDiscordMessage(event.getChannel(), cmi);
 
         if (plugin.config.debug) {
             plugin.getLogger().info("2) Send (Redis): " + (System.currentTimeMillis() - init) + "ms, Millis: " + System.currentTimeMillis());
@@ -218,13 +213,10 @@ public class ChannelManager extends RedisChatAPI {
     }
 
     @Override
-    public void sendDiscordMessage(String username, String format, String message, Channel channel) throws IOException {
+    public void sendDiscordMessage(Channel channel, ChatMessageInfo chatMessageInfo) {
         if (channel.getDiscordWebhook() == null || channel.getDiscordWebhook().isEmpty()) return;
-        DiscordWebhook webhook = new DiscordWebhook(channel.getDiscordWebhook());
-        webhook.setUsername(username);
-        webhook.setContent(MiniMessage.miniMessage().stripTags(format)
-                .replace("%message%", MiniMessage.miniMessage().stripTags(message)));
-        webhook.execute();
+
+        plugin.getDiscordHook().sendDiscordMessage(channel, chatMessageInfo);
     }
 
     @Override
@@ -389,8 +381,8 @@ public class ChannelManager extends RedisChatAPI {
                 null);
     }
 
-    private Channel getGenericPublic(){
-        return new Channel("public","");
+    private Channel getGenericPublic() {
+        return new Channel("public", "");
     }
 
     @Override

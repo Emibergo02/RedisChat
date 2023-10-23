@@ -74,13 +74,10 @@ public abstract class RedisChatAPI {
     /**
      * Sends the message to the discord webhook defined in the channel
      *
-     * @param username The username of the player who sent the message
-     * @param format   The format of the message
-     * @param message  The message content
      * @param channel  The channel the message was sent to
-     * @throws IOException If the webhook is invalid
+     * @param message  The message object
      */
-    public abstract void sendDiscordMessage(String username, String format, String message, Channel channel) throws IOException;
+    public abstract void sendDiscordMessage(Channel channel, ChatMessageInfo message);
 
     /**
      * Sends a message inside the current server
@@ -157,12 +154,14 @@ public abstract class RedisChatAPI {
 
     /**
      * Add vanish "canSee" integration
+     *
      * @param vanishIntegration The vanish integration
      */
     public abstract void addVanishIntegration(VanishIntegration vanishIntegration);
 
     /**
      * Remove vanish "canSee" integration
+     *
      * @param vanishIntegration The vanish integration
      */
     public abstract void removeVanishIntegration(VanishIntegration vanishIntegration);
