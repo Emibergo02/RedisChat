@@ -22,6 +22,7 @@ public class ChannelCommand {
                 .withSubcommand(getEnableSubCommand())
                 .withSubcommand(getListenSubCommand())
                 .withSubcommand(getDisableSubCommand())
+                .withSubcommand(getDiscordLinkSubCommand())
                 .executesPlayer((sender, args) -> {
                     try {
                         plugin.getChannelManager().openChannelsGUI(sender);
@@ -71,6 +72,31 @@ public class ChannelCommand {
                     ));
 
                     plugin.messages.sendMessage(sender, plugin.messages.channelCreated);
+                });
+    }
+
+    public CommandAPICommand getDiscordLinkSubCommand() {
+        return new CommandAPICommand("link-discord-webhook")
+                .withPermission(Permissions.CHANNEL_CREATE.getPermission())
+                .withArguments(new StringArgument("name")
+                        .replaceSuggestions(ArgumentSuggestions.strings(commandSenderSuggestionInfo ->
+                                plugin.getChannelManager().getRegisteredChannels().keySet().stream()
+                                        .filter(s -> s.toLowerCase().startsWith(commandSenderSuggestionInfo.currentArg()))
+                                        .toArray(String[]::new)
+                        )))
+                .withArguments(new TextArgument("discord-webhook")
+                        .replaceSuggestions(ArgumentSuggestions.strings("https://discord.com/api/webhooks/...")))
+                .executes((sender, args) -> {
+                    if (args.count() < 2) {
+                        plugin.messages.sendMessage(sender, plugin.messages.missing_arguments);
+                        return;
+                    }
+
+                    plugin.getChannelManager().getChannel((String) args.get(0)).ifPresentOrElse(channel -> {
+                        channel.setDiscordWebhook((String) args.get(1));
+                        plugin.getChannelManager().registerChannel(channel);
+                        plugin.messages.sendMessage(sender, plugin.messages.channelCreated);
+                    }, () -> plugin.messages.sendMessage(sender, plugin.messages.channelNotFound));
                 });
     }
 

@@ -2,7 +2,7 @@ package dev.unnm3d.redischat.datamanagers;
 
 import dev.unnm3d.redischat.RedisChat;
 
-public enum DataKeys {
+public enum DataKey {
     CHAT_CHANNEL("rchat:g_chat"),
     CHANNEL_UPDATE("rchat:ch_update"),
     REJOIN_CHANNEL("rchat:rejoin"),
@@ -23,19 +23,23 @@ public enum DataKeys {
     ;
 
     private final String keyName;
-    private static final int CLUSTER_ID = RedisChat.getInstance().config.clusterId;
+    private static final String CLUSTER_ID = RedisChat.getInstance().config.clusterId;
 
 
     /**
      * @param keyName the name of the key
      */
-    DataKeys(final String keyName) {
+    DataKey(final String keyName) {
         this.keyName = keyName;
     }
 
     @Override
     public String toString() {
         return CLUSTER_ID + keyName;
+    }
+
+    public String withoutCluster() {
+        return keyName;
     }
 
 }

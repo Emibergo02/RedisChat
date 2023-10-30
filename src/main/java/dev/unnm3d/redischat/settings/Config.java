@@ -1,4 +1,4 @@
-package dev.unnm3d.redischat.configs;
+package dev.unnm3d.redischat.settings;
 
 import de.exlll.configlib.Comment;
 import de.exlll.configlib.Configuration;
@@ -44,7 +44,7 @@ public final class Config {
             20000);
     @Comment({"The cluster id, if you have multiple servers you need to set a different id for each group of servers",
             "Doesn't work completely if you're using something different than redis"})
-    public int clusterId = 0;
+    public String clusterId = "0";
     @Comment("Webeditor URL")
     public String webEditorUrl = "https://webui.advntr.dev/";
     @Comment("Enables & (ampersand) and § (section) color codes")
@@ -80,7 +80,7 @@ public final class Config {
             "If you want to disable an announce, just remove it from the list, remember that in yaml [] is an empty list",
             "If you specify a permission, only players with that permission will see the announce. Keep it empty to make it public",
     })
-    public List<Announce> announces = List.of(new Announce("default", "<yellow>RedisChat</yellow> <gray>»</gray><red>To EssentialsX and CMI users: <aqua><br>disable <gold>/msg, /reply, /broadcast, /ignore, etc</gold> commands inside CMI and EssentialsX<br>Or RedisChat commands <red>will <u>not</u> work</red>!!!</aqua>", "", 5, 300));
+    public List<Announce> announces = List.of(new Announce("default", "<yellow>RedisChat</yellow> <gray>»</gray><red>To EssentialsX and CMI users: <aqua><br>disable <gold>/msg, /reply, /broadcast, /ignore, etc</gold> commands inside CMI and EssentialsX<br>Or RedisChat commands <red>will <u>not</u> work</red>!!!</aqua>", "public", 5, 300));
     @Comment({"Here you can create your own placeholders", "You can give them an identifier, which will go under the format <>", "You can give them actions, like click url"})
     public Map<String, String> placeholders = Map.of(
             "discord", "<click:open_url:https://discord.gg/C8d7EqQz>Click to join our discord server</click>",
@@ -143,13 +143,16 @@ public final class Config {
             "channel", List.of("ch", "channels"),
             "staffchat", List.of("sc")
     );
+    @Comment({"The priority of the listening event (LOWEST, LOW, NORMAL, HIGH, HIGHEST, MONITOR)",
+            "adjust this if other plugins are interfering with RedisChat"})
+    public String listeningPriotity = "NORMAL";
     @Comment("Toggle debug mode (by default is false)")
     public boolean debug = false;
     @Comment({"botName is the botId associated to the bot inside the spicord configuration",
             "Every channel of RedisChat is linked with a channel on Discord",
             "The first element is a RedisChat channel, the second one is a Discord channel id",
             "You can find the Discord channel id by right clicking on the channel and clicking on 'Copy ID'"})
-    public SpicordSettings spicord = new SpicordSettings("main", Map.of("public", "1127207189547847740"));
+    public SpicordSettings spicord = new SpicordSettings(true, "<blue>[Discord]</blue> %username% » %message%", Map.of("public", "1127207189547847740"));
 
 
     public record RedisSettings(String host, int port, String user, String password,
@@ -182,10 +185,12 @@ public final class Config {
     }
 
     public record SpicordSettings(
-            String botName,
+            boolean enabled,
+            String chatFormat,
             Map<String, String> spicordChannelLink
     ) {
     }
+
 
     public @NotNull List<ChatFormat> getChatFormats(@Nullable CommandSender p) {
         if (p == null) return List.of();

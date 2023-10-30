@@ -1,4 +1,4 @@
-package dev.unnm3d.redischat.configs;
+package dev.unnm3d.redischat.settings;
 
 import de.exlll.configlib.Comment;
 import de.exlll.configlib.Configuration;
@@ -48,6 +48,7 @@ public final class Messages {
     public String channelEnabled = "<yellow>RedisChat</yellow> <gray>»</gray> <green>Channel %channel% enabled for %player%!</green>";
     public String channelForceListen = "<yellow>RedisChat</yellow> <gray>»</gray> <green>You forced %player% to talk inside %channel%!</green>";
     public String channelDisabled = "<yellow>RedisChat</yellow> <gray>»</gray> <red>Channel %channel% disabled for %player%!</red>";
+    public String channelNotFound = "<red>Channel not found!</red>";
     public String publicChannelMuted = "<yellow>RedisChat</yellow> <gray>»</gray> <aqua>You silenced the public channel!</aqua>";
     public String publicChannelUnmuted = "<yellow>RedisChat</yellow> <gray>»</gray> <aqua>You unmuted the public channel!</aqua>";
     @Comment("The text after the /msg command (example: /msg <player> <message> will be -> /msg <user> <message>")

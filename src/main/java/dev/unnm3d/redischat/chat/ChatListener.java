@@ -13,8 +13,7 @@ public class ChatListener implements Listener {
     private final RedisChat plugin;
 
 
-    @EventHandler(priority = EventPriority.HIGH)
-    public void onChat(AsyncPlayerChatEvent event) {
+    public void listenChat(AsyncPlayerChatEvent event) {
         if (event.isCancelled()) return;
         event.setCancelled(true);
 

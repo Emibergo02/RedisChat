@@ -7,6 +7,7 @@ public enum Permissions {
     MAIL_READ("redischat.mail.read"),
     IGNORE("redischat.ignore"),
     USE_FORMATTING("redischat.useformatting"),
+    USE_DANGEROUS("redischat.usedangeroustags"),
     USE_ITEM("redischat.showitem"),
     USE_INVENTORY("redischat.showinv"),
     USE_ENDERCHEST("redischat.showenderchest"),

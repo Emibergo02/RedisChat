@@ -1,4 +1,4 @@
-package dev.unnm3d.redischat.configs;
+package dev.unnm3d.redischat.settings;
 
 import de.exlll.configlib.Comment;
 import de.exlll.configlib.Configuration;

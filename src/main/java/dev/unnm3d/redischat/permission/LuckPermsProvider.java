@@ -1,7 +1,6 @@
 package dev.unnm3d.redischat.permission;
 
 import net.luckperms.api.LuckPerms;
-import net.luckperms.api.context.MutableContextSet;
 import net.luckperms.api.node.Node;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;

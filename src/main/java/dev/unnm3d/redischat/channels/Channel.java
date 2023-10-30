@@ -1,9 +1,12 @@
 package dev.unnm3d.redischat.channels;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.Sound;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+@Getter
 public class Channel {
     @NotNull
     private final String name;
@@ -11,7 +14,8 @@ public class Channel {
     private final int rateLimit;
     private final int rateLimitPeriod;
     private final int proximityDistance;
-    private final String discordWebhook;
+    @Setter
+    private String discordWebhook;
     private final boolean filtered;
     private final Sound notificationSound;
 
@@ -34,36 +38,8 @@ public class Channel {
         return name;
     }
 
-    public String getFormat() {
-        return format;
-    }
-
     public void setFormat(String format) {
         this.format = format;
-    }
-
-    public int getRateLimit() {
-        return rateLimit;
-    }
-
-    public int getRateLimitPeriod() {
-        return rateLimitPeriod;
-    }
-
-    public int getProximityDistance() {
-        return proximityDistance;
-    }
-
-    public String getDiscordWebhook() {
-        return discordWebhook;
-    }
-
-    public boolean isFiltered() {
-        return filtered;
-    }
-
-    public Sound getNotificationSound() {
-        return notificationSound;
     }
 
     public String serialize() {

@@ -5,6 +5,7 @@ import dev.unnm3d.redischat.api.DataManager;
 import dev.unnm3d.redischat.channels.Channel;
 import dev.unnm3d.redischat.channels.PlayerChannel;
 import dev.unnm3d.redischat.chat.ChatMessageInfo;
+import dev.unnm3d.redischat.chat.KnownChatEntities;
 import dev.unnm3d.redischat.datamanagers.redistools.RedisAbstract;
 import dev.unnm3d.redischat.mail.Mail;
 import io.lettuce.core.RedisClient;
@@ -26,7 +27,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import static dev.unnm3d.redischat.datamanagers.DataKeys.*;
 
 public class RedisDataManager extends RedisAbstract implements DataManager {
     private final RedisChat plugin;
@@ -61,18 +61,18 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
         pubSubConnection.addListener(new RedisPubSubListener<>() {
             @Override
             public void message(String channel, String message) {
-                if (channel.equals(CHAT_CHANNEL.toString())) {
+                if (channel.equals(DataKey.CHAT_CHANNEL.toString())) {
                     if (plugin.config.debug) {
                         plugin.getLogger().info("R1) Received message from redis: " + System.currentTimeMillis());
                     }
                     plugin.getChannelManager().sendLocalChatMessage(new ChatMessageInfo(message));
-                } else if (channel.equals(PLAYERLIST.toString())) {
+                } else if (channel.equals(DataKey.PLAYERLIST.toString())) {
                     if (plugin.getPlayerListManager() != null)
                         plugin.getPlayerListManager().updatePlayerList(Arrays.asList(message.split("§")));
-                } else if (channel.equals(REJOIN_CHANNEL.toString())) {
+                } else if (channel.equals(DataKey.REJOIN_CHANNEL.toString())) {
                     if (plugin.getJoinQuitManager() != null)
                         plugin.getJoinQuitManager().rejoinRequest(message);
-                } else if (channel.equals(CHANNEL_UPDATE.toString())) {
+                } else if (channel.equals(DataKey.CHANNEL_UPDATE.toString())) {
                     if (message.startsWith("delete§")) {
                         plugin.getChannelManager().updateChannel(message.substring(7), null);
                     } else {
@@ -102,13 +102,13 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
             public void punsubscribed(String pattern, long count) {
             }
         });
-        pubSubConnection.async().subscribe(CHAT_CHANNEL.toString(), PLAYERLIST.toString(), REJOIN_CHANNEL.toString(), CHANNEL_UPDATE.toString())
+        pubSubConnection.async().subscribe(DataKey.CHAT_CHANNEL.toString(), DataKey.PLAYERLIST.toString(), DataKey.REJOIN_CHANNEL.toString(), DataKey.CHANNEL_UPDATE.toString())
                 .exceptionally(throwable -> {
                     throwable.printStackTrace();
                     plugin.getLogger().warning("Error subscribing to chat channel");
                     return null;
                 })
-                .thenAccept(subscription -> plugin.getLogger().info("Subscribed to channel: " + CHAT_CHANNEL));
+                .thenAccept(subscription -> plugin.getLogger().info("Subscribed to channel: " + DataKey.CHAT_CHANNEL));
     }
 
     @Override
@@ -116,7 +116,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
         if (plugin.config.debug) {
             plugin.getLogger().info("Getting reply name for " + requesterName);
         }
-        return getConnectionAsync(connection -> connection.hget(REPLY.toString(), requesterName))
+        return getConnectionAsync(connection -> connection.hget(DataKey.REPLY.toString(), requesterName))
                 .thenApply(Optional::ofNullable)
                 .exceptionally(throwable -> {
                     throwable.printStackTrace();
@@ -129,13 +129,13 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     @Override
     public void setReplyName(@NotNull String nameReceiver, @NotNull String requesterName) {
         getConnectionPipeline(conn -> {
-            conn.hset(REPLY.toString(), nameReceiver, requesterName)
+            conn.hset(DataKey.REPLY.toString(), nameReceiver, requesterName)
                     .exceptionally(exception -> {
                         exception.printStackTrace();
                         plugin.getLogger().warning("Error when setting reply name");
                         return null;
                     });
-            conn.hset(REPLY.toString(), requesterName, nameReceiver)
+            conn.hset(DataKey.REPLY.toString(), requesterName, nameReceiver)
                     .exceptionally(exception -> {
                         exception.printStackTrace();
                         plugin.getLogger().warning("Error when setting reply name");
@@ -149,7 +149,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     public boolean isRateLimited(@NotNull String playerName, @NotNull Channel channel) {
         String result = null;
         try {
-            result = getConnectionAsync(conn -> conn.get(RATE_LIMIT_PREFIX + playerName + channel.getName()))
+            result = getConnectionAsync(conn -> conn.get(DataKey.RATE_LIMIT_PREFIX + playerName + channel.getName()))
                     .toCompletableFuture().get(1, TimeUnit.SECONDS);
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
             e.printStackTrace();
@@ -163,7 +163,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     @Override
     public CompletionStage<Boolean> isSpying(@NotNull String playerName) {
         return getConnectionAsync(connection ->
-                connection.sismember(SPYING_LIST.toString(), playerName)
+                connection.sismember(DataKey.SPYING_LIST.toString(), playerName)
                         .thenApply(result -> {
                             if (plugin.config.debug) {
                                 plugin.getLogger().info("isSpying " + playerName + " " + result);
@@ -182,7 +182,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     public void setSpying(@NotNull String playerName, boolean spy) {
         getConnectionAsync(connection -> {
                     if (spy) {
-                        return connection.sadd(SPYING_LIST.toString(), playerName)
+                        return connection.sadd(DataKey.SPYING_LIST.toString(), playerName)
                                 .thenApply(result -> {
                                     if (plugin.config.debug) {
                                         plugin.getLogger().info("setSpying " + playerName + " " + result);
@@ -195,7 +195,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
                                     return null;
                                 });
                     } else {
-                        return connection.srem(SPYING_LIST.toString(), playerName)
+                        return connection.srem(DataKey.SPYING_LIST.toString(), playerName)
                                 .thenApply(result -> {
                                     if (plugin.config.debug) {
                                         plugin.getLogger().info("setSpying " + playerName + " " + result);
@@ -215,13 +215,13 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     @Override
     public CompletionStage<Boolean> toggleIgnoring(@NotNull String playerName, @NotNull String ignoringName) {
         return getConnectionAsync(connection ->
-                connection.sadd(IGNORE_PREFIX + playerName, ignoringName)
+                connection.sadd(DataKey.IGNORE_PREFIX + playerName, ignoringName)
                         .thenApplyAsync(response -> {
                             if (plugin.config.debug) {
                                 plugin.getLogger().info("02 Toggling ignoring " + ignoringName + " for " + playerName);
                             }
                             if (response == 0) {
-                                getConnectionAsync(connection3 -> connection3.srem(IGNORE_PREFIX + playerName, ignoringName))
+                                getConnectionAsync(connection3 -> connection3.srem(DataKey.IGNORE_PREFIX + playerName, ignoringName))
                                         .toCompletableFuture().orTimeout(1, TimeUnit.SECONDS)
                                         .exceptionally(exception -> {
                                             exception.printStackTrace();
@@ -230,7 +230,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
                                         });
                                 return false;
                             }
-                            getConnectionAsync(connection3 -> connection3.expire(IGNORE_PREFIX + playerName, 60 * 60 * 24 * 7))
+                            getConnectionAsync(connection3 -> connection3.expire(DataKey.IGNORE_PREFIX + playerName, 60 * 60 * 24 * 7))
                                     .toCompletableFuture().orTimeout(1, TimeUnit.SECONDS)
                                     .exceptionally(exception -> {
                                         exception.printStackTrace();
@@ -252,7 +252,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     @Override
     public CompletionStage<Boolean> isIgnoring(@NotNull String playerName, @NotNull String ignoringName) {
         return getConnectionAsync(connection ->
-                connection.smembers(IGNORE_PREFIX + playerName)
+                connection.smembers(DataKey.IGNORE_PREFIX + playerName)
                         .thenApply(result -> {
                             if (plugin.config.debug) {
                                 plugin.getLogger().info("03 Ignoring list for " + playerName + " is " + result);
@@ -268,7 +268,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     @Override
     public CompletionStage<List<String>> ignoringList(@NotNull String playerName) {
         return getConnectionAsync(connection ->
-                connection.smembers(IGNORE_PREFIX + playerName)
+                connection.smembers(DataKey.IGNORE_PREFIX + playerName)
                         .thenApply(result -> {
                             if (plugin.config.debug) {
                                 plugin.getLogger().info("03 Ignoring list for " + playerName + " is " + result);
@@ -285,7 +285,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     @Override
     public void addInventory(@NotNull String name, ItemStack[] inv) {
         getConnectionAsync(connection ->
-                connection.hset(INVSHARE_INVENTORY.toString(), name, serialize(inv))
+                connection.hset(DataKey.INVSHARE_INVENTORY.toString(), name, serialize(inv))
                         .thenApply(response -> {
                             if (plugin.config.debug) {
                                 plugin.getLogger().info("05 Added inventory for " + name);
@@ -303,7 +303,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     @Override
     public void addItem(@NotNull String name, ItemStack item) {
         getConnectionAsync(connection ->
-                connection.hset(INVSHARE_ITEM.toString(), name, serialize(item))
+                connection.hset(DataKey.INVSHARE_ITEM.toString(), name, serialize(item))
                         .thenApply(response -> {
                             if (plugin.config.debug) {
                                 plugin.getLogger().info("08 Added item for " + name);
@@ -320,7 +320,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     @Override
     public void addEnderchest(@NotNull String name, ItemStack[] inv) {
         getConnectionAsync(connection ->
-                connection.hset(INVSHARE_ENDERCHEST.toString(), name, serialize(inv))
+                connection.hset(DataKey.INVSHARE_ENDERCHEST.toString(), name, serialize(inv))
                         .thenApply(response -> {
                             if (plugin.config.debug) {
                                 plugin.getLogger().info("10 Added enderchest for " + name);
@@ -337,9 +337,9 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     @Override
     public void clearInvShareCache() {
         getConnectionPipeline(connection -> {
-            connection.del(INVSHARE_INVENTORY.toString());
-            connection.del(INVSHARE_ENDERCHEST.toString());
-            connection.del(INVSHARE_ITEM.toString());
+            connection.del(DataKey.INVSHARE_INVENTORY.toString());
+            connection.del(DataKey.INVSHARE_ENDERCHEST.toString());
+            connection.del(DataKey.INVSHARE_ITEM.toString());
             return null;
         });
     }
@@ -347,7 +347,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     @Override
     public CompletionStage<ItemStack> getPlayerItem(@NotNull String playerName) {
         return getConnectionAsync(connection ->
-                connection.hget(INVSHARE_ITEM.toString(), playerName)
+                connection.hget(DataKey.INVSHARE_ITEM.toString(), playerName)
                         .thenApply(serializedInv -> {
                             if (plugin.config.debug) {
                                 plugin.getLogger().info("04 Got item for " + playerName + " is " + serializedInv);
@@ -366,7 +366,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     @Override
     public CompletionStage<ItemStack[]> getPlayerInventory(@NotNull String playerName) {
         return getConnectionAsync(connection ->
-                connection.hget(INVSHARE_INVENTORY.toString(), playerName)
+                connection.hget(DataKey.INVSHARE_INVENTORY.toString(), playerName)
                         .thenApply(serializedInv -> {
                             if (plugin.config.debug) {
                                 plugin.getLogger().info("12 Got inventory for " + playerName + " is " + (serializedInv == null ? "null" : serializedInv));
@@ -384,7 +384,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     @Override
     public CompletionStage<ItemStack[]> getPlayerEnderchest(@NotNull String playerName) {
         return getConnectionAsync(connection ->
-                connection.hget(INVSHARE_ENDERCHEST.toString(), playerName)
+                connection.hget(DataKey.INVSHARE_ENDERCHEST.toString(), playerName)
                         .thenApply(serializedInv -> {
                             if (plugin.config.debug) {
                                 plugin.getLogger().info("13 Got enderchest for " + playerName + " is " + (serializedInv == null ? "null" : serializedInv));
@@ -401,7 +401,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     @Override
     public CompletionStage<List<Mail>> getPlayerPrivateMail(@NotNull String playerName) {
         return getConnectionAsync(connection ->
-                connection.hgetall(PRIVATE_MAIL_PREFIX + playerName)
+                connection.hgetall(DataKey.PRIVATE_MAIL_PREFIX + playerName)
                         .thenApply(this::deserializeMails)
                         .exceptionally(throwable -> {
                             throwable.printStackTrace();
@@ -413,9 +413,9 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     @Override
     public CompletionStage<Boolean> setPlayerPrivateMail(@NotNull Mail mail) {
         return getConnectionPipeline(connection -> {
-            connection.hset(PRIVATE_MAIL_PREFIX + mail.getReceiver(), String.valueOf(mail.getId()), mail.serialize());
+            connection.hset(DataKey.PRIVATE_MAIL_PREFIX + mail.getReceiver(), String.valueOf(mail.getId()), mail.serialize());
             mail.setCategory(Mail.MailCategory.SENT);
-            return connection.hset(PRIVATE_MAIL_PREFIX + mail.getSender(), String.valueOf(mail.getId()), mail.serialize()).exceptionally(throwable -> {
+            return connection.hset(DataKey.PRIVATE_MAIL_PREFIX + mail.getSender(), String.valueOf(mail.getId()), mail.serialize()).exceptionally(throwable -> {
                 throwable.printStackTrace();
                 plugin.getLogger().warning("Error setting private mail");
                 return null;
@@ -430,7 +430,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     @Override
     public CompletionStage<Boolean> setPublicMail(@NotNull Mail mail) {
         return getConnectionAsync(connection ->
-                connection.hset(PUBLIC_MAIL.toString(), String.valueOf(mail.getId()), mail.serialize()).exceptionally(throwable -> {
+                connection.hset(DataKey.PUBLIC_MAIL.toString(), String.valueOf(mail.getId()), mail.serialize()).exceptionally(throwable -> {
                     throwable.printStackTrace();
                     plugin.getLogger().warning("Error setting public mail");
                     return null;
@@ -440,7 +440,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     @Override
     public CompletionStage<List<Mail>> getPublicMails() {
         return getConnectionAsync(connection ->
-                connection.hgetall(PUBLIC_MAIL.toString())
+                connection.hgetall(DataKey.PUBLIC_MAIL.toString())
                         .thenApply(this::deserializeMails).exceptionally(throwable -> {
                             throwable.printStackTrace();
                             plugin.getLogger().warning("Error getting public mails");
@@ -451,12 +451,12 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     @Override
     public void registerChannel(@NotNull Channel channel) {
         getConnectionPipeline(connection -> {
-            connection.hset(CHANNELS.toString(), channel.getName(), channel.serialize()).exceptionally(throwable -> {
+            connection.hset(DataKey.CHANNELS.toString(), channel.getName(), channel.serialize()).exceptionally(throwable -> {
                 throwable.printStackTrace();
                 plugin.getLogger().warning("Error registering custom channel");
                 return null;
             });
-            connection.publish(CHANNEL_UPDATE.toString(), channel.serialize());
+            connection.publish(DataKey.CHANNEL_UPDATE.toString(), channel.serialize());
             return null;
         });
     }
@@ -465,12 +465,12 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     @Override
     public void unregisterChannel(@NotNull String channelName) {
         getConnectionPipeline(connection -> {
-            connection.hdel(CHANNELS.toString(), channelName).exceptionally(throwable -> {
+            connection.hdel(DataKey.CHANNELS.toString(), channelName).exceptionally(throwable -> {
                 throwable.printStackTrace();
                 plugin.getLogger().warning("Error registering custom channel");
                 return null;
             });
-            connection.publish(CHANNEL_UPDATE.toString(), "delete§" + channelName);
+            connection.publish(DataKey.CHANNEL_UPDATE.toString(), "delete§" + channelName);
             return null;
         });
     }
@@ -478,7 +478,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     @Override
     public CompletionStage<List<Channel>> getChannels() {
         return getConnectionAsync(connection ->
-                connection.hgetall(CHANNELS.toString())
+                connection.hgetall(DataKey.CHANNELS.toString())
                         .thenApply(channelMap -> channelMap.values().stream()
                                 .map(Channel::deserialize)
                                 .toList())
@@ -492,7 +492,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     @Override
     public CompletionStage<@Nullable String> getActivePlayerChannel(@NotNull String playerName, Map<String, Channel> registeredChannels) {
         return getConnectionAsync(conn ->
-                conn.hgetall(PLAYER_CHANNELS_PREFIX + playerName)
+                conn.hgetall(DataKey.PLAYER_CHANNELS_PREFIX + playerName)
                         .thenApply(result -> {
                             for (Map.Entry<String, String> channelStatus : result.entrySet()) {
                                 if (channelStatus.getValue().equals("1"))
@@ -505,7 +505,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     @Override
     public CompletionStage<List<PlayerChannel>> getPlayerChannelStatuses(@NotNull String playerName, Map<String, Channel> registeredChannels) {
         return getConnectionAsync(connection ->
-                connection.hgetall(PLAYER_CHANNELS_PREFIX + playerName)
+                connection.hgetall(DataKey.PLAYER_CHANNELS_PREFIX + playerName)
                         .exceptionally(throwable -> {
                             throwable.printStackTrace();
                             plugin.getLogger().warning("Error getting player channel");
@@ -525,7 +525,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     @Override
     public void setPlayerChannelStatuses(@NotNull String playerName, @NotNull Map<String, String> channelStatuses) {
         getConnectionAsync(connection ->
-                connection.hmset(PLAYER_CHANNELS_PREFIX + playerName, channelStatuses)
+                connection.hmset(DataKey.PLAYER_CHANNELS_PREFIX + playerName, channelStatuses)
                         .exceptionally(throwable -> {
                             throwable.printStackTrace();
                             plugin.getLogger().warning("Error registering custom channel");
@@ -536,7 +536,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     @Override
     public void removePlayerChannelStatus(@NotNull String playerName, @NotNull String channelName) {
         getConnectionAsync(connection ->
-                connection.hdel(PLAYER_CHANNELS_PREFIX + playerName, channelName)
+                connection.hdel(DataKey.PLAYER_CHANNELS_PREFIX + playerName, channelName)
                         .exceptionally(throwable -> {
                             throwable.printStackTrace();
                             plugin.getLogger().warning("Error registering custom channel");
@@ -547,7 +547,27 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     @Override
     public void sendChatMessage(@NotNull ChatMessageInfo packet) {
         getConnectionPipeline(conn -> {
-            conn.publish(CHAT_CHANNEL.toString(), packet.serialize())
+            String publishChannel = DataKey.CHAT_CHANNEL.toString();
+            if (packet.isChannel()) {//If it's a channel message we need to increment the rate limit
+                String chName = packet.getReceiverName().substring(1);
+
+                if (chName.equals(KnownChatEntities.STAFFCHAT_CHANNEL_NAME.toString()))
+                    publishChannel = DataKey.CHAT_CHANNEL.withoutCluster();//Exception for staffchat: it's a global channel
+
+                conn.incr(DataKey.RATE_LIMIT_PREFIX + packet.getSenderName() + chName)
+                        .toCompletableFuture().orTimeout(1, TimeUnit.SECONDS)
+                        .exceptionally(exception -> {
+                            exception.printStackTrace();
+                            plugin.getLogger().warning("Error sending object packet");
+                            return 0L;
+                        });
+                conn.expire(DataKey.RATE_LIMIT_PREFIX + packet.getSenderName() + chName,
+                        plugin.getChannelManager().getRegisteredChannels().containsKey(chName) ?
+                                plugin.getChannelManager().getRegisteredChannels().get(chName).getRateLimitPeriod() :
+                                5);
+            }
+
+            conn.publish(publishChannel, packet.serialize())
                     .thenApply(integer -> {
                         if (plugin.config.debug) {
                             plugin.getLogger().warning("#" + (++pubSubIndex) + "received by " + integer + " servers");
@@ -560,20 +580,6 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
                         plugin.getLogger().warning("Error sending object packet");
                         return 0L;
                     });
-            if (packet.isChannel()) {
-                String chName = packet.getReceiverName().substring(1);
-                conn.incr(RATE_LIMIT_PREFIX + packet.getSenderName() + chName)
-                        .toCompletableFuture().orTimeout(1, TimeUnit.SECONDS)
-                        .exceptionally(exception -> {
-                            exception.printStackTrace();
-                            plugin.getLogger().warning("Error sending object packet");
-                            return 0L;
-                        });
-                conn.expire(RATE_LIMIT_PREFIX + packet.getSenderName() + chName,
-                        plugin.getChannelManager().getRegisteredChannels().containsKey(chName) ?
-                                plugin.getChannelManager().getRegisteredChannels().get(chName).getRateLimitPeriod() :
-                                5);
-            }
             return null;
         });
 
@@ -582,7 +588,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     @Override
     public void sendRejoin(@NotNull String playerName) {
         getConnectionAsync(connection ->
-                connection.publish(REJOIN_CHANNEL.toString(), playerName)
+                connection.publish(DataKey.REJOIN_CHANNEL.toString(), playerName)
                         .thenApply(integer -> {
                             if (plugin.config.debug) {
                                 plugin.getLogger().warning("#" + (++pubSubIndex) + "received by " + integer + " servers");
@@ -601,7 +607,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     @Override
     public void publishPlayerList(@NotNull List<String> playerNames) {
         getConnectionAsync(connection ->
-                connection.publish(PLAYERLIST.toString(),
+                connection.publish(DataKey.PLAYERLIST.toString(),
                                 String.join("§", playerNames))
                         .toCompletableFuture().orTimeout(1, TimeUnit.SECONDS)
                         .exceptionally(exception -> {

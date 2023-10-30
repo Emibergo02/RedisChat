@@ -7,7 +7,7 @@ import dev.jorel.commandapi.arguments.StringArgument;
 import dev.jorel.commandapi.executors.ExecutorType;
 import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
-import dev.unnm3d.redischat.configs.Config;
+import dev.unnm3d.redischat.settings.Config;
 import dev.unnm3d.redischat.utils.AdventureWebuiEditorAPI;
 import lombok.AllArgsConstructor;
 import org.bukkit.command.CommandSender;

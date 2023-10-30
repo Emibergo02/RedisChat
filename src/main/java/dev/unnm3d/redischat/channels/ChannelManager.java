@@ -9,7 +9,6 @@ import dev.unnm3d.redischat.chat.ChatFormat;
 import dev.unnm3d.redischat.chat.ChatMessageInfo;
 import dev.unnm3d.redischat.chat.ComponentProvider;
 import dev.unnm3d.redischat.chat.KnownChatEntities;
-import dev.unnm3d.redischat.discord.DiscordWebhook;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -22,7 +21,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.xenondevs.invui.window.Window;
 
-import java.net.MalformedURLException;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -125,9 +123,17 @@ public class ChannelManager extends RedisChatAPI {
 
         //Placeholders and purge minimessage tags if player doesn't have permission
         boolean parsePlaceholders = player.hasPermission(Permissions.USE_FORMATTING.getPermission());
+
         if (!parsePlaceholders) {
             message = getComponentProvider().purgeTags(message);
         }
+
+        if (!player.hasPermission(Permissions.USE_DANGEROUS.getPermission())) {
+            message = message
+                    .replace("run_command", "copy_to_clipboard")
+                    .replace("suggest_command", "copy_to_clipboard");
+        }
+
         if (message.trim().isEmpty()) return;//Check if message is empty after purging tags
 
         if (plugin.config.debug) {
@@ -207,7 +213,7 @@ public class ChannelManager extends RedisChatAPI {
                     playerChannelMessage(player, message, chatChannel);
                 })
                 .exceptionally(throwable -> {
-                    plugin.getLogger().warning("Error getting active channel: " + throwable.getMessage());
+                    throwable.printStackTrace();
                     return null;
                 });
     }

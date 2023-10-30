@@ -6,7 +6,6 @@ import dev.unnm3d.redischat.chat.ChatMessageInfo;
 
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CompletableFuture;
@@ -15,7 +14,7 @@ public class DiscordWebhook implements IDiscordHook {
     private final RedisChat plugin;
 
 
-    public DiscordWebhook(RedisChat plugin){
+    public DiscordWebhook(RedisChat plugin) {
         this.plugin = plugin;
     }
 

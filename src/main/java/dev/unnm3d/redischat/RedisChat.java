@@ -9,13 +9,10 @@ import dev.jorel.commandapi.CommandAPICommand;
 import dev.unnm3d.redischat.api.DataManager;
 import dev.unnm3d.redischat.channels.ChannelCommand;
 import dev.unnm3d.redischat.channels.ChannelManager;
-import dev.unnm3d.redischat.chat.ChatListener;
+import dev.unnm3d.redischat.chat.ChatListenerWithPriority;
 import dev.unnm3d.redischat.chat.ComponentProvider;
 import dev.unnm3d.redischat.chat.JoinQuitManager;
 import dev.unnm3d.redischat.commands.*;
-import dev.unnm3d.redischat.configs.Config;
-import dev.unnm3d.redischat.configs.GuiSettings;
-import dev.unnm3d.redischat.configs.Messages;
 import dev.unnm3d.redischat.datamanagers.RedisDataManager;
 import dev.unnm3d.redischat.datamanagers.sqlmanagers.H2SQLDataManager;
 import dev.unnm3d.redischat.datamanagers.sqlmanagers.MySQLDataManager;
@@ -32,6 +29,9 @@ import dev.unnm3d.redischat.moderation.StaffChatCommand;
 import dev.unnm3d.redischat.permission.LuckPermsProvider;
 import dev.unnm3d.redischat.permission.PermissionProvider;
 import dev.unnm3d.redischat.permission.VaultPermissionProvider;
+import dev.unnm3d.redischat.settings.Config;
+import dev.unnm3d.redischat.settings.GuiSettings;
+import dev.unnm3d.redischat.settings.Messages;
 import dev.unnm3d.redischat.task.AnnounceManager;
 import dev.unnm3d.redischat.utils.AdventureWebuiEditorAPI;
 import dev.unnm3d.redischat.utils.Metrics;
@@ -111,7 +111,15 @@ public final class RedisChat extends JavaPlugin {
         //Chat section
         this.componentProvider = new ComponentProvider(this);
 
-        getServer().getPluginManager().registerEvents(new ChatListener(this), this);
+        ChatListenerWithPriority listenerWithPriority;
+        try {
+            listenerWithPriority = ChatListenerWithPriority.valueOf(config.listeningPriotity);
+        } catch (IllegalArgumentException e) {
+            getLogger().warning("Invalid listening priority, using NORMAL");
+            listenerWithPriority = ChatListenerWithPriority.NORMAL;
+        }
+
+        getServer().getPluginManager().registerEvents(listenerWithPriority.getListener(), this);
 
         loadCommandAPICommand(new StaffChatCommand(this).getCommand());
 
@@ -119,10 +127,10 @@ public final class RedisChat extends JavaPlugin {
         loadCommandAPICommand(new ChannelCommand(this).getCommand());
 
         if (config.enableQuitJoinMessages) {
-            if(config.getDataType() == Config.DataType.REDIS) {
+            if (config.getDataType() == Config.DataType.REDIS) {
                 this.joinQuitManager = new JoinQuitManager(this);
                 getServer().getPluginManager().registerEvents(this.joinQuitManager, this);
-            }else{
+            } else {
                 getLogger().warning("Join/Quit messages are not supported with H2 or MySQL");
             }
         }
@@ -174,17 +182,17 @@ public final class RedisChat extends JavaPlugin {
             getLogger().info("PremiumVanish found, enabling integration");
             playerListManager.addVanishIntegration(new PremiumVanishIntegration(this));
         }
-        if (getServer().getPluginManager().getPlugin("Spicord") != null) {
+        if (getServer().getPluginManager().getPlugin("Spicord") != null && config.spicord.enabled()) {
             getLogger().info("Spicord found, enabling integration");
             this.discordHook = new SpicordHook(this);
-        }else{
+        } else {
             getLogger().info("Spicord not found, using default DiscordWebhook");
             this.discordHook = new DiscordWebhook(this);
         }
 
         new UpdateCheck(this).getVersion(version -> {
             if (!this.getDescription().getVersion().equalsIgnoreCase(version)) {
-                getLogger().info("§k*******§r §6New version available: " + version+" §k*******");
+                getLogger().info("§k*******§r §6New version available: " + version + " §k*******");
                 getLogger().info("Check it on https://www.spigotmc.org/resources/redischat%E2%9A%A1simple-intuitive-chat-suite%E2%9A%A1cross-server-support.111015/");
             }
         });

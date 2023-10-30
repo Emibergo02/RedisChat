@@ -8,7 +8,7 @@ import dev.unnm3d.redischat.api.DataManager;
 import dev.unnm3d.redischat.channels.Channel;
 import dev.unnm3d.redischat.channels.PlayerChannel;
 import dev.unnm3d.redischat.chat.ChatMessageInfo;
-import dev.unnm3d.redischat.datamanagers.DataKeys;
+import dev.unnm3d.redischat.datamanagers.DataKey;
 import dev.unnm3d.redischat.mail.Mail;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
@@ -96,10 +96,10 @@ public abstract class SQLDataManager implements DataManager {
             ByteArrayDataInput in = ByteStreams.newDataInput(message);
             String subchannel = in.readUTF();
             String messageString = in.readUTF();
-            if (subchannel.equals(DataKeys.PLAYERLIST.toString())) {
+            if (subchannel.equals(DataKey.PLAYERLIST.toString())) {
                 if (plugin.getPlayerListManager() != null)
                     plugin.getPlayerListManager().updatePlayerList(Arrays.asList(messageString.split("§")));
-            } else if (subchannel.equals(DataKeys.CHAT_CHANNEL.toString())) {
+            } else if (subchannel.equals(DataKey.CHAT_CHANNEL.toString())) {
                 plugin.getChannelManager().sendLocalChatMessage(new ChatMessageInfo(messageString));
             }
 
@@ -751,7 +751,7 @@ public abstract class SQLDataManager implements DataManager {
         ByteArrayDataOutput out = ByteStreams.newDataOutput();
         out.writeUTF("Forward");
         out.writeUTF("ALL");
-        out.writeUTF(DataKeys.CHAT_CHANNEL.toString());
+        out.writeUTF(DataKey.CHAT_CHANNEL.toString());
         out.writeUTF(chatMessage.serialize());
         plugin.getServer().getOnlinePlayers().iterator().next()
                 .sendPluginMessage(plugin, "BungeeCord", out.toByteArray());
@@ -765,7 +765,7 @@ public abstract class SQLDataManager implements DataManager {
         ByteArrayDataOutput out = ByteStreams.newDataOutput();
         out.writeUTF("Forward");
         out.writeUTF("ALL");
-        out.writeUTF(DataKeys.PLAYERLIST.toString());
+        out.writeUTF(DataKey.PLAYERLIST.toString());
         out.writeUTF(String.join("§", playerNames));
 
         plugin.getServer().getOnlinePlayers().iterator().next()
@@ -781,7 +781,7 @@ public abstract class SQLDataManager implements DataManager {
         ByteArrayDataOutput out = ByteStreams.newDataOutput();
         out.writeUTF("Forward");
         out.writeUTF("ALL");
-        out.writeUTF(DataKeys.REJOIN_CHANNEL.toString());
+        out.writeUTF(DataKey.REJOIN_CHANNEL.toString());
         out.writeUTF(playerName);
 
         plugin.getServer().getOnlinePlayers().iterator().next()

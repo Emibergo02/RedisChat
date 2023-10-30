@@ -16,6 +16,7 @@ public interface IDiscordHook {
     default void sendDiscordMessage(Channel channel, ChatMessageInfo message) {
 
     }
+
     default String getDiscordMessageJson(@NotNull RedisChat plugin, @NotNull Channel channel, @NotNull ChatMessageInfo message) {
         return getMessageJsonString(plugin)
                 .replace("{SENDER_CHANNEL}", channel.getName())
@@ -30,7 +31,8 @@ public interface IDiscordHook {
         try {
             return new String(plugin.getResource("webhook_embed.json").readAllBytes(), StandardCharsets.UTF_8);
         } catch (IOException e) {
-            throw new IllegalStateException("Unable to load Discord message format", e);
+            e.printStackTrace();
+            return "{}";
         }
     }
 }

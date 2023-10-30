@@ -15,6 +15,7 @@ depend:
   - PlaceholderAPI
 softdepend:
   - Oraxen
+  - Spicord
 loadbefore:
   - CMI
   - CMILib
@@ -98,6 +99,7 @@ permissions:
       - redischat.setitem
       - redischat.staffchat
       - redischat.channel.staffchat
+      - redischat.usedangeroustags
   redischat.default:
     description: Allows you to use default commands
     default: true

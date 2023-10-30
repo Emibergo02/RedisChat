@@ -4,16 +4,21 @@ import com.google.common.base.Strings;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.chat.ChatMessageInfo;
 import dev.unnm3d.redischat.chat.KnownChatEntities;
+import lombok.Getter;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
 
 public class AnnounceTask extends BukkitRunnable {
 
+    @Getter
     private final RedisChat plugin;
     private final String message;
+    @Getter
     private final String channelName;
+    @Getter
     private final int delay;
+    @Getter
     private final int interval;
 
     public AnnounceTask(RedisChat plugin, String message, String channelName, int delay, int interval) {
@@ -27,7 +32,7 @@ public class AnnounceTask extends BukkitRunnable {
     public void start() {
         try {
             runTaskTimerAsynchronously(plugin, delay * 20L, interval * 20L);
-        }catch (IllegalStateException alreadyStarted) {
+        } catch (IllegalStateException alreadyStarted) {
             getPlugin().getLogger().warning("AnnounceTask already started");
         }
     }
@@ -42,23 +47,8 @@ public class AnnounceTask extends BukkitRunnable {
                         channelName.isEmpty() ? null : channelName));
     }
 
-    public RedisChat getPlugin() {
-        return plugin;
-    }
-
     public @NotNull String getMessage() {
         return Strings.nullToEmpty(message);
     }
 
-    public String getChannelName() {
-        return channelName;
-    }
-
-    public int getDelay() {
-        return delay;
-    }
-
-    public int getInterval() {
-        return interval;
-    }
 }
