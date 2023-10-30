@@ -50,6 +50,7 @@ import java.util.List;
 
 public final class RedisChat extends JavaPlugin {
 
+    @Getter
     private static RedisChat instance;
     public Config config;
     private List<String> registeredCommands;
@@ -287,10 +288,6 @@ public final class RedisChat extends JavaPlugin {
         commandAPICommand.register();
         registeredCommands.add(commandAPICommand.getName());
         getLogger().info("Command " + commandAPICommand.getName() + " registered on CommandAPI!");
-    }
-
-    public static RedisChat getInstance() {
-        return instance;
     }
 
 }

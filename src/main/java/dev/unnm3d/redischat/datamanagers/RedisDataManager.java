@@ -48,9 +48,9 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
         if (redisChat.config.redis.user().equals("changecredentials"))
             redisChat.getServer().getLogger().warning("You are using default redis credentials. Please change them in the config.yml file!");
         //Authentication params
-        redisURIBuilder = redisChat.config.redis.password().equals("") ?
+        redisURIBuilder = redisChat.config.redis.password().isEmpty() ?
                 redisURIBuilder :
-                redisChat.config.redis.user().equals("") ?
+                redisChat.config.redis.user().isEmpty() ?
                         redisURIBuilder.withPassword(redisChat.config.redis.password().toCharArray()) :
                         redisURIBuilder.withAuthentication(redisChat.config.redis.user(), redisChat.config.redis.password());
         return new RedisDataManager(RedisClient.create(redisURIBuilder.build()), redisChat);

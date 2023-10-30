@@ -1,5 +1,7 @@
 package dev.unnm3d.redischat;
 
+import lombok.Getter;
+
 public enum Permissions {
     MESSAGE("redischat.message"),
     MAIL_WRITE("redischat.mail.write"),
@@ -26,13 +28,11 @@ public enum Permissions {
     CHANNEL_TOGGLE_PLAYER("redischat.playerchannel"),
     ;
 
+    @Getter
     private final String permission;
 
     Permissions(String permission) {
         this.permission = permission;
     }
 
-    public String getPermission() {
-        return permission;
-    }
 }
