@@ -145,7 +145,7 @@ public final class Config {
     );
     @Comment({"The priority of the listening event (LOWEST, LOW, NORMAL, HIGH, HIGHEST, MONITOR)",
             "adjust this if other plugins are interfering with RedisChat"})
-    public String listeningPriotity = "NORMAL";
+    public String listeningPriority = "NORMAL";
     @Comment("Toggle debug mode (by default is false)")
     public boolean debug = false;
     @Comment({"botName is the botId associated to the bot inside the spicord configuration",

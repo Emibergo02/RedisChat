@@ -114,7 +114,7 @@ public final class RedisChat extends JavaPlugin {
 
         ChatListenerWithPriority listenerWithPriority;
         try {
-            listenerWithPriority = ChatListenerWithPriority.valueOf(config.listeningPriotity);
+            listenerWithPriority = ChatListenerWithPriority.valueOf(config.listeningPriority);
         } catch (IllegalArgumentException e) {
             getLogger().warning("Invalid listening priority, using NORMAL");
             listenerWithPriority = ChatListenerWithPriority.NORMAL;
