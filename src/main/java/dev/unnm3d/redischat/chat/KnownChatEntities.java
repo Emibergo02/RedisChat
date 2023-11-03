@@ -3,7 +3,8 @@ package dev.unnm3d.redischat.chat;
 public enum KnownChatEntities {
     PUBLIC_CHAT("public"),
     SERVER_SENDER("*Server*"),
-    CHANNEL_PREFIX("@"),
+    CHANNEL_PREFIX("#"),
+    DISCORD_PREFIX("@"),
     STAFFCHAT_CHANNEL_NAME("staffchat"),
     ;
 

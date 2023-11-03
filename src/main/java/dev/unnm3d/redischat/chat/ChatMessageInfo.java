@@ -1,64 +1,55 @@
 package dev.unnm3d.redischat.chat;
 
 import com.google.common.base.Strings;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
 
 public class ChatMessageInfo implements Serializable {
-    private final String senderName;
+    private final ChatActor sender;
     private final String formatting;
     private final String message;
-    private final String receiverName;
+    private final ChatActor receiver;
 
     /**
      * Creates a ChatMessageInfo
      * Assumes that the message is a broadcast
      *
-     * @param senderName The name of the sender
+     * @param sender     The name of the sender
      * @param formatting The formatting of the message
      * @param message    The message content
      */
-    public ChatMessageInfo(String senderName, String formatting, String message) {
-        this(senderName, formatting, message, KnownChatEntities.CHANNEL_PREFIX + KnownChatEntities.PUBLIC_CHAT.toString());
+    public ChatMessageInfo(@NotNull ChatActor sender, String formatting, String message) {
+        this(sender, formatting, message, new ChatActor(KnownChatEntities.PUBLIC_CHAT.toString(), ChatActor.ActorType.CHANNEL));
     }
 
     /**
-     * Creates a ChatMessageInfo
-     *
-     * @param senderName   The name of the sender
-     * @param formatting   The formatting of the message
-     * @param message      The message content
-     * @param receiverName The name of the receiver
+     * Creates a ChatMessageInfo as "Server"
+     * @param message The message content
      */
-    public ChatMessageInfo(String senderName, String formatting, String message, String receiverName) {
-        this.senderName = senderName;
+    public ChatMessageInfo(String message) {
+        this(new ChatActor(), "%message%", message, new ChatActor(KnownChatEntities.PUBLIC_CHAT.toString(), ChatActor.ActorType.CHANNEL));
+    }
+
+    /**
+     * Creates a ChatMessageInfo from a sender, formatting, message and receiver
+     *
+     * @param sender     The sender of the message
+     * @param formatting The formatting of the message
+     * @param message    The message content
+     * @param receiver   The receiver of the message
+     */
+    public ChatMessageInfo(@NotNull ChatActor sender, @Nullable String formatting, @Nullable String message, @NotNull ChatActor receiver) {
+        this.sender = sender;
         this.formatting = Strings.nullToEmpty(formatting);
         this.message = Strings.nullToEmpty(message);
-        this.receiverName = receiverName;
-    }
-
-    /**
-     * Creates a ChatMessageInfo from a serialized string
-     *
-     * @param serialized The serialized string
-     */
-    public ChatMessageInfo(String serialized) {
-        String[] splitted = serialized.split("§§§");
-        this.senderName = splitted[0];
-        this.formatting = splitted[1];
-        this.message = splitted[2];
-        this.receiverName = splitted[3];
-    }
-
-    public static ChatMessageInfo craftChannelChatMessage(String senderName, String formatting, String message, @Nullable String channelName) {
-        if (channelName == null) return new ChatMessageInfo(senderName, formatting, message);
-        return new ChatMessageInfo(senderName, formatting, message, KnownChatEntities.CHANNEL_PREFIX + channelName);
+        this.receiver = receiver;
     }
 
 
-    public String getSenderName() {
-        return senderName;
+    public ChatActor getSender() {
+        return sender;
     }
 
     public String getMessage() {
@@ -79,15 +70,20 @@ public class ChatMessageInfo implements Serializable {
     }
 
     public boolean isChannel() {
-        return receiverName.startsWith(KnownChatEntities.CHANNEL_PREFIX.toString());
+        return receiver.isChannel();
     }
 
-    public String getReceiverName() {
-        return receiverName;
+    public ChatActor getReceiver() {
+        return receiver;
     }
-
 
     public String serialize() {
-        return senderName + "§§§" + formatting + "§§§" + message + "§§§" + receiverName;
+        return sender.serialize() + "§§§" + formatting + "§§§" + message + "§§§" + receiver.serialize();
     }
+
+    public static ChatMessageInfo deserialize(String serialized) {
+        final String[] splitted = serialized.split("§§§");
+        return new ChatMessageInfo(new ChatActor(splitted[0]), splitted[1], splitted[2], new ChatActor(splitted[3]));
+    }
+
 }

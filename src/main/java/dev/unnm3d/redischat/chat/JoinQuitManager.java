@@ -38,14 +38,12 @@ public class JoinQuitManager implements Listener {
 
         if (!joinEvent.getPlayer().hasPlayedBefore() && !redisChat.config.first_join_message.isEmpty()) {
             redisChat.getDataManager().sendChatMessage(new ChatMessageInfo(
-                    null,
                     MiniMessage.miniMessage().serialize(redisChat.getComponentProvider().parse(
                             joinEvent.getPlayer(),
                             redisChat.config.first_join_message,
                             true,
                             false,
-                            false)),
-                    null));
+                            false))));
             return;
         }
 
@@ -55,14 +53,12 @@ public class JoinQuitManager implements Listener {
 
         //Send join message to everyone
         redisChat.getDataManager().sendChatMessage(new ChatMessageInfo(
-                null,
                 MiniMessage.miniMessage().serialize(redisChat.getComponentProvider().parse(
                         joinEvent.getPlayer(),
                         chatFormat.join_format(),
                         true,
                         false,
-                        false)),
-                null));
+                        false))));
 
 
     }
@@ -94,7 +90,7 @@ public class JoinQuitManager implements Listener {
                 .orTimeout(redisChat.config.quitSendWaiting, TimeUnit.MILLISECONDS)
                 .exceptionally(onTimeout -> {                               //Timeout, player quit
                     redisChat.getDataManager().sendChatMessage(
-                            new ChatMessageInfo(null,
+                            new ChatMessageInfo(new ChatActor(),
                                     parsedQuitMessage,
                                     null));
                     return null;

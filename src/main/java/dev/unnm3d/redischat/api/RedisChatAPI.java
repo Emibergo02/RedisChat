@@ -72,14 +72,6 @@ public abstract class RedisChatAPI {
     public abstract void playerChannelMessage(CommandSender player, @NotNull String message, Channel channel);
 
     /**
-     * Sends the message to the discord webhook defined in the channel
-     *
-     * @param channel  The channel the message was sent to
-     * @param message  The message object
-     */
-    public abstract void sendDiscordMessage(Channel channel, ChatMessageInfo message);
-
-    /**
      * Sends a message inside the current server
      *
      * @param chatMessageInfo The ChatMessageInfo to send

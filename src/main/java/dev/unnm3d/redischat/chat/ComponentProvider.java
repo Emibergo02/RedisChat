@@ -70,27 +70,6 @@ public class ComponentProvider {
         this.tagResolverIntegrationList.remove(integration);
     }
 
-    /**
-     * Gets the custom placeholder resolver for a player
-     *
-     * @param commandSender The player
-     * @return The custom placeholder resolver
-     */
-    public TagResolver getCustomPlaceholderResolver(CommandSender commandSender) {
-        TagResolver.Builder builder = TagResolver.builder();
-        for (Map.Entry<String, String> placeholderEntry : plugin.config.placeholders.entrySet()) {
-            builder.resolver(Placeholder.component(
-                    placeholderEntry.getKey(),
-                    parse(commandSender,
-                            placeholderEntry.getValue(),
-                            true,
-                            false,
-                            false,
-                            this.standardTagResolver)));
-        }
-        return builder.build();
-    }
-
     public Component parse(String text, TagResolver... tagResolvers) {
         return parse(null, text, tagResolvers);
     }
@@ -156,7 +135,7 @@ public class ComponentProvider {
      * @param tagResolvers The tag resolvers to use
      * @return The parsed text
      */
-    public @NotNull Component parsePlaceholders(CommandSender cmdSender, @NotNull String text, TagResolver... tagResolvers) {
+    public @NotNull Component parsePlaceholders(@Nullable CommandSender cmdSender, @NotNull String text, TagResolver... tagResolvers) {
         final String[] stringPlaceholders = text.split("%");
         final LinkedHashMap<String, Component> placeholders = new LinkedHashMap<>();
         int placeholderStep = 1;
@@ -190,6 +169,20 @@ public class ComponentProvider {
             answer = answer.replaceText(rBuilder -> rBuilder.matchLiteral(placeholder).replacement(placeholders.get(placeholder)));
         }
         return answer;
+    }
+
+    public Component parseCustomPlaceholders(@Nullable CommandSender cmdSender, @NotNull Component messageComp) {
+        //Parse custom placeholders
+        for (Map.Entry<String, String> replacementEntry : plugin.config.placeholders.entrySet()) {
+            messageComp = messageComp.replaceText(rBuilder ->
+                    rBuilder.matchLiteral(replacementEntry.getKey())
+                            .replacement(parse(cmdSender, replacementEntry.getValue(),
+                                    true,
+                                    false,
+                                    false,
+                                    this.standardTagResolver)));
+        }
+        return messageComp;
     }
 
     /**
@@ -270,8 +263,6 @@ public class ComponentProvider {
             TagResolver ec = Placeholder.component("ec", parse(player, toParseEnderChest, true, false, false, this.standardTagResolver));
             builder.resolver(ec);
         }
-        if (player.hasPermission(Permissions.USE_CUSTOM_PLACEHOLDERS.getPermission()))
-            builder.resolver(getCustomPlaceholderResolver(player));
 
         return builder.build();
     }

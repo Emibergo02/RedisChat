@@ -3,7 +3,6 @@ package dev.unnm3d.redischat.commands;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.chat.ChatMessageInfo;
 import lombok.AllArgsConstructor;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -19,8 +18,8 @@ public class ClearChatCommand implements CommandExecutor {
         new BukkitRunnable() {
             @Override
             public void run() {
-                String message = MiniMessage.miniMessage().serialize(plugin.getComponentProvider().parse(null, RedisChat.getInstance().config.clear_chat_message.replace("%message%", String.join(" ", args))));
-                plugin.getDataManager().sendChatMessage(new ChatMessageInfo(null, message, null));
+                plugin.getDataManager().sendChatMessage(
+                        new ChatMessageInfo(RedisChat.getInstance().config.clear_chat_message));
             }
         }.runTaskAsynchronously(plugin);
         return true;

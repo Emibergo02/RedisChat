@@ -4,6 +4,7 @@ import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.arguments.GreedyStringArgument;
 import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
+import dev.unnm3d.redischat.chat.ChatActor;
 import dev.unnm3d.redischat.chat.ChatFormat;
 import dev.unnm3d.redischat.chat.ChatMessageInfo;
 import lombok.AllArgsConstructor;
@@ -40,10 +41,10 @@ public class ReplyCommand {
                                 String message = (String) args.get(0);
                                 assert message != null;
 
-                                List<ChatFormat> chatFormatList = plugin.config.getChatFormats(sender);
+                                final List<ChatFormat> chatFormatList = plugin.config.getChatFormats(sender);
                                 if (chatFormatList.isEmpty()) return;
 
-                                Component formatted = plugin.getComponentProvider().parse(sender, chatFormatList.get(0).private_format().replace("%receiver%", receiver.get()).replace("%sender%", sender.getName()));
+                                final Component formatted = plugin.getComponentProvider().parse(sender, chatFormatList.get(0).private_format().replace("%receiver%", receiver.get()).replace("%sender%", sender.getName()));
 
                                 //Check for minimessage tags permission
                                 boolean parsePlaceholders = sender.hasPermission(Permissions.USE_FORMATTING.getPermission());
@@ -58,13 +59,17 @@ public class ReplyCommand {
                                 message = plugin.getComponentProvider().invShareFormatting(sender, message);
 
                                 //Parse into minimessage (placeholders, tags and mentions)
-                                Component toBeReplaced = plugin.getComponentProvider().parse(sender, message, parsePlaceholders, true, true, plugin.getComponentProvider().getRedisChatTagResolver(sender));
+                                final Component temp = plugin.getComponentProvider().parse(sender, message, parsePlaceholders, true, true, plugin.getComponentProvider().getRedisChatTagResolver(sender));
+
+                                //Parse customs
+                                final Component toBeReplaced = plugin.getComponentProvider().parseCustomPlaceholders(sender, temp);
 
                                 //Send to other servers
-                                plugin.getDataManager().sendChatMessage(new ChatMessageInfo(sender.getName(),
+                                plugin.getDataManager().sendChatMessage(new ChatMessageInfo(new ChatActor(sender.getName(), ChatActor.ActorType.PLAYER),
                                         MiniMessage.miniMessage().serialize(formatted),
                                         MiniMessage.miniMessage().serialize(toBeReplaced),
-                                        receiver.get()));
+                                        new ChatActor(receiver.get(), ChatActor.ActorType.PLAYER)
+                                ));
 
                                 plugin.getComponentProvider().sendMessage(sender, formatted.replaceText(aBuilder -> aBuilder.matchLiteral("%message%").replacement(toBeReplaced)));
 

@@ -2,19 +2,19 @@ package dev.unnm3d.redischat.discord;
 
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.channels.Channel;
+import dev.unnm3d.redischat.chat.ChatActor;
 import dev.unnm3d.redischat.chat.ChatMessageInfo;
-import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
-import net.dv8tion.jda.api.utils.messages.MessageCreateData;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.spicord.SpicordLoader;
 import org.spicord.api.addon.SimpleAddon;
 import org.spicord.bot.DiscordBot;
 
-import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -47,7 +47,8 @@ public class SpicordHook extends SimpleAddon implements IDiscordHook {
     }
 
     @Override
-    public void sendDiscordMessage(Channel channel, ChatMessageInfo message) {
+    public void sendDiscordMessage(Channel channel, ChatMessageInfo chatMessageInfo) {
+        if (chatMessageInfo.getSender().isDiscord()) return;
         if (this.bot == null || this.bot.getJda() == null) {
             plugin.getLogger().warning("Unable to send message to Discord channel " + channel.getName() + ": bot not found");
             return;
@@ -58,12 +59,28 @@ public class SpicordHook extends SimpleAddon implements IDiscordHook {
             plugin.getLogger().warning("Unable to send message to Discord channel " + channel.getName() + ": channel not found");
             return;
         }
-        textChannel.sendMessage(
-                getMessage(
-                        channel.getName(),
-                        message.getSenderName(),
-                        PlainTextComponentSerializer.plainText().serialize(MiniMessage.miniMessage().deserialize(message.getMessage()))
-                )).queue();
+        if (plugin.config.spicord.discordFormat() == null) {
+            plugin.getLogger().warning("Discord format not found. Please regenerate the Spicord configuration section");
+            return;
+        }
+
+
+        final Component discordComponent = chatMessageInfo.getSender().isServer() ?
+                MiniMessage.miniMessage().deserialize(chatMessageInfo.getMessage()) :
+                plugin.getComponentProvider()
+                        .parsePlaceholders(null, //Parse placeholder for format
+                                plugin.config.spicord.discordFormat()
+                                        .replace("%channel%", channel.getName()) //Specific placeholders for Discord format
+                                        .replace("%sender%", chatMessageInfo.getSender().getName()))
+                        .replaceText(rBuilder -> //Replace %message% with the actual message component
+                                rBuilder.matchLiteral("%message%")
+                                        .replacement(MiniMessage.miniMessage().deserialize(chatMessageInfo.getMessage())));
+
+        textChannel.sendMessage(new MessageCreateBuilder()
+                .setAllowedMentions(List.of())// Disable mentions
+                .setContent(PlainTextComponentSerializer.plainText().serialize(discordComponent))
+                .setEmbeds(List.of())
+                .build()).queue();
     }
 
     @Override
@@ -71,26 +88,23 @@ public class SpicordHook extends SimpleAddon implements IDiscordHook {
         if (event.getAuthor().isBot()) return;
         for (Map.Entry<String, String> channelLink : plugin.config.spicord.spicordChannelLink().entrySet()) {
             if (channelLink.getValue().equals(event.getGuildChannel().getId())) {
-                plugin.getDataManager().sendChatMessage(ChatMessageInfo.craftChannelChatMessage(
-                        event.getAuthor().getName(),
-                        plugin.config.spicord.chatFormat().replace("%username%", event.getAuthor().getEffectiveName()),
+
+                final Role highestRole;
+                if (event.getMember() == null || event.getMember().getRoles().isEmpty()) {
+                    highestRole = event.getGuild().getPublicRole();
+                } else {
+                    highestRole = event.getMember().getRoles().get(0);
+                }
+
+                plugin.getDataManager().sendChatMessage(new ChatMessageInfo(
+                        new ChatActor(event.getAuthor().getName(), ChatActor.ActorType.DISCORD),
+                        plugin.config.spicord.chatFormat()
+                                .replace("%username%", event.getAuthor().getEffectiveName())
+                                .replace("%role%", highestRole.getName()),
                         event.getMessage().getContentStripped(),
-                        channelLink.getKey()));
+                        new ChatActor(channelLink.getKey(), ChatActor.ActorType.CHANNEL)));
             }
         }
-    }
-
-    private MessageCreateData getMessage(String channelName, String senderName, String message) {
-        return new MessageCreateBuilder()
-                .setAllowedMentions(List.of())// Disable mentions
-                .setEmbeds(List.of(new EmbedBuilder()
-                        .setAuthor(senderName)
-                        .setDescription(message)
-                        .setColor(0x00fb9a)
-                        .setFooter(channelName)
-                        .setTimestamp(OffsetDateTime.now())
-                        .build()))
-                .build();
     }
 
 }

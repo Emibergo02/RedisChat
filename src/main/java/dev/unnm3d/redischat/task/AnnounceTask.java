@@ -2,8 +2,8 @@ package dev.unnm3d.redischat.task;
 
 import com.google.common.base.Strings;
 import dev.unnm3d.redischat.RedisChat;
+import dev.unnm3d.redischat.chat.ChatActor;
 import dev.unnm3d.redischat.chat.ChatMessageInfo;
-import dev.unnm3d.redischat.chat.KnownChatEntities;
 import lombok.Getter;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
@@ -40,11 +40,12 @@ public class AnnounceTask extends BukkitRunnable {
     @Override
     public void run() {
         plugin.getDataManager().sendChatMessage(
-                ChatMessageInfo.craftChannelChatMessage(
-                        KnownChatEntities.SERVER_SENDER.toString(),
+                new ChatMessageInfo(
+                        new ChatActor(),
+                        "%message%",
                         getMessage(),
-                        null,
-                        channelName.isEmpty() ? null : channelName));
+                        new ChatActor(channelName, ChatActor.ActorType.CHANNEL)
+                ));
     }
 
     public @NotNull String getMessage() {

@@ -1,6 +1,7 @@
 package dev.unnm3d.redischat;
 
 import de.exlll.configlib.ConfigLib;
+import de.exlll.configlib.ConfigurationException;
 import de.exlll.configlib.YamlConfigurationProperties;
 import de.exlll.configlib.YamlConfigurations;
 import dev.jorel.commandapi.CommandAPI;
@@ -88,7 +89,11 @@ public final class RedisChat extends JavaPlugin {
         CommandAPI.onEnable();
         registeredCommands = new ArrayList<>();
         instance = this;
-        loadYML();
+        try {
+            loadYML();
+        } catch (ConfigurationException e) {
+            getLogger().severe("config.yml or messages.yml or guis.yml is invalid! Please regenerate them (starting from config.yml: " + e.getMessage());
+        }
 
         //Redis section
         switch (config.getDataType()) {
@@ -122,7 +127,8 @@ public final class RedisChat extends JavaPlugin {
 
         getServer().getPluginManager().registerEvents(listenerWithPriority.getListener(), this);
 
-        loadCommandAPICommand(new StaffChatCommand(this).getCommand());
+        if(config.enableStaffChat)
+            loadCommandAPICommand(new StaffChatCommand(this).getCommand());
 
         this.channelManager = new ChannelManager(this);
         loadCommandAPICommand(new ChannelCommand(this).getCommand());
@@ -200,7 +206,7 @@ public final class RedisChat extends JavaPlugin {
     }
 
 
-    public void loadYML() {
+    public void loadYML() throws ConfigurationException {
         Path configFile = new File(getDataFolder(), "config.yml").toPath();
         this.config = YamlConfigurations.update(
                 configFile,

@@ -20,7 +20,7 @@ public class DiscordWebhook implements IDiscordHook {
 
     @Override
     public void sendDiscordMessage(Channel channel, ChatMessageInfo message) {
-        if (channel.getDiscordWebhook() == null || channel.getDiscordWebhook().isEmpty()) return;
+        if (channel.getDiscordWebhook() == null || channel.getDiscordWebhook().isEmpty() || message.getSender().isDiscord()) return;
         CompletableFuture.runAsync(() -> {
             try {
                 final HttpURLConnection webhookConnection = (HttpURLConnection) new URL(channel.getDiscordWebhook()).openConnection();

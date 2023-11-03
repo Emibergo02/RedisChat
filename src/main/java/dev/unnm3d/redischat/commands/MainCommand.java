@@ -1,5 +1,6 @@
 package dev.unnm3d.redischat.commands;
 
+import de.exlll.configlib.ConfigurationException;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.SuggestionInfo;
 import dev.jorel.commandapi.arguments.ArgumentSuggestions;
@@ -50,7 +51,11 @@ public class MainCommand {
                     } else if (plugin.getJoinQuitManager() != null) {
                         HandlerList.unregisterAll(plugin.getJoinQuitManager());
                     }
-                    plugin.loadYML();
+                    try {
+                        plugin.loadYML();
+                    } catch (ConfigurationException e) {
+                        plugin.getLogger().severe("config.yml or messages.yml or guis.yml is invalid! Please regenerate them (starting from config.yml: " + e.getMessage());
+                    }
                     plugin.getAnnounceManager().reload();
                     plugin.getChannelManager().updateChannels();
                     plugin.getComponentProvider().sendMessage(commandExecutor.sender(), "<green>Config reloaded");

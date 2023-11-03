@@ -5,6 +5,7 @@ import dev.jorel.commandapi.arguments.ArgumentSuggestions;
 import dev.jorel.commandapi.arguments.GreedyStringArgument;
 import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
+import dev.unnm3d.redischat.chat.ChatActor;
 import dev.unnm3d.redischat.chat.ChatFormat;
 import dev.unnm3d.redischat.chat.ChatMessageInfo;
 import lombok.AllArgsConstructor;
@@ -74,13 +75,19 @@ public class MsgCommand {
                         message = plugin.getComponentProvider().invShareFormatting(sender, message);
 
                         //Parse to minimessage (placeholders, tags and mentions)
-                        final Component toBeReplaced = plugin.getComponentProvider().parse(sender, message, parsePlaceholders, true, true, plugin.getComponentProvider().getRedisChatTagResolver(sender));
+                        final Component temp = plugin.getComponentProvider().parse(sender, message, parsePlaceholders,
+                                true,
+                                true,
+                                plugin.getComponentProvider().getRedisChatTagResolver(sender));
+
+                        //Parse customs
+                        final Component toBeReplaced = plugin.getComponentProvider().parseCustomPlaceholders(sender, temp);
 
                         //Send to other servers
-                        plugin.getDataManager().sendChatMessage(new ChatMessageInfo(sender.getName(),
+                        plugin.getDataManager().sendChatMessage(new ChatMessageInfo(new ChatActor(sender.getName(), ChatActor.ActorType.PLAYER),
                                 MiniMessage.miniMessage().serialize(formatted),
                                 MiniMessage.miniMessage().serialize(toBeReplaced),
-                                receiverName));
+                                new ChatActor(receiverName, ChatActor.ActorType.PLAYER)));
 
                         plugin.getComponentProvider().sendMessage(sender, formatted.replaceText(aBuilder -> aBuilder.matchLiteral("%message%").replacement(toBeReplaced)));
                         //Set reply name for /reply

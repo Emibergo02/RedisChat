@@ -21,7 +21,7 @@ public interface IDiscordHook {
         return getMessageJsonString(plugin)
                 .replace("{SENDER_CHANNEL}", channel.getName())
                 .replace("{CURRENT_TIMESTAMP}", ZonedDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
-                .replace("{SENDER_USERNAME}", message.getSenderName())
+                .replace("{SENDER_USERNAME}", message.getSender().getName())
                 .replace("{CHAT_MESSAGE}", MiniMessage.miniMessage().stripTags(message.getFormatting())
                         .replace("%message%", MiniMessage.miniMessage().stripTags(message.getMessage())));
     }

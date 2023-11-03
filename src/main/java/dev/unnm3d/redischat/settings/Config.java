@@ -10,6 +10,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 @Configuration
 public final class Config {
@@ -82,9 +83,27 @@ public final class Config {
     })
     public List<Announce> announces = List.of(new Announce("default", "<yellow>RedisChat</yellow> <gray>»</gray><red>To EssentialsX and CMI users: <aqua><br>disable <gold>/msg, /reply, /broadcast, /ignore, etc</gold> commands inside CMI and EssentialsX<br>Or RedisChat commands <red>will <u>not</u> work</red>!!!</aqua>", "public", 5, 300));
     @Comment({"Here you can create your own placeholders", "You can give them an identifier, which will go under the format <>", "You can give them actions, like click url"})
-    public Map<String, String> placeholders = Map.of(
-            "discord", "<click:open_url:https://discord.gg/C8d7EqQz>Click to join our discord server</click>",
-            "position", "<white><blue>Server:</blue> %server_name% <aqua>World:</aqua> %player_world% <gold>X:</gold> %player_x% <gold>Y:</gold> %player_y% <gold>Z:</gold> %player_z%</white>");
+    public Map<String, String> placeholders = new TreeMap<>(Map.ofEntries(
+            Map.entry("*check*", "§a✔"),
+            Map.entry("*cross*", "§c✖"),
+            Map.entry("*star*", "★"),
+            Map.entry("*caution*", "⚠"),
+            Map.entry("*timer*", "⌛"),
+            Map.entry("*clock*", "⌚"),
+            Map.entry("*music*", "♫"),
+            Map.entry("*peace*", "☮"),
+            Map.entry("*hazard*", "☣"),
+            Map.entry("*radioactive*", "☢"),
+            Map.entry("*snow*", "❄"),
+            Map.entry("*pirate*", "☠"),
+            Map.entry("<<", "«"),
+            Map.entry(">>", "»"),
+            Map.entry(":)", "☺"),
+            Map.entry(":(", "☹"),
+            Map.entry("<3", "§c❤"),
+            Map.entry("discord", "<click:open_url:https://discord.gg/C8d7EqQz>Click to join our discord server</click>"),
+            Map.entry("position", "<white><blue>Server:</blue> %server_name% <aqua>World:</aqua> %player_world% <gold>X:</gold> %player_x% <gold>Y:</gold> %player_y% <gold>Z:</gold> %player_z%</white>")
+    ));
     @Comment({"Here you can blacklist some terms (like swears, insults and unwanted urls)", "They will be replaced with a *", "You can use the regex syntax and the * wildcard"})
     public List<String> regex_blacklist = List.of("discord.gg/.*");
     @Comment({"What to replace the blacklisted words with"})
@@ -116,6 +135,7 @@ public final class Config {
     public int rejoinSendDelay = 500;
     @Comment("Quit delay in milliseconds")
     public int quitSendWaiting = 3000;
+    public boolean enableStaffChat = true;
     @Comment("Messages with this prefix will be sent to staff chat")
     public String staffChatPrefix = "!";
     @Comment("The format of the staff chat messages")
@@ -152,7 +172,7 @@ public final class Config {
             "Every channel of RedisChat is linked with a channel on Discord",
             "The first element is a RedisChat channel, the second one is a Discord channel id",
             "You can find the Discord channel id by right clicking on the channel and clicking on 'Copy ID'"})
-    public SpicordSettings spicord = new SpicordSettings(true, "<blue>[Discord]</blue> %username% » %message%", Map.of("public", "1127207189547847740"));
+    public SpicordSettings spicord = new SpicordSettings(true, "<blue>[Discord]</blue> %role% %username% » %message%", "**%channel%** %sender% » %message%", Map.of("public", "1127207189547847740"));
 
 
     public record RedisSettings(String host, int port, String user, String password,
@@ -187,6 +207,7 @@ public final class Config {
     public record SpicordSettings(
             boolean enabled,
             String chatFormat,
+            String discordFormat,
             Map<String, String> spicordChannelLink
     ) {
     }

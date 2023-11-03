@@ -5,10 +5,7 @@ import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.api.AsyncRedisChatMessageEvent;
 import dev.unnm3d.redischat.api.RedisChatAPI;
 import dev.unnm3d.redischat.api.VanishIntegration;
-import dev.unnm3d.redischat.chat.ChatFormat;
-import dev.unnm3d.redischat.chat.ChatMessageInfo;
-import dev.unnm3d.redischat.chat.ComponentProvider;
-import dev.unnm3d.redischat.chat.KnownChatEntities;
+import dev.unnm3d.redischat.chat.*;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -22,6 +19,7 @@ import org.jetbrains.annotations.Nullable;
 import xyz.xenondevs.invui.window.Window;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -154,11 +152,15 @@ public class ChannelManager extends RedisChatAPI {
         //Check inv update
         message = plugin.getComponentProvider().invShareFormatting(player, message);
 
+
         Component formatted = getComponentProvider().parse(player, channel.getFormat(), true, false, false);
 
         //Parse to MiniMessage component (placeholders, tags and mentions)
         Component toBeReplaced = getComponentProvider().parse(player, message, parsePlaceholders, true, true,
                 getComponentProvider().getRedisChatTagResolver(player));
+
+        //Parse customs
+        toBeReplaced = getComponentProvider().parseCustomPlaceholders(player, toBeReplaced);
 
         if (plugin.config.debug) {
             plugin.getLogger().info("2) Format + message parsing: " + (System.currentTimeMillis() - init) + "ms");
@@ -172,11 +174,11 @@ public class ChannelManager extends RedisChatAPI {
         if (event.isCancelled()) return;
 
 
-        ChatMessageInfo cmi = ChatMessageInfo.craftChannelChatMessage(
-                player.getName(),
+        ChatMessageInfo cmi = new ChatMessageInfo(
+                new ChatActor(player.getName(), ChatActor.ActorType.PLAYER),
                 event.getFormat(),
                 event.getMessage(),
-                event.getChannel().getName());
+                new ChatActor(event.getChannel().getName(), ChatActor.ActorType.CHANNEL));
 
         if (channel.getProximityDistance() > 0) {// Send to local server
             sendGenericChat(cmi);
@@ -186,8 +188,6 @@ public class ChannelManager extends RedisChatAPI {
         // Send to other servers
         plugin.getDataManager().sendChatMessage(cmi);
 
-        // Send to discord integration
-        plugin.getDiscordHook().sendDiscordMessage(event.getChannel(), cmi);
 
         if (plugin.config.debug) {
             plugin.getLogger().info("2) Send (Redis): " + (System.currentTimeMillis() - init) + "ms, Millis: " + System.currentTimeMillis());
@@ -201,7 +201,7 @@ public class ChannelManager extends RedisChatAPI {
                     String message = finalMessage;
                     Channel chatChannel;
                     if (message.startsWith(plugin.config.staffChatPrefix) &&
-                            player.hasPermission(Permissions.ADMIN_STAFF_CHAT.getPermission())) {
+                            player.hasPermission(Permissions.ADMIN_STAFF_CHAT.getPermission()) && plugin.config.enableStaffChat) {
                         chatChannel = getStaffChatChannel();
                         message = message.substring(1);
                     } else {
@@ -218,12 +218,6 @@ public class ChannelManager extends RedisChatAPI {
                 });
     }
 
-    @Override
-    public void sendDiscordMessage(Channel channel, ChatMessageInfo chatMessageInfo) {
-        if (channel.getDiscordWebhook() == null || channel.getDiscordWebhook().isEmpty()) return;
-
-        plugin.getDiscordHook().sendDiscordMessage(channel, chatMessageInfo);
-    }
 
     @Override
     public void sendLocalChatMessage(ChatMessageInfo chatMessageInfo) {
@@ -233,13 +227,13 @@ public class ChannelManager extends RedisChatAPI {
                 if (plugin.getSpyManager().isSpying(player.getName())) {//Spychat
                     plugin.getChannelManager().sendSpyChat(chatMessageInfo, player);
                 }
-                if (player.getName().equals(chatMessageInfo.getReceiverName())) {//Private message
-                    plugin.getDataManager().isIgnoring(chatMessageInfo.getReceiverName(), chatMessageInfo.getSenderName())
+                if (player.getName().equals(chatMessageInfo.getReceiver().getName())) {//Private message
+                    plugin.getDataManager().isIgnoring(chatMessageInfo.getReceiver().getName(), chatMessageInfo.getSender().getName())
                             .thenAccept(ignored -> {
                                 if (!ignored)
                                     plugin.getChannelManager().sendPrivateChat(chatMessageInfo);
                                 if (plugin.config.debug) {
-                                    plugin.getLogger().info("Private message sent to " + chatMessageInfo.getReceiverName() + " with ignore: " + ignored + " in " + (System.currentTimeMillis() - init) + "ms");
+                                    plugin.getLogger().info("Private message sent to " + chatMessageInfo.getReceiver().getName() + " with ignore: " + ignored + " in " + (System.currentTimeMillis() - init) + "ms");
                                 }
                             });
                 }
@@ -254,7 +248,7 @@ public class ChannelManager extends RedisChatAPI {
     public void sendGenericChat(@NotNull ChatMessageInfo chatMessageInfo) {
         long init = System.currentTimeMillis();
 
-        Channel channel = plugin.getChannelManager().getChannel(chatMessageInfo.getReceiverName().substring(1)).orElse(getGenericPublic());
+        Channel channel = plugin.getChannelManager().getChannel(chatMessageInfo.getReceiver().getName()).orElse(getGenericPublic());
         if (plugin.config.debug) {
             plugin.getLogger().info("R2) Permission check");
         }
@@ -273,11 +267,13 @@ public class ChannelManager extends RedisChatAPI {
         } else {
             getComponentProvider().logToHistory(formattedComponent);
         }
+        // Send to discord integration
+        plugin.getDiscordHook().sendDiscordMessage(channel, chatMessageInfo);
 
         for (Player onlinePlayer : plugin.getServer().getOnlinePlayers()) {
             if (!onlinePlayer.hasPermission(Permissions.CHANNEL_PREFIX.getPermission() + channel.getName()))
                 continue;
-            if (!checkProximity(onlinePlayer, chatMessageInfo.getSenderName(), channel))
+            if (!checkProximity(onlinePlayer, chatMessageInfo.getSender().getName(), channel))
                 continue;
 
             if (chatMessageInfo.getMessage().contains(onlinePlayer.getName())) {
@@ -302,8 +298,8 @@ public class ChannelManager extends RedisChatAPI {
     public void sendSpyChat(@NotNull ChatMessageInfo chatMessageInfo, @NotNull Player watcher) {
         Component finalFormatted = MiniMessage.miniMessage().deserialize(
                         plugin.messages.spychat_format
-                                .replace("%receiver%", chatMessageInfo.getReceiverName())
-                                .replace("%sender%", chatMessageInfo.getSenderName()))
+                                .replace("%receiver%", chatMessageInfo.getReceiver().getName())
+                                .replace("%sender%", chatMessageInfo.getSender().getName()))
                 .replaceText(
                         builder -> builder.matchLiteral("%message%").replacement(
                                 MiniMessage.miniMessage().deserialize(chatMessageInfo.getMessage())
@@ -314,15 +310,15 @@ public class ChannelManager extends RedisChatAPI {
 
     @Override
     public void sendPrivateChat(@NotNull ChatMessageInfo chatMessageInfo) {
-        Player p = Bukkit.getPlayer(chatMessageInfo.getReceiverName());
+        Player p = Bukkit.getPlayer(chatMessageInfo.getReceiver().getName());
         if (p != null)
             if (p.isOnline()) {
                 List<ChatFormat> chatFormatList = plugin.config.getChatFormats(p);
                 if (chatFormatList.isEmpty()) return;
                 Component formatted = getComponentProvider().parse(null,
                         chatFormatList.get(0).receive_private_format()
-                                .replace("%receiver%", chatMessageInfo.getReceiverName())
-                                .replace("%sender%", chatMessageInfo.getSenderName()),
+                                .replace("%receiver%", chatMessageInfo.getReceiver().getName())
+                                .replace("%sender%", chatMessageInfo.getSender().getName()),
                         //Parameters disabled: already parsed on sender side
                         false, false, false,
                         getComponentProvider().getStandardTagResolver());

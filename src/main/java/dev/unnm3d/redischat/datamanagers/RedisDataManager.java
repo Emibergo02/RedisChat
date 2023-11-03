@@ -65,7 +65,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
                     if (plugin.config.debug) {
                         plugin.getLogger().info("R1) Received message from redis: " + System.currentTimeMillis());
                     }
-                    plugin.getChannelManager().sendLocalChatMessage(new ChatMessageInfo(message));
+                    plugin.getChannelManager().sendLocalChatMessage(ChatMessageInfo.deserialize(message));
                 } else if (channel.equals(DataKey.PLAYERLIST.toString())) {
                     if (plugin.getPlayerListManager() != null)
                         plugin.getPlayerListManager().updatePlayerList(Arrays.asList(message.split("§")));
@@ -549,19 +549,19 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
         getConnectionPipeline(conn -> {
             String publishChannel = DataKey.CHAT_CHANNEL.toString();
             if (packet.isChannel()) {//If it's a channel message we need to increment the rate limit
-                String chName = packet.getReceiverName().substring(1);
+                String chName = packet.getReceiver().getName();
 
                 if (chName.equals(KnownChatEntities.STAFFCHAT_CHANNEL_NAME.toString()))
                     publishChannel = DataKey.CHAT_CHANNEL.withoutCluster();//Exception for staffchat: it's a global channel
 
-                conn.incr(DataKey.RATE_LIMIT_PREFIX + packet.getSenderName() + chName)
+                conn.incr(DataKey.RATE_LIMIT_PREFIX + packet.getSender().getName() + chName)
                         .toCompletableFuture().orTimeout(1, TimeUnit.SECONDS)
                         .exceptionally(exception -> {
                             exception.printStackTrace();
                             plugin.getLogger().warning("Error sending object packet");
                             return 0L;
                         });
-                conn.expire(DataKey.RATE_LIMIT_PREFIX + packet.getSenderName() + chName,
+                conn.expire(DataKey.RATE_LIMIT_PREFIX + packet.getSender().getName() + chName,
                         plugin.getChannelManager().getRegisteredChannels().containsKey(chName) ?
                                 plugin.getChannelManager().getRegisteredChannels().get(chName).getRateLimitPeriod() :
                                 5);
