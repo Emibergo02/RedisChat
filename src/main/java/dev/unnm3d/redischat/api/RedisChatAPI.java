@@ -87,13 +87,6 @@ public abstract class RedisChatAPI {
      */
     public abstract void sendGenericChat(@NotNull ChatMessageInfo chatMessageInfo);
 
-    /**
-     * Sends a spy message to watchers
-     *
-     * @param chatMessageInfo The chat content to send
-     * @param watcher         The player who is spying the message
-     */
-    public abstract void sendSpyChat(@NotNull ChatMessageInfo chatMessageInfo, @NotNull Player watcher);
 
     /**
      * Sends a private message to the receiver inside the chatMessageInfo

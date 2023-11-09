@@ -26,6 +26,8 @@ public enum Permissions {
     CHANNEL_CREATE("redischat.createchannel"),
     CHANNEL_DELETE("redischat.deletechannel"),
     CHANNEL_TOGGLE_PLAYER("redischat.playerchannel"),
+    CHANNEL_LIST("redischat.listchannel"),
+    CHANNEL_MUTE("redischat.mutechannel"),
     ;
 
     @Getter

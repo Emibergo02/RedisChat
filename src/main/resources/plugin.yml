@@ -41,6 +41,9 @@ commands:
     aliases: [spyc]
     permission: redischat.spycommand
 permissions:
+  redischat.listchannel:
+    description: Allows to list channels
+    default: op
   redischat.usecustomplaceholders:
     description: Allows to see the item in the chat
     default: true
@@ -111,3 +114,4 @@ permissions:
       - redischat.showinv
       - redischat.showenderchest
       - redischat.channel.public
+      - redischat.listchannel

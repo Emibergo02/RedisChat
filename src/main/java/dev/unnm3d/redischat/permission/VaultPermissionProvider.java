@@ -1,7 +1,9 @@
 package dev.unnm3d.redischat.permission;
 
+import dev.unnm3d.redischat.RedisChat;
 import net.milkbowl.vault.permission.Permission;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.RegisteredServiceProvider;
 
@@ -14,13 +16,25 @@ public class VaultPermissionProvider implements PermissionProvider {
             perms = rsp.getProvider();
     }
 
-    public void setPermission(Player player, String permission) {
+    @Override
+    public void setPermission(OfflinePlayer player, String permission) {
+        if (!(player instanceof Player onlinePlayer)) {
+            RedisChat.getInstance().getLogger().warning("Player " + player.getName() + " is not online, can't set permission " + permission);
+            return;
+        }
+
         if (perms != null)
-            perms.playerAdd(player, permission);
+            perms.playerAdd(onlinePlayer, permission);
     }
 
-    public void unsetPermission(Player player, String permission) {
+    @Override
+    public void unsetPermission(OfflinePlayer player, String permission) {
+        if (!(player instanceof Player onlinePlayer)) {
+            RedisChat.getInstance().getLogger().warning("Player " + player.getName() + " is not online, can't unset permission " + permission);
+            return;
+        }
+
         if (perms != null)
-            perms.playerRemove(player, permission);
+            perms.playerRemove(onlinePlayer, permission);
     }
 }

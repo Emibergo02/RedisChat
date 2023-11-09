@@ -5,7 +5,9 @@ import dev.jorel.commandapi.arguments.*;
 import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
 import lombok.AllArgsConstructor;
+import org.bukkit.OfflinePlayer;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 
@@ -20,8 +22,11 @@ public class ChannelCommand {
                 .withSubcommand(getSetFormatSubCommand())
                 .withSubcommand(getDeleteSubCommand())
                 .withSubcommand(getEnableSubCommand())
+                .withSubcommand(getMuteSubCommand())
+                .withSubcommand(getUnmuteSubCommand())
                 .withSubcommand(getListenSubCommand())
                 .withSubcommand(getDisableSubCommand())
+                .withSubcommand(getListSubCommand())
                 .withSubcommand(getDiscordLinkSubCommand())
                 .executesPlayer((sender, args) -> {
                     try {
@@ -173,6 +178,126 @@ public class ChannelCommand {
                 });
     }
 
+    public CommandAPICommand getListSubCommand() {
+        return new CommandAPICommand("list")
+                .withPermission(Permissions.CHANNEL_LIST.getPermission())
+                .executesPlayer((sender, args) -> {
+                    plugin.getDataManager().getPlayerChannelStatuses(sender.getName(), plugin.getChannelManager().getRegisteredChannels())
+                            .thenAccept(channels -> {
+                                plugin.getComponentProvider().sendMessage(sender, plugin.messages.channelListHeader);
+
+                                for (PlayerChannel channel : channels) {
+                                    final String channelMsg =
+                                            channel.isListening() ?
+                                                    plugin.messages.channelListTransmitting :
+                                                    channel.isMuted() ?
+                                                            plugin.messages.channelListMuted :
+                                                            plugin.messages.channelListReceiving;
+                                    plugin.getComponentProvider().sendMessage(sender,
+                                            channelMsg.replace("%channel%", channel.getChannel().getName())
+                                    );
+                                }
+                            }).exceptionally(throwable -> {
+                                throwable.printStackTrace();
+                                return null;
+                            });
+                });
+    }
+
+    public CommandAPICommand getMuteSubCommand() {
+        return new CommandAPICommand("mute")
+                .withPermission(Permissions.CHANNEL_MUTE.getPermission())
+                .withArguments(new StringArgument("channelName")
+                        .replaceSuggestions(ArgumentSuggestions.strings(commandSenderSuggestionInfo -> getChannelsWithPublic())))
+                .withOptionalArguments(new StringArgument("playerName")
+                        .replaceSuggestions(ArgumentSuggestions.strings(commandSenderSuggestionInfo ->
+                                plugin.getPlayerListManager().getPlayerList(commandSenderSuggestionInfo.sender()).stream()
+                                        .filter(s -> s.toLowerCase().startsWith(commandSenderSuggestionInfo.currentArg().toLowerCase()))
+                                        .toArray(String[]::new))))
+                .executes((sender, args) -> {
+                    final String channelName = (String) args.get(0);
+                    if (channelName == null) {
+                        plugin.messages.sendMessage(sender, plugin.messages.missing_arguments);
+                        return;
+                    }
+
+                    final OfflinePlayer player = Arrays.stream(plugin.getServer().getOfflinePlayers())
+                            .filter(offlinePlayer ->
+                                    offlinePlayer.getName() != null ? //If the name exists check if it is the player argument
+                                            offlinePlayer.getName().equals(args.getOptional(1).orElse(sender.getName())) :
+                                            null
+                            )
+                            .findFirst().orElse(null);
+                    if (player == null) {
+                        plugin.messages.sendMessage(sender, plugin.messages.player_not_online);
+                        return;
+                    }
+
+                    final Channel channel = channelName.equals("public") ?
+                            plugin.getChannelManager().getPublicChannel(sender) :
+                            plugin.getChannelManager().getChannel(channelName).orElse(null);
+                    if (channel == null) {
+                        plugin.messages.sendMessage(sender, plugin.messages.channelNotFound);
+                        return;
+                    }
+
+                    plugin.getDataManager().setPlayerChannelStatuses(sender.getName(), Map.of(channel.getName(), "-1"));
+                    plugin.getPermissionProvider().unsetPermission(player, Permissions.CHANNEL_PREFIX.getPermission() + channel.getName());
+
+                    plugin.messages.sendMessage(sender, plugin.messages.channelMuted
+                            .replace("%channel%", channel.getName())
+                            .replace("%player%", player.getName())
+                    );
+                });
+    }
+
+    public CommandAPICommand getUnmuteSubCommand() {
+        return new CommandAPICommand("unmute")
+                .withPermission(Permissions.CHANNEL_MUTE.getPermission())
+                .withArguments(new StringArgument("channelName")
+                        .replaceSuggestions(ArgumentSuggestions.strings(commandSenderSuggestionInfo -> getChannelsWithPublic())))
+                .withOptionalArguments(new StringArgument("playerName")
+                        .replaceSuggestions(ArgumentSuggestions.strings(commandSenderSuggestionInfo ->
+                                plugin.getPlayerListManager().getPlayerList(commandSenderSuggestionInfo.sender()).stream()
+                                        .filter(s -> s.toLowerCase().startsWith(commandSenderSuggestionInfo.currentArg().toLowerCase()))
+                                        .toArray(String[]::new))))
+                .executes((sender, args) -> {
+                    final String channelName = (String) args.get(0);
+                    if (channelName == null) {
+                        plugin.messages.sendMessage(sender, plugin.messages.missing_arguments);
+                        return;
+                    }
+
+                    final OfflinePlayer player = Arrays.stream(plugin.getServer().getOfflinePlayers())
+                            .filter(offlinePlayer ->
+                                    offlinePlayer.getName() != null ? //If the name exists check if it is the player argument
+                                            offlinePlayer.getName().equals(args.getOptional(1).orElse(sender.getName())) :
+                                            null
+                            )
+                            .findFirst().orElse(null);
+                    if (player == null) {
+                        plugin.messages.sendMessage(sender, plugin.messages.player_not_online);
+                        return;
+                    }
+
+                    final Channel channel = channelName.equals("public") ?
+                            plugin.getChannelManager().getPublicChannel(sender) :
+                            plugin.getChannelManager().getChannel(channelName).orElse(null);
+                    if (channel == null) {
+                        plugin.messages.sendMessage(sender, plugin.messages.channelNotFound);
+                        return;
+                    }
+
+                    plugin.getDataManager().setPlayerChannelStatuses(sender.getName(), Map.of(channel.getName(), "0"));
+                    plugin.getPermissionProvider().setPermission(player, Permissions.CHANNEL_PREFIX.getPermission() + channel.getName());
+
+                    plugin.messages.sendMessage(sender, plugin.messages.channelUnmuted
+                            .replace("%channel%", channel.getName())
+                            .replace("%player%", player.getName())
+                    );
+                });
+    }
+
     public CommandAPICommand getDisableSubCommand() {
         return new CommandAPICommand("disable")
                 .withPermission(Permissions.CHANNEL_TOGGLE_PLAYER.getPermission())
@@ -213,5 +338,17 @@ public class ChannelCommand {
                     plugin.getChannelManager().unregisterChannel((String) args.get(0));
                     plugin.messages.sendMessage(sender, plugin.messages.channelRemoved);
                 });
+    }
+
+    private String[] getChannelsWithPublic() {
+        final String[] array = new String[plugin.getChannelManager().getRegisteredChannels().size() + 1];
+        array[0] = "public";
+        int index = 1;
+
+        for (String s : plugin.getChannelManager().getRegisteredChannels().keySet()) {
+            array[index] = s;
+            index++;
+        }
+        return array;
     }
 }

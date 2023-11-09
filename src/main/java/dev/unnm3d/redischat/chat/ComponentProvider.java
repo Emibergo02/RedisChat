@@ -473,7 +473,7 @@ public class ComponentProvider {
     }
 
     public void sendMessage(CommandSender p, String message) {
-        audiences.sender(p).sendMessage(MiniMessage.miniMessage().deserialize(message));
+        sendMessage(p, MiniMessage.miniMessage().deserialize(message));
     }
 
     public void sendMessage(CommandSender p, Component component) {

@@ -3,7 +3,7 @@ package dev.unnm3d.redischat.permission;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.node.Node;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.plugin.RegisteredServiceProvider;
 
 public class LuckPermsProvider implements PermissionProvider {
@@ -15,7 +15,8 @@ public class LuckPermsProvider implements PermissionProvider {
             perms = rsp.getProvider();
     }
 
-    public void setPermission(Player player, String permission) {
+    @Override
+    public void setPermission(OfflinePlayer player, String permission) {
         if (perms == null) return;
         perms.getUserManager().modifyUser(player.getUniqueId(), user ->
                 user.data().add(
@@ -25,7 +26,8 @@ public class LuckPermsProvider implements PermissionProvider {
                                 .build()));
     }
 
-    public void unsetPermission(Player player, String permission) {
+    @Override
+    public void unsetPermission(OfflinePlayer player, String permission) {
         if (perms == null) return;
         perms.getUserManager().modifyUser(player.getUniqueId(), user ->
                 user.data().add(

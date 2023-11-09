@@ -30,11 +30,17 @@ public class MutePublic extends AbstractItem {
         RedisChat plugin = RedisChat.getInstance();
         if (muted) {
             plugin.getPermissionProvider().setPermission(player, Permissions.CHANNEL_PUBLIC.getPermission());
-            plugin.messages.sendMessage(player, plugin.messages.publicChannelUnmuted);
+            plugin.messages.sendMessage(player, plugin.messages.channelUnmuted
+                    .replace("%channel%", "public")
+                    .replace("%player%", player.getName())
+            );
             muted = false;
         } else {
             plugin.getPermissionProvider().unsetPermission(player, Permissions.CHANNEL_PUBLIC.getPermission());
-            plugin.messages.sendMessage(player, plugin.messages.publicChannelMuted);
+            plugin.messages.sendMessage(player, plugin.messages.channelMuted
+                    .replace("%channel%", "public")
+                    .replace("%player%", player.getName())
+            );
             muted = true;
         }
         notifyWindows();

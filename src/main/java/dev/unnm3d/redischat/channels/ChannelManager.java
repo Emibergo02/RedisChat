@@ -19,7 +19,6 @@ import org.jetbrains.annotations.Nullable;
 import xyz.xenondevs.invui.window.Window;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -223,10 +222,16 @@ public class ChannelManager extends RedisChatAPI {
     public void sendLocalChatMessage(ChatMessageInfo chatMessageInfo) {
         if (chatMessageInfo.isPrivate()) {
             long init = System.currentTimeMillis();
+
+            final Component spyComponent =
+                    MiniMessage.miniMessage().deserialize(plugin.messages.spychat_format
+                                    .replace("%receiver%", chatMessageInfo.getReceiver().getName())
+                                    .replace("%sender%", chatMessageInfo.getSender().getName()))
+                            .replaceText(builder -> builder.matchLiteral("%message%").replacement(
+                                    MiniMessage.miniMessage().deserialize(chatMessageInfo.getMessage())
+                            ));
+
             for (Player player : Bukkit.getOnlinePlayers()) {
-                if (plugin.getSpyManager().isSpying(player.getName())) {//Spychat
-                    plugin.getChannelManager().sendSpyChat(chatMessageInfo, player);
-                }
                 if (player.getName().equals(chatMessageInfo.getReceiver().getName())) {//Private message
                     plugin.getDataManager().isIgnoring(chatMessageInfo.getReceiver().getName(), chatMessageInfo.getSender().getName())
                             .thenAccept(ignored -> {
@@ -237,7 +242,16 @@ public class ChannelManager extends RedisChatAPI {
                                 }
                             });
                 }
+
+                if (plugin.getSpyManager().isSpying(player.getName())) {//Spychat
+                    getComponentProvider().sendComponentOrCache(player, spyComponent);
+                }
             }
+
+            if (plugin.config.chatLogging) {
+                getComponentProvider().logToHistory(spyComponent); //Send to console for logging purposes
+            }
+
             return;
         }
 
@@ -262,14 +276,8 @@ public class ChannelManager extends RedisChatAPI {
         if (plugin.config.debug) {
             plugin.getLogger().info("R3) Componentize message: " + (System.currentTimeMillis() - init) + "ms");
         }
-        if (!plugin.config.chatLogging) {
-            getComponentProvider().logToConsole(formattedComponent);//send to console for logging purposes
-        } else {
-            getComponentProvider().logToHistory(formattedComponent);
-        }
-        // Send to discord integration
-        plugin.getDiscordHook().sendDiscordMessage(channel, chatMessageInfo);
 
+        //Effeciently send to all players with permission
         for (Player onlinePlayer : plugin.getServer().getOnlinePlayers()) {
             if (!onlinePlayer.hasPermission(Permissions.CHANNEL_PREFIX.getPermission() + channel.getName()))
                 continue;
@@ -281,6 +289,16 @@ public class ChannelManager extends RedisChatAPI {
             }
             getComponentProvider().sendComponentOrCache(onlinePlayer, formattedComponent);
         }
+
+        if (!plugin.config.chatLogging) {
+            getComponentProvider().logToConsole(formattedComponent); //Send to console for logging purposes
+        } else {
+            getComponentProvider().logToHistory(formattedComponent);
+        }
+
+        // Send to discord integration
+        plugin.getDiscordHook().sendDiscordMessage(channel, chatMessageInfo);
+
         if (plugin.config.debug) {
             plugin.getLogger().info("R4) Log and send message: " + (System.currentTimeMillis() - init) + "ms");
         }
@@ -292,20 +310,6 @@ public class ChannelManager extends RedisChatAPI {
         if (sender == null) return false;
         if (!sender.getWorld().equals(receiver.getWorld())) return false;
         return !(sender.getLocation().distance(receiver.getLocation()) > channel.getProximityDistance());
-    }
-
-    @Override
-    public void sendSpyChat(@NotNull ChatMessageInfo chatMessageInfo, @NotNull Player watcher) {
-        Component finalFormatted = MiniMessage.miniMessage().deserialize(
-                        plugin.messages.spychat_format
-                                .replace("%receiver%", chatMessageInfo.getReceiver().getName())
-                                .replace("%sender%", chatMessageInfo.getSender().getName()))
-                .replaceText(
-                        builder -> builder.matchLiteral("%message%").replacement(
-                                MiniMessage.miniMessage().deserialize(chatMessageInfo.getMessage())
-                        )
-                );
-        getComponentProvider().sendComponentOrCache(watcher, finalFormatted);
     }
 
     @Override
