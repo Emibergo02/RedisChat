@@ -8,6 +8,7 @@ import dev.unnm3d.redischat.api.DataManager;
 import dev.unnm3d.redischat.channels.Channel;
 import dev.unnm3d.redischat.channels.PlayerChannel;
 import dev.unnm3d.redischat.chat.ChatMessageInfo;
+import dev.unnm3d.redischat.chat.KnownChatEntities;
 import dev.unnm3d.redischat.datamanagers.DataKey;
 import dev.unnm3d.redischat.mail.Mail;
 import org.bukkit.Bukkit;
@@ -93,14 +94,31 @@ public abstract class SQLDataManager implements DataManager {
         plugin.getServer().getMessenger().registerOutgoingPluginChannel(plugin, "BungeeCord");
         plugin.getServer().getMessenger().registerIncomingPluginChannel(plugin, "BungeeCord", (channel, player, message) -> {
             if (!channel.equals("BungeeCord")) return;
-            ByteArrayDataInput in = ByteStreams.newDataInput(message);
-            String subchannel = in.readUTF();
-            String messageString = in.readUTF();
-            if (subchannel.equals(DataKey.PLAYERLIST.toString())) {
+
+            final ByteArrayDataInput in = ByteStreams.newDataInput(message);
+            final String subchannel = in.readUTF();
+            final String messageString = in.readUTF();
+
+            if (subchannel.equals(DataKey.CHAT_CHANNEL.toString())) {
+                if (plugin.config.debug) {
+                    plugin.getLogger().info("R1) Received message from redis: " + System.currentTimeMillis());
+                }
+                plugin.getChannelManager().sendLocalChatMessage(ChatMessageInfo.deserialize(messageString));
+            } else if (subchannel.equals(DataKey.GLOBAL_CHANNEL.withoutCluster())) {
+                if (plugin.config.debug) {
+                    plugin.getLogger().info("R1) Received message from redis: " + System.currentTimeMillis());
+                }
+                plugin.getChannelManager().sendLocalChatMessage(ChatMessageInfo.deserialize(messageString));
+            } else if (subchannel.equals(DataKey.PLAYERLIST.toString())) {
                 if (plugin.getPlayerListManager() != null)
                     plugin.getPlayerListManager().updatePlayerList(Arrays.asList(messageString.split("§")));
-            } else if (subchannel.equals(DataKey.CHAT_CHANNEL.toString())) {
-                plugin.getChannelManager().sendLocalChatMessage(ChatMessageInfo.deserialize(messageString));
+            } else if (subchannel.equals(DataKey.CHANNEL_UPDATE.toString())) {
+                if (messageString.startsWith("delete§")) {
+                    plugin.getChannelManager().updateChannel(messageString.substring(7), null);
+                } else {
+                    final Channel ch = Channel.deserialize(messageString);
+                    plugin.getChannelManager().updateChannel(ch.getName(), ch);
+                }
             }
 
         });
@@ -567,6 +585,9 @@ public abstract class SQLDataManager implements DataManager {
                     if (statement.executeUpdate() == 0) {
                         throw new SQLException("Failed to register channel to database");
                     }
+
+                    sendChannelUpdate(channel.getName(), channel);
+
                     return true;
                 }
             } catch (SQLException e) {
@@ -578,6 +599,21 @@ public abstract class SQLDataManager implements DataManager {
             }
             return false;
         });
+    }
+
+    private void sendChannelUpdate(String channelName, @Nullable Channel channel) {
+        final ByteArrayDataOutput out = ByteStreams.newDataOutput();
+        out.writeUTF("Forward");
+        out.writeUTF("ALL");
+        out.writeUTF(DataKey.CHANNEL_UPDATE.toString());
+
+        if (channel == null) {
+            out.writeUTF("delete§" + channelName);
+        } else {
+            out.writeUTF(channel.serialize());
+        }
+
+        sendPluginMessage(out.toByteArray());
     }
 
     @Override
@@ -592,6 +628,9 @@ public abstract class SQLDataManager implements DataManager {
                     if (statement.executeUpdate() == 0) {
                         throw new SQLException("Failed to unregister channel to database");
                     }
+
+                    sendChannelUpdate(channelName, null);
+
                     return true;
                 }
             } catch (SQLException e) {
@@ -746,30 +785,42 @@ public abstract class SQLDataManager implements DataManager {
 
     @SuppressWarnings("UnstableApiUsage")
     @Override
-    public void sendChatMessage(@NotNull ChatMessageInfo chatMessage) {
-        if (plugin.getServer().getOnlinePlayers().size() == 0) return;
-        ByteArrayDataOutput out = ByteStreams.newDataOutput();
+    public void sendChatMessage(@NotNull ChatMessageInfo packet) {
+        String publishChannel = DataKey.CHAT_CHANNEL.toString();
+        if (packet.isChannel()) {//If it's a channel message we need to increment the rate limit
+            final String chName = packet.getReceiver().getName();
+
+            if (chName.equals(KnownChatEntities.STAFFCHAT_CHANNEL_NAME.toString()))
+                publishChannel = DataKey.GLOBAL_CHANNEL.withoutCluster();//Exception for staffchat: it's a global channel
+
+        }
+
+        final ByteArrayDataOutput out = ByteStreams.newDataOutput();
         out.writeUTF("Forward");
         out.writeUTF("ALL");
-        out.writeUTF(DataKey.CHAT_CHANNEL.toString());
-        out.writeUTF(chatMessage.serialize());
+        out.writeUTF(publishChannel);
+        out.writeUTF(packet.serialize());
+
+        sendPluginMessage(out.toByteArray());
+        plugin.getChannelManager().sendLocalChatMessage(packet);
+    }
+
+    private void sendPluginMessage(byte[] byteArray) {
+        if (plugin.getServer().getOnlinePlayers().isEmpty()) return;
         plugin.getServer().getOnlinePlayers().iterator().next()
-                .sendPluginMessage(plugin, "BungeeCord", out.toByteArray());
-        plugin.getChannelManager().sendLocalChatMessage(chatMessage);
+                .sendPluginMessage(plugin, "BungeeCord", byteArray);
     }
 
     @SuppressWarnings("UnstableApiUsage")
     @Override
     public void publishPlayerList(@NotNull List<String> playerNames) {
-        if (plugin.getServer().getOnlinePlayers().size() == 0) return;
-        ByteArrayDataOutput out = ByteStreams.newDataOutput();
+        final ByteArrayDataOutput out = ByteStreams.newDataOutput();
         out.writeUTF("Forward");
         out.writeUTF("ALL");
         out.writeUTF(DataKey.PLAYERLIST.toString());
         out.writeUTF(String.join("§", playerNames));
 
-        plugin.getServer().getOnlinePlayers().iterator().next()
-                .sendPluginMessage(plugin, "BungeeCord", out.toByteArray());
+        sendPluginMessage(out.toByteArray());
 
         if (plugin.getPlayerListManager() != null)
             plugin.getPlayerListManager().updatePlayerList(playerNames);
@@ -777,14 +828,12 @@ public abstract class SQLDataManager implements DataManager {
 
     @Override
     public void sendRejoin(@NotNull String playerName) {
-        if (plugin.getServer().getOnlinePlayers().size() == 0) return;
-        ByteArrayDataOutput out = ByteStreams.newDataOutput();
+        final ByteArrayDataOutput out = ByteStreams.newDataOutput();
         out.writeUTF("Forward");
         out.writeUTF("ALL");
         out.writeUTF(DataKey.REJOIN_CHANNEL.toString());
         out.writeUTF(playerName);
 
-        plugin.getServer().getOnlinePlayers().iterator().next()
-                .sendPluginMessage(plugin, "BungeeCord", out.toByteArray());
+        sendPluginMessage(out.toByteArray());
     }
 }

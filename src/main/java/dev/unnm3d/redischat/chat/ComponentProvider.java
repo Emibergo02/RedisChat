@@ -172,15 +172,10 @@ public class ComponentProvider {
     }
 
     public Component parseCustomPlaceholders(@Nullable CommandSender cmdSender, @NotNull Component messageComp) {
-        //Parse custom placeholders
         for (Map.Entry<String, String> replacementEntry : plugin.config.placeholders.entrySet()) {
             messageComp = messageComp.replaceText(rBuilder ->
                     rBuilder.matchLiteral(replacementEntry.getKey())
-                            .replacement(parse(cmdSender, replacementEntry.getValue(),
-                                    true,
-                                    false,
-                                    false,
-                                    this.standardTagResolver)));
+                            .replacement(parsePlaceholders(null, parseLegacy(replacementEntry.getValue(), true), this.standardTagResolver)));
         }
         return messageComp;
     }

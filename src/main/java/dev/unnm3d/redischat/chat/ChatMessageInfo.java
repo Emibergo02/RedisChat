@@ -12,17 +12,6 @@ public class ChatMessageInfo implements Serializable {
     private final String message;
     private final ChatActor receiver;
 
-    /**
-     * Creates a ChatMessageInfo
-     * Assumes that the message is a broadcast
-     *
-     * @param sender     The name of the sender
-     * @param formatting The formatting of the message
-     * @param message    The message content
-     */
-    public ChatMessageInfo(@NotNull ChatActor sender, String formatting, String message) {
-        this(sender, formatting, message, new ChatActor(KnownChatEntities.PUBLIC_CHAT.toString(), ChatActor.ActorType.CHANNEL));
-    }
 
     /**
      * Creates a ChatMessageInfo as "Server"

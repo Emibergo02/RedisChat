@@ -66,6 +66,11 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
                         plugin.getLogger().info("R1) Received message from redis: " + System.currentTimeMillis());
                     }
                     plugin.getChannelManager().sendLocalChatMessage(ChatMessageInfo.deserialize(message));
+                } else if (channel.equals(DataKey.GLOBAL_CHANNEL.withoutCluster())) {
+                    if (plugin.config.debug) {
+                        plugin.getLogger().info("R1) Received message from redis: " + System.currentTimeMillis());
+                    }
+                    plugin.getChannelManager().sendLocalChatMessage(ChatMessageInfo.deserialize(message));
                 } else if (channel.equals(DataKey.PLAYERLIST.toString())) {
                     if (plugin.getPlayerListManager() != null)
                         plugin.getPlayerListManager().updatePlayerList(Arrays.asList(message.split("§")));
@@ -102,7 +107,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
             public void punsubscribed(String pattern, long count) {
             }
         });
-        pubSubConnection.async().subscribe(DataKey.CHAT_CHANNEL.toString(), DataKey.PLAYERLIST.toString(), DataKey.REJOIN_CHANNEL.toString(), DataKey.CHANNEL_UPDATE.toString())
+        pubSubConnection.async().subscribe(DataKey.CHAT_CHANNEL.toString(), DataKey.GLOBAL_CHANNEL.withoutCluster(), DataKey.PLAYERLIST.toString(), DataKey.REJOIN_CHANNEL.toString(), DataKey.CHANNEL_UPDATE.toString())
                 .exceptionally(throwable -> {
                     throwable.printStackTrace();
                     plugin.getLogger().warning("Error subscribing to chat channel");
@@ -549,10 +554,10 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
         getConnectionPipeline(conn -> {
             String publishChannel = DataKey.CHAT_CHANNEL.toString();
             if (packet.isChannel()) {//If it's a channel message we need to increment the rate limit
-                String chName = packet.getReceiver().getName();
+                final String chName = packet.getReceiver().getName();
 
                 if (chName.equals(KnownChatEntities.STAFFCHAT_CHANNEL_NAME.toString()))
-                    publishChannel = DataKey.CHAT_CHANNEL.withoutCluster();//Exception for staffchat: it's a global channel
+                    publishChannel = DataKey.GLOBAL_CHANNEL.withoutCluster();//Exception for staffchat: it's a global channel
 
                 conn.incr(DataKey.RATE_LIMIT_PREFIX + packet.getSender().getName() + chName)
                         .toCompletableFuture().orTimeout(1, TimeUnit.SECONDS)

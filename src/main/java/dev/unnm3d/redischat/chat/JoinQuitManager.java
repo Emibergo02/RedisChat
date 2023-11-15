@@ -34,7 +34,7 @@ public class JoinQuitManager implements Listener {
         if (redisChat.getPlayerListManager().getPlayerList(joinEvent.getPlayer())
                 .contains(joinEvent.getPlayer().getName())) return;
 
-        if(redisChat.getPlayerListManager().isVanished(joinEvent.getPlayer())) return;
+        if (redisChat.getPlayerListManager().isVanished(joinEvent.getPlayer())) return;
 
         if (!joinEvent.getPlayer().hasPlayedBefore() && !redisChat.config.first_join_message.isEmpty()) {
             redisChat.getDataManager().sendChatMessage(new ChatMessageInfo(
@@ -67,12 +67,12 @@ public class JoinQuitManager implements Listener {
     public void onQuit(PlayerQuitEvent quitEvent) {
         quitEvent.setQuitMessage(null);
 
-        if(redisChat.getPlayerListManager().isVanished(quitEvent.getPlayer())) return;
+        if (redisChat.getPlayerListManager().isVanished(quitEvent.getPlayer())) return;
 
         //Get quit message
-        List<ChatFormat> chatFormatList = redisChat.config.getChatFormats(quitEvent.getPlayer());
+        final List<ChatFormat> chatFormatList = redisChat.config.getChatFormats(quitEvent.getPlayer());
         if (chatFormatList.isEmpty()) return;
-        String parsedQuitMessage = MiniMessage.miniMessage().serialize(redisChat.getComponentProvider().parse(
+        final String parsedQuitMessage = MiniMessage.miniMessage().serialize(redisChat.getComponentProvider().parse(
                 quitEvent.getPlayer(),
                 chatFormatList.get(0).quit_format(),
                 true,
@@ -89,10 +89,7 @@ public class JoinQuitManager implements Listener {
                 .thenAccept(aVoid -> findPlayerRequests.remove(playerName)) //Remove from map, player rejoined
                 .orTimeout(redisChat.config.quitSendWaiting, TimeUnit.MILLISECONDS)
                 .exceptionally(onTimeout -> {                               //Timeout, player quit
-                    redisChat.getDataManager().sendChatMessage(
-                            new ChatMessageInfo(new ChatActor(),
-                                    parsedQuitMessage,
-                                    null));
+                    redisChat.getDataManager().sendChatMessage(new ChatMessageInfo(parsedQuitMessage));
                     return null;
                 });
     }

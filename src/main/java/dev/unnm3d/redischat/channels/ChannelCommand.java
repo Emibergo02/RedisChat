@@ -89,7 +89,7 @@ public class ChannelCommand {
                                         .filter(s -> s.toLowerCase().startsWith(commandSenderSuggestionInfo.currentArg()))
                                         .toArray(String[]::new)
                         )))
-                .withArguments(new TextArgument("discord-webhook")
+                .withArguments(new GreedyStringArgument("discord-webhook")
                         .replaceSuggestions(ArgumentSuggestions.strings("https://discord.com/api/webhooks/...")))
                 .executes((sender, args) -> {
                     if (args.count() < 2) {

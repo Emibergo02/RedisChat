@@ -3,7 +3,8 @@ package dev.unnm3d.redischat.datamanagers;
 import dev.unnm3d.redischat.RedisChat;
 
 public enum DataKey {
-    CHAT_CHANNEL("rchat:g_chat"),
+    CHAT_CHANNEL("rchat:chat"),
+    GLOBAL_CHANNEL("rchat:g_chat"),
     CHANNEL_UPDATE("rchat:ch_update"),
     REJOIN_CHANNEL("rchat:rejoin"),
     PLAYERLIST("rchat:playerlist"),
@@ -20,6 +21,7 @@ public enum DataKey {
     SPYING_LIST("rchat:spying"),
     PRIVATE_MAIL_PREFIX("rmail:"),
     PUBLIC_MAIL("rmail:public"),
+
     ;
 
     private final String keyName;

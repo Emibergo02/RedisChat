@@ -365,30 +365,25 @@ public class ChannelManager extends RedisChatAPI {
 
     @Override
     public Channel getPublicChannel(@Nullable CommandSender player) {
-        List<ChatFormat> chatFormatList = plugin.config.getChatFormats(player);
-        if (chatFormatList.isEmpty())
-            return new Channel(
-                    KnownChatEntities.PUBLIC_CHAT.toString(),
-                    "No format -> %message%",
-                    plugin.config.rate_limit,
-                    plugin.config.rate_limit_time_seconds,
-                    -1,
-                    plugin.config.publicDiscordWebhook,
-                    true,
-                    null);
-        return new Channel(
-                KnownChatEntities.PUBLIC_CHAT.toString(),
-                plugin.config.getChatFormats(player).get(0).format(),
+        final Channel publicChannel = getGenericPublic();
+        final List<ChatFormat> chatFormatList = plugin.config.getChatFormats(player);
+        if (chatFormatList.isEmpty()) {
+            publicChannel.setFormat("No format -> %message%");
+        } else {
+            publicChannel.setFormat(chatFormatList.get(0).format());
+        }
+        return publicChannel;
+    }
+
+    private Channel getGenericPublic() {
+        return new Channel(KnownChatEntities.PUBLIC_CHAT.toString(),
+                "",
                 plugin.config.rate_limit,
                 plugin.config.rate_limit_time_seconds,
                 -1,
                 plugin.config.publicDiscordWebhook,
                 true,
                 null);
-    }
-
-    private Channel getGenericPublic() {
-        return new Channel("public", "");
     }
 
     @Override
