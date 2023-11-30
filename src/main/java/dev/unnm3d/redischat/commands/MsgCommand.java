@@ -90,6 +90,7 @@ public class MsgCommand {
                                 new ChatActor(receiverName, ChatActor.ActorType.PLAYER)));
 
                         plugin.getComponentProvider().sendMessage(sender, formatted.replaceText(aBuilder -> aBuilder.matchLiteral("%message%").replacement(toBeReplaced)));
+                        
                         //Set reply name for /reply
                         plugin.getDataManager().setReplyName(receiverName, sender.getName());
 
