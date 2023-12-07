@@ -123,10 +123,6 @@ public class ComponentProvider {
         return new String(b);
     }
 
-    public Component parse(CommandSender player, String text) {
-        return parse(player, text, this.standardTagResolver);
-    }
-
     /**
      * Parse placeholders
      *

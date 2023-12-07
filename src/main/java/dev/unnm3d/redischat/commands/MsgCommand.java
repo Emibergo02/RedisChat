@@ -60,7 +60,10 @@ public class MsgCommand {
                         final Component formatted = plugin.getComponentProvider().parse(sender,
                                 chatFormatList.get(0).private_format()
                                         .replace("%receiver%", receiverName)
-                                        .replace("%sender%", sender.getName()));
+                                        .replace("%sender%", sender.getName()),
+                                true,
+                                false,
+                                false);
 
                         //Check for minimessage tags permission
                         boolean parsePlaceholders = sender.hasPermission(Permissions.USE_FORMATTING.getPermission());
@@ -90,7 +93,7 @@ public class MsgCommand {
                                 new ChatActor(receiverName, ChatActor.ActorType.PLAYER)));
 
                         plugin.getComponentProvider().sendMessage(sender, formatted.replaceText(aBuilder -> aBuilder.matchLiteral("%message%").replacement(toBeReplaced)));
-                        
+
                         //Set reply name for /reply
                         plugin.getDataManager().setReplyName(receiverName, sender.getName());
 

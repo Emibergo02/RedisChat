@@ -44,7 +44,13 @@ public class ReplyCommand {
                                 final List<ChatFormat> chatFormatList = plugin.config.getChatFormats(sender);
                                 if (chatFormatList.isEmpty()) return;
 
-                                final Component formatted = plugin.getComponentProvider().parse(sender, chatFormatList.get(0).private_format().replace("%receiver%", receiver.get()).replace("%sender%", sender.getName()));
+                                final Component formatted = plugin.getComponentProvider().parse(sender,
+                                        chatFormatList.get(0).private_format()
+                                                .replace("%receiver%", receiver.get())
+                                                .replace("%sender%", sender.getName()),
+                                        true,
+                                        false,
+                                        false);
 
                                 //Check for minimessage tags permission
                                 boolean parsePlaceholders = sender.hasPermission(Permissions.USE_FORMATTING.getPermission());

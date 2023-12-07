@@ -44,7 +44,7 @@ public class IgnoreCommand implements CommandExecutor, TabCompleter {
                     else
                         plugin.messages.sendMessage(sender, plugin.getComponentProvider().parse(null, plugin.messages.not_ignoring_player.replace("%player%", args[0]), true, false, false));
                 }).exceptionally(throwable -> {
-                    throwable.printStackTrace();
+                    plugin.getLogger().warning("Error while toggling ignoring for " + sender.getName() + ": " + throwable.getMessage());
                     return null;
                 });
 

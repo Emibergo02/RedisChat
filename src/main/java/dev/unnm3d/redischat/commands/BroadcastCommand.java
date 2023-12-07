@@ -20,8 +20,9 @@ public class BroadcastCommand implements CommandExecutor {
         new BukkitRunnable() {
             @Override
             public void run() {
-                final Component component = plugin.getComponentProvider().parse(null, plugin.config.broadcast_format)
-                        .replaceText(rBuilder -> rBuilder.matchLiteral("%message%").replacement(String.join(" ", args)));
+                final Component component = plugin.getComponentProvider().parse(null,
+                        plugin.config.broadcast_format.replace("%message%", String.join(" ", args)),
+                        true, false, false);
 
                 plugin.getDataManager().sendChatMessage(new ChatMessageInfo(MiniMessage.miniMessage().serialize(component)));
             }
