@@ -47,15 +47,16 @@ public class JoinQuitManager implements Listener {
             return;
         }
 
-        List<ChatFormat> chatFormatList = redisChat.config.getChatFormats(joinEvent.getPlayer());
+        final List<ChatFormat> chatFormatList = redisChat.config.getChatFormats(joinEvent.getPlayer());
         if (chatFormatList.isEmpty()) return;
-        ChatFormat chatFormat = chatFormatList.get(0);
+
+        if (chatFormatList.get(0).join_format().isEmpty()) return;
 
         //Send join message to everyone
         redisChat.getDataManager().sendChatMessage(new ChatMessageInfo(
                 MiniMessage.miniMessage().serialize(redisChat.getComponentProvider().parse(
                         joinEvent.getPlayer(),
-                        chatFormat.join_format(),
+                        chatFormatList.get(0).join_format(),
                         true,
                         false,
                         false))));
@@ -72,6 +73,8 @@ public class JoinQuitManager implements Listener {
         //Get quit message
         final List<ChatFormat> chatFormatList = redisChat.config.getChatFormats(quitEvent.getPlayer());
         if (chatFormatList.isEmpty()) return;
+        if (chatFormatList.get(0).quit_format().isEmpty()) return;
+
         final String parsedQuitMessage = MiniMessage.miniMessage().serialize(redisChat.getComponentProvider().parse(
                 quitEvent.getPlayer(),
                 chatFormatList.get(0).quit_format(),

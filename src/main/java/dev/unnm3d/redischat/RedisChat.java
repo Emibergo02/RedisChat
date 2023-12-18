@@ -127,7 +127,7 @@ public final class RedisChat extends JavaPlugin {
 
         getServer().getPluginManager().registerEvents(listenerWithPriority.getListener(), this);
 
-        if(config.enableStaffChat)
+        if (config.enableStaffChat)
             loadCommandAPICommand(new StaffChatCommand(this).getCommand());
 
         this.channelManager = new ChannelManager(this);
@@ -256,7 +256,8 @@ public final class RedisChat extends JavaPlugin {
     @Override
     public void onDisable() {
         getLogger().warning("RedisChat is disabling...");
-        this.dataManager.clearInvShareCache();
+        if (this.dataManager != null)
+            this.dataManager.clearInvShareCache();
 
         registeredCommands.forEach(CommandAPI::unregister);
         CommandAPI.onDisable();
