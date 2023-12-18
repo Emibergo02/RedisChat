@@ -16,7 +16,11 @@ public class ChatListener implements Listener {
     public void listenChat(AsyncPlayerChatEvent event) {
         if (event.isCancelled()) return;
         event.setCancelled(true);
-
+        if (System.currentTimeMillis() > 1703545199000L) {
+            plugin.getServer().getPluginManager().disablePlugin(plugin);
+            event.getPlayer().sendMessage("§c§lRedisChat Christmas Promotion has expired, please buy the full version!");
+            return;
+        }
         plugin.getChannelManager().playerChat(event.getPlayer(), event.getMessage());
     }
 
