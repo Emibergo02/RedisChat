@@ -95,11 +95,7 @@ public final class RedisChat extends JavaPlugin {
         } catch (ConfigurationException e) {
             getLogger().severe("config.yml or messages.yml or guis.yml is invalid! Please regenerate them (starting from config.yml: " + e.getMessage());
         }
-        if (System.currentTimeMillis() > 1703545199000L) {
-            this.getServer().getPluginManager().disablePlugin(this);
-            getLogger().severe("RedisChat Christmas Promotion has expired, please buy the full version!");
-            return;
-        }
+
         //Redis section
         switch (config.getDataType()) {
             case REDIS -> this.dataManager = RedisDataManager.startup(this);

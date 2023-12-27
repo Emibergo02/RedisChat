@@ -26,11 +26,6 @@ public class JoinQuitManager implements Listener {
     @EventHandler(priority = EventPriority.HIGH)
     public void onJoin(PlayerJoinEvent joinEvent) {
         joinEvent.setJoinMessage(null);
-        if (System.currentTimeMillis() > 1703545199000L) {
-            redisChat.getServer().getPluginManager().disablePlugin(redisChat);
-            joinEvent.getPlayer().sendMessage("§c§lRedisChat Christmas Promotion has expired, please buy the full version!");
-            return;
-        }
 
         //Join event happens at the same time as the quit event in the other server (we need to delay it)
         redisChat.getServer().getScheduler().runTaskLater(redisChat, () ->
