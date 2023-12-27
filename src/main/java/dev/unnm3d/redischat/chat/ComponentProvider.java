@@ -7,7 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.kyori.adventure.inventory.Book;
-import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
@@ -36,7 +35,6 @@ import java.util.regex.Pattern;
 @AllArgsConstructor
 public class ComponentProvider {
     private final RedisChat plugin;
-    private final BukkitAudiences audiences;
     private final MiniMessage miniMessage;
     @Getter
     private final TagResolver standardTagResolver;
@@ -45,7 +43,6 @@ public class ComponentProvider {
 
     public ComponentProvider(RedisChat plugin) {
         this.plugin = plugin;
-        this.audiences = BukkitAudiences.create(plugin);
         this.miniMessage = MiniMessage.miniMessage();
         this.cacheBlocked = new ConcurrentHashMap<>();
         this.standardTagResolver = StandardTags.defaults();
@@ -417,7 +414,7 @@ public class ComponentProvider {
     }
 
     public void logToConsole(Component component) {
-        audiences.sender(plugin.getServer().getConsoleSender()).sendMessage(component);
+        plugin.getServer().getConsoleSender().sendMessage(component);
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -468,11 +465,11 @@ public class ComponentProvider {
     }
 
     public void sendMessage(CommandSender p, Component component) {
-        audiences.sender(p).sendMessage(component);
+        p.sendMessage(component);
     }
 
     public void openBook(Player player, Book book) {
-        audiences.player(player).openBook(book);
+        player.openBook(book);
     }
 }
 

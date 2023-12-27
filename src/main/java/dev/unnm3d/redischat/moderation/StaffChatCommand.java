@@ -20,7 +20,7 @@ public class StaffChatCommand {
                     String message = (String) args.get(0);
                     if (message == null) return;
                     plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () ->
-                            plugin.getChannelManager().playerChannelMessage(sender, message, plugin.getChannelManager().getStaffChatChannel()));
+                            plugin.getChannelManager().playerChannelMessage(sender, plugin.getChannelManager().getStaffChatChannel(), message));
                 });
     }
 }

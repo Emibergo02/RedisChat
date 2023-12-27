@@ -173,7 +173,8 @@ public final class Config {
             "The first element is a RedisChat channel, the second one is a Discord channel id",
             "You can find the Discord channel id by right clicking on the channel and clicking on 'Copy ID'"})
     public SpicordSettings spicord = new SpicordSettings(true, "<blue>[Discord]</blue> %role% %username% » %message%", "**%channel%** %sender% » %message%", Map.of("public", "1127207189547847740"));
-
+    @Comment("RedisChat's placeholders update period in seconds (only %redischat_active_channel% and %redischat_ignoring_all%)")
+    public int placeholdersUpdatePeriod = 2;
 
     public record RedisSettings(String host, int port, String user, String password,
                                 int database, int timeout,

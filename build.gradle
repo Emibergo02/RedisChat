@@ -6,14 +6,14 @@ plugins {
 
 
 group = 'dev.unnm3d'
-version = '4.2.9'
+version = '4.3.0'
 
 
 repositories {
     mavenLocal()
     maven { url 'https://repo.codemc.org/repository/maven-public/' }
     maven { url 'https://jitpack.io' }
-    maven { url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
+    maven { url 'https://repo.papermc.io/repository/maven-public/' }
     maven { url 'https://repo.extendedclip.com/content/repositories/placeholderapi/' }
     maven { url 'https://repo.xenondevs.xyz/releases' }
     maven { url 'https://repo.maven.apache.org/maven2/' }
@@ -21,11 +21,9 @@ repositories {
 }
 
 dependencies {
-    implementation 'net.kyori:adventure-text-minimessage:4.15.0'
-    implementation 'net.kyori:adventure-text-serializer-plain:4.15.0'
     implementation 'com.github.Emibergo02.ConfigLib:configlib-paper:master-SNAPSHOT'
-    implementation 'net.kyori:adventure-platform-bukkit:4.3.1'
     implementation 'xyz.xenondevs.invui:invui-core:1.24'
+    implementation 'net.kyori:adventure-text-minimessage:4.15.0'
     implementation 'xyz.xenondevs.invui:inventory-access-r7:1.24'
     implementation 'xyz.xenondevs.invui:inventory-access-r9:1.24'
     implementation 'xyz.xenondevs.invui:inventory-access-r11:1.24'
@@ -36,7 +34,7 @@ dependencies {
     implementation 'xyz.xenondevs.invui:inventory-access-r18:1.24'
     implementation 'dev.jorel:commandapi-bukkit-shade:9.3.0'
 
-    compileOnly 'org.spigotmc:spigot-api:1.16.5-R0.1-SNAPSHOT'
+    compileOnly 'io.papermc.paper:paper-api:1.17.1-R0.1-SNAPSHOT'
     compileOnly 'me.clip:placeholderapi:2.11.3'
     compileOnly 'io.lettuce:lettuce-core:6.2.5.RELEASE'
     compileOnly 'org.jetbrains:annotations:24.0.1'
@@ -61,20 +59,7 @@ shadowJar {
         include dependency('com.github.Emibergo02.ConfigLib:configlib-paper:master-SNAPSHOT')
         include dependency('com.github.Emibergo02.ConfigLib:configlib-yaml:master-SNAPSHOT')
         include dependency("com.github.Emibergo02.ConfigLib:configlib-core:master-SNAPSHOT")
-        include dependency('net.kyori:adventure-api:4.15.0')
-        include dependency('net.kyori:adventure-key:4.15.0')
-        include dependency('net.kyori:adventure-nbt:4.15.0')
-        include dependency('net.kyori:adventure-platform-api:4.3.1')
-        include dependency('net.kyori:adventure-platform-bukkit:4.3.1')
-        include dependency('net.kyori:adventure-platform-facet:4.3.1')
         include dependency('net.kyori:adventure-text-minimessage:4.15.0')
-        include dependency('net.kyori:adventure-text-serializer-plain:4.15.0')
-        include dependency('net.kyori:adventure-text-serializer-legacy:4.15.0')
-        include dependency('net.kyori:adventure-text-serializer-json:4.15.0')
-        include dependency('net.kyori:adventure-text-serializer-gson:4.15.0')
-        include dependency('net.kyori:adventure-text-serializer-gson-legacy-impl:4.13.1')
-        include dependency('net.kyori:adventure-text-serializer-bungeecord:4.3.1')
-        include dependency('net.kyori:option:1.0.0')
         include dependency('xyz.xenondevs.invui:invui-core:1.24')
         include dependency('xyz.xenondevs.invui:inventory-access:1.24')
         include dependency('xyz.xenondevs.invui:inventory-access-r7:1.24')
@@ -89,11 +74,8 @@ shadowJar {
     }
 
     exclude 'colors.bin'
-    exclude 'net.kyori.adventure.title'
-    exclude 'net.kyori.adventure.bossbar'
-    exclude 'net.kyori.adventure.translation'
-    relocate 'net.kyori.adventure', 'dev.unnm3d.redischat.libraries.adventure'
     relocate 'de.exlll.configlib', 'dev.unnm3d.redischat.libraries.configlib'
+    relocate 'net.kyori.adventure.text.minimessage', 'dev.unnm3d.redischat.libraries.minimessage'
     relocate 'xyz.xenondevs.invui', 'dev.unnm3d.redischat.libraries.invui'
     relocate 'xyz.xenondevs.inventoryaccess', 'dev.unnm3d.redischat.libraries.inventoryaccess'
     relocate 'dev.jorel.commandapi', 'dev.unnm3d.redischat.libraries.commandapi'

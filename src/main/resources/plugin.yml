@@ -68,6 +68,9 @@ permissions:
   redischat.clearchat:
     description: Allows to use the /clearchat command
     default: op
+  redischat.chatas:
+    description: Allows to use the /chatas command
+    default: op
   redischat.message:
     description: Allows to use the /msg command
     default: op
@@ -103,6 +106,7 @@ permissions:
       - redischat.staffchat
       - redischat.channel.staffchat
       - redischat.usedangeroustags
+      - redischat.chatas
   redischat.default:
     description: Allows you to use default commands
     default: true

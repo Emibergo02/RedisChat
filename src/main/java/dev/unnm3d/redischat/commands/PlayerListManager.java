@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -57,7 +58,7 @@ public class PlayerListManager {
     }
 
     public Set<String> getPlayerList(@Nullable CommandSender sender) {
-        Set<String> keySet = new HashSet<>(playerList.keySet());
+        final Set<String> keySet = new HashSet<>(playerList.keySet());
 
         if (sender != null) {
             vanishIntegrations.forEach(vanishIntegration ->

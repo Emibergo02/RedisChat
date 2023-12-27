@@ -8,7 +8,6 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
 import java.util.Optional;
 
 @SuppressWarnings("unused")
@@ -66,10 +65,10 @@ public abstract class RedisChatAPI {
      * Sends a message into the RedisChat system (cross-server)
      *
      * @param player  The player who sent the message
-     * @param message The message content
      * @param channel The channel the message was sent to
+     * @param message The message content
      */
-    public abstract void playerChannelMessage(CommandSender player, @NotNull String message, Channel channel);
+    public abstract void playerChannelMessage(CommandSender player, Channel channel, @NotNull String message);
 
     /**
      * Sends a message inside the current server

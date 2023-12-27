@@ -110,7 +110,7 @@ public class ChannelManager extends RedisChatAPI {
     }
 
     @Override
-    public void playerChannelMessage(CommandSender player, @NotNull String message, Channel channel) {
+    public void playerChannelMessage(CommandSender player, Channel channel, @NotNull String message) {
         final long init = System.currentTimeMillis();
         if (isRateLimited(player, channel)) return;
 
@@ -152,7 +152,7 @@ public class ChannelManager extends RedisChatAPI {
         message = plugin.getComponentProvider().invShareFormatting(player, message);
 
 
-        Component formatted = getComponentProvider().parse(player, channel.getFormat(), true, false, false);
+        final Component formatted = getComponentProvider().parse(player, channel.getFormat(), true, false, false);
 
         //Parse to MiniMessage component (placeholders, tags and mentions)
         Component toBeReplaced = getComponentProvider().parse(player, message, parsePlaceholders, true, true,
@@ -166,14 +166,14 @@ public class ChannelManager extends RedisChatAPI {
         }
 
         //Call event and check cancellation
-        AsyncRedisChatMessageEvent event = new AsyncRedisChatMessageEvent(player, channel,
+        final AsyncRedisChatMessageEvent event = new AsyncRedisChatMessageEvent(player, channel,
                 MiniMessage.miniMessage().serialize(formatted),
                 MiniMessage.miniMessage().serialize(toBeReplaced));
         plugin.getServer().getPluginManager().callEvent(event);
         if (event.isCancelled()) return;
 
 
-        ChatMessageInfo cmi = new ChatMessageInfo(
+        final ChatMessageInfo cmi = new ChatMessageInfo(
                 new ChatActor(player.getName(), ChatActor.ActorType.PLAYER),
                 event.getFormat(),
                 event.getMessage(),
@@ -209,7 +209,7 @@ public class ChannelManager extends RedisChatAPI {
                     if (plugin.config.debug) {
                         plugin.getLogger().info("1) Active channel (Redis) + channel parsing: " + (System.currentTimeMillis() - init) + "ms");
                     }
-                    playerChannelMessage(player, message, chatChannel);
+                    playerChannelMessage(player, chatChannel, message);
                 })
                 .exceptionally(throwable -> {
                     throwable.printStackTrace();

@@ -2,9 +2,6 @@ package dev.unnm3d.redischat.settings;
 
 import de.exlll.configlib.Comment;
 import de.exlll.configlib.Configuration;
-import dev.unnm3d.redischat.RedisChat;
-import net.kyori.adventure.platform.bukkit.BukkitAudiences;
-import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.Nullable;
@@ -13,7 +10,7 @@ import java.lang.reflect.Field;
 
 @Configuration
 public final class Messages {
-    private static final BukkitAudiences audiences = BukkitAudiences.create(RedisChat.getInstance());
+
     public String player_not_online = "<yellow>RedisChat</yellow> <gray>»</gray> <red>The player %player% is not online</red>";
     public String cannot_message_yourself = "<yellow>RedisChat</yellow> <gray>»</gray> <red>You cannot message yourself</red>";
     public String missing_arguments = "<yellow>RedisChat</yellow> <gray>»</gray> <red>Missing arguments</red>";
@@ -70,11 +67,7 @@ public final class Messages {
 
 
     public void sendMessage(CommandSender p, String message) {
-        audiences.sender(p).sendMessage(MiniMessage.miniMessage().deserialize(message));
-    }
-
-    public void sendMessage(CommandSender p, Component component) {
-        audiences.sender(p).sendMessage(component);
+        p.sendMessage(MiniMessage.miniMessage().deserialize(message));
     }
 
     public @Nullable Field getStringField(String name) throws NoSuchFieldException {

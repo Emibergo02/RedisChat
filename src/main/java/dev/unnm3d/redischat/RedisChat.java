@@ -21,6 +21,7 @@ import dev.unnm3d.redischat.discord.DiscordWebhook;
 import dev.unnm3d.redischat.discord.IDiscordHook;
 import dev.unnm3d.redischat.discord.SpicordHook;
 import dev.unnm3d.redischat.integrations.OraxenTagResolver;
+import dev.unnm3d.redischat.integrations.PAPIIntegration;
 import dev.unnm3d.redischat.integrations.PremiumVanishIntegration;
 import dev.unnm3d.redischat.mail.MailCommand;
 import dev.unnm3d.redischat.mail.MailManager;
@@ -162,10 +163,10 @@ public final class RedisChat extends JavaPlugin {
         this.webEditorAPI = new AdventureWebuiEditorAPI(config.webEditorUrl);
 
         //Commands section
-        //New command API
         loadCommandAPICommand(new MainCommand(this, this.webEditorAPI).getCommand());
         loadCommandAPICommand(new MsgCommand(this).getCommand());
         loadCommandAPICommand(new ReplyCommand(this).getCommand());
+        loadCommandAPICommand(new ChatAsCommand(this).getCommand());
 
         //Old command API
         SetItemCommand setItemCommand = new SetItemCommand(this);
@@ -200,6 +201,8 @@ public final class RedisChat extends JavaPlugin {
             getLogger().info("Spicord not found, using default DiscordWebhook");
             this.discordHook = new DiscordWebhook(this);
         }
+        //PlaceholderAPI is always enabled as it is a dependency
+        new PAPIIntegration(this).register();
 
         new UpdateCheck(this).getVersion(version -> {
             if (!this.getDescription().getVersion().equalsIgnoreCase(version)) {
