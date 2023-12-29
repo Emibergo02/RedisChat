@@ -79,6 +79,8 @@ shadowJar {
     relocate 'xyz.xenondevs.invui', 'dev.unnm3d.redischat.libraries.invui'
     relocate 'xyz.xenondevs.inventoryaccess', 'dev.unnm3d.redischat.libraries.inventoryaccess'
     relocate 'dev.jorel.commandapi', 'dev.unnm3d.redischat.libraries.commandapi'
+
+    minimize()
 }
 
 def targetJavaVersion = 17

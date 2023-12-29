@@ -157,7 +157,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
             result = getConnectionAsync(conn -> conn.get(DataKey.RATE_LIMIT_PREFIX + playerName + channel.getName()))
                     .toCompletableFuture().get(1, TimeUnit.SECONDS);
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            e.printStackTrace();
+            plugin.getLogger().warning("Error getting rate limit from redis: " + e.getMessage());
         }
 
         int nowMessages = result == null ? 0 : Integer.parseInt(result);//If null, then 0

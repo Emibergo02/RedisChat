@@ -93,11 +93,12 @@ public class ChannelManager extends RedisChatAPI {
 
     @Override
     protected boolean isRateLimited(CommandSender player, Channel channel) {
-        if (!player.hasPermission(Permissions.BYPASS_RATE_LIMIT.getPermission()))
+        if (!player.hasPermission(Permissions.BYPASS_RATE_LIMIT.getPermission())) {
             if (plugin.getDataManager().isRateLimited(player.getName(), channel)) {
                 plugin.messages.sendMessage(player, plugin.messages.rate_limited);
                 return true;
             }
+        }
         return false;
     }
 
@@ -262,7 +263,7 @@ public class ChannelManager extends RedisChatAPI {
     public void sendGenericChat(@NotNull ChatMessageInfo chatMessageInfo) {
         long init = System.currentTimeMillis();
 
-        Channel channel = plugin.getChannelManager().getChannel(chatMessageInfo.getReceiver().getName()).orElse(getGenericPublic());
+        final Channel channel = plugin.getChannelManager().getChannel(chatMessageInfo.getReceiver().getName()).orElse(getGenericPublic());
         if (plugin.config.debug) {
             plugin.getLogger().info("R2) Permission check");
         }

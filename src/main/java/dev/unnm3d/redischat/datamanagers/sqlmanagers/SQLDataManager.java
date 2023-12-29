@@ -174,7 +174,7 @@ public abstract class SQLDataManager implements DataManager {
 
     @Override
     public boolean isRateLimited(@NotNull String playerName, @NotNull Channel channel) {
-        Map.Entry<Integer, Long> info = this.rateLimit.get(playerName);
+        final Map.Entry<Integer, Long> info = this.rateLimit.get(playerName);
         if (info != null)
             if (System.currentTimeMillis() - info.getValue() > channel.getRateLimitPeriod() * 1000L) {
                 this.rateLimit.remove(playerName);
@@ -793,6 +793,12 @@ public abstract class SQLDataManager implements DataManager {
             if (chName.equals(KnownChatEntities.STAFFCHAT_CHANNEL_NAME.toString()))
                 publishChannel = DataKey.GLOBAL_CHANNEL.withoutCluster();//Exception for staffchat: it's a global channel
 
+            final Map.Entry<Integer, Long> info = this.rateLimit.get(packet.getSender().getName());
+            if (info != null) {
+                this.rateLimit.put(packet.getSender().getName(), new AbstractMap.SimpleEntry<>(info.getKey() + 1, System.currentTimeMillis()));
+            } else {
+                this.rateLimit.put(packet.getSender().getName(), new AbstractMap.SimpleEntry<>(1, System.currentTimeMillis()));
+            }
         }
 
         final ByteArrayDataOutput out = ByteStreams.newDataOutput();
