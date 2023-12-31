@@ -88,14 +88,14 @@ public class ComponentProvider {
         if (parseMentions) {
             text = parseMentions(text, plugin.config.formats.get(0), player);
         }
-        if (plugin.config.legacyColorCodesSupport && (player == null || //Is without permissions or if it has permissions
-                player.hasPermission(Permissions.USE_FORMATTING.getPermission()))) {
+        if (player == null || //Is without permissions or if it has permissions
+                player.hasPermission(Permissions.USE_FORMATTING.getPermission())) {
             text = parseLegacy(text, true);
         }
 
         Component finalComponent = parsePlaceholders ?
                 parsePlaceholders(player, parseResolverIntegrations(text), tagResolvers) :
-                miniMessage.deserialize(text, tagResolvers);
+                miniMessage.deserialize(text.replace('§', '&'), tagResolvers);
 
         if (parsedLinks.getValue() != null) {
             Map.Entry<String, Component> finalParsedLinks = parsedLinks;
@@ -107,9 +107,6 @@ public class ComponentProvider {
     }
 
     public String replaceAmpersandCodesWithSection(String text) {
-        if (!plugin.config.legacyColorCodesSupport) { // if legacy color codes support is disabled, we don't need to replace anything
-            return text;
-        }
         char[] b = text.toCharArray();
         for (int i = 0; i < b.length - 1; i++) {
             if (b[i] == '&' && "0123456789AaBbCcDdEeFfKkLlMmNnOoRrXx#".indexOf(b[i + 1]) > -1) {

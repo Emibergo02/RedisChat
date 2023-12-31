@@ -9,7 +9,7 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.reflect.Field;
 
 @Configuration
-public final class Messages {
+public final class Messages implements ConfigValidator{
 
     public String player_not_online = "<yellow>RedisChat</yellow> <gray>»</gray> <red>The player %player% is not online</red>";
     public String cannot_message_yourself = "<yellow>RedisChat</yellow> <gray>»</gray> <red>You cannot message yourself</red>";
@@ -85,5 +85,10 @@ public final class Messages {
         if (field == null) return false;
         field.set(this, text);
         return true;
+    }
+
+    @Override
+    public void validateConfig() {
+
     }
 }

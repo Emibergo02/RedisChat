@@ -10,7 +10,7 @@ import java.lang.reflect.Field;
 import java.util.List;
 
 @Configuration
-public final class GuiSettings {
+public final class GuiSettings implements ConfigValidator {
 
     public String publicMailTabTitle = "Public Mail";
     public String privateMailTabTitle = "Private Mail";
@@ -147,4 +147,8 @@ public final class GuiSettings {
 
     }
 
+    @Override
+    public void validateConfig() {
+
+    }
 }

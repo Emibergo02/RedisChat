@@ -219,6 +219,7 @@ public final class RedisChat extends JavaPlugin {
                         .footer("Authors: Unnm3d")
                         .build()
         );
+        this.config.validateConfig();
 
         Path messagesFile = new File(getDataFolder(), "messages.yml").toPath();
         this.messages = YamlConfigurations.update(
@@ -229,6 +230,8 @@ public final class RedisChat extends JavaPlugin {
                         .footer("Authors: Unnm3d")
                         .build()
         );
+        this.messages.validateConfig();
+
         Path guiSettingsFile = new File(getDataFolder(), "guis.yml").toPath();
         this.guiSettings = YamlConfigurations.update(
                 guiSettingsFile,
@@ -238,7 +241,7 @@ public final class RedisChat extends JavaPlugin {
                         .footer("Authors: Unnm3d")
                         .build()
         );
-
+        this.guiSettings.validateConfig();
     }
 
     public void saveMessages() {

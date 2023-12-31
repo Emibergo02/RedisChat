@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 @Configuration
-public final class Config {
+public final class Config implements ConfigValidator {
 
     @Comment({"RedisChat storage type, can be REDIS , MySQL+PM or H2+PM (PM means PluginMessages)",
             "If you use Mysql you need a proxy. The plugin will send the data to the proxy via pluginmessages",
@@ -48,8 +48,6 @@ public final class Config {
     public String clusterId = "0";
     @Comment("Webeditor URL")
     public String webEditorUrl = "https://webui.advntr.dev/";
-    @Comment("Enables & (ampersand) and § (section) color codes")
-    public boolean legacyColorCodesSupport = true;
     @Comment("Enables /rmail /mail and the whole feature")
     public boolean enableMails = true;
     @Comment("Register tag integrations (Like Oraxen Integration which is internal)")
@@ -173,8 +171,31 @@ public final class Config {
             "The first element is a RedisChat channel, the second one is a Discord channel id",
             "You can find the Discord channel id by right clicking on the channel and clicking on 'Copy ID'"})
     public SpicordSettings spicord = new SpicordSettings(true, "<blue>[Discord]</blue> %role% %username% » %message%", "**%channel%** %sender% » %message%", Map.of("public", "1127207189547847740"));
-    @Comment("RedisChat's placeholders update period in seconds (only %redischat_active_channel% and %redischat_ignoring_all%)")
-    public int placeholdersUpdatePeriod = 2;
+
+    @Override
+    public void validateConfig() {
+        formats.forEach(format -> {
+            if (!format.format().contains("%message%")) {
+                Bukkit.getLogger().severe("Format " + format.permission() + " doesn't contain %message% placeholder");
+            }
+            if (!format.private_format().contains("%message%")) {
+                Bukkit.getLogger().severe("Private format " + format.permission() + " doesn't contain %message% placeholder");
+            }
+            if (!format.receive_private_format().contains("%message%")) {
+                Bukkit.getLogger().severe("Receive private format " + format.permission() + " doesn't contain %message% placeholder");
+            }
+            if (format.quit_format() == null) {
+                Bukkit.getLogger().severe("Quit format " + format.permission() + " is empty. TO DISABLE IT, SET IT TO \"\"");
+            }
+            if (format.join_format() == null) {
+                Bukkit.getLogger().severe("Join format " + format.permission() + " is empty. TO DISABLE IT, SET IT TO \"\"");
+            }
+            if (!dataMedium.equals(DataType.REDIS.keyName)) {
+                Bukkit.getLogger().warning("You're not using REDIS as data medium, it is recommended to use it or you may not be able to use some features");
+            }
+
+        });
+    }
 
     public record RedisSettings(String host, int port, String user, String password,
                                 int database, int timeout,
