@@ -54,11 +54,10 @@ public class MsgCommand {
                             return;
                         }
 
-                        final List<ChatFormat> chatFormatList = plugin.config.getChatFormats(sender);
-                        if (chatFormatList.isEmpty()) return;
+                        final ChatFormat chatFormat = plugin.config.getChatFormat(sender);
 
                         final Component formatted = plugin.getComponentProvider().parse(sender,
-                                chatFormatList.get(0).private_format()
+                                chatFormat.private_format()
                                         .replace("%receiver%", receiverName)
                                         .replace("%sender%", sender.getName()),
                                 true,

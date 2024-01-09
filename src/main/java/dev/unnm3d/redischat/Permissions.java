@@ -28,6 +28,7 @@ public enum Permissions {
     CHANNEL_TOGGLE_PLAYER("redischat.playerchannel"),
     CHANNEL_LIST("redischat.listchannel"),
     CHANNEL_MUTE("redischat.mutechannel"),
+    JOIN_QUIT("redischat.joinquit"),
     ;
 
     @Getter

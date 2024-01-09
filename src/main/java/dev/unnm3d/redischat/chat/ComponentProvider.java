@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.kyori.adventure.inventory.Book;
+import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
@@ -41,8 +42,11 @@ public class ComponentProvider {
     private final ConcurrentHashMap<Player, List<Component>> cacheBlocked;
     private final List<TagResolverIntegration> tagResolverIntegrationList;
 
+    private final BukkitAudiences bukkitAudiences;
+
     public ComponentProvider(RedisChat plugin) {
         this.plugin = plugin;
+        this.bukkitAudiences = BukkitAudiences.create(plugin);
         this.miniMessage = MiniMessage.miniMessage();
         this.cacheBlocked = new ConcurrentHashMap<>();
         this.standardTagResolver = StandardTags.defaults();
@@ -81,13 +85,17 @@ public class ComponentProvider {
 
     public @NotNull Component parse(@Nullable CommandSender player, @NotNull String text, boolean parsePlaceholders, boolean parseMentions, boolean parseLinks, @NotNull TagResolver... tagResolvers) {
         Map.Entry<String, Component> parsedLinks = new AbstractMap.SimpleEntry<>(null, null);
+
+        final ChatFormat format = plugin.config.getChatFormat(player);
+
         if (parseLinks) {
-            parsedLinks = parseLinks(text, plugin.config.formats.get(0));
+            parsedLinks = parseLinks(text, format);
             text = parsedLinks.getKey();
         }
         if (parseMentions) {
-            text = parseMentions(text, plugin.config.formats.get(0), player);
+            text = parseMentions(text, format, player);
         }
+
         if (player == null || //Is without permissions or if it has permissions
                 player.hasPermission(Permissions.USE_FORMATTING.getPermission())) {
             text = parseLegacy(text, true);
@@ -411,7 +419,7 @@ public class ComponentProvider {
     }
 
     public void logToConsole(Component component) {
-        plugin.getServer().getConsoleSender().sendMessage(component);
+        bukkitAudiences.sender(plugin.getServer().getConsoleSender()).sendMessage(component);
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -457,16 +465,19 @@ public class ComponentProvider {
         }
     }
 
-    public void sendMessage(CommandSender p, String message) {
-        sendMessage(p, MiniMessage.miniMessage().deserialize(message));
+    public void sendMessage(CommandSender sender, String message) {
+        sendMessage(sender, MiniMessage.miniMessage().deserialize(message));
     }
 
-    public void sendMessage(CommandSender p, Component component) {
-        p.sendMessage(component);
+    public void sendMessage(CommandSender sender, Component component) {
+        if (sender instanceof Player player)
+            bukkitAudiences.player(player).sendMessage(component);
+        else
+            bukkitAudiences.sender(sender).sendMessage(component);
     }
 
     public void openBook(Player player, Book book) {
-        player.openBook(book);
+        bukkitAudiences.player(player).openBook(book);
     }
 }
 

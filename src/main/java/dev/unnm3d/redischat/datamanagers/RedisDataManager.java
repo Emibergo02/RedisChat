@@ -553,7 +553,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     public void sendChatMessage(@NotNull ChatMessageInfo packet) {
         getConnectionPipeline(conn -> {
             String publishChannel = DataKey.CHAT_CHANNEL.toString();
-            if (packet.isChannel()) {//If it's a channel message we need to increment the rate limit
+            if (packet.getReceiver().isChannel()) {//If it's a channel message we need to increment the rate limit
                 final String chName = packet.getReceiver().getName();
 
                 if (chName.equals(KnownChatEntities.STAFFCHAT_CHANNEL_NAME.toString()))

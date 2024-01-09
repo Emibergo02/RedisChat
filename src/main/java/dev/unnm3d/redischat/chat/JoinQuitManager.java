@@ -1,5 +1,6 @@
 package dev.unnm3d.redischat.chat;
 
+import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.event.EventHandler;
@@ -8,7 +9,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -47,19 +47,18 @@ public class JoinQuitManager implements Listener {
             return;
         }
 
-        final List<ChatFormat> chatFormatList = redisChat.config.getChatFormats(joinEvent.getPlayer());
-        if (chatFormatList.isEmpty()) return;
+        final ChatFormat chatFormat = redisChat.config.getChatFormat(joinEvent.getPlayer());
 
-        if (chatFormatList.get(0).join_format().isEmpty()) return;
+        if (chatFormat.join_format().isEmpty()) return;
 
         //Send join message to everyone
         redisChat.getDataManager().sendChatMessage(new ChatMessageInfo(
                 MiniMessage.miniMessage().serialize(redisChat.getComponentProvider().parse(
                         joinEvent.getPlayer(),
-                        chatFormatList.get(0).join_format(),
+                        chatFormat.join_format(),
                         true,
                         false,
-                        false))));
+                        false)), Permissions.JOIN_QUIT.getPermission()));
 
 
     }
@@ -71,13 +70,12 @@ public class JoinQuitManager implements Listener {
         if (redisChat.getPlayerListManager().isVanished(quitEvent.getPlayer())) return;
 
         //Get quit message
-        final List<ChatFormat> chatFormatList = redisChat.config.getChatFormats(quitEvent.getPlayer());
-        if (chatFormatList.isEmpty()) return;
-        if (chatFormatList.get(0).quit_format().isEmpty()) return;
+        final ChatFormat chatFormat = redisChat.config.getChatFormat(quitEvent.getPlayer());
+        if (chatFormat.quit_format().isEmpty()) return;
 
         final String parsedQuitMessage = MiniMessage.miniMessage().serialize(redisChat.getComponentProvider().parse(
                 quitEvent.getPlayer(),
-                chatFormatList.get(0).quit_format(),
+                chatFormat.quit_format(),
                 true,
                 false,
                 false));
@@ -92,7 +90,7 @@ public class JoinQuitManager implements Listener {
                 .thenAccept(aVoid -> findPlayerRequests.remove(playerName)) //Remove from map, player rejoined
                 .orTimeout(redisChat.config.quitSendWaiting, TimeUnit.MILLISECONDS)
                 .exceptionally(onTimeout -> {                               //Timeout, player quit
-                    redisChat.getDataManager().sendChatMessage(new ChatMessageInfo(parsedQuitMessage));
+                    redisChat.getDataManager().sendChatMessage(new ChatMessageInfo(parsedQuitMessage, Permissions.JOIN_QUIT.getPermission()));
                     return null;
                 });
     }

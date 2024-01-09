@@ -5,6 +5,7 @@ public enum KnownChatEntities {
     SERVER_SENDER("*Server*"),
     CHANNEL_PREFIX("#"),
     DISCORD_PREFIX("@"),
+    PERMISSION_PREFIX("~"),
     STAFFCHAT_CHANNEL_NAME("staffchat"),
     ;
 

@@ -73,6 +73,18 @@ public final class Config implements ConfigValidator {
             "<green>%player_name% joined the server",
             "<red>%player_name% is no longer online"
     ));
+
+    @Comment("Fallback format if the player doesn't have any of the formats above")
+    public ChatFormat defaultFormat = new ChatFormat("none",
+            "No format » <reset><gray>%message%",
+            "No format: Me ➺ <green>%receiver%<grey> : <white>%message%",
+            "No format: <green>%sender%<grey> ➺ Me : <white>%message%",
+            "<red>@%player%</red>",
+            "No format: <aqua><click:open_url:%link%>[Open web page <red>(be careful)</red>]</aqua>",
+            "No format: %player_name% joined the server",
+            "No format: %player_name% is no longer online"
+    );
+
     @Comment({
             "Announcer configurations",
             "delay and interval are in seconds",
@@ -193,8 +205,19 @@ public final class Config implements ConfigValidator {
             if (!dataMedium.equals(DataType.REDIS.keyName)) {
                 Bukkit.getLogger().warning("You're not using REDIS as data medium, it is recommended to use it or you may not be able to use some features");
             }
-
         });
+        if (!defaultFormat.format().contains("%message%")) {
+            Bukkit.getLogger().warning("Default format doesn't contain %message% placeholder");
+        }
+        if (!defaultFormat.private_format().contains("%message%")) {
+            Bukkit.getLogger().warning("Default private format doesn't contain %message% placeholder");
+        }
+        if (!defaultFormat.receive_private_format().contains("%message%")) {
+            Bukkit.getLogger().warning("Default receive private format doesn't contain %message% placeholder");
+        }
+        if (!defaultFormat.mention_format().contains("%player%")) {
+            Bukkit.getLogger().warning("Default mention format doesn't contain %player% placeholder");
+        }
     }
 
     public record RedisSettings(String host, int port, String user, String password,
@@ -234,15 +257,12 @@ public final class Config implements ConfigValidator {
     ) {
     }
 
-
-    public @NotNull List<ChatFormat> getChatFormats(@Nullable CommandSender p) {
-        if (p == null) return List.of();
-        List<ChatFormat> chatFormatList = formats.stream().filter(format -> p.hasPermission(format.permission())).toList();
-        if (chatFormatList.isEmpty()) {
-            Bukkit.getLogger().info("No format found for " + p.getName());
-            return List.of();
-        }
-        return chatFormatList;
+    public @NotNull ChatFormat getChatFormat(@Nullable CommandSender p) {
+        if (p == null) return defaultFormat;
+        return formats.stream()
+                .filter(format -> p.hasPermission(format.permission()))
+                .findFirst()
+                .orElse(defaultFormat);
     }
 
     public String[] getCommandAliases(String command) {

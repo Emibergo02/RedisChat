@@ -221,7 +221,7 @@ public class ChannelManager extends RedisChatAPI {
 
     @Override
     public void sendLocalChatMessage(ChatMessageInfo chatMessageInfo) {
-        if (chatMessageInfo.isPrivate()) {
+        if (chatMessageInfo.getReceiver().isPlayer()) {
             long init = System.currentTimeMillis();
 
             final Component spyComponent =
@@ -263,7 +263,11 @@ public class ChannelManager extends RedisChatAPI {
     public void sendGenericChat(@NotNull ChatMessageInfo chatMessageInfo) {
         long init = System.currentTimeMillis();
 
-        final Channel channel = plugin.getChannelManager().getChannel(chatMessageInfo.getReceiver().getName()).orElse(getGenericPublic());
+        Channel channel = getGenericPublic();
+        if (chatMessageInfo.getReceiver().isChannel()) {
+            channel = plugin.getChannelManager().getChannel(chatMessageInfo.getReceiver().getName()).orElse(getGenericPublic());
+        }
+
         if (plugin.config.debug) {
             plugin.getLogger().info("R2) Permission check");
         }
@@ -282,12 +286,19 @@ public class ChannelManager extends RedisChatAPI {
         for (Player onlinePlayer : plugin.getServer().getOnlinePlayers()) {
             if (!onlinePlayer.hasPermission(Permissions.CHANNEL_PREFIX.getPermission() + channel.getName()))
                 continue;
+
+            if (chatMessageInfo.getReceiver().needPermission())
+                if (!onlinePlayer.hasPermission(chatMessageInfo.getReceiver().getName())) {
+                    continue;
+                }
+
             if (!checkProximity(onlinePlayer, chatMessageInfo.getSender().getName(), channel))
                 continue;
 
             if (chatMessageInfo.getMessage().contains(onlinePlayer.getName())) {
                 onlinePlayer.playSound(onlinePlayer.getLocation(), Sound.BLOCK_NOTE_BLOCK_GUITAR, 1, 2.0f);
             }
+
             getComponentProvider().sendComponentOrCache(onlinePlayer, formattedComponent);
         }
 
@@ -307,7 +318,7 @@ public class ChannelManager extends RedisChatAPI {
 
     private boolean checkProximity(@NotNull Player receiver, String senderName, Channel channel) {
         if (channel.getProximityDistance() <= 0) return true;
-        Player sender = Bukkit.getPlayer(senderName);
+        final Player sender = Bukkit.getPlayer(senderName);
         if (sender == null) return false;
         if (!sender.getWorld().equals(receiver.getWorld())) return false;
         return !(sender.getLocation().distance(receiver.getLocation()) > channel.getProximityDistance());
@@ -318,17 +329,17 @@ public class ChannelManager extends RedisChatAPI {
         Player p = Bukkit.getPlayer(chatMessageInfo.getReceiver().getName());
         if (p != null)
             if (p.isOnline()) {
-                List<ChatFormat> chatFormatList = plugin.config.getChatFormats(p);
-                if (chatFormatList.isEmpty()) return;
+                final ChatFormat chatFormat = plugin.config.getChatFormat(p);
+
                 Component formatted = getComponentProvider().parse(null,
-                        chatFormatList.get(0).receive_private_format()
+                        chatFormat.receive_private_format()
                                 .replace("%receiver%", chatMessageInfo.getReceiver().getName())
                                 .replace("%sender%", chatMessageInfo.getSender().getName()),
                         //Parameters disabled: already parsed on sender side
                         false, false, false,
                         getComponentProvider().getStandardTagResolver());
 
-                Component toBeReplaced = getComponentProvider().parse(p, chatMessageInfo.getMessage(),
+                final Component toBeReplaced = getComponentProvider().parse(p, chatMessageInfo.getMessage(),
                         false, false, false,
                         getComponentProvider().getStandardTagResolver());
                 //Put message into format
@@ -366,13 +377,10 @@ public class ChannelManager extends RedisChatAPI {
 
     @Override
     public Channel getPublicChannel(@Nullable CommandSender player) {
+
         final Channel publicChannel = getGenericPublic();
-        final List<ChatFormat> chatFormatList = plugin.config.getChatFormats(player);
-        if (chatFormatList.isEmpty()) {
-            publicChannel.setFormat("No format -> %message%");
-        } else {
-            publicChannel.setFormat(chatFormatList.get(0).format());
-        }
+        publicChannel.setFormat(plugin.config.getChatFormat(player).format());
+
         return publicChannel;
     }
 

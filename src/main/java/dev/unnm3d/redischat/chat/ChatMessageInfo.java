@@ -15,10 +15,20 @@ public class ChatMessageInfo implements Serializable {
 
     /**
      * Creates a ChatMessageInfo as "Server"
+     *
      * @param message The message content
      */
     public ChatMessageInfo(String message) {
         this(new ChatActor(), "%message%", message, new ChatActor(KnownChatEntities.PUBLIC_CHAT.toString(), ChatActor.ActorType.CHANNEL));
+    }
+
+    /**
+     * Creates a ChatMessageInfo as "Server"
+     *
+     * @param message The message content
+     */
+    public ChatMessageInfo(String message, String permissionToSee) {
+        this(new ChatActor(), "%message%", message, new ChatActor(permissionToSee, ChatActor.ActorType.PERMISSION));
     }
 
     /**
@@ -47,19 +57,6 @@ public class ChatMessageInfo implements Serializable {
 
     public String getFormatting() {
         return formatting;
-    }
-
-    /**
-     * Returns if the message is private
-     *
-     * @return true if the message isn't a multicast or broadcast
-     */
-    public boolean isPrivate() {
-        return !isChannel();
-    }
-
-    public boolean isChannel() {
-        return receiver.isChannel();
     }
 
     public ChatActor getReceiver() {
