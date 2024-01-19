@@ -58,6 +58,7 @@ public class MainCommand {
                     }
                     plugin.getAnnounceManager().reload();
                     plugin.getChannelManager().updateChannels();
+                    plugin.getChannelManager().getMuteManager().reload();
                     plugin.getComponentProvider().sendMessage(commandExecutor.sender(), "<green>Config reloaded");
                 }, ExecutorType.CONSOLE, ExecutorType.PLAYER);
     }

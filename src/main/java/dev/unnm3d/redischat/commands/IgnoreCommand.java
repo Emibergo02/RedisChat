@@ -33,16 +33,16 @@ public class IgnoreCommand implements CommandExecutor, TabCompleter {
                     .thenAccept(list -> {
                         if (list == null) return;
                         list.forEach(ignoreList::add);
-                        sender.sendMessage(plugin.getComponentProvider().parse(null, plugin.messages.ignoring_list.replace("%list%", ignoreList.toString()), true, false, false));
+                        plugin.getComponentProvider().sendMessage(sender, plugin.getComponentProvider().parse(null, plugin.messages.ignoring_list.replace("%list%", ignoreList.toString()), true, false, false));
                     });
             return true;
         }
         plugin.getDataManager().toggleIgnoring(sender.getName(), args[0])
                 .thenAccept(ignored -> {
                     if (ignored)
-                        sender.sendMessage(plugin.getComponentProvider().parse(null, plugin.messages.ignoring_player.replace("%player%", args[0]), true, false, false));
+                        plugin.getComponentProvider().sendMessage(sender, plugin.getComponentProvider().parse(null, plugin.messages.ignoring_player.replace("%player%", args[0]), true, false, false));
                     else
-                        sender.sendMessage(plugin.getComponentProvider().parse(null, plugin.messages.not_ignoring_player.replace("%player%", args[0]), true, false, false));
+                        plugin.getComponentProvider().sendMessage(sender, plugin.getComponentProvider().parse(null, plugin.messages.not_ignoring_player.replace("%player%", args[0]), true, false, false));
                 }).exceptionally(throwable -> {
                     plugin.getLogger().warning("Error while toggling ignoring for " + sender.getName() + ": " + throwable.getMessage());
                     return null;

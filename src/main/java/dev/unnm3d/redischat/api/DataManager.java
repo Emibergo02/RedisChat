@@ -13,6 +13,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 public interface DataManager {
@@ -69,6 +70,15 @@ public interface DataManager {
     void setPlayerChannelStatuses(@NotNull String playerName, @NotNull Map<String, String> channelStatuses);
 
     void removePlayerChannelStatus(@NotNull String playerName, @NotNull String channelName);
+
+    default void setMutedChannels(@NotNull String playerName, @NotNull Set<String> mutedChannels) {
+
+    }
+
+    default CompletionStage<Map<String, Set<String>>> getAllMutedChannels() {
+        return CompletableFuture.completedFuture(Map.of());
+    }
+
 
     void sendChatMessage(@NotNull ChatMessageInfo chatMessage);
 

@@ -13,6 +13,7 @@ public enum DataKey {
     PLAYER_CHANNELS_PREFIX("rchat:pch_"),
     ACTIVE_CHANNEL_ID("!activech"),
     IGNORE_PREFIX("rchat:ignore_"),
+    MUTED_PLAYERS("rchat:muted"),
     RATE_LIMIT_PREFIX("rchat:ratelimit_"),
     REPLY("rchat:reply"),
     INVSHARE_ITEM("rchat:item"),
@@ -21,7 +22,7 @@ public enum DataKey {
     SPYING_LIST("rchat:spying"),
     PRIVATE_MAIL_PREFIX("rmail:"),
     PUBLIC_MAIL("rmail:public"),
-
+    MUTED_UPDATE("rchat:m_players_update"),
     ;
 
     private final String keyName;

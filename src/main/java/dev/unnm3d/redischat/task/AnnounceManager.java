@@ -19,7 +19,11 @@ public class AnnounceManager {
         cancelAll();
         task.clear();
         plugin.config.announces.forEach(announce -> {
-            AnnounceTask at = new AnnounceTask(plugin, announce.message(), announce.channelName(), announce.delay(), announce.interval());
+            AnnounceTask at = new AnnounceTask(plugin,
+                    announce.message(),
+                    announce.channelName() == null || announce.channelName().isEmpty() ? "public" : announce.channelName(),
+                    announce.delay(),
+                    announce.interval());
             task.put(announce.announceName(), at);
             at.start();
         });
@@ -31,7 +35,7 @@ public class AnnounceManager {
 
     public AnnounceTask cancelAnnounce(String name) {
         AnnounceTask at = task.remove(name);
-        if(at==null) return null;
+        if (at == null) return null;
         at.cancel();
 
         at = new AnnounceTask(plugin, at.getMessage(), at.getChannelName(), at.getDelay(), at.getInterval());

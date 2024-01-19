@@ -12,6 +12,7 @@ import dev.unnm3d.redischat.chat.KnownChatEntities;
 import dev.unnm3d.redischat.datamanagers.DataKey;
 import dev.unnm3d.redischat.mail.Mail;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.inventory.ItemStack;
 import org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException;
@@ -400,7 +401,7 @@ public abstract class SQLDataManager implements DataManager {
 
                     if (resultSet.next()) {
                         String serializedItem = resultSet.getString("item_serialized");
-                        return serializedItem == null ? null : deserialize(serializedItem)[0];
+                        return serializedItem == null || serializedItem.isEmpty() ? new ItemStack(Material.AIR) : deserialize(serializedItem)[0];
                     }
                 }
             } catch (SQLException e) {
@@ -424,7 +425,7 @@ public abstract class SQLDataManager implements DataManager {
 
                     if (resultSet.next()) {
                         String serializedInv = resultSet.getString("inv_serialized");
-                        return serializedInv == null ? null : deserialize(serializedInv);
+                        return serializedInv == null || serializedInv.isEmpty() ? new ItemStack[0] : deserialize(serializedInv);
                     }
                 }
             } catch (SQLException e) {
@@ -448,7 +449,7 @@ public abstract class SQLDataManager implements DataManager {
 
                     if (resultSet.next()) {
                         String serializedEc = resultSet.getString("ec_serialized");
-                        return serializedEc == null ? null : deserialize(serializedEc);
+                        return serializedEc == null || serializedEc.isEmpty() ? new ItemStack[0] : deserialize(serializedEc);
                     }
                 }
             } catch (SQLException e) {

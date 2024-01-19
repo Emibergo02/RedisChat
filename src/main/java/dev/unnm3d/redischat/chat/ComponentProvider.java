@@ -8,12 +8,12 @@ import lombok.Getter;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.kyori.adventure.inventory.Book;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
+import net.kyori.adventure.platform.bukkit.BukkitComponentSerializer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.minimessage.tag.standard.StandardTags;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -39,7 +39,7 @@ public class ComponentProvider {
     private final MiniMessage miniMessage;
     @Getter
     private final TagResolver standardTagResolver;
-    private final ConcurrentHashMap<Player, List<Component>> cacheBlocked;
+    private final Map<Player, List<Component>> cacheBlocked;
     private final List<TagResolverIntegration> tagResolverIntegrationList;
 
     private final BukkitAudiences bukkitAudiences;
@@ -48,7 +48,7 @@ public class ComponentProvider {
         this.plugin = plugin;
         this.bukkitAudiences = BukkitAudiences.create(plugin);
         this.miniMessage = MiniMessage.miniMessage();
-        this.cacheBlocked = new ConcurrentHashMap<>();
+        this.cacheBlocked = Collections.synchronizedMap(new WeakHashMap<>());
         this.standardTagResolver = StandardTags.defaults();
         this.tagResolverIntegrationList = new ArrayList<>();
     }
@@ -152,10 +152,11 @@ public class ComponentProvider {
                 }
 
                 if (plugin.config.enablePlaceholderGlitch) {
-                    text = text.replace(reformattedPlaceholder, miniMessage.serialize(LegacyComponentSerializer.legacySection().deserialize(parsedPlaceH)));
+                    text = text.replace(reformattedPlaceholder, miniMessage.serialize(
+                            BukkitComponentSerializer.legacy().deserialize(parsedPlaceH)));
                 } else if (parsedPlaceH.contains("§")) {
                     //Colored placeholder needs to be pasted after the normal text is parsed
-                    placeholders.put(reformattedPlaceholder, LegacyComponentSerializer.legacySection().deserialize(parsedPlaceH));
+                    placeholders.put(reformattedPlaceholder, BukkitComponentSerializer.legacy().deserialize(parsedPlaceH));
                 } else {
                     text = text.replace(reformattedPlaceholder, parsedPlaceH);
                 }
@@ -169,7 +170,9 @@ public class ComponentProvider {
         return answer;
     }
 
-    public Component parseCustomPlaceholders(@Nullable CommandSender cmdSender, @NotNull Component messageComp) {
+    public Component parseCustomPlaceholders(@NotNull CommandSender cmdSender, @NotNull Component messageComp) {
+        if (!cmdSender.hasPermission(Permissions.USE_CUSTOM_PLACEHOLDERS.getPermission())) return messageComp;
+
         for (Map.Entry<String, String> replacementEntry : plugin.config.placeholders.entrySet()) {
             messageComp = messageComp.replaceText(rBuilder ->
                     rBuilder.matchLiteral(replacementEntry.getKey())
@@ -364,7 +367,7 @@ public class ComponentProvider {
      */
     public @NotNull String parseLegacy(@NotNull String text, boolean parseAmpersand) {
 
-        text = miniMessage.serialize(LegacyComponentSerializer.legacySection().deserialize(
+        text = miniMessage.serialize(BukkitComponentSerializer.legacy().deserialize(
                 parseAmpersand ? replaceAmpersandCodesWithSection(text) : text
         ));
         if (plugin.config.debug) {

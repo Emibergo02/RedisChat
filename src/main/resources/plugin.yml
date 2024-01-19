@@ -44,6 +44,9 @@ permissions:
   redischat.listchannel:
     description: Allows to list channels
     default: op
+  redischat.mutechannel:
+    description: Allows to mute channels
+    default: op
   redischat.joinquit:
     description: Allows to see the join and quit messages
     default: true
@@ -110,6 +113,7 @@ permissions:
       - redischat.channel.staffchat
       - redischat.usedangeroustags
       - redischat.chatas
+      - redischat.mutechannel
   redischat.default:
     description: Allows you to use default commands
     default: true

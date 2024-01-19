@@ -8,6 +8,7 @@ import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -166,13 +167,15 @@ public final class Config implements ConfigValidator {
     @Comment("The [inv], [item] and [ec] placeholders will be considered as minimessage tags")
     public boolean interactiveChatNostalgia = false;
     @Comment("Command aliases (works for msg, mail, reply, staffchat and channel)")
-    public Map<String, List<String>> commandAliases = Map.of(
+    public Map<String, List<String>> commandAliases = new HashMap<>(Map.of(
             "msg", List.of("rmsg", "whisper", "msg", "pm", "w"),
             "rmail", List.of("mail", "mails"),
             "reply", List.of("r"),
             "channel", List.of("ch", "channels"),
-            "staffchat", List.of("sc")
-    );
+            "staffchat", List.of("sc"),
+            "rmutechat", List.of("mutechat","mute"),
+            "runmutechat", List.of("unmutechat","unmute")
+    ));
     @Comment({"The priority of the listening event (LOWEST, LOW, NORMAL, HIGH, HIGHEST, MONITOR)",
             "adjust this if other plugins are interfering with RedisChat"})
     public String listeningPriority = "NORMAL";
@@ -217,6 +220,21 @@ public final class Config implements ConfigValidator {
         }
         if (!defaultFormat.mention_format().contains("%player%")) {
             Bukkit.getLogger().warning("Default mention format doesn't contain %player% placeholder");
+        }
+        if(!commandAliases.containsKey("mutechat")) {
+            commandAliases=new HashMap<>(commandAliases);
+            commandAliases.put("mutechat", List.of("mute"));
+            Bukkit.getLogger().warning("You didn't set any aliases for mutechat, using default aliases");
+        }
+        if(!commandAliases.containsKey("unmutechat")) {
+            commandAliases=new HashMap<>(commandAliases);
+            commandAliases.put("unmutechat", List.of("unmute"));
+            Bukkit.getLogger().warning("You didn't set any aliases for unmutechat, using default aliases");
+        }
+        for (Announce announce : announces) {
+            if(announce.channelName==null || announce.channelName.isEmpty()) {
+                Bukkit.getLogger().warning("Announce " + announce.announceName() + " doesn't have a channel name, using \"public\" as default");
+            }
         }
     }
 

@@ -2,6 +2,7 @@ package dev.unnm3d.redischat.settings;
 
 import de.exlll.configlib.Comment;
 import de.exlll.configlib.Configuration;
+import dev.unnm3d.redischat.RedisChat;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.Nullable;
@@ -9,11 +10,12 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.reflect.Field;
 
 @Configuration
-public final class Messages implements ConfigValidator{
+public final class Messages implements ConfigValidator {
 
     public String player_not_online = "<yellow>RedisChat</yellow> <gray>»</gray> <red>The player %player% is not online</red>";
     public String cannot_message_yourself = "<yellow>RedisChat</yellow> <gray>»</gray> <red>You cannot message yourself</red>";
     public String missing_arguments = "<yellow>RedisChat</yellow> <gray>»</gray> <red>Missing arguments</red>";
+    public String empty_message = "<yellow>RedisChat</yellow> <gray>»</gray> <red>Message cannot be empty</red>";
     public String action_completed_successfully = "<yellow>RedisChat</yellow> <gray>»</gray> <green>Action completed successfully</green>";
     public String announce_not_found = "<yellow>RedisChat</yellow> <gray>»</gray> <red>The announce %name% does not exist</red>";
     public String no_reply_found = "<yellow>RedisChat</yellow> <gray>»</gray> <red>You do not have any message to reply</red>";
@@ -64,10 +66,13 @@ public final class Messages implements ConfigValidator{
     public String mailStringPlayer = "player";
     @Comment("The text after the /staffchat command (example: /staffchat <message> will be -> /staffchat <text>")
     public String staffChatSuggestion = "message";
+    public String muted_player = "<yellow>RedisChat</yellow> <gray>»</gray> <aqua>You muted %player% on channel %channel%!</aqua>";
+    public String unmuted_player = "<yellow>RedisChat</yellow> <gray>»</gray> <aqua>You unmuted %player% on channel %channel%!</aqua>";
+    public String muted_on_channel = "<yellow>RedisChat</yellow> <gray>»</gray> <aqua>You've been muted in this channel (%channel%)!</aqua>";
 
 
-    public void sendMessage(CommandSender p, String message) {
-        p.sendMessage(MiniMessage.miniMessage().deserialize(message));
+    public void sendMessage(CommandSender sender, String message) {
+        RedisChat.getInstance().getComponentProvider().sendMessage(sender, MiniMessage.miniMessage().deserialize(message));
     }
 
     public @Nullable Field getStringField(String name) throws NoSuchFieldException {

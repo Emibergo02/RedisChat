@@ -26,9 +26,9 @@ public class SpyChatCommand implements CommandExecutor {
             }
 
             if (plugin.getSpyManager().toggleSpying(playerName)) {
-                sender.sendMessage(plugin.getComponentProvider().parse(null, plugin.messages.spychat_enabled.replace("%player%", playerName), true, false, false));
+                plugin.getComponentProvider().sendMessage(sender, plugin.getComponentProvider().parse(null, plugin.messages.spychat_enabled.replace("%player%", playerName), true, false, false));
             } else {
-                sender.sendMessage(plugin.getComponentProvider().parse(null, plugin.messages.spychat_disabled.replace("%player%", playerName), true, false, false));
+                plugin.getComponentProvider().sendMessage(sender, plugin.getComponentProvider().parse(null, plugin.messages.spychat_disabled.replace("%player%", playerName), true, false, false));
             }
         });
 

@@ -25,6 +25,7 @@ import dev.unnm3d.redischat.integrations.PAPIIntegration;
 import dev.unnm3d.redischat.integrations.PremiumVanishIntegration;
 import dev.unnm3d.redischat.mail.MailCommand;
 import dev.unnm3d.redischat.mail.MailManager;
+import dev.unnm3d.redischat.moderation.MuteCommand;
 import dev.unnm3d.redischat.moderation.SpyChatCommand;
 import dev.unnm3d.redischat.moderation.SpyManager;
 import dev.unnm3d.redischat.moderation.StaffChatCommand;
@@ -163,6 +164,13 @@ public final class RedisChat extends JavaPlugin {
         loadCommandAPICommand(new MsgCommand(this).getCommand());
         loadCommandAPICommand(new ReplyCommand(this).getCommand());
         loadCommandAPICommand(new ChatAsCommand(this).getCommand());
+        if (config.dataMedium.equals(Config.DataType.REDIS.toString())) {
+            loadCommandAPICommand(new MuteCommand(this).getMuteCommand());
+            loadCommandAPICommand(new MuteCommand(this).getUnMuteCommand());
+        } else {
+            getLogger().warning("Mute command is currently not supported with H2 or MySQL");
+            getLogger().warning("UnMute command is currently not supported with H2 or MySQL");
+        }
 
         //Old command API
         SetItemCommand setItemCommand = new SetItemCommand(this);

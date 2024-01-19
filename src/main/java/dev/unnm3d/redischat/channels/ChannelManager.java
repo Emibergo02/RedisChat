@@ -6,9 +6,11 @@ import dev.unnm3d.redischat.api.AsyncRedisChatMessageEvent;
 import dev.unnm3d.redischat.api.RedisChatAPI;
 import dev.unnm3d.redischat.api.VanishIntegration;
 import dev.unnm3d.redischat.chat.*;
+import dev.unnm3d.redischat.moderation.MuteManager;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
@@ -28,6 +30,8 @@ public class ChannelManager extends RedisChatAPI {
     @Getter
     private final ConcurrentHashMap<String, Channel> registeredChannels;
     @Getter
+    private final MuteManager muteManager;
+    @Getter
     private final ChannelGUI channelGUI;
 
 
@@ -35,6 +39,7 @@ public class ChannelManager extends RedisChatAPI {
         INSTANCE = this;
         this.plugin = plugin;
         this.registeredChannels = new ConcurrentHashMap<>();
+        this.muteManager = new MuteManager(plugin);
         this.channelGUI = new ChannelGUI(plugin);
         updateChannels();
     }
@@ -111,8 +116,14 @@ public class ChannelManager extends RedisChatAPI {
     }
 
     @Override
-    public void playerChannelMessage(CommandSender player, Channel channel, @NotNull String message) {
+    public void playerChannelMessage(CommandSender player, @NotNull Channel channel, @NotNull String message) {
         final long init = System.currentTimeMillis();
+
+        if (muteManager.isMuted(player.getName(), channel.getName())) {
+            plugin.messages.sendMessage(player, plugin.messages.muted_on_channel.replace("%channel%", channel.getName()));
+            return;
+        }
+
         if (isRateLimited(player, channel)) return;
 
         if (plugin.config.debug) {
@@ -173,6 +184,11 @@ public class ChannelManager extends RedisChatAPI {
         plugin.getServer().getPluginManager().callEvent(event);
         if (event.isCancelled()) return;
 
+        //Check if message is empty after parsing
+        if (PlainTextComponentSerializer.plainText().serialize(toBeReplaced).trim().isEmpty()) {
+            plugin.messages.sendMessage(player, plugin.messages.empty_message);
+            return;
+        }
 
         final ChatMessageInfo cmi = new ChatMessageInfo(
                 new ChatActor(player.getName(), ChatActor.ActorType.PLAYER),

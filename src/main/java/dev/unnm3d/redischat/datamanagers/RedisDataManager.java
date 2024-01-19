@@ -18,14 +18,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.Duration;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
 
 
 public class RedisDataManager extends RedisAbstract implements DataManager {
@@ -61,22 +59,27 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
         pubSubConnection.addListener(new RedisPubSubListener<>() {
             @Override
             public void message(String channel, String message) {
+
                 if (channel.equals(DataKey.CHAT_CHANNEL.toString())) {
                     if (plugin.config.debug) {
                         plugin.getLogger().info("R1) Received message from redis: " + System.currentTimeMillis());
                     }
                     plugin.getChannelManager().sendLocalChatMessage(ChatMessageInfo.deserialize(message));
+
                 } else if (channel.equals(DataKey.GLOBAL_CHANNEL.withoutCluster())) {
                     if (plugin.config.debug) {
                         plugin.getLogger().info("R1) Received message from redis: " + System.currentTimeMillis());
                     }
                     plugin.getChannelManager().sendLocalChatMessage(ChatMessageInfo.deserialize(message));
+
                 } else if (channel.equals(DataKey.PLAYERLIST.toString())) {
                     if (plugin.getPlayerListManager() != null)
                         plugin.getPlayerListManager().updatePlayerList(Arrays.asList(message.split("§")));
+
                 } else if (channel.equals(DataKey.REJOIN_CHANNEL.toString())) {
                     if (plugin.getJoinQuitManager() != null)
                         plugin.getJoinQuitManager().rejoinRequest(message);
+
                 } else if (channel.equals(DataKey.CHANNEL_UPDATE.toString())) {
                     if (message.startsWith("delete§")) {
                         plugin.getChannelManager().updateChannel(message.substring(7), null);
@@ -84,6 +87,9 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
                         Channel ch = Channel.deserialize(message);
                         plugin.getChannelManager().updateChannel(ch.getName(), ch);
                     }
+
+                } else if (channel.equals(DataKey.MUTED_UPDATE.toString())) {
+                    plugin.getChannelManager().getMuteManager().serializedUpdate(message);
                 }
             }
 
@@ -107,7 +113,14 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
             public void punsubscribed(String pattern, long count) {
             }
         });
-        pubSubConnection.async().subscribe(DataKey.CHAT_CHANNEL.toString(), DataKey.GLOBAL_CHANNEL.withoutCluster(), DataKey.PLAYERLIST.toString(), DataKey.REJOIN_CHANNEL.toString(), DataKey.CHANNEL_UPDATE.toString())
+        pubSubConnection.async().subscribe(
+                        DataKey.CHAT_CHANNEL.toString(),
+                        DataKey.GLOBAL_CHANNEL.withoutCluster(),
+                        DataKey.PLAYERLIST.toString(),
+                        DataKey.REJOIN_CHANNEL.toString(),
+                        DataKey.CHANNEL_UPDATE.toString(),
+                        DataKey.MUTED_UPDATE.toString()
+                )
                 .exceptionally(throwable -> {
                     throwable.printStackTrace();
                     plugin.getLogger().warning("Error subscribing to chat channel");
@@ -357,7 +370,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
                             if (plugin.config.debug) {
                                 plugin.getLogger().info("04 Got item for " + playerName + " is " + serializedInv);
                             }
-                            ItemStack[] itemStacks = deserialize(serializedInv == null ? "" : serializedInv);
+                            ItemStack[] itemStacks = serializedInv == null || serializedInv.isEmpty() ? new ItemStack[0] : deserialize(serializedInv);
                             if (itemStacks.length == 0) return new ItemStack(Material.AIR);
                             return itemStacks[0];
                         }).exceptionally(throwable -> {
@@ -376,7 +389,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
                             if (plugin.config.debug) {
                                 plugin.getLogger().info("12 Got inventory for " + playerName + " is " + (serializedInv == null ? "null" : serializedInv));
                             }
-                            return deserialize(serializedInv == null ? "" : serializedInv);
+                            return serializedInv == null || serializedInv.isEmpty() ? new ItemStack[0] : deserialize(serializedInv);
                         })
                         .exceptionally(throwable -> {
                             throwable.printStackTrace();
@@ -394,7 +407,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
                             if (plugin.config.debug) {
                                 plugin.getLogger().info("13 Got enderchest for " + playerName + " is " + (serializedInv == null ? "null" : serializedInv));
                             }
-                            return deserialize(serializedInv == null ? "" : serializedInv);
+                            return serializedInv == null || serializedInv.isEmpty() ? new ItemStack[0] : deserialize(serializedInv);
                         })
                         .exceptionally(throwable -> {
                             throwable.printStackTrace();
@@ -545,6 +558,41 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
                         .exceptionally(throwable -> {
                             throwable.printStackTrace();
                             plugin.getLogger().warning("Error registering custom channel");
+                            return null;
+                        }));
+    }
+
+    @Override
+    public void setMutedChannels(@NotNull String playerName, @NotNull Set<String> mutedChannels) {
+        getConnectionAsync(connection -> {
+            if (mutedChannels.isEmpty()) {
+                connection.hdel(DataKey.MUTED_PLAYERS.toString(), playerName);
+                return connection.publish(DataKey.MUTED_UPDATE.toString(), playerName + ";");
+            }
+            plugin.getLogger().info("Setting muted channels for " + playerName + " to " + mutedChannels);
+            final String serializedUpdate = String.join("§", mutedChannels);
+            connection.hset(DataKey.MUTED_PLAYERS.toString(), Map.of(playerName, serializedUpdate));
+            return connection.publish(DataKey.MUTED_UPDATE.toString(), playerName + ";" + serializedUpdate);
+        });
+    }
+
+    @Override
+    public CompletionStage<Map<String, Set<String>>> getAllMutedChannels() {
+        return getConnectionAsync(connection ->
+                connection.hgetall(DataKey.MUTED_PLAYERS.toString())
+                        .thenApply(serializedUpdate -> {
+                            if (serializedUpdate == null) return new HashMap<String, Set<String>>();
+                            final Map<String, Set<String>> map = new HashMap<>();
+                            serializedUpdate.entrySet().stream()
+                                    .map(entry -> new AbstractMap.SimpleEntry<>(entry.getKey(),
+                                            Arrays.stream(entry.getValue().split("§"))
+                                                    .collect(Collectors.toCollection(HashSet::new))))
+                                    .forEach(entry -> map.put(entry.getKey(), entry.getValue()));
+                            return map;
+                        })
+                        .exceptionally(throwable -> {
+                            throwable.printStackTrace();
+                            plugin.getLogger().warning("Error getting muted channels");
                             return null;
                         }));
     }
