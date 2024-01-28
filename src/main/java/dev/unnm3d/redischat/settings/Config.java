@@ -176,7 +176,8 @@ public final class Config implements ConfigValidator {
             "rmutechat", List.of("mutechat","mute"),
             "runmutechat", List.of("unmutechat","unmute"),
             "rbroadcast", List.of("bc","broadcast"),
-            "rbroadcastraw", List.of("bcraw","broadcastraw")
+            "rbroadcastraw", List.of("bcraw","broadcastraw"),
+            "announcer", List.of("announce")
     ));
     @Comment({"The priority of the listening event (LOWEST, LOW, NORMAL, HIGH, HIGHEST, MONITOR)",
             "adjust this if other plugins are interfering with RedisChat"})

@@ -2,6 +2,7 @@ package dev.unnm3d.redischat;
 
 import lombok.Getter;
 
+@Getter
 public enum Permissions {
     MESSAGE("redischat.message"),
     MAIL_WRITE("redischat.mail.write"),
@@ -15,7 +16,7 @@ public enum Permissions {
     USE_ENDERCHEST("redischat.showenderchest"),
     USE_CUSTOM_PLACEHOLDERS("redischat.usecustomplaceholders"),
     BROADCAST("redischat.broadcast"),
-    ANNOUNCE("redischat.announce"),
+    ANNOUNCER("redischat.announcer"),
     CLEARCHAT("redischat.clearchat"),
     ADMIN("redischat.admin"),
     ADMIN_EDIT("redischat.editmessage"),
@@ -31,7 +32,6 @@ public enum Permissions {
     JOIN_QUIT("redischat.joinquit"),
     ;
 
-    @Getter
     private final String permission;
 
     Permissions(String permission) {

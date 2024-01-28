@@ -17,10 +17,11 @@ public class AnnounceCommand {
     private final AnnouncerManager announcerManager;
 
     public CommandAPICommand getCommand() {
-        return new CommandAPICommand("announce")
-                .withPermission(Permissions.ANNOUNCE.getPermission())
+        return new CommandAPICommand("announcer")
+                .withAliases(plugin.config.getCommandAliases("announcer"))
+                .withPermission(Permissions.ANNOUNCER.getPermission())
                 .withArguments(new MultiLiteralArgument("action", "stop", "start"))
-                .withArguments(new StringArgument("announceName")
+                .withArguments(new StringArgument("announcementName")
                         .replaceSuggestions(ArgumentSuggestions.strings(commandSenderSuggestionInfo ->
                                 plugin.config.announcer.stream()
                                         .map(Config.Announcement::announcementName)

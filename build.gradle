@@ -25,7 +25,7 @@ dependencies {
     implementation 'net.kyori:adventure-text-serializer-plain:4.15.0'
     implementation 'net.kyori:adventure-platform-bukkit:4.3.2'
 
-    implementation 'com.github.Emibergo02.ConfigLib:configlib-paper:master-SNAPSHOT'
+    implementation 'com.github.Exlll.ConfigLib:configlib-paper:v4.4.0'
     implementation 'xyz.xenondevs.invui:invui-core:1.24'
     implementation 'xyz.xenondevs.invui:inventory-access-r7:1.24'
     implementation 'xyz.xenondevs.invui:inventory-access-r9:1.24'
@@ -53,6 +53,7 @@ dependencies {
     compileOnly 'com.github.Spicord.Spicord:spicord-common:v5-SNAPSHOT'
     compileOnly 'net.dv8tion:JDA:5.0.0-beta.16'
 
+
     annotationProcessor('org.projectlombok:lombok:1.18.26')
 }
 
@@ -75,9 +76,9 @@ shadowJar {
         include dependency('net.kyori:examination-api:1.3.0')
         include dependency('net.kyori:option:1.0.0')
 
-        include dependency('com.github.Emibergo02.ConfigLib:configlib-paper:master-SNAPSHOT')
-        include dependency('com.github.Emibergo02.ConfigLib:configlib-yaml:master-SNAPSHOT')
-        include dependency("com.github.Emibergo02.ConfigLib:configlib-core:master-SNAPSHOT")
+        include dependency('com.github.Exlll.ConfigLib:configlib-paper:v4.4.0')
+        include dependency('com.github.Exlll.ConfigLib:configlib-yaml:v4.4.0')
+        include dependency("com.github.Exlll.ConfigLib:configlib-core:v4.4.0")
 
         include dependency('xyz.xenondevs.invui:invui-core:1.24')
         include dependency('xyz.xenondevs.invui:inventory-access:1.24')
