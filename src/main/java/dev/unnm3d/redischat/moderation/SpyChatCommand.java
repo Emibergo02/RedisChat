@@ -14,7 +14,7 @@ public class SpyChatCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+        RedisChat.getScheduler().runTaskAsynchronously(() -> {
             String playerName = sender.getName();
             if (args.length == 0) {
                 if (!(sender instanceof Player)) {

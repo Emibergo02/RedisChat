@@ -1,15 +1,15 @@
 package dev.unnm3d.redischat.task;
 
+import com.github.Anon8281.universalScheduler.UniversalRunnable;
 import com.google.common.base.Strings;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.chat.ChatActor;
 import dev.unnm3d.redischat.chat.ChatMessageInfo;
 import lombok.Getter;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
 
-public class AnnounceTask extends BukkitRunnable {
+public class AnnouncerTask extends UniversalRunnable {
 
     @Getter
     private final RedisChat plugin;
@@ -21,7 +21,7 @@ public class AnnounceTask extends BukkitRunnable {
     @Getter
     private final int interval;
 
-    public AnnounceTask(RedisChat plugin, String message, String channelName, int delay, int interval) {
+    public AnnouncerTask(RedisChat plugin, String message, String channelName, int delay, int interval) {
         this.plugin = plugin;
         this.message = message;
         this.channelName = channelName;

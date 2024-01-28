@@ -1,5 +1,6 @@
 package dev.unnm3d.redischat.commands;
 
+import com.github.Anon8281.universalScheduler.UniversalRunnable;
 import dev.unnm3d.redischat.RedisChat;
 import lombok.AllArgsConstructor;
 import org.bukkit.Material;
@@ -10,7 +11,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 import xyz.xenondevs.invui.gui.Gui;
 import xyz.xenondevs.invui.item.Item;
@@ -40,7 +40,7 @@ public class InvShareCommand implements CommandExecutor {
         switch (type) {
             case ITEM -> plugin.getDataManager().getPlayerItem(playername)
                     .thenAccept(item ->
-                            plugin.getServer().getScheduler().runTask(plugin, () -> {
+                            RedisChat.getScheduler().runTask(() -> {
                                         if (item.getType().toString().endsWith("SHULKER_BOX")) {
                                             if (item.getItemMeta() instanceof BlockStateMeta bsm)
                                                 if (bsm.getBlockState() instanceof Container shulkerBox) {
@@ -62,7 +62,7 @@ public class InvShareCommand implements CommandExecutor {
 
             case INVENTORY -> plugin.getDataManager().getPlayerInventory(playername)
                     .thenAccept(inventoryContents ->
-                            plugin.getServer().getScheduler().runTask(plugin, () ->
+                            RedisChat.getScheduler().runTask(() ->
                                     openInvShareGui(p,
                                             plugin.config.inv_title.replace("%player%", playername),
                                             5,
@@ -71,7 +71,7 @@ public class InvShareCommand implements CommandExecutor {
                             ));
             case ENDERCHEST -> plugin.getDataManager().getPlayerEnderchest(playername)
                     .thenAccept(ecContents ->
-                            plugin.getServer().getScheduler().runTask(plugin, () ->
+                            RedisChat.getScheduler().runTask(() ->
                                     openInvShareGui(p,
                                             plugin.config.ec_title.replace("%player%", playername),
                                             3,
@@ -93,7 +93,7 @@ public class InvShareCommand implements CommandExecutor {
                         .map(SimpleItem::new)
                         .toArray(Item[]::new)
         );
-        Window.single().setTitle(title).setGui(gui).setCloseHandlers(List.of(() -> new BukkitRunnable() {
+        Window.single().setTitle(title).setGui(gui).setCloseHandlers(List.of(() -> new UniversalRunnable() {
             @Override
             public void run() {
                 player.updateInventory();
@@ -104,7 +104,7 @@ public class InvShareCommand implements CommandExecutor {
     private void openInvShareGuiItem(Player player, String title, ItemStack item) {
         Gui gui = Gui.empty(9, 3);
         gui.setItem(13, new SimpleItem(item));
-        Window.single().setTitle(title).setGui(gui).setCloseHandlers(List.of(() -> new BukkitRunnable() {
+        Window.single().setTitle(title).setGui(gui).setCloseHandlers(List.of(() -> new UniversalRunnable() {
             @Override
             public void run() {
                 player.updateInventory();

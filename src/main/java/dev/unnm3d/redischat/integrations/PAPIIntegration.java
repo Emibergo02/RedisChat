@@ -28,7 +28,10 @@ public class PAPIIntegration extends PlaceholderExpansion {
 
     @Override
     public String onRequest(OfflinePlayer player, String params) {
-
+        if(plugin.getServer().isPrimaryThread()){
+            plugin.getLogger().warning("RedisChat's placeholders are being called from the main thread, this is not recommended and may cause lag!");
+        }
+        
         if (params.equalsIgnoreCase("active_channel")) {
             if (player.getName() == null) return plugin.getChannelManager().getPublicChannel(null).getName();
             return plugin.getDataManager().getActivePlayerChannel(player.getName(), plugin.getChannelManager().getRegisteredChannels())

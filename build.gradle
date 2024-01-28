@@ -36,6 +36,7 @@ dependencies {
     implementation 'xyz.xenondevs.invui:inventory-access-r17:1.24'
     implementation 'xyz.xenondevs.invui:inventory-access-r18:1.24'
     implementation 'dev.jorel:commandapi-bukkit-shade:9.3.0'
+    implementation 'com.github.Anon8281:UniversalScheduler:0.1.6'
 
     compileOnly 'io.papermc.paper:paper-api:1.17.1-R0.1-SNAPSHOT'
     compileOnly 'me.clip:placeholderapi:2.11.3'
@@ -89,6 +90,7 @@ shadowJar {
         include dependency('xyz.xenondevs.invui:inventory-access-r17:1.24')
         include dependency('xyz.xenondevs.invui:inventory-access-r18:1.24')
         include dependency('dev.jorel:commandapi-bukkit-shade:9.3.0')
+        include dependency('com.github.Anon8281:UniversalScheduler:0.1.6')
     }
 
     exclude 'colors.bin'
@@ -103,6 +105,7 @@ shadowJar {
     relocate 'xyz.xenondevs.invui', 'dev.unnm3d.redischat.libraries.invui'
     relocate 'xyz.xenondevs.inventoryaccess', 'dev.unnm3d.redischat.libraries.inventoryaccess'
     relocate 'dev.jorel.commandapi', 'dev.unnm3d.redischat.libraries.commandapi'
+    relocate 'com.github.Anon8281.universalScheduler', 'dev.unnm3d.redischat.libraries.universalScheduler'
 
 }
 

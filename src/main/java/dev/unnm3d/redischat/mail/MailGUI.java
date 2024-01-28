@@ -2,7 +2,6 @@ package dev.unnm3d.redischat.mail;
 
 import dev.unnm3d.redischat.RedisChat;
 import lombok.AllArgsConstructor;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -28,7 +27,7 @@ public class MailGUI {
         this.plugin.getDataManager().getPublicMails()
                 .thenAccept(list -> {
                             Gui global = getMailGui(list);
-                            Bukkit.getScheduler().runTask(plugin, () ->
+                            RedisChat.getScheduler().runTask(() ->
                                     Window.single()
                                             .setTitle(plugin.guiSettings.publicMailTabTitle)
                                             .setGui(global)
@@ -41,7 +40,7 @@ public class MailGUI {
         this.plugin.getDataManager().getPlayerPrivateMail(player.getName())
                 .thenAccept(list -> {
                             Gui global = getMailGui(list);
-                            Bukkit.getScheduler().runTask(plugin, () ->
+                            RedisChat.getScheduler().runTask(() ->
                                     Window.single()
                                             .setTitle(plugin.guiSettings.privateMailTabTitle)
                                             .setGui(global)

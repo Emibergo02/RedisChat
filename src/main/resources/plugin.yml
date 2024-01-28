@@ -3,6 +3,7 @@ version: '${version}'
 main: dev.unnm3d.redischat.RedisChat
 author: Unnm3d
 api-version: 1.16
+folia-supported: true
 libraries:
   - io.lettuce:lettuce-core:6.2.5.RELEASE
   - org.yaml:snakeyaml:1.27
@@ -26,10 +27,6 @@ commands:
   ignore:
     description: Ignore command
     permission: redischat.ignore
-  broadcast:
-    description: Broadcasts a message to the server
-    aliases: [bc]
-    permission: redischat.broadcast
   clearchat:
     description: Clears the chat
     aliases: [cc]
@@ -71,6 +68,9 @@ permissions:
   redischat.broadcast:
     description: Allows to use the /broadcast command
     default: op
+  redischat.broadcastraw:
+    description: Allows to use the /broadcastraw command
+    default: op
   redischat.clearchat:
     description: Allows to use the /clearchat command
     default: op
@@ -101,6 +101,7 @@ permissions:
     children:
       - redischat.useformatting
       - redischat.broadcast
+      - redischat.broadcastraw
       - redischat.clearchat
       - redischat.message
       - redischat.ignore

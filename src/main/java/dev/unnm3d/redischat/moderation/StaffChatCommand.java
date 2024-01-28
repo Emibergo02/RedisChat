@@ -19,7 +19,7 @@ public class StaffChatCommand {
                 .executes((sender, args) -> {
                     String message = (String) args.get(0);
                     if (message == null) return;
-                    plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () ->
+                    RedisChat.getScheduler().runTaskAsynchronously(() ->
                             plugin.getChannelManager().playerChannelMessage(sender, plugin.getChannelManager().getStaffChatChannel(), message));
                 });
     }

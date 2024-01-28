@@ -1,5 +1,7 @@
 package dev.unnm3d.redischat;
 
+import com.github.Anon8281.universalScheduler.UniversalScheduler;
+import com.github.Anon8281.universalScheduler.scheduling.schedulers.TaskScheduler;
 import de.exlll.configlib.ConfigLib;
 import de.exlll.configlib.ConfigurationException;
 import de.exlll.configlib.YamlConfigurationProperties;
@@ -35,7 +37,7 @@ import dev.unnm3d.redischat.permission.VaultPermissionProvider;
 import dev.unnm3d.redischat.settings.Config;
 import dev.unnm3d.redischat.settings.GuiSettings;
 import dev.unnm3d.redischat.settings.Messages;
-import dev.unnm3d.redischat.task.AnnounceManager;
+import dev.unnm3d.redischat.task.AnnouncerManager;
 import dev.unnm3d.redischat.utils.AdventureWebuiEditorAPI;
 import dev.unnm3d.redischat.utils.Metrics;
 import lombok.Getter;
@@ -55,6 +57,8 @@ public final class RedisChat extends JavaPlugin {
 
     @Getter
     private static RedisChat instance;
+    @Getter
+    private static TaskScheduler scheduler;
     public Config config;
     private List<String> registeredCommands;
     public Messages messages;
@@ -66,7 +70,7 @@ public final class RedisChat extends JavaPlugin {
     @Getter
     private ChannelManager channelManager;
     @Getter
-    private AnnounceManager announceManager;
+    private AnnouncerManager announcerManager;
     @Getter
     private SpyManager spyManager;
     @Getter
@@ -88,9 +92,11 @@ public final class RedisChat extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        instance = this;
         CommandAPI.onEnable();
         registeredCommands = new ArrayList<>();
-        instance = this;
+        scheduler = UniversalScheduler.getScheduler(this);
+
         try {
             loadYML();
         } catch (ConfigurationException e) {
@@ -152,8 +158,8 @@ public final class RedisChat extends JavaPlugin {
 
 
         //Announce feature
-        this.announceManager = new AnnounceManager(this);
-        loadCommandAPICommand(new AnnounceCommand(this, this.announceManager).getCommand());
+        this.announcerManager = new AnnouncerManager(this);
+        loadCommandAPICommand(new AnnounceCommand(this, this.announcerManager).getCommand());
 
 
         this.playerListManager = new PlayerListManager(this);
@@ -164,6 +170,9 @@ public final class RedisChat extends JavaPlugin {
         loadCommandAPICommand(new MsgCommand(this).getCommand());
         loadCommandAPICommand(new ReplyCommand(this).getCommand());
         loadCommandAPICommand(new ChatAsCommand(this).getCommand());
+        final BroadcastCommand broadcastCommand = new BroadcastCommand(this);
+        loadCommandAPICommand(broadcastCommand.getBroadcastCommand());
+        loadCommandAPICommand(broadcastCommand.getBroadcastRawCommand());
         if (config.dataMedium.equals(Config.DataType.REDIS.toString())) {
             loadCommandAPICommand(new MuteCommand(this).getMuteCommand());
             loadCommandAPICommand(new MuteCommand(this).getUnMuteCommand());
@@ -180,7 +189,6 @@ public final class RedisChat extends JavaPlugin {
         loadCommand("spychat", new SpyChatCommand(this), null);
         IgnoreCommand ignoreCommand = new IgnoreCommand(this);
         loadCommand("ignore", ignoreCommand, ignoreCommand);
-        loadCommand("broadcast", new BroadcastCommand(this), null);
         loadCommand("clearchat", new ClearChatCommand(this), null);
 
 
@@ -280,8 +288,8 @@ public final class RedisChat extends JavaPlugin {
             this.playerListManager.stop();
         if (this.dataManager != null)
             this.dataManager.close();
-        if (this.announceManager != null)
-            this.announceManager.cancelAll();
+        if (this.announcerManager != null)
+            this.announcerManager.cancelAll();
     }
 
     private void loadCommand(@NotNull String cmdName, @NotNull CommandExecutor executor, @Nullable TabCompleter tabCompleter) {

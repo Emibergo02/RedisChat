@@ -92,7 +92,7 @@ public final class Config implements ConfigValidator {
             "If you want to disable an announce, just remove it from the list, remember that in yaml [] is an empty list",
             "If you specify a permission, only players with that permission will see the announce. Keep it empty to make it public",
     })
-    public List<Announce> announces = List.of(new Announce("default", "<yellow>RedisChat</yellow> <gray>»</gray><red>To EssentialsX and CMI users: <aqua><br>disable <gold>/msg, /reply, /broadcast, /ignore, etc</gold> commands inside CMI and EssentialsX<br>Or RedisChat commands <red>will <u>not</u> work</red>!!!</aqua>", "public", 5, 300));
+    public List<Announcement> announcer = List.of(new Announcement("default", "<yellow>RedisChat</yellow> <gray>»</gray><red>To EssentialsX and CMI users: <aqua><br>disable <gold>/msg, /reply, /broadcast, /ignore, etc</gold> commands inside CMI and EssentialsX<br>Or RedisChat commands <red>will <u>not</u> work</red>!!!</aqua>", "public", 5, 300));
     @Comment({"Here you can create your own placeholders", "You can give them an identifier, which will go under the format <>", "You can give them actions, like click url"})
     public Map<String, String> placeholders = new TreeMap<>(Map.ofEntries(
             Map.entry("*check*", "§a✔"),
@@ -174,7 +174,9 @@ public final class Config implements ConfigValidator {
             "channel", List.of("ch", "channels"),
             "staffchat", List.of("sc"),
             "rmutechat", List.of("mutechat","mute"),
-            "runmutechat", List.of("unmutechat","unmute")
+            "runmutechat", List.of("unmutechat","unmute"),
+            "rbroadcast", List.of("bc","broadcast"),
+            "rbroadcastraw", List.of("bcraw","broadcastraw")
     ));
     @Comment({"The priority of the listening event (LOWEST, LOW, NORMAL, HIGH, HIGHEST, MONITOR)",
             "adjust this if other plugins are interfering with RedisChat"})
@@ -231,9 +233,19 @@ public final class Config implements ConfigValidator {
             commandAliases.put("unmutechat", List.of("unmute"));
             Bukkit.getLogger().warning("You didn't set any aliases for unmutechat, using default aliases");
         }
-        for (Announce announce : announces) {
-            if(announce.channelName==null || announce.channelName.isEmpty()) {
-                Bukkit.getLogger().warning("Announce " + announce.announceName() + " doesn't have a channel name, using \"public\" as default");
+        if(!commandAliases.containsKey("rbroadcast")) {
+            commandAliases=new HashMap<>(commandAliases);
+            commandAliases.put("rbroadcast", List.of("broadcast","bc"));
+            Bukkit.getLogger().warning("You didn't set any aliases for rbroadcast, using default aliases");
+        }
+        if(!commandAliases.containsKey("rbroadcastraw")) {
+            commandAliases=new HashMap<>(commandAliases);
+            commandAliases.put("rbroadcastraw", List.of("broadcastraw","bcraw"));
+            Bukkit.getLogger().warning("You didn't set any aliases for rbroadcastraw, using default aliases");
+        }
+        for (Announcement announcement : announcer) {
+            if(announcement.channelName==null || announcement.channelName.isEmpty()) {
+                Bukkit.getLogger().warning("Announce " + announcement.announcementName() + " doesn't have a channel name, using \"public\" as default");
             }
         }
     }
@@ -259,8 +271,8 @@ public final class Config implements ConfigValidator {
     }
 
 
-    public record Announce(
-            String announceName,
+    public record Announcement(
+            String announcementName,
             String message,
             String channelName,
             int delay,

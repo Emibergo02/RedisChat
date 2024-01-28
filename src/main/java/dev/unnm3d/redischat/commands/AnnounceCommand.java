@@ -8,13 +8,13 @@ import dev.jorel.commandapi.arguments.StringArgument;
 import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.settings.Config;
-import dev.unnm3d.redischat.task.AnnounceManager;
+import dev.unnm3d.redischat.task.AnnouncerManager;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 public class AnnounceCommand {
     private final RedisChat plugin;
-    private final AnnounceManager announceManager;
+    private final AnnouncerManager announcerManager;
 
     public CommandAPICommand getCommand() {
         return new CommandAPICommand("announce")
@@ -22,8 +22,8 @@ public class AnnounceCommand {
                 .withArguments(new MultiLiteralArgument("action", "stop", "start"))
                 .withArguments(new StringArgument("announceName")
                         .replaceSuggestions(ArgumentSuggestions.strings(commandSenderSuggestionInfo ->
-                                plugin.config.announces.stream()
-                                        .map(Config.Announce::announceName)
+                                plugin.config.announcer.stream()
+                                        .map(Config.Announcement::announcementName)
                                         .filter(announceName -> announceName.startsWith(commandSenderSuggestionInfo.currentArg()))
                                         .toArray(String[]::new))
                         ))
@@ -31,14 +31,14 @@ public class AnnounceCommand {
                     final String announceName = Strings.nullToEmpty((String) args.get(1));
                     switch (Strings.nullToEmpty((String) args.get(0))) {
                         case "stop" -> {
-                            if (announceManager.cancelAnnounce(announceName) == null) {
+                            if (announcerManager.cancelAnnounce(announceName) == null) {
                                 plugin.messages.sendMessage(sender, plugin.messages.announce_not_found.replace("%name%", announceName));
                                 return;
                             }
                             plugin.messages.sendMessage(sender, plugin.messages.action_completed_successfully);
                         }
                         case "start" -> {
-                            if (announceManager.startAnnounce(announceName) == null) {
+                            if (announcerManager.startAnnounce(announceName) == null) {
                                 plugin.messages.sendMessage(sender, plugin.messages.announce_not_found.replace("%name%", announceName));
                                 return;
                             }

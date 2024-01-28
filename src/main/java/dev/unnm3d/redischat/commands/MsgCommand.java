@@ -31,7 +31,7 @@ public class MsgCommand {
                                         .filter(s -> s.toLowerCase().startsWith(commandSenderSuggestionInfo.currentArg().toLowerCase()))
                                         .toArray(String[]::new))))
                 .executes((sender, args) -> {
-                    Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+                    RedisChat.getScheduler().runTaskAsynchronously(() -> {
                         final String allArgs = (String) args.get(0);
                         if (allArgs == null) return;
 

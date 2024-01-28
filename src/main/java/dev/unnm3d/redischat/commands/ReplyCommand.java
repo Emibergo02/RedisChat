@@ -12,8 +12,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 
-import java.util.List;
-
 @AllArgsConstructor
 public class ReplyCommand {
     private RedisChat plugin;

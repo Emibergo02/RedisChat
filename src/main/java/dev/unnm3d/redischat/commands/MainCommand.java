@@ -56,7 +56,7 @@ public class MainCommand {
                     } catch (ConfigurationException e) {
                         plugin.getLogger().severe("config.yml or messages.yml or guis.yml is invalid! Please regenerate them (starting from config.yml: " + e.getMessage());
                     }
-                    plugin.getAnnounceManager().reload();
+                    plugin.getAnnouncerManager().reload();
                     plugin.getChannelManager().updateChannels();
                     plugin.getChannelManager().getMuteManager().reload();
                     plugin.getComponentProvider().sendMessage(commandExecutor.sender(), "<green>Config reloaded");

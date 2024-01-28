@@ -1,14 +1,13 @@
 package dev.unnm3d.redischat.commands;
 
+import com.github.Anon8281.universalScheduler.UniversalRunnable;
+import com.github.Anon8281.universalScheduler.scheduling.tasks.MyScheduledTask;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.api.VanishIntegration;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -17,7 +16,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class PlayerListManager {
-    private final BukkitTask task;
+    private final MyScheduledTask task;
     private final ConcurrentHashMap<String, Long> playerList;
     private final List<VanishIntegration> vanishIntegrations;
 
@@ -25,7 +24,7 @@ public class PlayerListManager {
     public PlayerListManager(RedisChat plugin) {
         this.playerList = new ConcurrentHashMap<>();
         this.vanishIntegrations = new ArrayList<>();
-        this.task = new BukkitRunnable() {
+        this.task = new UniversalRunnable() {
             @Override
             public void run() {
                 playerList.entrySet().removeIf(stringLongEntry -> System.currentTimeMillis() - stringLongEntry.getValue() > 1000 * 4);

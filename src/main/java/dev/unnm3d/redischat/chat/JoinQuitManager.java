@@ -9,6 +9,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
+import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -28,7 +29,7 @@ public class JoinQuitManager implements Listener {
         joinEvent.setJoinMessage(null);
 
         //Join event happens at the same time as the quit event in the other server (we need to delay it)
-        redisChat.getServer().getScheduler().runTaskLater(redisChat, () ->
+        RedisChat.getScheduler().runTaskLater(() ->
                 redisChat.getDataManager().sendRejoin(joinEvent.getPlayer().getName()), redisChat.config.rejoinSendDelay / 50L);
 
         if (redisChat.getPlayerListManager().getPlayerList(joinEvent.getPlayer())

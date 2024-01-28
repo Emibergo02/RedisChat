@@ -28,7 +28,7 @@ public class ChatAsCommand {
 
                     final Channel channel = plugin.getChannelManager().getChannel(channelString)
                             .orElse(plugin.getChannelManager().getPublicChannel(null));
-                    plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () ->
+                    RedisChat.getScheduler().runTaskAsynchronously(() ->
                             plugin.getChannelManager().playerChannelMessage(target, channel, message));
 
                 });

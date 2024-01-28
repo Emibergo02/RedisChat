@@ -1,5 +1,6 @@
 package dev.unnm3d.redischat.channels;
 
+import com.github.Anon8281.universalScheduler.UniversalRunnable;
 import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.api.AsyncRedisChatMessageEvent;
@@ -15,7 +16,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.xenondevs.invui.window.Window;
@@ -83,11 +83,11 @@ public class ChannelManager extends RedisChatAPI {
     public void openChannelsGUI(Player player) {
         plugin.getDataManager().getPlayerChannelStatuses(player.getName(), registeredChannels)
                 .thenAccept(playerChannelInfo ->
-                        Bukkit.getServer().getScheduler().runTask(plugin, () ->
+                        RedisChat.getScheduler().runTask(() ->
                                 Window.single()
                                         .setTitle("Channels")
                                         .setGui(channelGUI.getChannelsGUI(player, playerChannelInfo))
-                                        .setCloseHandlers(List.of(() -> new BukkitRunnable() {
+                                        .setCloseHandlers(List.of(() -> new UniversalRunnable() {
                                             @Override
                                             public void run() {
                                                 player.updateInventory();
