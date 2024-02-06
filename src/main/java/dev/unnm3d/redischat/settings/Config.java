@@ -146,6 +146,14 @@ public final class Config implements ConfigValidator {
     public int rejoinSendDelay = 500;
     @Comment("Quit delay in milliseconds")
     public int quitSendWaiting = 3000;
+    @Comment({"Since 1.20.2 client's chat is cleared when switching servers",
+            "This feature is to prevent chat clearing. RedisChat will send the last N received messages to the player",
+            "Set it to 0 to disable this feature"})
+    public int keepChatMessages = 0;
+    @Comment({"Format id:volume:pitch",
+            "You can find the list of sounds here: https://jd.papermc.io/paper/1.20/org/bukkit/Sound.html",
+            "Leave it empty \"\" to disable the sound"})
+    public String mentionSound = "ENTITY_EXPERIENCE_ORB_PICKUP:1:1";
     public boolean enableStaffChat = true;
     @Comment("Messages with this prefix will be sent to staff chat")
     public String staffChatPrefix = "!";
@@ -173,10 +181,10 @@ public final class Config implements ConfigValidator {
             "reply", List.of("r"),
             "channel", List.of("ch", "channels"),
             "staffchat", List.of("sc"),
-            "rmutechat", List.of("mutechat","mute"),
-            "runmutechat", List.of("unmutechat","unmute"),
-            "rbroadcast", List.of("bc","broadcast"),
-            "rbroadcastraw", List.of("bcraw","broadcastraw"),
+            "rmutechat", List.of("mutechat", "mute"),
+            "runmutechat", List.of("unmutechat", "unmute"),
+            "rbroadcast", List.of("bc", "broadcast"),
+            "rbroadcastraw", List.of("bcraw", "broadcastraw"),
             "announcer", List.of("announce")
     ));
     @Comment({"The priority of the listening event (LOWEST, LOW, NORMAL, HIGH, HIGHEST, MONITOR)",
@@ -224,28 +232,28 @@ public final class Config implements ConfigValidator {
         if (!defaultFormat.mention_format().contains("%player%")) {
             Bukkit.getLogger().warning("Default mention format doesn't contain %player% placeholder");
         }
-        if(!commandAliases.containsKey("mutechat")) {
-            commandAliases=new HashMap<>(commandAliases);
+        if (!commandAliases.containsKey("mutechat")) {
+            commandAliases = new HashMap<>(commandAliases);
             commandAliases.put("mutechat", List.of("mute"));
             Bukkit.getLogger().warning("You didn't set any aliases for mutechat, using default aliases");
         }
-        if(!commandAliases.containsKey("unmutechat")) {
-            commandAliases=new HashMap<>(commandAliases);
+        if (!commandAliases.containsKey("unmutechat")) {
+            commandAliases = new HashMap<>(commandAliases);
             commandAliases.put("unmutechat", List.of("unmute"));
             Bukkit.getLogger().warning("You didn't set any aliases for unmutechat, using default aliases");
         }
-        if(!commandAliases.containsKey("rbroadcast")) {
-            commandAliases=new HashMap<>(commandAliases);
-            commandAliases.put("rbroadcast", List.of("broadcast","bc"));
+        if (!commandAliases.containsKey("rbroadcast")) {
+            commandAliases = new HashMap<>(commandAliases);
+            commandAliases.put("rbroadcast", List.of("broadcast", "bc"));
             Bukkit.getLogger().warning("You didn't set any aliases for rbroadcast, using default aliases");
         }
-        if(!commandAliases.containsKey("rbroadcastraw")) {
-            commandAliases=new HashMap<>(commandAliases);
-            commandAliases.put("rbroadcastraw", List.of("broadcastraw","bcraw"));
+        if (!commandAliases.containsKey("rbroadcastraw")) {
+            commandAliases = new HashMap<>(commandAliases);
+            commandAliases.put("rbroadcastraw", List.of("broadcastraw", "bcraw"));
             Bukkit.getLogger().warning("You didn't set any aliases for rbroadcastraw, using default aliases");
         }
         for (Announcement announcement : announcer) {
-            if(announcement.channelName==null || announcement.channelName.isEmpty()) {
+            if (announcement.channelName == null || announcement.channelName.isEmpty()) {
                 Bukkit.getLogger().warning("Announce " + announcement.announcementName() + " doesn't have a channel name, using \"public\" as default");
             }
         }

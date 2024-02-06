@@ -71,20 +71,22 @@ public abstract class RedisChatAPI {
     public abstract void playerChannelMessage(CommandSender player, Channel channel, @NotNull String message);
 
     /**
-     * Sends a message inside the current server
+     * Sends a private or public message inside the current server
+     * Registers the message inside keep chat feature (1.20.2+ Check docs for more info)
      *
      * @param chatMessageInfo The ChatMessageInfo to send
      */
-    public abstract void sendLocalChatMessage(ChatMessageInfo chatMessageInfo);
+    public abstract void sendAndKeepLocal(ChatMessageInfo chatMessageInfo);
 
     /**
-     * Send a generic ChatMessageInfo to all local players
+     * Send a generic (non-private) ChatMessageInfo to all local players
      * Checks multicast permissions and mentions
      * (It calls sendComponentOrCache at the end)
      *
      * @param chatMessageInfo The chat message to send
+     * @param recipient       The receiver of the message, null if it's a global/broadcasted message
      */
-    public abstract void sendGenericChat(@NotNull ChatMessageInfo chatMessageInfo);
+    public abstract void sendGenericChat(@NotNull ChatMessageInfo chatMessageInfo, @Nullable Player recipient);
 
 
     /**
@@ -111,6 +113,14 @@ public abstract class RedisChatAPI {
      * @param player The player to unpause the chat for
      */
     public abstract void unpauseChat(@NotNull Player player);
+
+    /**
+     * Sends last messages to the player
+     * This packet is used to keep the chat for 1.20.2+ players (Check docs for more info)
+     *
+     * @param player The player to send the messages to
+     */
+    public abstract void sendKeepChat(Player player);
 
     /**
      * Get a channel by name null if not found

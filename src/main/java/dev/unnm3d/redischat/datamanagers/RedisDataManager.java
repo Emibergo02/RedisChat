@@ -64,13 +64,13 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
                     if (plugin.config.debug) {
                         plugin.getLogger().info("R1) Received message from redis: " + System.currentTimeMillis());
                     }
-                    plugin.getChannelManager().sendLocalChatMessage(ChatMessageInfo.deserialize(message));
+                    plugin.getChannelManager().sendAndKeepLocal(ChatMessageInfo.deserialize(message));
 
                 } else if (channel.equals(DataKey.GLOBAL_CHANNEL.withoutCluster())) {
                     if (plugin.config.debug) {
                         plugin.getLogger().info("R1) Received message from redis: " + System.currentTimeMillis());
                     }
-                    plugin.getChannelManager().sendLocalChatMessage(ChatMessageInfo.deserialize(message));
+                    plugin.getChannelManager().sendAndKeepLocal(ChatMessageInfo.deserialize(message));
 
                 } else if (channel.equals(DataKey.PLAYERLIST.toString())) {
                     if (plugin.getPlayerListManager() != null)
@@ -275,7 +275,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
                             if (plugin.config.debug) {
                                 plugin.getLogger().info("03 Ignoring list for " + playerName + " is " + result);
                             }
-                            return result.contains(ignoringName) || result.contains("*") || result.contains("all");
+                            return result.contains(ignoringName) || result.contains("*") || result.contains(KnownChatEntities.ALL_PLAYERS.toString());
                         }).exceptionally(throwable -> {
                             throwable.printStackTrace();
                             plugin.getLogger().warning("Error getting ignore list from redis");

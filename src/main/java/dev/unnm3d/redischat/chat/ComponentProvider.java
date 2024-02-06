@@ -29,7 +29,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -421,12 +420,14 @@ public class ComponentProvider {
         return message;
     }
 
-    public void logToConsole(Component component) {
-        bukkitAudiences.sender(plugin.getServer().getConsoleSender()).sendMessage(component);
-    }
-
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public void logToHistory(Component component) {
+    public void logComponent(Component component) {
+        if (!plugin.config.chatLogging) {
+            bukkitAudiences.sender(plugin.getServer().getConsoleSender()).sendMessage(component);
+            return;
+        }
+
+        //Log to history file
         Date now = new Date();
         File logFile = new File(plugin.getDataFolder(), "logs" + File.separator +
                 "chatlog_" + new SimpleDateFormat("dd-MM-yyyy").format(now) + ".log");

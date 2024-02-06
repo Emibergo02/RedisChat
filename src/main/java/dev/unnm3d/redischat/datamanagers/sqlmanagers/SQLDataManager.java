@@ -104,12 +104,12 @@ public abstract class SQLDataManager implements DataManager {
                 if (plugin.config.debug) {
                     plugin.getLogger().info("R1) Received message from redis: " + System.currentTimeMillis());
                 }
-                plugin.getChannelManager().sendLocalChatMessage(ChatMessageInfo.deserialize(messageString));
+                plugin.getChannelManager().sendAndKeepLocal(ChatMessageInfo.deserialize(messageString));
             } else if (subchannel.equals(DataKey.GLOBAL_CHANNEL.withoutCluster())) {
                 if (plugin.config.debug) {
                     plugin.getLogger().info("R1) Received message from redis: " + System.currentTimeMillis());
                 }
-                plugin.getChannelManager().sendLocalChatMessage(ChatMessageInfo.deserialize(messageString));
+                plugin.getChannelManager().sendAndKeepLocal(ChatMessageInfo.deserialize(messageString));
             } else if (subchannel.equals(DataKey.PLAYERLIST.toString())) {
                 if (plugin.getPlayerListManager() != null)
                     plugin.getPlayerListManager().updatePlayerList(Arrays.asList(messageString.split("§")));
@@ -266,23 +266,13 @@ public abstract class SQLDataManager implements DataManager {
 
     @Override
     public CompletionStage<Boolean> isIgnoring(@NotNull String playerName, @NotNull String ignoringName) {
-        return CompletableFuture.supplyAsync(() -> {
-            try (Connection connection = getConnection()) {
-                try (PreparedStatement statement = connection.prepareStatement("""
-                        select * from ignored_players
-                        where player_name= ? and ignored_player = ?;""")) {
-
-                    statement.setString(1, playerName);
-                    statement.setString(2, ignoringName);
-
-                    final ResultSet resultSet = statement.executeQuery();
-                    return resultSet.next();
-                }
-            } catch (SQLException e) {
-                errWarn("Failed to fetch player ignore from the database", e);
-            }
-            return false;
-        });
+        return ignoringList(playerName)
+                .thenApply(ignoredPlayers ->
+                        ignoredPlayers != null && (
+                                ignoredPlayers.contains(ignoringName) ||
+                                        ignoredPlayers.contains(KnownChatEntities.ALL_PLAYERS.toString())
+                        )
+                );
     }
 
     @Override
@@ -809,7 +799,7 @@ public abstract class SQLDataManager implements DataManager {
         out.writeUTF(packet.serialize());
 
         sendPluginMessage(out.toByteArray());
-        plugin.getChannelManager().sendLocalChatMessage(packet);
+        plugin.getChannelManager().sendAndKeepLocal(packet);
     }
 
     private void sendPluginMessage(byte[] byteArray) {

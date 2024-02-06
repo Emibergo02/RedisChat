@@ -7,7 +7,7 @@ public enum KnownChatEntities {
     DISCORD_PREFIX("@"),
     PERMISSION_PREFIX("~"),
     STAFFCHAT_CHANNEL_NAME("staffchat"),
-    ALL_PLAYERS("-all-"),
+    ALL_PLAYERS("-ALL-"),
     ;
 
     private final String keyName;

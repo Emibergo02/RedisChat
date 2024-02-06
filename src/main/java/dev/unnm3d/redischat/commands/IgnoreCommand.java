@@ -2,6 +2,7 @@ package dev.unnm3d.redischat.commands;
 
 import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
+import dev.unnm3d.redischat.chat.KnownChatEntities;
 import lombok.AllArgsConstructor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -55,7 +56,7 @@ public class IgnoreCommand implements CommandExecutor, TabCompleter {
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
         if (!sender.hasPermission(Permissions.IGNORE.getPermission())) return List.of();
-        List<String> temp = new ArrayList<>(List.of("list", "all"));
+        List<String> temp = new ArrayList<>(List.of("list", KnownChatEntities.ALL_PLAYERS.toString()));
         temp.addAll(
                 plugin.getPlayerListManager().getPlayerList(sender)
                         .stream().filter(s ->

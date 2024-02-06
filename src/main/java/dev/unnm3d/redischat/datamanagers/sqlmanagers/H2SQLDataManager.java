@@ -189,14 +189,14 @@ public class H2SQLDataManager extends SQLDataManager {
     public CompletionStage<Boolean> toggleIgnoring(@NotNull String playerName, @NotNull String ignoringName) {
         return isIgnoring(playerName, ignoringName).thenApply(isIgnoring -> {
             try (Connection connection = getConnection()) {
-                String statementString = isIgnoring ?
+                final String statementString = isIgnoring ?
                         "DELETE FROM IGNORED_PLAYERS WHERE PLAYER_NAME = ? AND IGNORED_PLAYER = ?;" :
                         "INSERT INTO IGNORED_PLAYERS (PLAYER_NAME, IGNORED_PLAYER) VALUES (?, ?);";
                 try (PreparedStatement statement = connection.prepareStatement(statementString)) {
 
                     statement.setString(1, playerName);
                     statement.setString(2, ignoringName);
-                    if (statement.executeUpdate() == 0) {
+                    if (statement.executeUpdate() == 0 && !isIgnoring) {
                         throw new SQLException("Failed to insert reply name into database");
                     }
                     return !isIgnoring;
