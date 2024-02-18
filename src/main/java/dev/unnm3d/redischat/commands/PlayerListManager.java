@@ -7,6 +7,7 @@ import dev.unnm3d.redischat.api.VanishIntegration;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.metadata.MetadataValue;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -29,7 +30,8 @@ public class PlayerListManager {
             public void run() {
                 playerList.entrySet().removeIf(stringLongEntry -> System.currentTimeMillis() - stringLongEntry.getValue() > 1000 * 4);
 
-                List<String> tempList = plugin.getServer().getOnlinePlayers().stream()
+                final List<String> tempList = plugin.getServer().getOnlinePlayers().stream()
+                        .filter(player -> player.getMetadata("vanished").stream().anyMatch(MetadataValue::asBoolean))
                         .map(HumanEntity::getName)
                         .filter(s -> !s.isEmpty())
                         .toList();

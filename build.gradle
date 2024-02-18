@@ -6,7 +6,7 @@ plugins {
 
 
 group = 'dev.unnm3d'
-version = '4.4.2'
+version = '4.4.3'
 
 
 repositories {
@@ -52,6 +52,7 @@ dependencies {
     compileOnly 'org.projectlombok:lombok:1.18.26'
     compileOnly 'com.github.Spicord.Spicord:spicord-common:v5-SNAPSHOT'
     compileOnly 'net.dv8tion:JDA:5.0.0-beta.16'
+    compileOnly 'org.apache.commons:commons-collections4:4.4'
 
 
     annotationProcessor('org.projectlombok:lombok:1.18.26')

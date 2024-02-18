@@ -60,7 +60,7 @@ public abstract class SQLDataManager implements DataManager {
             create table if not exists channels
             (
                 name                varchar(16)     not null primary key,
-                format              TEXT            default 'No format -> %message%',
+                format              varchar(512)    default 'No format -> %message%',
                 rate_limit          int             default 5,
                 rate_limit_period   int             default 3,
                 proximity_distance  int             default -1,

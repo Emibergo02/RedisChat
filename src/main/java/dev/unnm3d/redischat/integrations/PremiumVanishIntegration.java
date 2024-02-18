@@ -34,11 +34,9 @@ public class PremiumVanishIntegration implements VanishIntegration {
         @EventHandler
         public void onVanish(PlayerVanishStateChangeEvent event) {
             if (event.isVanishing()) {
-                System.out.println("VANISH: " + event.getName());
                 vanishedPlayers.add(event.getName());
             } else {
                 vanishedPlayers.remove(event.getName());
-                System.out.println("UNVANISH: " + event.getName());
             }
         }
     }

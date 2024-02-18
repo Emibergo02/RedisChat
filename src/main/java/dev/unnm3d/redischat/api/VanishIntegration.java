@@ -2,7 +2,6 @@ package dev.unnm3d.redischat.api;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.metadata.MetadataValue;
 
 public interface VanishIntegration {
 
@@ -22,11 +21,6 @@ public interface VanishIntegration {
      * @param player The player
      * @return true if the player is vanished
      */
-    default boolean isVanished(Player player){
-        for (MetadataValue meta : player.getMetadata("vanished")) {
-            if (meta.asBoolean()) return true;
-        }
-        return false;
-    }
+    boolean isVanished(Player player);
 
 }
