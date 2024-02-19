@@ -148,7 +148,7 @@ public abstract class SQLDataManager implements DataManager {
                 errWarn("Failed to fetch a reply name from the database", e);
             }
             return Optional.empty();
-        });
+        }, plugin.getExecutorService());
     }
 
     @Override
@@ -206,7 +206,7 @@ public abstract class SQLDataManager implements DataManager {
                 errWarn("Failed to fetch if player is spying from the database", e);
             }
             return false;
-        });
+        }, plugin.getExecutorService());
     }
 
     @Override
@@ -261,7 +261,7 @@ public abstract class SQLDataManager implements DataManager {
                 errWarn("Failed to insert player ignore into database", e);
             }
             return false;
-        });
+        }, plugin.getExecutorService());
     }
 
     @Override
@@ -296,7 +296,7 @@ public abstract class SQLDataManager implements DataManager {
                 errWarn("Failed to fetch ignored players from the database", e);
             }
             return null;
-        });
+        }, plugin.getExecutorService());
     }
 
     @Override
@@ -398,7 +398,7 @@ public abstract class SQLDataManager implements DataManager {
                 errWarn("Failed to fetch serialized item from the database", e);
             }
             return null;
-        });
+        }, plugin.getExecutorService());
     }
 
     @Override
@@ -422,7 +422,7 @@ public abstract class SQLDataManager implements DataManager {
                 errWarn("Failed to fetch serialized inventory from the database", e);
             }
             return null;
-        });
+        }, plugin.getExecutorService());
     }
 
     @Override
@@ -446,7 +446,7 @@ public abstract class SQLDataManager implements DataManager {
                 errWarn("Failed to fetch serialized enderchest from the database", e);
             }
             return null;
-        });
+        }, plugin.getExecutorService());
     }
 
     @Override
@@ -472,7 +472,7 @@ public abstract class SQLDataManager implements DataManager {
                 errWarn("Failed to fetch serialized private mails from the database", e);
             }
             return List.of();
-        });
+        }, plugin.getExecutorService());
     }
 
     @Override
@@ -502,7 +502,7 @@ public abstract class SQLDataManager implements DataManager {
                 errWarn("Failed to insert serialized private mail into database", e);
             }
             return false;
-        });
+        }, plugin.getExecutorService());
     }
 
     @Override
@@ -527,7 +527,7 @@ public abstract class SQLDataManager implements DataManager {
                 errWarn("Failed to insert serialized public mail into database", e);
             }
             return false;
-        });
+        }, plugin.getExecutorService());
     }
 
     @Override
@@ -551,7 +551,7 @@ public abstract class SQLDataManager implements DataManager {
                 errWarn("Failed to fetch serialized public mails from the database", e);
             }
             return List.of();
-        });
+        }, plugin.getExecutorService());
     }
 
     @Override
@@ -589,7 +589,7 @@ public abstract class SQLDataManager implements DataManager {
                 }
             }
             return false;
-        });
+        }, plugin.getExecutorService());
     }
 
     private void sendChannelUpdate(String channelName, @Nullable Channel channel) {
@@ -628,7 +628,7 @@ public abstract class SQLDataManager implements DataManager {
                 errWarn("Failed to unregister channel to database", e);
             }
             return false;
-        });
+        }, plugin.getExecutorService());
     }
 
     @Override
@@ -652,7 +652,7 @@ public abstract class SQLDataManager implements DataManager {
                 errWarn("Failed to fetch active channel from database", e);
             }
             return "public";
-        });
+        }, plugin.getExecutorService());
     }
 
     @Override
@@ -680,7 +680,7 @@ public abstract class SQLDataManager implements DataManager {
                 errWarn("Failed to fetch channel statuses from database", e);
             }
             return List.of();
-        });
+        }, plugin.getExecutorService());
     }
 
 
@@ -711,7 +711,7 @@ public abstract class SQLDataManager implements DataManager {
                 errWarn("Failed fetch channels from database", e);
             }
             return List.of();
-        });
+        }, plugin.getExecutorService());
     }
 
     @Override
@@ -740,7 +740,7 @@ public abstract class SQLDataManager implements DataManager {
                 errWarn("Failed to register channel to database", e);
             }
             return null;
-        });
+        }, plugin.getExecutorService());
     }
 
     @Override
@@ -762,7 +762,7 @@ public abstract class SQLDataManager implements DataManager {
                 errWarn("Failed to register channel to database", e);
             }
             return null;
-        });
+        }, plugin.getExecutorService());
     }
 
     private void errWarn(String msg, Exception exception) {

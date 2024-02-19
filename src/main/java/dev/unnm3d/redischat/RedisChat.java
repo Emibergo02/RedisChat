@@ -52,6 +52,8 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public final class RedisChat extends JavaPlugin {
 
@@ -83,6 +85,8 @@ public final class RedisChat extends JavaPlugin {
     private PermissionProvider permissionProvider;
     @Getter
     private IDiscordHook discordHook;
+    @Getter
+    private ExecutorService executorService;
 
     @Override
     public void onLoad() {
@@ -96,6 +100,7 @@ public final class RedisChat extends JavaPlugin {
         CommandAPI.onEnable();
         registeredCommands = new ArrayList<>();
         scheduler = UniversalScheduler.getScheduler(this);
+        this.executorService = Executors.newFixedThreadPool(config.chatThreads);
 
         try {
             loadYML();

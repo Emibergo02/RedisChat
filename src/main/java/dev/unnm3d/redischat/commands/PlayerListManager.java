@@ -31,7 +31,7 @@ public class PlayerListManager {
                 playerList.entrySet().removeIf(stringLongEntry -> System.currentTimeMillis() - stringLongEntry.getValue() > 1000 * 4);
 
                 final List<String> tempList = plugin.getServer().getOnlinePlayers().stream()
-                        .filter(player -> player.getMetadata("vanished").stream().anyMatch(MetadataValue::asBoolean))
+                        .filter(player -> !isVanished(player))
                         .map(HumanEntity::getName)
                         .filter(s -> !s.isEmpty())
                         .toList();
@@ -69,7 +69,8 @@ public class PlayerListManager {
     }
 
     public boolean isVanished(Player player) {
-        return vanishIntegrations.stream().anyMatch(vanishIntegration -> vanishIntegration.isVanished(player));
+        return player.getMetadata("vanished").stream().anyMatch(MetadataValue::asBoolean) ||
+                vanishIntegrations.stream().anyMatch(vanishIntegration -> vanishIntegration.isVanished(player));
     }
 
     public void stop() {

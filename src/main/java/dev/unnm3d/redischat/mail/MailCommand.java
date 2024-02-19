@@ -109,7 +109,7 @@ public class MailCommand {
                     if (commandSenderSuggestionInfo.sender().hasPermission(Permissions.MAIL_WRITE_PUBLIC.getPermission()))
                         list.add("-Public");
                     return list.toArray(new String[0]);
-                });
+                }, plugin.getExecutorService());
     }
 
 }

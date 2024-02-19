@@ -123,10 +123,11 @@ public class MainCommand {
     private Function<SuggestionInfo<CommandSender>, CompletableFuture<Collection<String>>> getConfigFields() {
         return commandSenderSuggestionInfo ->
                 CompletableFuture.supplyAsync(() ->
-                        Arrays.stream(plugin.messages.getClass().getFields())
-                                .filter(field -> field.getType().equals(String.class))
-                                .map(Field::getName)
-                                .filter(fieldName -> fieldName.startsWith(commandSenderSuggestionInfo.currentArg()))
-                                .toList());
+                                Arrays.stream(plugin.messages.getClass().getFields())
+                                        .filter(field -> field.getType().equals(String.class))
+                                        .map(Field::getName)
+                                        .filter(fieldName -> fieldName.startsWith(commandSenderSuggestionInfo.currentArg()))
+                                        .toList(),
+                        plugin.getExecutorService());
     }
 }

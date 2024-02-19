@@ -45,7 +45,7 @@ public class DiscordWebhook implements IDiscordHook {
                                     "embeds": []
                                     }
                                     """,
-                            message.getSender().isServer()?"Server":message.getSender().getName(),
+                            message.getSender().isServer() ? "Server" : message.getSender().getName(),
                             uuid == null ? "" : "https://crafatar.com/avatars/" + uuid + "?size=64&default=MHF_Steve&overlay",
                             MiniMessage.miniMessage().stripTags(message.getMessage())
                     ).getBytes(StandardCharsets.UTF_8)));
@@ -54,7 +54,7 @@ public class DiscordWebhook implements IDiscordHook {
             } catch (final IOException e) {
                 throw new RuntimeException(e);
             }
-        }).exceptionally((e) -> {
+        }, plugin.getExecutorService()).exceptionally((e) -> {
             plugin.getLogger().warning("Unable to send message to Discord channel " + channel.getName() + ": " + e.getMessage());
             return null;
         });

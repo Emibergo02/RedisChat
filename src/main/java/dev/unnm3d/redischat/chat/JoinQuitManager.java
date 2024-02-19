@@ -27,6 +27,8 @@ public class JoinQuitManager implements Listener {
     public void onJoin(PlayerJoinEvent joinEvent) {
         joinEvent.setJoinMessage(null);
 
+        if (redisChat.getPlayerListManager().isVanished(joinEvent.getPlayer())) return;
+
         //Join event happens at the same time as the quit event in the other server (we need to delay it)
         RedisChat.getScheduler().runTaskLater(() ->
                 redisChat.getDataManager().sendRejoin(joinEvent.getPlayer().getName()), redisChat.config.rejoinSendDelay / 50L);
@@ -34,7 +36,6 @@ public class JoinQuitManager implements Listener {
         if (redisChat.getPlayerListManager().getPlayerList(joinEvent.getPlayer())
                 .contains(joinEvent.getPlayer().getName())) return;
 
-        if (redisChat.getPlayerListManager().isVanished(joinEvent.getPlayer())) return;
 
         if (!joinEvent.getPlayer().hasPlayedBefore() && !redisChat.config.first_join_message.isEmpty()) {
             redisChat.getDataManager().sendChatMessage(new ChatMessageInfo(

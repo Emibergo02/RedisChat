@@ -192,6 +192,8 @@ public final class Config implements ConfigValidator {
     public String listeningPriority = "NORMAL";
     @Comment("Toggle debug mode (by default is false)")
     public boolean debug = false;
+    @Comment("The number of threads for chat tasks")
+    public int chatThreads = 2;
     @Comment({"botName is the botId associated to the bot inside the spicord configuration",
             "Every channel of RedisChat is linked with a channel on Discord",
             "The first element is a RedisChat channel, the second one is a Discord channel id",

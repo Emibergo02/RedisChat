@@ -257,7 +257,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
                                     });
                             return true;
 
-                        })
+                        }, plugin.getExecutorService())
                         .exceptionally(throwable -> {
                             throwable.printStackTrace();
                             plugin.getLogger().warning("Error toggle ignore player name to redis");

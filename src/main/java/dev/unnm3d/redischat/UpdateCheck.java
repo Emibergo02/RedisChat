@@ -31,6 +31,6 @@ public class UpdateCheck {
             } catch (IOException exception) {
                 logger.severe("Unable to check for updates: " + exception.getMessage());
             }
-        });
+        }, RedisChat.getInstance().getExecutorService());
     }
 }

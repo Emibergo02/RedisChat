@@ -80,7 +80,7 @@ public class ReplyCommand {
 
                                 if (plugin.config.debug)
                                     Bukkit.getLogger().info("ReplyCommand: " + (System.currentTimeMillis() - init) + "ms");
-                            });
+                            }, plugin.getExecutorService());
                 });
     }
 }

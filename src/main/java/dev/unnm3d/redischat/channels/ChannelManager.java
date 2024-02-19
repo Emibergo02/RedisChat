@@ -233,7 +233,7 @@ public class ChannelManager extends RedisChatAPI {
                         plugin.getLogger().info("1) Active channel (Redis) + channel parsing: " + (System.currentTimeMillis() - init) + "ms");
                     }
                     playerChannelMessage(player, chatChannel, message);
-                })
+                }, plugin.getExecutorService())
                 .exceptionally(throwable -> {
                     throwable.printStackTrace();
                     return null;
@@ -272,7 +272,7 @@ public class ChannelManager extends RedisChatAPI {
                                             chatMessageInfo.getReceiver().getName() + " with ignore: " +
                                             ignored + " in " + (System.currentTimeMillis() - init) + "ms");
                                 }
-                            }));
+                            }, plugin.getExecutorService()));
 
             //Send to spies
             plugin.getServer().getOnlinePlayers().stream()
@@ -455,7 +455,7 @@ public class ChannelManager extends RedisChatAPI {
                     if (channel != null)
                         playerChannelsMap.put(channel, "0");
                     plugin.getDataManager().setPlayerChannelStatuses(playerName, playerChannelsMap);
-                });
+                }, plugin.getExecutorService());
     }
 
     @Override
