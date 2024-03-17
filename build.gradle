@@ -25,7 +25,7 @@ dependencies {
     implementation 'net.kyori:adventure-text-serializer-plain:4.15.0'
     implementation 'net.kyori:adventure-platform-bukkit:4.3.2'
 
-    implementation 'com.github.Exlll.ConfigLib:configlib-paper:v4.4.0'
+    implementation 'com.github.Exlll.ConfigLib:configlib-paper:v4.5.0'
     implementation 'xyz.xenondevs.invui:invui-core:1.24'
     implementation 'xyz.xenondevs.invui:inventory-access-r7:1.24'
     implementation 'xyz.xenondevs.invui:inventory-access-r9:1.24'
