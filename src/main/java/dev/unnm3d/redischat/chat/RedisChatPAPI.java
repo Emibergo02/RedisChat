@@ -1,4 +1,4 @@
-package dev.unnm3d.redischat.integrations;
+package dev.unnm3d.redischat.chat;
 
 import dev.unnm3d.redischat.RedisChat;
 import lombok.AllArgsConstructor;
@@ -7,7 +7,7 @@ import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
 
 @AllArgsConstructor
-public class PAPIIntegration extends PlaceholderExpansion {
+public class RedisChatPAPI extends PlaceholderExpansion {
     private final RedisChat plugin;
 
     @Override
@@ -22,20 +22,21 @@ public class PAPIIntegration extends PlaceholderExpansion {
 
     @Override
     public @NotNull String getVersion() {
-        return "1.0.0";
+        return "1.1.0";
     }
 
 
     @Override
-    public String onRequest(OfflinePlayer player, String params) {
-        if(plugin.getServer().isPrimaryThread()){
+    public String onRequest(OfflinePlayer player, @NotNull String params) {
+        if (plugin.getServer().isPrimaryThread()) {
             plugin.getLogger().warning("RedisChat's placeholders are being called from the main thread, this is not recommended and may cause lag!");
         }
-        
+
         if (params.equalsIgnoreCase("active_channel")) {
             if (player.getName() == null) return plugin.getChannelManager().getPublicChannel(null).getName();
             return plugin.getDataManager().getActivePlayerChannel(player.getName(), plugin.getChannelManager().getRegisteredChannels())
                     .thenApply(channel -> channel == null ?
+
                             plugin.getChannelManager().getPublicChannel(null).getName() :
                             channel
                     ).toCompletableFuture().join();
@@ -43,11 +44,11 @@ public class PAPIIntegration extends PlaceholderExpansion {
 
         if (params.equalsIgnoreCase("ignoring_all")) {
             if (player.getName() == null) return "false";
-            return plugin.getDataManager().ignoringList(player.getName())
-                    .toCompletableFuture()
-                    .join().contains("all") ? "true" : "false";
+            return plugin.getChannelManager().getMuteManager().getIgnoreList(player.getName()).contains("all") ? "true" : "false";
         }
-
+        if (player != null && player.getName() != null) {
+            return plugin.getPlaceholderManager().getPlaceholder(player.getName(), params);
+        }
         return null; // Placeholder is unknown by the Expansion
     }
 }

@@ -6,7 +6,7 @@ plugins {
 
 
 group = 'dev.unnm3d'
-version = '4.4.4'
+version = '4.5.0'
 
 
 repositories {
@@ -21,11 +21,11 @@ repositories {
 }
 
 dependencies {
-    implementation 'net.kyori:adventure-text-minimessage:4.15.0'
-    implementation 'net.kyori:adventure-text-serializer-plain:4.15.0'
+    implementation 'net.kyori:adventure-text-minimessage:4.16.0'
+    implementation 'net.kyori:adventure-text-serializer-plain:4.16.0'
     implementation 'net.kyori:adventure-platform-bukkit:4.3.2'
 
-    implementation 'com.github.Exlll.ConfigLib:configlib-paper:v4.4.0'
+    implementation 'com.github.Exlll.ConfigLib:configlib-paper:v4.5.0'
     implementation 'xyz.xenondevs.invui:invui-core:1.24'
     implementation 'xyz.xenondevs.invui:inventory-access-r7:1.24'
     implementation 'xyz.xenondevs.invui:inventory-access-r9:1.24'
@@ -62,35 +62,36 @@ shadowJar {
     destinationDirectory.set(file("$rootDir/target"))
     archiveClassifier.set('')
     dependencies {
-        include dependency('net.kyori:adventure-api:4.15.0')
-        include dependency('net.kyori:adventure-key:4.15.0')
-        include dependency('net.kyori:adventure-nbt:4.13.1')
-        include dependency('net.kyori:adventure-platform-api:4.3.2')
-        include dependency('net.kyori:adventure-platform-bukkit:4.3.2')
-        include dependency('net.kyori:adventure-platform-facet:4.3.2')
-        include dependency('net.kyori:adventure-text-minimessage:4.15.0')
-        include dependency('net.kyori:adventure-text-serializer-plain:4.15.0')
-        include dependency('net.kyori:adventure-text-serializer-legacy:4.13.1')
-        include dependency('net.kyori:adventure-text-serializer-gson:4.13.1')
-        include dependency('net.kyori:adventure-text-serializer-gson-legacy-impl:4.13.1')
-        include dependency('net.kyori:adventure-text-serializer-bungeecord:4.3.2')
-        include dependency('net.kyori:examination-api:1.3.0')
-        include dependency('net.kyori:option:1.0.0')
+        include dependency('net.kyori:adventure-api')
+        include dependency('net.kyori:adventure-key')
+        include dependency('net.kyori:adventure-nbt')
+        include dependency('net.kyori:adventure-platform-api')
+        include dependency('net.kyori:adventure-platform-bukkit')
+        include dependency('net.kyori:adventure-platform-facet')
+        include dependency('net.kyori:adventure-text-minimessage')
+        include dependency('net.kyori:adventure-text-serializer-plain')
+        include dependency('net.kyori:adventure-text-serializer-legacy')
+        include dependency('net.kyori:adventure-text-serializer-gson')
+        include dependency('net.kyori:adventure-text-serializer-json')
+        include dependency('net.kyori:adventure-text-serializer-gson-legacy-impl')
+        include dependency('net.kyori:adventure-text-serializer-bungeecord')
+        include dependency('net.kyori:examination-api')
+        include dependency('net.kyori:option')
 
-        include dependency('com.github.Exlll.ConfigLib:configlib-paper:v4.4.0')
-        include dependency('com.github.Exlll.ConfigLib:configlib-yaml:v4.4.0')
-        include dependency("com.github.Exlll.ConfigLib:configlib-core:v4.4.0")
+        include dependency('com.github.Exlll.ConfigLib:configlib-paper')
+        include dependency('com.github.Exlll.ConfigLib:configlib-yaml')
+        include dependency("com.github.Exlll.ConfigLib:configlib-core")
 
-        include dependency('xyz.xenondevs.invui:invui-core:1.24')
-        include dependency('xyz.xenondevs.invui:inventory-access:1.24')
-        include dependency('xyz.xenondevs.invui:inventory-access-r7:1.24')
-        include dependency('xyz.xenondevs.invui:inventory-access-r9:1.24')
-        include dependency('xyz.xenondevs.invui:inventory-access-r11:1.24')
-        include dependency('xyz.xenondevs.invui:inventory-access-r14:1.24')
-        include dependency('xyz.xenondevs.invui:inventory-access-r15:1.24')
-        include dependency('xyz.xenondevs.invui:inventory-access-r16:1.24')
-        include dependency('xyz.xenondevs.invui:inventory-access-r17:1.24')
-        include dependency('xyz.xenondevs.invui:inventory-access-r18:1.24')
+        include dependency('xyz.xenondevs.invui:invui-core')
+        include dependency('xyz.xenondevs.invui:inventory-access')
+        include dependency('xyz.xenondevs.invui:inventory-access-r7')
+        include dependency('xyz.xenondevs.invui:inventory-access-r9')
+        include dependency('xyz.xenondevs.invui:inventory-access-r11')
+        include dependency('xyz.xenondevs.invui:inventory-access-r14')
+        include dependency('xyz.xenondevs.invui:inventory-access-r15')
+        include dependency('xyz.xenondevs.invui:inventory-access-r16')
+        include dependency('xyz.xenondevs.invui:inventory-access-r17')
+        include dependency('xyz.xenondevs.invui:inventory-access-r18')
         include dependency('dev.jorel:commandapi-bukkit-shade:9.3.0')
         include dependency('com.github.Anon8281:UniversalScheduler:0.1.6')
     }

@@ -90,6 +90,8 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
 
                 } else if (channel.equals(DataKey.MUTED_UPDATE.toString())) {
                     plugin.getChannelManager().getMuteManager().serializedUpdate(message);
+                } else if (channel.equals(DataKey.PLAYER_PLACEHOLDERS.toString())) {
+                    plugin.getPlaceholderManager().updatePlayerPlaceholders(message);
                 }
             }
 
@@ -119,8 +121,8 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
                         DataKey.PLAYERLIST.toString(),
                         DataKey.REJOIN_CHANNEL.toString(),
                         DataKey.CHANNEL_UPDATE.toString(),
-                        DataKey.MUTED_UPDATE.toString()
-                )
+                        DataKey.MUTED_UPDATE.toString(),
+                        DataKey.PLAYER_PLACEHOLDERS.toString())
                 .exceptionally(throwable -> {
                     throwable.printStackTrace();
                     plugin.getLogger().warning("Error subscribing to chat channel");
@@ -161,6 +163,34 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
                     });
             return null;
         });
+    }
+
+    @Override
+    public CompletionStage<Map<String, String>> getPlayerPlaceholders(@NotNull String playerName) {
+        return getConnectionAsync(connection ->
+                connection.hget(DataKey.PLAYER_PLACEHOLDERS.toString(), playerName)
+                        .thenApply(serializedPlaceholders -> {
+                            if (plugin.config.debug) {
+                                plugin.getLogger().info("Getting placeholders for " + playerName + " is " + serializedPlaceholders);
+                            }
+                            return serializedPlaceholders == null ? null : deserializePlayerPlaceholders(serializedPlaceholders);
+                        })
+                        .exceptionally(throwable -> {
+                            throwable.printStackTrace();
+                            plugin.getLogger().warning("Error getting placeholders from redis");
+                            return null;
+                        }));
+    }
+
+    @Override
+    public void setPlayerPlaceholders(@NotNull String playerName, @NotNull Map<String, String> placeholders) {
+        getConnectionAsync(connection ->
+                connection.hset(DataKey.PLAYER_PLACEHOLDERS.toString(), playerName, serializePlayerPlaceholders(placeholders))
+                        .exceptionally(throwable -> {
+                            throwable.printStackTrace();
+                            plugin.getLogger().warning("Error setting placeholders to redis");
+                            return null;
+                        }));
     }
 
     @Override
@@ -228,76 +258,6 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
                     }
                 }
         );
-    }
-
-    @Override
-    public CompletionStage<Boolean> toggleIgnoring(@NotNull String playerName, @NotNull String ignoringName) {
-        return getConnectionAsync(connection ->
-                connection.sadd(DataKey.IGNORE_PREFIX + playerName, ignoringName)
-                        .thenApplyAsync(response -> {
-                            if (plugin.config.debug) {
-                                plugin.getLogger().info("02 Toggling ignoring " + ignoringName + " for " + playerName);
-                            }
-                            if (response == 0) {
-                                getConnectionAsync(connection3 -> connection3.srem(DataKey.IGNORE_PREFIX + playerName, ignoringName))
-                                        .toCompletableFuture().orTimeout(1, TimeUnit.SECONDS)
-                                        .exceptionally(exception -> {
-                                            exception.printStackTrace();
-                                            plugin.getLogger().warning("Error removing ignore");
-                                            return null;
-                                        });
-                                return false;
-                            }
-                            getConnectionAsync(connection3 -> connection3.expire(DataKey.IGNORE_PREFIX + playerName, 60 * 60 * 24 * 7))
-                                    .toCompletableFuture().orTimeout(1, TimeUnit.SECONDS)
-                                    .exceptionally(exception -> {
-                                        exception.printStackTrace();
-                                        plugin.getLogger().warning("Error when setting ignore expiration");
-                                        return null;
-                                    });
-                            return true;
-
-                        }, plugin.getExecutorService())
-                        .exceptionally(throwable -> {
-                            throwable.printStackTrace();
-                            plugin.getLogger().warning("Error toggle ignore player name to redis");
-                            return null;
-                        })
-        );
-
-    }
-
-    @Override
-    public CompletionStage<Boolean> isIgnoring(@NotNull String playerName, @NotNull String ignoringName) {
-        return getConnectionAsync(connection ->
-                connection.smembers(DataKey.IGNORE_PREFIX + playerName)
-                        .thenApply(result -> {
-                            if (plugin.config.debug) {
-                                plugin.getLogger().info("03 Ignoring list for " + playerName + " is " + result);
-                            }
-                            return result.contains(ignoringName) || result.contains("*") || result.contains(KnownChatEntities.ALL_PLAYERS.toString());
-                        }).exceptionally(throwable -> {
-                            throwable.printStackTrace();
-                            plugin.getLogger().warning("Error getting ignore list from redis");
-                            return null;
-                        }));
-    }
-
-    @Override
-    public CompletionStage<List<String>> ignoringList(@NotNull String playerName) {
-        return getConnectionAsync(connection ->
-                connection.smembers(DataKey.IGNORE_PREFIX + playerName)
-                        .thenApply(result -> {
-                            if (plugin.config.debug) {
-                                plugin.getLogger().info("03 Ignoring list for " + playerName + " is " + result);
-                            }
-                            return List.copyOf(result);
-                        }).exceptionally(throwable -> {
-                            throwable.printStackTrace();
-                            plugin.getLogger().warning("Error getting ignore list from redis");
-                            return null;
-                        }));
-
     }
 
     @Override
@@ -563,29 +523,31 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     }
 
     @Override
-    public void setMutedChannels(@NotNull String playerName, @NotNull Set<String> mutedChannels) {
+    public void setMutedEntities(@NotNull String keyEntity, @NotNull Set<String> valueEntities) {
         getConnectionAsync(connection -> {
-            if (mutedChannels.isEmpty()) {
-                connection.hdel(DataKey.MUTED_PLAYERS.toString(), playerName);
-                return connection.publish(DataKey.MUTED_UPDATE.toString(), playerName + ";");
+            if (valueEntities.isEmpty()) {
+                connection.hdel(DataKey.MUTED_ENTITIES.toString(), keyEntity);
+                return connection.publish(DataKey.MUTED_UPDATE.toString(), keyEntity + ";");
             }
-            plugin.getLogger().info("Setting muted channels for " + playerName + " to " + mutedChannels);
-            final String serializedUpdate = String.join("§", mutedChannels);
-            connection.hset(DataKey.MUTED_PLAYERS.toString(), Map.of(playerName, serializedUpdate));
-            return connection.publish(DataKey.MUTED_UPDATE.toString(), playerName + ";" + serializedUpdate);
+
+            plugin.getLogger().info("Setting muted channels for " + keyEntity + " to " + valueEntities);
+
+            final String serializedUpdate = String.join(",", valueEntities);
+            connection.hset(DataKey.MUTED_ENTITIES.toString(), Map.of(keyEntity, serializedUpdate));
+            return connection.publish(DataKey.MUTED_UPDATE.toString(), keyEntity + ";" + serializedUpdate);
         });
     }
 
     @Override
-    public CompletionStage<Map<String, Set<String>>> getAllMutedChannels() {
+    public CompletionStage<Map<String, Set<String>>> getAllMutedEntities() {
         return getConnectionAsync(connection ->
-                connection.hgetall(DataKey.MUTED_PLAYERS.toString())
+                connection.hgetall(DataKey.MUTED_ENTITIES.toString())
                         .thenApply(serializedUpdate -> {
                             if (serializedUpdate == null) return new HashMap<String, Set<String>>();
                             final Map<String, Set<String>> map = new HashMap<>();
                             serializedUpdate.entrySet().stream()
                                     .map(entry -> new AbstractMap.SimpleEntry<>(entry.getKey(),
-                                            Arrays.stream(entry.getValue().split("§"))
+                                            Arrays.stream(entry.getValue().split(","))
                                                     .collect(Collectors.toCollection(HashSet::new))))
                                     .forEach(entry -> map.put(entry.getKey(), entry.getValue()));
                             return map;

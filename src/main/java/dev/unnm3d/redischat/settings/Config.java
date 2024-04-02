@@ -61,19 +61,33 @@ public final class Config implements ConfigValidator {
     @Comment("If true, RedisChat will log public chat messages")
     public boolean chatLogging = false;
     @Comment({"Here you can decide your chat format", "Permission format is overridden on descending order", "(if a player has default and vip, if default is the first element, vip will be ignored)"})
-    public List<ChatFormat> formats = List.of(new ChatFormat("redischat.default",
-            "<click:suggest_command:/msg %player_name%><hover:show_text:'<gray>Info" +
-                    "|</gray> <white>%player_displayname%</white> <br>↪ <gold>Money</gold>: <white>%vault_eco_balance%$</white>" +
-                    "<br>↪ <green>Server</green>: <white>%server_name%</white> <br><br><gray>Click" +
-                    "to send a private message</gray>'>%vault_prefix% %player_name% %vault_suffix%</click>" +
-                    "<dark_gray>» <reset><gray>%message%",
-            "<white>✉<green>⬆</green></white> <dark_aqua>MSG <grey>(Me ➺ <green>%receiver%<grey>): <white>%message%",
-            "<white>✉<green>⬇</green></white> <dark_aqua>MSG <grey>(<green>%sender%<grey> ➺ Me): <white>%message%",
-            "<aqua>@%player%</aqua>",
-            "<aqua><click:open_url:%link%>[Open web page <red>(be careful)</red>]</aqua>",
-            "<green>%player_name% joined the server",
-            "<red>%player_name% is no longer online"
-    ));
+    public List<ChatFormat> formats = List.of(
+            new ChatFormat("redischat.default",
+                    "<click:suggest_command:/msg %player_name%><hover:show_text:'<gray>Info" +
+                            "|</gray> <white>%player_displayname%</white> <br>↪ <gold>Money</gold>: <white>%vault_eco_balance%$</white>" +
+                            "<br>↪ <green>Server</green>: <white>%server_name%</white> <br><br><gray>Click" +
+                            "to send a private message</gray>'>%vault_prefix% %player_name%</click>" +
+                            "<dark_gray>» <reset>%redischat_chat_color%%message%",
+                    "<white>✉<green>⬆</green></white> <dark_aqua>MSG <grey>(Me ➺ <green>%receiver%<grey>): <white>%message%",
+                    "<white>✉<green>⬇</green></white> <dark_aqua>MSG <grey>(<green>%sender%<grey> ➺ Me): <white>%message%",
+                    "<aqua>@%player%</aqua>",
+                    "<aqua><click:open_url:%link%>[Open web page <red>(be careful)</red>]</aqua>",
+                    "<green>%player_name% joined the server",
+                    "<red>%player_name% is no longer online"),
+            new ChatFormat("redischat.staff",
+                    "<click:suggest_command:/msg %player_name%><hover:show_text:'<gray>Info" +
+                            "|</gray> <white>%player_displayname%</white> <br>↪ <gold>Money</gold>: <white>%vault_eco_balance%$</white>" +
+                            "<br>↪ <green>Server</green>: <white>%server_name%</white> <br><br><gray>Click" +
+                            "to send a private message</gray>'>%vault_prefix% %player_name%</click>" +
+                            "<dark_gray> <gold>(STAFF)</gold>»</dark_gray> <gold>%message%",
+                    "<white>✉<green>⬆</green></white> <dark_aqua>MSG <grey>(Me ➺ <green>%receiver%<grey>): <white>%message%",
+                    "<white>✉<green>⬇</green></white> <dark_aqua>MSG <grey>(<green>%sender%<grey> ➺ Me): <white>%message%",
+                    "<aqua>@%player% (staff)</aqua>",
+                    "<aqua><click:open_url:%link%>%link%</aqua>",
+                    "<green>%player_name% joined the server",
+                    "<red>%player_name% is no longer online"
+
+            ));
 
     @Comment("Fallback format if the player doesn't have any of the formats above")
     public ChatFormat defaultFormat = new ChatFormat("none",
@@ -116,7 +130,63 @@ public final class Config implements ConfigValidator {
             Map.entry("position", "<white><blue>Server:</blue> %server_name% <aqua>World:</aqua> %player_world% <gold>X:</gold> %player_x% <gold>Y:</gold> %player_y% <gold>Z:</gold> %player_z%</white>")
     ));
     @Comment({"Here you can blacklist some terms (like swears, insults and unwanted urls)", "They will be replaced with a *", "You can use the regex syntax and the * wildcard"})
-    public List<String> regex_blacklist = List.of("discord.gg/.*");
+    public List<String> regex_blacklist = List.of(
+            "discord.gg/.*",
+            "(?i)shit",
+            "(?i)sh!t",
+            "(?i)niggers?",
+            "(?i)fuck",
+            "(?i)bicth",
+            "(?i)bitch",
+            "(?i)dick",
+            "(?i)d1ck",
+            "(?i)dik",
+            "(?i)d1c",
+            "(?i)ashole",
+            "(?i)azzhole",
+            "(?i)nigar",
+            "(?i)niger",
+            "(?i)c0ck",
+            "(?i)kock",
+            "(?i)fuck",
+            "(?i)cunt",
+            "(?i)dickhead",
+            "(?i)asshole",
+            "(?i)arsehole",
+            "(?i)fuckhead",
+            "(?i)faggots?",
+            "(?i)kkk",
+            "(?i)whores?",
+            "(?i)sluts?",
+            "(?i)cunts?",
+            "(?i)dickheads?",
+            "(?i)fucktard",
+            "(?i)fucker",
+            "(?i)pussy",
+            "(?i)pussies",
+            "(?i)cocks?",
+            "(?i)dicks?",
+            "(?i)twats?",
+            "(?i)hump",
+            "(?i)rednecks?",
+            "(?i)chingchong",
+            "(?i)anus",
+            "(?i)bastard",
+            "(?i)blowjob",
+            "(?i)boner",
+            "(?i)boobs?",
+            "(?i)boobies",
+            "(?i)dildo",
+            "(?i)whore",
+            "(?i)cum",
+            "(?i)heil",
+            "(?i)sex",
+            "(?i)piss",
+            "(?i)raped",
+            "(?i)卐",
+            "(?i)卍",
+            "(?i)♿"
+    );
     @Comment({"What to replace the blacklisted words with"})
     public String blacklistReplacement = "<obf>*****</obf>";
     @Comment({"Private message notification sound",
@@ -146,14 +216,16 @@ public final class Config implements ConfigValidator {
     public int rejoinSendDelay = 500;
     @Comment("Quit delay in milliseconds")
     public int quitSendWaiting = 3000;
-    @Comment({"Since 1.20.2 client's chat is cleared when switching servers",
-            "This feature is to prevent chat clearing. RedisChat will send the last N received messages to the player",
-            "Set it to 0 to disable this feature"})
-    public int keepChatMessages = 0;
     @Comment({"Format id:volume:pitch",
             "You can find the list of sounds here: https://jd.papermc.io/paper/1.20/org/bukkit/Sound.html",
             "Leave it empty \"\" to disable the sound"})
     public String mentionSound = "ENTITY_EXPERIENCE_ORB_PICKUP:1:1";
+    @Comment("Do not send public messages to players that are ignoring the sender")
+    public boolean ignorePublicMessages = true;
+    @Comment({"Send a warning message to the player when ignoring a player on public chat",
+            "\"publicly_ignored_player\" notify will be sent to the player if this is set to true"})
+    public boolean sendWarnWhenIgnoring = true;
+    @Comment("Enable or disable the staff chat")
     public boolean enableStaffChat = true;
     @Comment("Messages with this prefix will be sent to staff chat")
     public String staffChatPrefix = "!";
@@ -173,7 +245,7 @@ public final class Config implements ConfigValidator {
     @Comment("Those commands will be disabled")
     public List<String> disabledCommands = List.of();
     @Comment("The [inv], [item] and [ec] placeholders will be considered as minimessage tags")
-    public boolean interactiveChatNostalgia = false;
+    public boolean interactiveChatNostalgia = true;
     @Comment("Command aliases (works for msg, mail, reply, staffchat and channel)")
     public Map<String, List<String>> commandAliases = new HashMap<>(Map.of(
             "msg", List.of("rmsg", "whisper", "msg", "pm", "w"),

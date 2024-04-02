@@ -12,9 +12,7 @@ import dev.jorel.commandapi.CommandAPICommand;
 import dev.unnm3d.redischat.api.DataManager;
 import dev.unnm3d.redischat.channels.ChannelCommand;
 import dev.unnm3d.redischat.channels.ChannelManager;
-import dev.unnm3d.redischat.chat.ChatListenerWithPriority;
-import dev.unnm3d.redischat.chat.ComponentProvider;
-import dev.unnm3d.redischat.chat.JoinQuitManager;
+import dev.unnm3d.redischat.chat.*;
 import dev.unnm3d.redischat.commands.*;
 import dev.unnm3d.redischat.datamanagers.RedisDataManager;
 import dev.unnm3d.redischat.datamanagers.sqlmanagers.H2SQLDataManager;
@@ -23,7 +21,6 @@ import dev.unnm3d.redischat.discord.DiscordWebhook;
 import dev.unnm3d.redischat.discord.IDiscordHook;
 import dev.unnm3d.redischat.discord.SpicordHook;
 import dev.unnm3d.redischat.integrations.OraxenTagResolver;
-import dev.unnm3d.redischat.integrations.PAPIIntegration;
 import dev.unnm3d.redischat.integrations.PremiumVanishIntegration;
 import dev.unnm3d.redischat.mail.MailCommand;
 import dev.unnm3d.redischat.mail.MailManager;
@@ -49,6 +46,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -76,6 +74,8 @@ public final class RedisChat extends JavaPlugin {
     @Getter
     private SpyManager spyManager;
     @Getter
+    private PlaceholderManager placeholderManager;
+    @Getter
     private ComponentProvider componentProvider;
     @Getter
     private AdventureWebuiEditorAPI webEditorAPI;
@@ -100,13 +100,14 @@ public final class RedisChat extends JavaPlugin {
         CommandAPI.onEnable();
         registeredCommands = new ArrayList<>();
         scheduler = UniversalScheduler.getScheduler(this);
-        this.executorService = Executors.newFixedThreadPool(config.chatThreads);
 
         try {
             loadYML();
         } catch (ConfigurationException e) {
             getLogger().severe("config.yml or messages.yml or guis.yml is invalid! Please regenerate them (starting from config.yml: " + e.getMessage());
         }
+
+        this.executorService = Executors.newFixedThreadPool(config.chatThreads);
 
         //Redis section
         switch (config.getDataType()) {
@@ -196,6 +197,12 @@ public final class RedisChat extends JavaPlugin {
         loadCommand("ignore", ignoreCommand, ignoreCommand);
         loadCommand("clearchat", new ClearChatCommand(this), null);
 
+        //RedisChat Placeholders
+        this.placeholderManager = new PlaceholderManager(this);
+        final ChatColorCommand chatColorCommand = new ChatColorCommand(this);
+        loadCommand("chatcolor", chatColorCommand, chatColorCommand);
+        final SetPlaceholderCommand placeholderCommand = new SetPlaceholderCommand(this);
+        loadCommand("setchatplaceholder", placeholderCommand, placeholderCommand);
 
         //InvShare part
         loadCommand("invshare", new InvShareCommand(this), null);
@@ -219,7 +226,7 @@ public final class RedisChat extends JavaPlugin {
             this.discordHook = new DiscordWebhook(this);
         }
         //PlaceholderAPI is always enabled as it is a dependency
-        new PAPIIntegration(this).register();
+        new RedisChatPAPI(this).register();
 
         new UpdateCheck(this).getVersion(version -> {
             if (!this.getDescription().getVersion().equalsIgnoreCase(version)) {
@@ -238,6 +245,7 @@ public final class RedisChat extends JavaPlugin {
                 YamlConfigurationProperties.newBuilder()
                         .header("RedisChat config")
                         .footer("Authors: Unnm3d")
+                        .charset(StandardCharsets.UTF_8)
                         .build()
         );
         this.config.validateConfig();
@@ -249,6 +257,7 @@ public final class RedisChat extends JavaPlugin {
                 YamlConfigurationProperties.newBuilder()
                         .header("RedisChat messages")
                         .footer("Authors: Unnm3d")
+                        .charset(StandardCharsets.UTF_8)
                         .build()
         );
         this.messages.validateConfig();
@@ -260,6 +269,7 @@ public final class RedisChat extends JavaPlugin {
                 ConfigLib.BUKKIT_DEFAULT_PROPERTIES.toBuilder()
                         .header("RedisChat guis")
                         .footer("Authors: Unnm3d")
+                        .charset(StandardCharsets.UTF_8)
                         .build()
         );
         this.guiSettings.validateConfig();

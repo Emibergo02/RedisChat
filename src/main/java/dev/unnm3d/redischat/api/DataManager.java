@@ -13,8 +13,8 @@ import org.jetbrains.annotations.Nullable;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.stream.Collectors;
 
 public interface DataManager {
 
@@ -33,17 +33,15 @@ public interface DataManager {
 
     void setReplyName(@NotNull String nameReceiver, @NotNull String requesterName);
 
+    CompletionStage<Map<String, String>> getPlayerPlaceholders(@NotNull String playerName);
+
+    void setPlayerPlaceholders(@NotNull String playerName, @NotNull Map<String, String> placeholders);
+
     boolean isRateLimited(@NotNull String playerName, @NotNull Channel channel);
 
     CompletionStage<Boolean> isSpying(@NotNull String playerName);
 
     void setSpying(@NotNull String playerName, boolean spy);
-
-    CompletionStage<Boolean> toggleIgnoring(@NotNull String playerName, @NotNull String ignoringName);
-
-    CompletionStage<Boolean> isIgnoring(@NotNull String playerName, @NotNull String ignoringName);
-
-    CompletionStage<List<String>> ignoringList(@NotNull String playerName);
 
     void addInventory(@NotNull String name, ItemStack[] inv);
 
@@ -71,14 +69,9 @@ public interface DataManager {
 
     void removePlayerChannelStatus(@NotNull String playerName, @NotNull String channelName);
 
-    default void setMutedChannels(@NotNull String playerName, @NotNull Set<String> mutedChannels) {
+    void setMutedEntities(@NotNull String playerName, @NotNull Set<String> mutedChannels);
 
-    }
-
-    default CompletionStage<Map<String, Set<String>>> getAllMutedChannels() {
-        return CompletableFuture.completedFuture(Map.of());
-    }
-
+    CompletionStage<Map<String, Set<String>>> getAllMutedEntities();
 
     void sendChatMessage(@NotNull ChatMessageInfo chatMessage);
 
@@ -129,5 +122,17 @@ public interface DataManager {
                 .map(entry -> new Mail(entry.getKey(), entry.getValue())).toList();
     }
 
+    default String serializePlayerPlaceholders(Map<String, String> placeholders) {
+        return placeholders.entrySet().stream()
+                .map(entry -> entry.getKey() + "§§§" + entry.getValue())
+                .collect(Collectors.joining("§;"));
+    }
+
+    default Map<String, String> deserializePlayerPlaceholders(String source) {
+        if (source == null || source.isEmpty()) return new HashMap<>();
+        return Arrays.stream(source.split("§;"))
+                .map(s -> s.split("§§§"))
+                .collect(Collectors.toMap(strings -> strings[0], strings -> strings[1]));
+    }
 
 }

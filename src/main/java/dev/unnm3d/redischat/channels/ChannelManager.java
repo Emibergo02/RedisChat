@@ -12,7 +12,6 @@ import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
-import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
@@ -36,7 +35,6 @@ public class ChannelManager extends RedisChatAPI {
     private final MuteManager muteManager;
     @Getter
     private final ChannelGUI channelGUI;
-    private final CircularFifoQueue<ChatMessageInfo> keepChat;
     private static final MiniMessage miniMessage = MiniMessage.miniMessage();
 
 
@@ -44,7 +42,6 @@ public class ChannelManager extends RedisChatAPI {
         INSTANCE = this;
         this.plugin = plugin;
         this.registeredChannels = new ConcurrentHashMap<>();
-        this.keepChat = plugin.config.keepChatMessages == 0 ? null : new CircularFifoQueue<>(plugin.config.keepChatMessages);
         this.muteManager = new MuteManager(plugin);
         this.channelGUI = new ChannelGUI(plugin);
         updateChannels();
@@ -125,7 +122,7 @@ public class ChannelManager extends RedisChatAPI {
     public void playerChannelMessage(CommandSender player, @NotNull Channel channel, @NotNull String message) {
         final long init = System.currentTimeMillis();
 
-        if (muteManager.isMuted(player.getName(), channel.getName())) {
+        if (muteManager.isMutedOnChannel(player.getName(), channel.getName())) {
             plugin.messages.sendMessage(player, plugin.messages.muted_on_channel.replace("%channel%", channel.getName()));
             return;
         }
@@ -244,8 +241,6 @@ public class ChannelManager extends RedisChatAPI {
     @Override
     public void sendAndKeepLocal(ChatMessageInfo chatMessageInfo) {
         sendLocalChatMessage(chatMessageInfo, null);
-        if (this.keepChat != null)
-            this.keepChat.add(chatMessageInfo);
     }
 
     public void sendLocalChatMessage(ChatMessageInfo chatMessageInfo, @Nullable Player recipient) {
@@ -263,16 +258,17 @@ public class ChannelManager extends RedisChatAPI {
             plugin.getServer().getOnlinePlayers().stream()
                     .filter(player -> player.getName().equals(chatMessageInfo.getReceiver().getName()))
                     .findFirst()
-                    .ifPresent(player -> plugin.getDataManager().isIgnoring(chatMessageInfo.getReceiver().getName(), chatMessageInfo.getSender().getName())
-                            .thenAcceptAsync(ignored -> {
-                                if (!ignored)
-                                    plugin.getChannelManager().sendPrivateChat(chatMessageInfo);
-                                if (plugin.config.debug) {
-                                    plugin.getLogger().info("Private message sent to " +
-                                            chatMessageInfo.getReceiver().getName() + " with ignore: " +
-                                            ignored + " in " + (System.currentTimeMillis() - init) + "ms");
-                                }
-                            }, plugin.getExecutorService()));
+                    .ifPresent(player -> {
+                        boolean ignored = muteManager.isPlayerIgnored(chatMessageInfo.getReceiver().getName(), chatMessageInfo.getSender().getName());
+                        if (!ignored) {
+                            plugin.getChannelManager().sendPrivateChat(chatMessageInfo);
+                        }
+                        if (plugin.config.debug) {
+                            plugin.getLogger().info("Private message sent to " +
+                                    chatMessageInfo.getReceiver().getName() + " with ignore: " +
+                                    ignored + " in " + (System.currentTimeMillis() - init) + "ms");
+                        }
+                    });
 
             //Send to spies
             plugin.getServer().getOnlinePlayers().stream()
@@ -313,6 +309,7 @@ public class ChannelManager extends RedisChatAPI {
                 recipient == null ?
                         plugin.getServer().getOnlinePlayers() :
                         Collections.singleton(recipient);
+
         recipients.stream()
                 //Filter players with permission to see the channel contents
                 .filter(player -> player.hasPermission(Permissions.CHANNEL_PREFIX.getPermission() + channel.getName()))
@@ -333,6 +330,16 @@ public class ChannelManager extends RedisChatAPI {
                             player.playSound(player.getLocation(), Sound.valueOf(split[0]), Float.parseFloat(split[1]), Float.parseFloat(split[2]));
                         }
                     }
+
+                    //Ignore public messages
+                    if (plugin.config.ignorePublicMessages && muteManager.isPlayerIgnored(player.getName(), chatMessageInfo.getSender().getName())) {
+                        if (!plugin.config.sendWarnWhenIgnoring) return;//If not sending warning, just ignore
+
+                        getComponentProvider().sendComponentOrCache(player, miniMessage.deserialize(
+                                plugin.messages.publicly_ignored_player.replace("%player%", chatMessageInfo.getSender().getName())));
+                        return;
+                    }
+
                     getComponentProvider().sendComponentOrCache(player, formattedComponent);
                 });
 
@@ -401,13 +408,6 @@ public class ChannelManager extends RedisChatAPI {
     }
 
     @Override
-    public void sendKeepChat(Player player) {
-        if (keepChat != null && !keepChat.isEmpty()) {
-            keepChat.forEach(chatMessageInfo -> sendLocalChatMessage(chatMessageInfo, player));
-        }
-    }
-
-    @Override
     public Optional<Channel> getChannel(@Nullable String channelName) {
         if (channelName == null) return Optional.empty();
         if (channelName.equals(KnownChatEntities.STAFFCHAT_CHANNEL_NAME.toString()))
@@ -452,8 +452,9 @@ public class ChannelManager extends RedisChatAPI {
         playerChannelsMap.put(channelName, "1");
         plugin.getDataManager().getActivePlayerChannel(playerName, plugin.getChannelManager().getRegisteredChannels())
                 .thenAcceptAsync(channel -> {
-                    if (channel != null)
+                    if (channel != null && !channel.equals(KnownChatEntities.PUBLIC_CHAT.toString())) {
                         playerChannelsMap.put(channel, "0");
+                    }
                     plugin.getDataManager().setPlayerChannelStatuses(playerName, playerChannelsMap);
                 }, plugin.getExecutorService());
     }

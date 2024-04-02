@@ -27,6 +27,7 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 public abstract class SQLDataManager implements DataManager {
     protected final RedisChat plugin;
@@ -51,6 +52,7 @@ public abstract class SQLDataManager implements DataManager {
                 player_name     varchar(16)     not null primary key,
                 ignore_list     TEXT            default NULL,
                 reply_player    varchar(16)     default NULL,
+                chat_color      varchar(12)     default NULL,
                 is_spying       BOOLEAN         default FALSE,
                 inv_serialized  MEDIUMTEXT      default NULL,
                 item_serialized TEXT            default NULL,
@@ -60,7 +62,7 @@ public abstract class SQLDataManager implements DataManager {
             create table if not exists channels
             (
                 name                varchar(16)     not null primary key,
-                format              varchar(512)    default 'No format -> %message%',
+                format              TEXT            default 'No format -> %message%',
                 rate_limit          int             default 5,
                 rate_limit_period   int             default 3,
                 proximity_distance  int             default -1,
@@ -76,18 +78,24 @@ public abstract class SQLDataManager implements DataManager {
                 status       int default 0 not null,
                 primary key (player_name, channel_name),
                 constraint player_channels_channels_name_fk
-                    foreign key (channel_name) references channels (name),
-                constraint player_channels_player_data_player_name_fk
-                    foreign key (player_name) references player_data (player_name)
+                    foreign key (channel_name) references channels (name)
             );
             """, """
-            create table if not exists ignored_players
+            create table if not exists muted_entities
+            (
+                entity_key      varchar(24) not null,
+                entities_value  TEXT        not null,
+                primary key (entity_key)
+            );
+            """, """
+            create table if not exists player_placeholders
             (
                 player_name    varchar(16) not null,
-                ignored_player varchar(16) not null,
-                unique (player_name, ignored_player)
+                placeholders   TEXT        not null,
+                primary key (player_name)
             );
-            """};
+            """
+        };
     }
 
     @SuppressWarnings("UnstableApiUsage")
@@ -120,6 +128,10 @@ public abstract class SQLDataManager implements DataManager {
                     final Channel ch = Channel.deserialize(messageString);
                     plugin.getChannelManager().updateChannel(ch.getName(), ch);
                 }
+            } else if (subchannel.equals(DataKey.MUTED_UPDATE.toString())) {
+                plugin.getChannelManager().getMuteManager().serializedUpdate(messageString);
+            } else if (subchannel.equals(DataKey.PLAYER_PLACEHOLDERS_UPDATE.toString())) {
+                plugin.getPlaceholderManager().updatePlayerPlaceholders(messageString);
             }
 
         });
@@ -165,7 +177,7 @@ public abstract class SQLDataManager implements DataManager {
                 statement.setString(2, requesterName);
                 statement.setString(3, requesterName);
                 if (statement.executeUpdate() == 0) {
-                    throw new SQLException("Failed to insert reply name into database");
+                    throw new SQLException("Failed to insert reply name into database: " + statement);
                 }
             }
         } catch (SQLException e) {
@@ -223,7 +235,7 @@ public abstract class SQLDataManager implements DataManager {
                 statement.setBoolean(2, spy);
                 statement.setBoolean(3, spy);
                 if (statement.executeUpdate() == 0) {
-                    throw new SQLException("Failed to insert spy toggling into database");
+                    throw new SQLException("Failed to insert spy toggling into database: " + statement);
                 }
             }
         } catch (SQLException e) {
@@ -232,70 +244,102 @@ public abstract class SQLDataManager implements DataManager {
     }
 
     @Override
-    public CompletionStage<Boolean> toggleIgnoring(@NotNull String playerName, @NotNull String ignoringName) {
+    public CompletionStage<Map<String, Set<String>>> getAllMutedEntities() {
         return CompletableFuture.supplyAsync(() -> {
             try (Connection connection = getConnection()) {
                 try (PreparedStatement statement = connection.prepareStatement("""
-                        IF exists(select * from ignored_players where player_name = ? and ignored_player= ?) then
-                            delete from ignored_players where player_name = ? and ignored_player= ? RETURNING false result;
-                        else
-                            insert into ignored_players (player_name, ignored_player) VALUES (?,?) RETURNING true result;
-                        end if
-                        """)) {
+                        select * from muted_entities;""")) {
 
-                    statement.setString(1, playerName);
-                    statement.setString(2, ignoringName);
-                    statement.setString(3, playerName);
-                    statement.setString(4, ignoringName);
-                    statement.setString(5, playerName);
-                    statement.setString(6, ignoringName);
-                    statement.executeUpdate();
-
-                    final ResultSet resultSet = statement.getResultSet();
-                    if (resultSet.next()) {
-                        return resultSet.getBoolean("result");
+                    final ResultSet resultSet = statement.executeQuery();
+                    final Map<String, Set<String>> mutedEntities = new HashMap<>();
+                    while (resultSet.next()) {
+                        String playerName = resultSet.getString("entity_key");
+                        String mutedPlayer = resultSet.getString("entities_value");
+                        mutedEntities.put(playerName,
+                                Arrays.stream(mutedPlayer.split(","))
+                                        .collect(Collectors.toCollection(HashSet::new)));
                     }
-                    throw new SQLException("Failed to insert player ignore into database");
+                    return mutedEntities;
                 }
             } catch (SQLException e) {
-                errWarn("Failed to insert player ignore into database", e);
+                errWarn("Failed to fetch muted entities from the database", e);
             }
-            return false;
+            return Map.of();
         }, plugin.getExecutorService());
     }
 
     @Override
-    public CompletionStage<Boolean> isIgnoring(@NotNull String playerName, @NotNull String ignoringName) {
-        return ignoringList(playerName)
-                .thenApply(ignoredPlayers ->
-                        ignoredPlayers != null && (
-                                ignoredPlayers.contains(ignoringName) ||
-                                        ignoredPlayers.contains(KnownChatEntities.ALL_PLAYERS.toString())
-                        )
-                );
+    public void setMutedEntities(@NotNull String entityKey, @NotNull Set<String> entitiesValue) {
+        try (Connection connection = getConnection()) {
+            try (PreparedStatement statement = connection.prepareStatement(entitiesValue.isEmpty() ? """
+                    DELETE FROM muted_entities
+                    WHERE entity_key = ?;""" : """
+                    INSERT INTO muted_entities
+                        (`entity_key`, `entities_value`)
+                    VALUES
+                        (?,?)
+                    ON DUPLICATE KEY UPDATE `entities_value` = ?;""")) {
+
+                statement.setString(1, entityKey);
+                if (!entitiesValue.isEmpty()) {
+                    statement.setString(2, String.join(",", entitiesValue));
+                    statement.setString(3, String.join(",", entitiesValue));
+                }
+                if (statement.executeUpdate() == 0) {
+                    throw new SQLException("Failed to insert muted entities into database: " + statement);
+                }
+                sendMutedEntityUpdate(entityKey, entitiesValue);
+            }
+        } catch (SQLException e) {
+            errWarn("Failed to insert muted entities into database", e);
+        }
     }
 
     @Override
-    public CompletionStage<List<String>> ignoringList(@NotNull String playerName) {
+    public CompletionStage<Map<String, String>> getPlayerPlaceholders(@NotNull String playerName) {
         return CompletableFuture.supplyAsync(() -> {
             try (Connection connection = getConnection()) {
                 try (PreparedStatement statement = connection.prepareStatement("""
-                        select ignored_player from ignored_players
-                        where player_name = ?;""")) {
-
+                        SELECT `placeholders`
+                        FROM player_placeholders
+                        WHERE `player_name`=?""")) {
                     statement.setString(1, playerName);
 
                     final ResultSet resultSet = statement.executeQuery();
-                    List<String> ignoredPlayers = new ArrayList<>();
-                    while (resultSet.next()) {
-                        ignoredPlayers.add(resultSet.getString("ignored_player"));
+                    if (resultSet.next()) {
+                        return deserializePlayerPlaceholders(resultSet.getString("placeholders"));
                     }
-                    return ignoredPlayers;
                 }
             } catch (SQLException e) {
-                errWarn("Failed to fetch ignored players from the database", e);
+                errWarn("Failed to fetch player placeholders from the database", e);
             }
-            return null;
+            return Map.of();
+        }, plugin.getExecutorService());
+    }
+
+    @Override
+    public void setPlayerPlaceholders(@NotNull String playerName, @NotNull Map<String, String> placeholders) {
+        CompletableFuture.runAsync(() -> {
+            try (Connection connection = getConnection()) {
+                try (PreparedStatement statement = connection.prepareStatement("""
+                                            
+                            INSERT INTO player_placeholders
+                            (`player_name`, `placeholders`)
+                        VALUES
+                            (?,?)
+                        ON DUPLICATE KEY UPDATE `placeholders` = ?;""")) {
+
+                    statement.setString(1, playerName);
+                    statement.setString(2, serializePlayerPlaceholders(placeholders));
+                    statement.setString(3, serializePlayerPlaceholders(placeholders));
+                    if (statement.executeUpdate() == 0) {
+                        throw new SQLException("Fat player placeholders into database");
+                    }
+                    sendPlayerPlaceholdersUpdate(playerName + "§;" + serializePlayerPlaceholders(placeholders));
+                }
+            } catch (SQLException e) {
+                errWarn("Failed to insert player placeholders into database", e);
+            }
         }, plugin.getExecutorService());
     }
 
@@ -312,7 +356,7 @@ public abstract class SQLDataManager implements DataManager {
                 statement.setString(1, name);
                 statement.setString(2, serialize(inv));
                 if (statement.executeUpdate() == 0) {
-                    throw new SQLException("Failed to insert serialized inventory into database");
+                    throw new SQLException("Failed to insert serialized inventory into database: " + statement);
                 }
             }
         } catch (SQLException e) {
@@ -334,7 +378,7 @@ public abstract class SQLDataManager implements DataManager {
                 statement.setString(1, name);
                 statement.setString(2, serialize(item));
                 if (statement.executeUpdate() == 0) {
-                    throw new SQLException("Failed to insert serialized item into database");
+                    throw new SQLException("Failed to insert serialized item into database: " + statement);
                 }
             }
         } catch (SQLException e) {
@@ -355,7 +399,7 @@ public abstract class SQLDataManager implements DataManager {
                 statement.setString(1, name);
                 statement.setString(2, serialize(inv));
                 if (statement.executeUpdate() == 0) {
-                    throw new SQLException("Failed to insert serialized enderchest into database");
+                    throw new SQLException("Failed to insert serialized enderchest into database: " + statement);
                 }
             }
         } catch (SQLException e) {
@@ -370,7 +414,6 @@ public abstract class SQLDataManager implements DataManager {
                     UPDATE player_data SET inv_serialized = NULL, item_serialized = NULL, ec_serialized = NULL;
                     """)) {
                 statement.executeUpdate();
-
             }
         } catch (SQLException e) {
             errWarn("Failed to clear inv share cache", e);
@@ -494,7 +537,7 @@ public abstract class SQLDataManager implements DataManager {
                     statement.setString(5, mail.getSender());
                     statement.setString(6, mail.serialize());
                     if (statement.executeUpdate() == 0) {
-                        throw new SQLException("Failed to insert serialized private mail into database");
+                        throw new SQLException("Failed to insert serialized private mail into database: " + statement);
                     }
                     return true;
                 }
@@ -519,7 +562,7 @@ public abstract class SQLDataManager implements DataManager {
                     statement.setString(2, mail.getReceiver());
                     statement.setString(3, mail.serialize());
                     if (statement.executeUpdate() == 0) {
-                        throw new SQLException("Failed to insert serialized public mail into database");
+                        throw new SQLException("Failed to insert serialized public mail into database: " + statement);
                     }
                     return true;
                 }
@@ -562,7 +605,16 @@ public abstract class SQLDataManager implements DataManager {
                         INSERT INTO channels
                             (`name`,`format`,`rate_limit`,`rate_limit_period`,`proximity_distance`,`discordWebhook`,`filtered`,`notificationSound`)
                         VALUES
-                            (?,?,?,?,?,?,?,?);""")) {
+                            (?,?,?,?,?,?,?,?)
+                        ON DUPLICATE KEY UPDATE
+                            `format` = VALUES(`format`),
+                            `rate_limit` = VALUES(`rate_limit`),
+                            `rate_limit_period` = VALUES(`rate_limit_period`),
+                            `proximity_distance` = VALUES(`proximity_distance`),
+                            `discordWebhook` = VALUES(`discordWebhook`),
+                            `filtered` = VALUES(`filtered`),
+                            `notificationSound` = VALUES(`notificationSound`);
+                            """)) {
 
                     statement.setString(1, channel.getName());
                     statement.setString(2, channel.getFormat());
@@ -574,7 +626,7 @@ public abstract class SQLDataManager implements DataManager {
                     final String soundString = channel.getNotificationSound() == null ? null : channel.getNotificationSound().toString();
                     statement.setString(8, soundString);
                     if (statement.executeUpdate() == 0) {
-                        throw new SQLException("Failed to register channel to database");
+                        throw new SQLException("Failed to register channel to database: " + statement);
                     }
 
                     sendChannelUpdate(channel.getName(), channel);
@@ -607,6 +659,15 @@ public abstract class SQLDataManager implements DataManager {
         sendPluginMessage(out.toByteArray());
     }
 
+    public void sendPlayerPlaceholdersUpdate(String serializedPlaceholders) {
+        final ByteArrayDataOutput out = ByteStreams.newDataOutput();
+        out.writeUTF("Forward");
+        out.writeUTF("ALL");
+        out.writeUTF(DataKey.PLAYER_PLACEHOLDERS_UPDATE.toString());
+        out.writeUTF(serializedPlaceholders);
+        sendPluginMessage(out.toByteArray());
+    }
+
     @Override
     public void unregisterChannel(@NotNull String channelName) {
         CompletableFuture.supplyAsync(() -> {
@@ -617,7 +678,7 @@ public abstract class SQLDataManager implements DataManager {
 
                     statement.setString(1, channelName);
                     if (statement.executeUpdate() == 0) {
-                        throw new SQLException("Failed to unregister channel to database");
+                        throw new SQLException("Failed to unregister channel to database: " + statement);
                     }
 
                     sendChannelUpdate(channelName, null);
@@ -719,11 +780,13 @@ public abstract class SQLDataManager implements DataManager {
         CompletableFuture.supplyAsync(() -> {
             try (Connection connection = getConnection()) {
                 try (PreparedStatement statement = connection.prepareStatement("""
-                        INSERT INTO player_channels (player_name, channel_name, status) VALUES
+                        INSERT INTO player_channels (`player_name`, `channel_name`, `status`) VALUES
+                                                
                         """ +
-                        String.join(",", Collections.nCopies(channelStatuses.size(), " (?,?,?)")) +
+                        String.join(",", Collections.nCopies(channelStatuses.size(), "(?,?,?)")) +
                         """
-                                ON DUPLICATE KEY UPDATE status = VALUES(status);
+                                                        
+                                ON DUPLICATE KEY UPDATE status = VALUES(`status`);
                                 """)) {
                     int i = 0;
                     for (Map.Entry<String, String> stringStringEntry : channelStatuses.entrySet()) {
@@ -733,11 +796,11 @@ public abstract class SQLDataManager implements DataManager {
                         i++;
                     }
                     if (statement.executeUpdate() == 0) {
-                        throw new SQLException("Failed to register channel to database");
+                        throw new SQLException("Failed to update channel status to database: " + statement);
                     }
                 }
             } catch (SQLException e) {
-                errWarn("Failed to register channel to database", e);
+                errWarn("Failed to update channel status to database", e);
             }
             return null;
         }, plugin.getExecutorService());
@@ -755,7 +818,7 @@ public abstract class SQLDataManager implements DataManager {
                     statement.setString(2, channelName);
 
                     if (statement.executeUpdate() == 0) {
-                        throw new SQLException("Failed to register channel to database");
+                        throw new SQLException("Failed to delete channel from database: " + statement);
                     }
                 }
             } catch (SQLException e) {
@@ -821,6 +884,16 @@ public abstract class SQLDataManager implements DataManager {
 
         if (plugin.getPlayerListManager() != null)
             plugin.getPlayerListManager().updatePlayerList(playerNames);
+    }
+
+    public void sendMutedEntityUpdate(@NotNull String entityKey, @NotNull Set<String> entitiesValue) {
+        final ByteArrayDataOutput out = ByteStreams.newDataOutput();
+        out.writeUTF("Forward");
+        out.writeUTF("ALL");
+        out.writeUTF(DataKey.MUTED_UPDATE.toString());
+        out.writeUTF(entityKey + ";" + String.join(",", entitiesValue));
+
+        sendPluginMessage(out.toByteArray());
     }
 
     @Override

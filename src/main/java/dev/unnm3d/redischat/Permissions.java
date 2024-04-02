@@ -30,6 +30,8 @@ public enum Permissions {
     CHANNEL_LIST("redischat.listchannel"),
     CHANNEL_MUTE("redischat.mutechannel"),
     JOIN_QUIT("redischat.joinquit"),
+    CHAT_COLOR("redischat.chatcolorcommand"),
+    SET_PLACEHOLDER("redischat.setchatplaceholder"),
     ;
 
     private final String permission;

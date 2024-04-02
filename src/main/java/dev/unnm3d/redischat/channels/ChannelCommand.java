@@ -242,15 +242,5 @@ public class ChannelCommand {
                 });
     }
 
-    private String[] getChannelsWithPublic() {
-        final String[] array = new String[plugin.getChannelManager().getRegisteredChannels().size() + 1];
-        array[0] = "public";
-        int index = 1;
 
-        for (String s : plugin.getChannelManager().getRegisteredChannels().keySet()) {
-            array[index] = s;
-            index++;
-        }
-        return array;
-    }
 }

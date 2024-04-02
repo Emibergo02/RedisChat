@@ -31,9 +31,9 @@ public class MuteCommand {
                         plugin.messages.sendMessage(sender, plugin.messages.missing_arguments);
                         return;
                     }
-                    String channelName = (String) args.getOptional("channel").orElse(KnownChatEntities.PUBLIC_CHAT.toString());
-                    plugin.getLogger().info("COMMAND muting " + playerName + " in " + channelName);
-                    plugin.getChannelManager().getMuteManager().toggleMutePlayer(playerName, channelName, true);
+                    final String channelName = (String) args.getOptional("channel").orElse(KnownChatEntities.PUBLIC_CHAT.toString());
+
+                    plugin.getChannelManager().getMuteManager().toggleMuteOnChannel(playerName, channelName, true);
                     plugin.messages.sendMessage(sender, plugin.messages.muted_player
                             .replace("%player%", playerName)
                             .replace("%channel%", channelName)
@@ -53,9 +53,9 @@ public class MuteCommand {
                         plugin.messages.sendMessage(sender, plugin.messages.missing_arguments);
                         return;
                     }
-                    String channelName = (String) args.getOptional(1).orElse(KnownChatEntities.PUBLIC_CHAT.toString());
+                    String channelName = (String) args.getOptional("channel").orElse(KnownChatEntities.PUBLIC_CHAT.toString());
 
-                    plugin.getChannelManager().getMuteManager().toggleMutePlayer(playerName, channelName, false);
+                    plugin.getChannelManager().getMuteManager().toggleMuteOnChannel(playerName, channelName, false);
                     plugin.messages.sendMessage(sender, plugin.messages.unmuted_player
                             .replace("%player%", playerName)
                             .replace("%channel%", channelName)

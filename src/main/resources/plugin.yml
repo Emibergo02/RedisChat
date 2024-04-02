@@ -38,7 +38,19 @@ commands:
     description: Spychat command
     aliases: [spyc]
     permission: redischat.spycommand
+  chatcolor:
+    description: Chatcolor command
+    permission: redischat.chatcolorcommand
+  setchatplaceholder:
+    description: Setchatplaceholder command
+    permission: redischat.setchatplaceholder
 permissions:
+  redischat.chatcolorcommand:
+    description: Allows to use the /chatcolor command
+    default: op
+  redischat.setchatplaceholder:
+    description: Allows to use the /setchatplaceholder command
+    default: op
   redischat.listchannel:
     description: Allows to list channels
     default: op
@@ -116,6 +128,8 @@ permissions:
       - redischat.usedangeroustags
       - redischat.chatas
       - redischat.mutechannel
+      - redischat.setchatplaceholder
+      - redischat.chatcolorcommand
   redischat.default:
     description: Allows you to use default commands
     default: true

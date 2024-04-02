@@ -115,14 +115,6 @@ public abstract class RedisChatAPI {
     public abstract void unpauseChat(@NotNull Player player);
 
     /**
-     * Sends last messages to the player
-     * This packet is used to keep the chat for 1.20.2+ players (Check docs for more info)
-     *
-     * @param player The player to send the messages to
-     */
-    public abstract void sendKeepChat(Player player);
-
-    /**
      * Get a channel by name null if not found
      *
      * @param channelName The name of the channel

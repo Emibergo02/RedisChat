@@ -24,7 +24,6 @@ public class ChatListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onJoin(PlayerJoinEvent event) {
         plugin.getSpyManager().onJoin(event.getPlayer());
-        plugin.getChannelManager().sendKeepChat(event.getPlayer());
     }
 
 

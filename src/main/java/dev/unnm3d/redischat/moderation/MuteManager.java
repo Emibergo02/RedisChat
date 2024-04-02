@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -13,19 +14,37 @@ import java.util.stream.Collectors;
 public class MuteManager {
 
     private final RedisChat plugin;
-    private ConcurrentHashMap<String, Set<String>> mutedPlayers;
+    /**
+     * Key: Player name
+     * Value: Set of muted channel names
+     */
+    private final ConcurrentHashMap<String, Set<String>> channelMutedForPlayers;
+    /**
+     * Key: Player name
+     * Value: Set of muted player names
+     */
+    private final ConcurrentHashMap<String, Set<String>> playersMutedForPlayers;
 
     public MuteManager(RedisChat plugin) {
         this.plugin = plugin;
-        this.mutedPlayers = new ConcurrentHashMap<>();
+        this.channelMutedForPlayers = new ConcurrentHashMap<>();
+        this.playersMutedForPlayers = new ConcurrentHashMap<>();
         reload();
     }
 
     public void reload() {
-        mutedPlayers.clear();
-        plugin.getDataManager().getAllMutedChannels().thenAccept(stringSetMap -> {
+        channelMutedForPlayers.clear();
+        playersMutedForPlayers.clear();
+        plugin.getDataManager().getAllMutedEntities().thenAccept(stringSetMap -> {
             if (stringSetMap == null) return;
-            this.mutedPlayers = new ConcurrentHashMap<>(stringSetMap);
+
+            for (Map.Entry<String, Set<String>> stringSetEntry : stringSetMap.entrySet()) {
+                if (stringSetEntry.getKey().startsWith(KnownChatEntities.CHANNEL_PREFIX.toString())) {
+                    channelMutedForPlayers.put(stringSetEntry.getKey().substring(1), stringSetEntry.getValue());
+                } else {
+                    playersMutedForPlayers.put(stringSetEntry.getKey(), stringSetEntry.getValue());
+                }
+            }
         });
     }
 
@@ -37,9 +56,10 @@ public class MuteManager {
      * @param channel    Channel to mute
      * @param muted      true to mute, false to unmute
      */
-    public void toggleMutePlayer(@NotNull String playerName, @NotNull String channel, boolean muted) {
-        localMute(playerName, channel, muted);
-        this.plugin.getDataManager().setMutedChannels(playerName, mutedPlayers.getOrDefault(playerName, new HashSet<>()));
+    public void toggleMuteOnChannel(@NotNull String playerName, @NotNull String channel, boolean muted) {
+        localChannelMute(playerName, channel, muted);
+        this.plugin.getDataManager().setMutedEntities(playerName, channelMutedForPlayers.getOrDefault(playerName, new HashSet<>()));
+
     }
 
     /**
@@ -50,53 +70,132 @@ public class MuteManager {
      * @param channel    Channel to mute
      * @param muted      true to mute, false to unmute
      */
-    public void localMute(@NotNull String playerName, @NotNull String channel, boolean muted) {
+    public void localChannelMute(@NotNull String playerName, @NotNull String channel, boolean muted) {
         if (!muted) {
-            mutedPlayers.computeIfPresent(playerName, (s, strings) -> {
-                strings.remove(channel);
+            channelMutedForPlayers.computeIfPresent(channel, (s, strings) -> {
+                strings.remove(playerName);
                 return strings.isEmpty() ? null : strings;
             });
             return;
         }
-        plugin.getLogger().info("Muting " + playerName + " in " + channel);
 
-        if (mutedPlayers.containsKey(playerName)) {
-            mutedPlayers.get(playerName).add(channel);
+        if (channelMutedForPlayers.containsKey(channel)) {
+            channelMutedForPlayers.get(channel).add(playerName);
         } else {
-            setMutedPlayers(playerName, channel);
+            setMutedChannels(channel, playerName);
+        }
+    }
+
+    /**
+     * Ignore/Unignore a player
+     *
+     * @param ignorer    Player that is ignoring
+     * @param ignoredPlayer Player to ignore
+     * @return true if the player is ignored
+     */
+    public boolean toggleIgnorePlayer(@NotNull String ignorer, @NotNull String ignoredPlayer) {
+        if (playersMutedForPlayers.containsKey(ignorer) && playersMutedForPlayers.get(ignorer).contains(ignoredPlayer)) {
+            localPlayerIgnore(ignorer, ignoredPlayer, false);
+            this.plugin.getDataManager().setMutedEntities(ignorer, playersMutedForPlayers.getOrDefault(ignorer, new HashSet<>()));
+            return false;
+        }
+        localPlayerIgnore(ignorer, ignoredPlayer, true);
+        this.plugin.getDataManager().setMutedEntities(ignorer, playersMutedForPlayers.getOrDefault(ignorer, new HashSet<>()));
+        return true;
+    }
+
+    public void localPlayerIgnore(@NotNull String ignorer, @NotNull String ignoredPlayer, boolean ignore) {
+        if (!ignore) {
+            playersMutedForPlayers.computeIfPresent(ignorer, (s, strings) -> {
+                strings.remove(ignoredPlayer);
+                return strings.isEmpty() ? null : strings;
+            });
+            return;
+        }
+
+        if (playersMutedForPlayers.containsKey(ignorer)) {
+            playersMutedForPlayers.get(ignorer).add(ignoredPlayer);
+        } else {
+            setPlayersMutedForPlayers(ignorer, ignoredPlayer);
         }
     }
 
     /**
      * Set the muted channels of a player
      *
-     * @param playerName Player to mute
-     * @param channels   Channels to mute
+     * @param channel Channel to mute
+     * @param players Players to mute
      */
-    private void setMutedPlayers(String playerName, String... channels) {
-        if (channels.length == 0 || channels[0].isEmpty()) {
-            mutedPlayers.remove(playerName);
+    private void setMutedChannels(String channel, String... players) {
+        if (players.length == 0 || players[0].isEmpty()) {
+            channelMutedForPlayers.remove(channel);
             return;
         }
-        mutedPlayers.put(playerName, Arrays.stream(channels).collect(Collectors.toCollection(HashSet::new)));
+        channelMutedForPlayers.put(channel, Arrays.stream(players).collect(Collectors.toCollection(HashSet::new)));
+    }
+
+    /**
+     * Mute/Unmute a player for another player
+     *
+     * @param ignoringPlayer Player to mute for
+     * @param ignoredPlayer  Players to mute
+     */
+    private void setPlayersMutedForPlayers(String ignoringPlayer, String... ignoredPlayer) {
+        if (ignoredPlayer.length == 0 || ignoredPlayer[0].isEmpty()) {
+            playersMutedForPlayers.remove(ignoringPlayer);
+            return;
+        }
+        playersMutedForPlayers.put(ignoringPlayer, Arrays.stream(ignoredPlayer).collect(Collectors.toCollection(HashSet::new)));
+    }
+
+    /**
+     * Check if a player is muted in a channel
+     *
+     * @param playerName Player to check
+     * @param channel    Channel to check
+     * @return true if the player is muted in the channel
+     */
+    public boolean isMutedOnChannel(String playerName, String channel) {
+        final Set<String> mutedPlayers = channelMutedForPlayers.get(channel);
+        if (mutedPlayers == null) return false;
+        return mutedPlayers.contains(playerName) || mutedPlayers.contains(KnownChatEntities.ALL_PLAYERS.toString());
+    }
+
+    /**
+     * Check if a player is muted for another player
+     *
+     * @param ignorer Who is ignoring
+     * @param ignored Who is being ignored
+     * @return true if the "ignorer" is ignoring the "ignored"
+     */
+    public boolean isPlayerIgnored(String ignorer, String ignored) {
+        final Set<String> mutedPlayers = playersMutedForPlayers.get(ignorer);
+        if (mutedPlayers == null) return false;
+        return mutedPlayers.contains(ignored) || mutedPlayers.contains(KnownChatEntities.ALL_PLAYERS.toString());
+    }
+
+    public Set<String> getIgnoreList(String playerName) {
+        return playersMutedForPlayers.getOrDefault(playerName, new HashSet<>());
     }
 
     public void serializedUpdate(String serializedUpdate) {
         final String[] split = serializedUpdate.split(";");
-        final String playerName = split[0];
-        if (split.length == 1) {
-            setMutedPlayers(playerName);
+        final String keyEntity = split[0];
+
+        if (keyEntity.startsWith(KnownChatEntities.CHANNEL_PREFIX.toString())) {
+            if (split.length == 1) {
+                setMutedChannels(keyEntity.substring(1));
+                return;
+            }
+            setMutedChannels(keyEntity.substring(1), split[1].split(","));
             return;
         }
 
-        setMutedPlayers(playerName, split[1].split("§"));
-    }
-
-    public boolean isMuted(String playerName, String channel) {
-        if (mutedPlayers.containsKey(KnownChatEntities.ALL_PLAYERS.toString()) && mutedPlayers.get(KnownChatEntities.ALL_PLAYERS.toString()).contains(channel))
-            return true;
-
-        return mutedPlayers.containsKey(playerName) && mutedPlayers.get(playerName).contains(channel);
+        if (split.length == 1) {
+            setPlayersMutedForPlayers(keyEntity);
+            return;
+        }
+        setPlayersMutedForPlayers(keyEntity, split[1].split(","));
     }
 
 

@@ -13,20 +13,21 @@ public enum DataKey {
     PLAYER_CHANNELS_PREFIX("rchat:pch_"),
     ACTIVE_CHANNEL_ID("!activech"),
     IGNORE_PREFIX("rchat:ignore_"),
-    MUTED_PLAYERS("rchat:muted"),
+    MUTED_ENTITIES("rchat:muted"),
     RATE_LIMIT_PREFIX("rchat:ratelimit_"),
     REPLY("rchat:reply"),
+    PLAYER_PLACEHOLDERS("rchat:p_ph"),
+    PLAYER_PLACEHOLDERS_UPDATE("rchat:p_ph_update"),
     INVSHARE_ITEM("rchat:item"),
     INVSHARE_INVENTORY("rchat:inventory"),
     INVSHARE_ENDERCHEST("rchat:enderchest"),
     SPYING_LIST("rchat:spying"),
     PRIVATE_MAIL_PREFIX("rmail:"),
     PUBLIC_MAIL("rmail:public"),
-    MUTED_UPDATE("rchat:m_players_update"),
+    MUTED_UPDATE("rchat:m_update"),
     ;
 
     private final String keyName;
-    private static final String CLUSTER_ID = RedisChat.getInstance().config.clusterId;
 
 
     /**
@@ -38,7 +39,7 @@ public enum DataKey {
 
     @Override
     public String toString() {
-        return CLUSTER_ID + keyName;
+        return RedisChat.getInstance().config.clusterId + keyName;
     }
 
     public String withoutCluster() {

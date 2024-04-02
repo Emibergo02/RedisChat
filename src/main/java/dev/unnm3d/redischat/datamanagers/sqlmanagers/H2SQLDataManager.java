@@ -30,7 +30,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.concurrent.CompletionStage;
 
 @SuppressWarnings("DuplicatedCode")
 public class H2SQLDataManager extends SQLDataManager {
@@ -183,29 +182,6 @@ public class H2SQLDataManager extends SQLDataManager {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    @Override
-    public CompletionStage<Boolean> toggleIgnoring(@NotNull String playerName, @NotNull String ignoringName) {
-        return isIgnoring(playerName, ignoringName).thenApply(isIgnoring -> {
-            try (Connection connection = getConnection()) {
-                final String statementString = isIgnoring ?
-                        "DELETE FROM IGNORED_PLAYERS WHERE PLAYER_NAME = ? AND IGNORED_PLAYER = ?;" :
-                        "INSERT INTO IGNORED_PLAYERS (PLAYER_NAME, IGNORED_PLAYER) VALUES (?, ?);";
-                try (PreparedStatement statement = connection.prepareStatement(statementString)) {
-
-                    statement.setString(1, playerName);
-                    statement.setString(2, ignoringName);
-                    if (statement.executeUpdate() == 0 && !isIgnoring) {
-                        throw new SQLException("Failed to insert reply name into database");
-                    }
-                    return !isIgnoring;
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-            return false;
-        });
     }
 
     @Override
