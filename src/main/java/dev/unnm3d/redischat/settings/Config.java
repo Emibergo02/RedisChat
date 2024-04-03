@@ -57,7 +57,7 @@ public final class Config implements ConfigValidator {
             "The quit message will be delayed because it might be a early reconnection to one of the servers using RedisChat"})
     public boolean enableQuitJoinMessages = true;
     @Comment("Re-enables bukkit color glitches for colored placeholders")
-    public boolean enablePlaceholderGlitch = false;
+    public boolean enablePlaceholderGlitch = true;
     @Comment("If true, RedisChat will log public chat messages")
     public boolean chatLogging = false;
     @Comment({"Here you can decide your chat format", "Permission format is overridden on descending order", "(if a player has default and vip, if default is the first element, vip will be ignored)"})

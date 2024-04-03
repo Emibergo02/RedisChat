@@ -164,7 +164,8 @@ public class ComponentProvider {
 
         Component answer = miniMessage.deserialize(text, tagResolvers);
         for (String placeholder : placeholders.keySet()) {
-            answer = answer.replaceText(rBuilder -> rBuilder.matchLiteral(placeholder).replacement(placeholders.get(placeholder)));
+            answer = answer.replaceText(rBuilder -> rBuilder.matchLiteral(placeholder)
+                    .replacement(placeholders.get(placeholder)));
         }
         return answer;
     }
@@ -175,7 +176,7 @@ public class ComponentProvider {
         for (Map.Entry<String, String> replacementEntry : plugin.config.placeholders.entrySet()) {
             messageComp = messageComp.replaceText(rBuilder ->
                     rBuilder.matchLiteral(replacementEntry.getKey())
-                            .replacement(parsePlaceholders(null, parseLegacy(replacementEntry.getValue(), true), this.standardTagResolver)));
+                            .replacement(parsePlaceholders(cmdSender, parseLegacy(replacementEntry.getValue(), true), this.standardTagResolver)));
         }
         return messageComp;
     }
