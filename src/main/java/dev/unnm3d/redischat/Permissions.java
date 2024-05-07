@@ -9,6 +9,7 @@ public enum Permissions {
     MAIL_WRITE_PUBLIC("redischat.mail.writepublic"),
     MAIL_READ("redischat.mail.read"),
     IGNORE("redischat.ignore"),
+    IGNORE_WHITELIST("redischat.ignore_whitelist"),
     USE_FORMATTING("redischat.useformatting"),
     USE_DANGEROUS("redischat.usedangeroustags"),
     USE_ITEM("redischat.showitem"),

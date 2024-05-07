@@ -14,11 +14,19 @@ import java.util.stream.Collectors;
 public class MuteManager {
 
     private final RedisChat plugin;
+
     /**
      * Key: Player name
      * Value: Set of muted channel names
      */
     private final ConcurrentHashMap<String, Set<String>> channelMutedForPlayers;
+
+    /**
+     * Key: Player name
+     * Value: Set of muted channel names
+     */
+    private final Set<String> whitelistEnabledPlayers;
+
     /**
      * Key: Player name
      * Value: Set of muted player names
@@ -28,6 +36,7 @@ public class MuteManager {
     public MuteManager(RedisChat plugin) {
         this.plugin = plugin;
         this.channelMutedForPlayers = new ConcurrentHashMap<>();
+        this.whitelistEnabledPlayers = ConcurrentHashMap.newKeySet();
         this.playersMutedForPlayers = new ConcurrentHashMap<>();
         reload();
     }
@@ -46,6 +55,7 @@ public class MuteManager {
                 }
             }
         });
+        plugin.getDataManager().getWhitelistEnabledPlayers().thenAccept(whitelistEnabledPlayers::addAll);
     }
 
 
@@ -89,7 +99,7 @@ public class MuteManager {
     /**
      * Ignore/Unignore a player
      *
-     * @param ignorer    Player that is ignoring
+     * @param ignorer       Player that is ignoring
      * @param ignoredPlayer Player to ignore
      * @return true if the player is ignored
      */
@@ -170,8 +180,15 @@ public class MuteManager {
      */
     public boolean isPlayerIgnored(String ignorer, String ignored) {
         final Set<String> mutedPlayers = playersMutedForPlayers.get(ignorer);
-        if (mutedPlayers == null) return false;
-        return mutedPlayers.contains(ignored) || mutedPlayers.contains(KnownChatEntities.ALL_PLAYERS.toString());
+        boolean isIgnored = mutedPlayers != null && (
+                mutedPlayers.contains(ignored) || mutedPlayers.contains(KnownChatEntities.ALL_PLAYERS.toString())
+        );
+        // If the player is in the whitelist, the result is inverted
+        return isWhitelistEnabledPlayer(ignorer) != isIgnored;
+    }
+
+    public boolean isWhitelistEnabledPlayer(String playerName) {
+        return whitelistEnabledPlayers.contains(playerName);
     }
 
     public Set<String> getIgnoreList(String playerName) {
@@ -196,6 +213,18 @@ public class MuteManager {
             return;
         }
         setPlayersMutedForPlayers(keyEntity, split[1].split(","));
+    }
+
+    public void setWhitelistEnabledPlayer(String playerName, boolean enabled) {
+        plugin.getDataManager().setWhitelistEnabledPlayer(playerName, enabled);
+    }
+
+    public void whitelistEnabledUpdate(String playerName, boolean enabled) {
+        if (enabled) {
+            whitelistEnabledPlayers.add(playerName);
+        } else {
+            whitelistEnabledPlayers.remove(playerName);
+        }
     }
 
 

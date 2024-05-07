@@ -127,6 +127,11 @@ public class ChannelManager extends RedisChatAPI {
             return;
         }
 
+        if (!player.hasPermission(Permissions.CHANNEL_PREFIX.getPermission() + channel.getName())) {
+            plugin.messages.sendMessage(player, plugin.messages.channelNoPermission.replace("%channel%", channel.getName()));
+            return;
+        }
+
         if (isRateLimited(player, channel)) return;
 
         if (plugin.config.debug) {
@@ -156,7 +161,12 @@ public class ChannelManager extends RedisChatAPI {
             message = antiCaps(player, message);
 
             //Word filter
+            final String originalMessage = message;
             message = getComponentProvider().sanitize(message);
+            if (plugin.config.doNotSendCensoredMessage && !originalMessage.equals(message)) {
+                plugin.messages.sendMessage(player, plugin.messages.messageContainsBadWords);
+                return;
+            }
         }
 
         if (plugin.config.debug) {
@@ -366,7 +376,7 @@ public class ChannelManager extends RedisChatAPI {
 
     @Override
     public void sendPrivateChat(@NotNull ChatMessageInfo chatMessageInfo) {
-        Player p = Bukkit.getPlayer(chatMessageInfo.getReceiver().getName());
+        final Player p = Bukkit.getPlayer(chatMessageInfo.getReceiver().getName());
         if (p != null)
             if (p.isOnline()) {
                 final ChatFormat chatFormat = plugin.config.getChatFormat(p);

@@ -16,7 +16,6 @@ import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.minimessage.tag.standard.StandardTags;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -114,10 +113,12 @@ public class ComponentProvider {
     }
 
     public String replaceAmpersandCodesWithSection(String text) {
-        char[] b = text.toCharArray();
+        final char[] b = text.toCharArray();
         for (int i = 0; i < b.length - 1; i++) {
-            if (b[i] == '&' && "0123456789AaBbCcDdEeFfKkLlMmNnOoRrXx#".indexOf(b[i + 1]) > -1) {
-                b[i] = ChatColor.COLOR_CHAR;
+            //If the character is an ampersand replace it with a section symbol
+            //In case of a color code, put it lower case for more compatibility with MiniMessage Legacy Serializer
+            if (b[i] == '§' || (b[i] == '&' && "0123456789AaBbCcDdEeFfKkLlMmNnOoRrXx#".indexOf(b[i + 1]) > -1)) {
+                b[i] = '§';
                 b[i + 1] = Character.toLowerCase(b[i + 1]);
             }
         }
@@ -139,33 +140,45 @@ public class ComponentProvider {
         // we need to split the text by % and then check if the placeholder is a placeholder or not
         for (int i = 0; i < stringPlaceholders.length; i++) {
             if (i % 2 == placeholderStep) {
-                final String reformattedPlaceholder = "%" + stringPlaceholders[i] + "%";
+                final String placeholderStringToBeReplaced = "%" + stringPlaceholders[i] + "%";
                 final String parsedPlaceH = replaceAmpersandCodesWithSection(
                         cmdSender instanceof OfflinePlayer offlinePlayer
-                                ? PlaceholderAPI.setPlaceholders(offlinePlayer, reformattedPlaceholder)
-                                : PlaceholderAPI.setPlaceholders(null, reformattedPlaceholder)
+                                ? PlaceholderAPI.setPlaceholders(offlinePlayer, placeholderStringToBeReplaced)
+                                : PlaceholderAPI.setPlaceholders(null, placeholderStringToBeReplaced)
                 );
-                if (parsedPlaceH.equals(reformattedPlaceholder)) {
+
+                //If the placeholder is not a valid placeholder skip to the next "%"
+                if (parsedPlaceH.equals(placeholderStringToBeReplaced)) {
                     placeholderStep = Math.abs(placeholderStep - 1);
                     continue;
                 }
 
-                if (plugin.config.enablePlaceholderGlitch) {
-                    text = text.replace(reformattedPlaceholder, miniMessage.serialize(
-                            BukkitComponentSerializer.legacy().deserialize(parsedPlaceH)));
-                } else if (parsedPlaceH.contains("§")) {
+                boolean containsMiniMessageTags = MiniMessage.miniMessage().stripTags(parsedPlaceH).length()
+                        != parsedPlaceH.length();
+                boolean hasLegacyColors = parsedPlaceH.contains("§");
+
+                //The objective is to glitch the color only if the color is a legacy color code
+                //(by default is glitched since the beginning of Minecraft)
+                if (plugin.config.enablePlaceholderGlitch && !containsMiniMessageTags) {
+                    text = text.replace(placeholderStringToBeReplaced, miniMessage.serialize(
+                            //Translate legacy color codes to MiniMessage
+                            BukkitComponentSerializer.legacy().deserialize(parsedPlaceH)
+                    ));
+                } else if (hasLegacyColors) {
                     //Colored placeholder needs to be pasted after the normal text is parsed
-                    placeholders.put(reformattedPlaceholder, BukkitComponentSerializer.legacy().deserialize(parsedPlaceH));
+                    placeholders.put(placeholderStringToBeReplaced, BukkitComponentSerializer.legacy().deserialize(parsedPlaceH));
                 } else {
-                    text = text.replace(reformattedPlaceholder, parsedPlaceH);
+                    text = text.replace(placeholderStringToBeReplaced, parsedPlaceH);
                 }
             }
         }
 
         Component answer = miniMessage.deserialize(text, tagResolvers);
         for (String placeholder : placeholders.keySet()) {
-            answer = answer.replaceText(rBuilder -> rBuilder.matchLiteral(placeholder)
-                    .replacement(placeholders.get(placeholder)));
+            answer = answer.replaceText(rBuilder -> rBuilder
+                    .matchLiteral(placeholder)//Replace string with components (only if enablePlaceholderGlitch is false)
+                    .replacement(placeholders.get(placeholder))
+            );
         }
         return answer;
     }

@@ -10,8 +10,6 @@ import dev.unnm3d.redischat.datamanagers.redistools.RedisAbstract;
 import dev.unnm3d.redischat.mail.Mail;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisURI;
-import io.lettuce.core.pubsub.RedisPubSubListener;
-import io.lettuce.core.pubsub.StatefulRedisPubSubConnection;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -33,7 +31,14 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     public RedisDataManager(RedisClient redisClient, RedisChat redisChat) {
         super(redisClient, redisChat.config.redis.poolSize() <= 0 ? 1 : redisChat.config.redis.poolSize());
         this.plugin = redisChat;
-        listenSub();
+        registerSub(DataKey.CHAT_CHANNEL.toString(),
+                DataKey.GLOBAL_CHANNEL.withoutCluster(),
+                DataKey.PLAYERLIST.toString(),
+                DataKey.REJOIN_CHANNEL.toString(),
+                DataKey.CHANNEL_UPDATE.toString(),
+                DataKey.MUTED_UPDATE.toString(),
+                DataKey.PLAYER_PLACEHOLDERS.toString(),
+                DataKey.WHITELIST_ENABLED_UPDATE.toString());
     }
 
     public static RedisDataManager startup(RedisChat redisChat) {
@@ -54,81 +59,47 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
         return new RedisDataManager(RedisClient.create(redisURIBuilder.build()), redisChat);
     }
 
-    private void listenSub() {
-        StatefulRedisPubSubConnection<String, String> pubSubConnection = getPubSubConnection();
-        pubSubConnection.addListener(new RedisPubSubListener<>() {
-            @Override
-            public void message(String channel, String message) {
+    @Override
+    public void receiveMessage(String channel, String message) {
+        if (channel.equals(DataKey.CHAT_CHANNEL.toString())) {
+            if (plugin.config.debug) {
+                plugin.getLogger().info("R1) Received message from redis: " + System.currentTimeMillis());
+            }
+            plugin.getChannelManager().sendAndKeepLocal(ChatMessageInfo.deserialize(message));
 
-                if (channel.equals(DataKey.CHAT_CHANNEL.toString())) {
-                    if (plugin.config.debug) {
-                        plugin.getLogger().info("R1) Received message from redis: " + System.currentTimeMillis());
-                    }
-                    plugin.getChannelManager().sendAndKeepLocal(ChatMessageInfo.deserialize(message));
+        } else if (channel.equals(DataKey.GLOBAL_CHANNEL.withoutCluster())) {
+            if (plugin.config.debug) {
+                plugin.getLogger().info("R1) Received message from redis: " + System.currentTimeMillis());
+            }
+            plugin.getChannelManager().sendAndKeepLocal(ChatMessageInfo.deserialize(message));
 
-                } else if (channel.equals(DataKey.GLOBAL_CHANNEL.withoutCluster())) {
-                    if (plugin.config.debug) {
-                        plugin.getLogger().info("R1) Received message from redis: " + System.currentTimeMillis());
-                    }
-                    plugin.getChannelManager().sendAndKeepLocal(ChatMessageInfo.deserialize(message));
+        } else if (channel.equals(DataKey.PLAYERLIST.toString())) {
+            if (plugin.getPlayerListManager() != null)
+                plugin.getPlayerListManager().updatePlayerList(Arrays.asList(message.split("§")));
 
-                } else if (channel.equals(DataKey.PLAYERLIST.toString())) {
-                    if (plugin.getPlayerListManager() != null)
-                        plugin.getPlayerListManager().updatePlayerList(Arrays.asList(message.split("§")));
+        } else if (channel.equals(DataKey.REJOIN_CHANNEL.toString())) {
+            if (plugin.getJoinQuitManager() != null)
+                plugin.getJoinQuitManager().rejoinRequest(message);
 
-                } else if (channel.equals(DataKey.REJOIN_CHANNEL.toString())) {
-                    if (plugin.getJoinQuitManager() != null)
-                        plugin.getJoinQuitManager().rejoinRequest(message);
-
-                } else if (channel.equals(DataKey.CHANNEL_UPDATE.toString())) {
-                    if (message.startsWith("delete§")) {
-                        plugin.getChannelManager().updateChannel(message.substring(7), null);
-                    } else {
-                        Channel ch = Channel.deserialize(message);
-                        plugin.getChannelManager().updateChannel(ch.getName(), ch);
-                    }
-
-                } else if (channel.equals(DataKey.MUTED_UPDATE.toString())) {
-                    plugin.getChannelManager().getMuteManager().serializedUpdate(message);
-                } else if (channel.equals(DataKey.PLAYER_PLACEHOLDERS.toString())) {
-                    plugin.getPlaceholderManager().updatePlayerPlaceholders(message);
-                }
+        } else if (channel.equals(DataKey.CHANNEL_UPDATE.toString())) {
+            if (message.startsWith("delete§")) {
+                plugin.getChannelManager().updateChannel(message.substring(7), null);
+            } else {
+                Channel ch = Channel.deserialize(message);
+                plugin.getChannelManager().updateChannel(ch.getName(), ch);
             }
 
-            @Override
-            public void message(String pattern, String channel, String message) {
+        } else if (channel.equals(DataKey.MUTED_UPDATE.toString())) {
+            plugin.getChannelManager().getMuteManager().serializedUpdate(message);
+        } else if (channel.equals(DataKey.PLAYER_PLACEHOLDERS.toString())) {
+            plugin.getPlaceholderManager().updatePlayerPlaceholders(message);
+        } else if (channel.equals(DataKey.WHITELIST_ENABLED_UPDATE.toString())) {
+            if (message.startsWith("D§")) {
+                plugin.getChannelManager().getMuteManager().whitelistEnabledUpdate(message.substring(2), false);
+            } else {
+                plugin.getChannelManager().getMuteManager().whitelistEnabledUpdate(message, true);
             }
-
-            @Override
-            public void subscribed(String channel, long count) {
-            }
-
-            @Override
-            public void psubscribed(String pattern, long count) {
-            }
-
-            @Override
-            public void unsubscribed(String channel, long count) {
-            }
-
-            @Override
-            public void punsubscribed(String pattern, long count) {
-            }
-        });
-        pubSubConnection.async().subscribe(
-                        DataKey.CHAT_CHANNEL.toString(),
-                        DataKey.GLOBAL_CHANNEL.withoutCluster(),
-                        DataKey.PLAYERLIST.toString(),
-                        DataKey.REJOIN_CHANNEL.toString(),
-                        DataKey.CHANNEL_UPDATE.toString(),
-                        DataKey.MUTED_UPDATE.toString(),
-                        DataKey.PLAYER_PLACEHOLDERS.toString())
-                .exceptionally(throwable -> {
-                    throwable.printStackTrace();
-                    plugin.getLogger().warning("Error subscribing to chat channel");
-                    return null;
-                })
-                .thenAccept(subscription -> plugin.getLogger().info("Subscribed to channel: " + DataKey.CHAT_CHANNEL));
+        }
     }
 
     @Override
@@ -557,6 +528,44 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
                             plugin.getLogger().warning("Error getting muted channels");
                             return null;
                         }));
+    }
+
+    @Override
+    public CompletionStage<Set<String>> getWhitelistEnabledPlayers() {
+        return getConnectionAsync(connection ->
+                connection.smembers(DataKey.WHITELIST_ENABLED_PLAYERS.toString())
+                        .thenApply(serializedSet -> {
+                            if (serializedSet == null) return new HashSet<String>();
+                            return serializedSet;
+                        })
+                        .exceptionally(throwable -> {
+                            throwable.printStackTrace();
+                            plugin.getLogger().warning("Error getting whitelist enabled players");
+                            return null;
+                        }));
+    }
+
+    @Override
+    public void setWhitelistEnabledPlayer(@NotNull String playerName, boolean enabled) {
+        getConnectionAsync(connection -> {
+            if (enabled) {
+                connection.sadd(DataKey.WHITELIST_ENABLED_PLAYERS.toString(), playerName)
+                        .exceptionally(throwable -> {
+                            throwable.printStackTrace();
+                            plugin.getLogger().warning("Error setting whitelist enabled player");
+                            return null;
+                        });
+                return connection.publish(DataKey.WHITELIST_ENABLED_UPDATE.toString(), playerName);
+            }
+            connection.srem(DataKey.WHITELIST_ENABLED_PLAYERS.toString(), playerName)
+                    .exceptionally(throwable -> {
+                        throwable.printStackTrace();
+                        plugin.getLogger().warning("Error setting whitelist enabled player");
+                        return null;
+                    });
+            return connection.publish(DataKey.WHITELIST_ENABLED_UPDATE.toString(), "D§" + playerName);
+
+        });
     }
 
     @Override

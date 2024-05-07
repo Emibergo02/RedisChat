@@ -73,6 +73,10 @@ public interface DataManager {
 
     CompletionStage<Map<String, Set<String>>> getAllMutedEntities();
 
+    CompletionStage<Set<String>> getWhitelistEnabledPlayers();
+
+    void setWhitelistEnabledPlayer(@NotNull String playerName, boolean enabled);
+
     void sendChatMessage(@NotNull ChatMessageInfo chatMessage);
 
     void publishPlayerList(@NotNull List<String> playerNames);

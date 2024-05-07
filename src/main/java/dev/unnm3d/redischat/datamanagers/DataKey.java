@@ -25,6 +25,8 @@ public enum DataKey {
     PRIVATE_MAIL_PREFIX("rmail:"),
     PUBLIC_MAIL("rmail:public"),
     MUTED_UPDATE("rchat:m_update"),
+    WHITELIST_ENABLED_PLAYERS("rchat:wl_enabled"),
+    WHITELIST_ENABLED_UPDATE("rchat:wl_enabled_update"),
     ;
 
     private final String keyName;

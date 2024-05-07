@@ -187,6 +187,8 @@ public final class Config implements ConfigValidator {
             "(?i)卍",
             "(?i)♿"
     );
+    @Comment({"Whether to hide the bad word or to not send the message at all"})
+    public boolean doNotSendCensoredMessage = false;
     @Comment({"What to replace the blacklisted words with"})
     public String blacklistReplacement = "<obf>*****</obf>";
     @Comment({"Private message notification sound",

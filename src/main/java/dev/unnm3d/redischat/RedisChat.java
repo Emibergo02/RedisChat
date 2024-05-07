@@ -90,7 +90,7 @@ public final class RedisChat extends JavaPlugin {
 
     @Override
     public void onLoad() {
-        CommandAPI.onLoad(new CommandAPIBukkitConfig(this).silentLogs(true).verboseOutput(false));
+        CommandAPI.onLoad(new CommandAPIBukkitConfig(this).usePluginNamespace().silentLogs(true).verboseOutput(false));
     }
 
 
@@ -138,7 +138,6 @@ public final class RedisChat extends JavaPlugin {
             getLogger().warning("Invalid listening priority, using NORMAL");
             listenerWithPriority = ChatListenerWithPriority.NORMAL;
         }
-
         getServer().getPluginManager().registerEvents(listenerWithPriority.getListener(), this);
 
         if (config.enableStaffChat)
@@ -296,7 +295,7 @@ public final class RedisChat extends JavaPlugin {
         if (this.dataManager != null)
             this.dataManager.clearInvShareCache();
 
-        registeredCommands.forEach(CommandAPI::unregister);
+        registeredCommands.forEach(command -> CommandAPI.unregister(command, true));
         CommandAPI.onDisable();
 
         if (this.playerListManager != null)

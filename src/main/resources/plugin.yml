@@ -13,6 +13,9 @@ libraries:
   - com.h2database:h2:2.2.220
   - org.projectlombok:lombok:1.18.26
   - org.apache.commons:commons-collections4:4.4
+  - net.kyori:adventure-text-minimessage:4.16.0
+  - net.kyori:adventure-text-serializer-plain:4.16.0
+  - net.kyori:adventure-platform-bukkit:4.3.2
 depend:
   - PlaceholderAPI
 softdepend:
@@ -26,7 +29,8 @@ commands:
     description: Setitem command
     permission: redischat.setitem
   ignore:
-    description: Ignore command
+    aliases: [allowmsg]
+    description: Ignore command or allowmsg
     permission: redischat.ignore
   clearchat:
     description: Clears the chat

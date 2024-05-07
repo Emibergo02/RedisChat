@@ -715,6 +715,16 @@ public abstract class SQLDataManager implements DataManager {
             return "public";
         }, plugin.getExecutorService());
     }
+    @Override
+    public CompletionStage<Set<String>> getWhitelistEnabledPlayers() {
+        return null;
+    }
+
+    @Override
+    public void setWhitelistEnabledPlayer(@NotNull String playerName, boolean enabled) {
+
+    }
+
 
     @Override
     public CompletionStage<List<PlayerChannel>> getPlayerChannelStatuses(@NotNull String playerName, Map<String, Channel> registeredChannels) {

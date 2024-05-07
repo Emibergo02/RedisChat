@@ -30,8 +30,13 @@ public class ChatColorCommand implements CommandExecutor, TabCompleter {
             if (!getAvailableColors().contains(args[0])) {
                 plugin.messages.sendMessage(sender, plugin.messages.invalid_color);
                 return true;
-
+            } else if (!sender.hasPermission(Permissions.CHAT_COLOR.getPermission() + "." + args[0].toLowerCase())) {
+                plugin.messages.sendMessage(sender, plugin.messages.noPermission);
+                return true;
             }
+        } else if (!sender.hasPermission(Permissions.CHAT_COLOR.getPermission() + ".hex")) {
+            plugin.messages.sendMessage(sender, plugin.messages.noPermission);
+            return true;
         }
 
         plugin.getPlaceholderManager().addPlayerPlaceholder(sender.getName(), "chat_color", "<" + args[0] + ">");

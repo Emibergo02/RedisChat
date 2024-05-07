@@ -27,6 +27,16 @@ public class IgnoreCommand implements CommandExecutor, TabCompleter {
             return true;
         }
 
+        if (label.equalsIgnoreCase("ignore") && plugin.getChannelManager().getMuteManager()
+                .isWhitelistEnabledPlayer(sender.getName())) {
+            plugin.messages.sendMessage(sender, plugin.messages.ignore_whitelist_enabled);
+            return true;
+        } else if (label.equalsIgnoreCase("allowmsg") && !plugin.getChannelManager().getMuteManager()
+                .isWhitelistEnabledPlayer(sender.getName())) {
+            plugin.messages.sendMessage(sender, plugin.messages.ignore_whitelist_disabled);
+            return true;
+        }
+
         if (args[0].equalsIgnoreCase("list")) {
             final String stringList = String.join(", ", plugin.getChannelManager().getMuteManager().getIgnoreList(sender.getName()));
             plugin.getComponentProvider().sendMessage(sender,

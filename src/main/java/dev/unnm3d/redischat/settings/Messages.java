@@ -26,6 +26,8 @@ public final class Messages implements ConfigValidator {
     public String ignoring_list = "<yellow>RedisChat</yellow> <gray>»</gray> <aqua>Ignored players:</aqua><br><green>%list%</green>";
     public String ignoring_player = "<yellow>RedisChat</yellow> <gray>»</gray> <green>Ignoring %player%</green>";
     public String not_ignoring_player = "<yellow>RedisChat</yellow> <gray>»</gray> <green>Ignore removed for %player%</green>";
+    public String ignore_whitelist_enabled = "<yellow>RedisChat</yellow> <gray>»</gray> <red>You are now ignoring only players OUTSIDE your ignore list!!!</red><br><red>Use /allowmsg list to see the list of players that can send you private messages</red>";
+    public String ignore_whitelist_disabled = "<yellow>RedisChat</yellow> <gray>»</gray> <green>You are now ignoring only players INSIDE your ignore list</green><br><green>Use /ignore list to see the list of players that you are ignoring</green>";
     public String spychat_format = "<yellow>RedisChat</yellow> <gray>»</gray> <red>%sender% said to %receiver% : %message%</red>";
     public String spychat_enabled = "<yellow>RedisChat</yellow> <gray>»</gray> <green>Spychat enabled for %player%</green>";
     public String spychat_disabled = "<yellow>RedisChat</yellow> <gray>»</gray> <red>Spychat disabled for %player%</red>";
@@ -51,7 +53,9 @@ public final class Messages implements ConfigValidator {
     public String channelListReceiving = "<yellow>%channel% <gray>Status: Receiving";
     public String channelForceListen = "<yellow>RedisChat</yellow> <gray>»</gray> <green>You forced %player% to talk inside %channel%!</green>";
     public String channelDisabled = "<yellow>RedisChat</yellow> <gray>»</gray> <red>Channel %channel% disabled for %player%!</red>";
+    public String messageContainsBadWords = "<yellow>RedisChat</yellow> <gray>»</gray> <red>Your message contains bad words!</red>";
     public String channelNotFound = "<red>Channel not found!</red>";
+    public String channelNoPermission = "<red>You muted this channel or you don't have permission to talk! Check your /channels GUI</red>";
     public String channelMuted = "<yellow>RedisChat</yellow> <gray>»</gray> <aqua>You silenced the %channel% channel!</aqua>";
     public String channelUnmuted = "<yellow>RedisChat</yellow> <gray>»</gray> <aqua>You unmuted the %channel% channel!</aqua>";
     @Comment("The text after the /msg command (example: /msg <player> <message> will be -> /msg <user> <message>")
