@@ -234,11 +234,7 @@ public class ComponentProvider {
                                     rTextBuilder.matchLiteral("%item_name%")
                                             .replacement(
                                                     parse(player,
-                                                            p.getInventory().getItemInMainHand().getType().name().toLowerCase().replace("_", " "),
-                                                            false,
-                                                            false,
-                                                            false,
-                                                            this.standardTagResolver))
+                                                            Component.translatable(p.getInventory().getItemInMainHand().getType().translationKey()))
                             );
                         }
                 } else {
