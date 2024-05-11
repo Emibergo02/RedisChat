@@ -26,8 +26,10 @@ public final class Messages implements ConfigValidator {
     public String ignoring_list = "<yellow>RedisChat</yellow> <gray>»</gray> <aqua>Ignored players:</aqua><br><green>%list%</green>";
     public String ignoring_player = "<yellow>RedisChat</yellow> <gray>»</gray> <green>Ignoring %player%</green>";
     public String not_ignoring_player = "<yellow>RedisChat</yellow> <gray>»</gray> <green>Ignore removed for %player%</green>";
-    public String ignore_whitelist_enabled = "<yellow>RedisChat</yellow> <gray>»</gray> <red>You are now ignoring only players OUTSIDE your ignore list!!!</red><br><red>Use /allowmsg list to see the list of players that can send you private messages</red>";
-    public String ignore_whitelist_disabled = "<yellow>RedisChat</yellow> <gray>»</gray> <green>You are now ignoring only players INSIDE your ignore list</green><br><green>Use /ignore list to see the list of players that you are ignoring</green>";
+    public String ignore_whitelist_enabled = "<yellow>RedisChat</yellow> <gray>»</gray> <red>You are now ignoring only players OUTSIDE your ignore list!!!</red><br>" +
+            "<yellow>RedisChat</yellow> <gray>»</gray> <red>Use <click:run_command:'/allowmsg list'>/allowmsg list</click> to see the list of players that can send you private messages</red>";
+    public String ignore_whitelist_disabled = "<yellow>RedisChat</yellow> <gray>»</gray> <green>You are now ignoring only players INSIDE your ignore list</green><br>" +
+            "<yellow>RedisChat</yellow> <gray>»</gray> <green>Use <click:run_command:'/ignore list'>/ignore list</click> to see the list of players that you are ignoring</green>";
     public String spychat_format = "<yellow>RedisChat</yellow> <gray>»</gray> <red>%sender% said to %receiver% : %message%</red>";
     public String spychat_enabled = "<yellow>RedisChat</yellow> <gray>»</gray> <green>Spychat enabled for %player%</green>";
     public String spychat_disabled = "<yellow>RedisChat</yellow> <gray>»</gray> <red>Spychat disabled for %player%</red>";

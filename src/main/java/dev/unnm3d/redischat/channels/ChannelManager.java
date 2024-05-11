@@ -7,6 +7,7 @@ import dev.unnm3d.redischat.api.AsyncRedisChatMessageEvent;
 import dev.unnm3d.redischat.api.RedisChatAPI;
 import dev.unnm3d.redischat.api.VanishIntegration;
 import dev.unnm3d.redischat.chat.*;
+import dev.unnm3d.redischat.mail.MailManager;
 import dev.unnm3d.redischat.moderation.MuteManager;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
@@ -60,6 +61,11 @@ public class ChannelManager extends RedisChatAPI {
     @Override
     public ComponentProvider getComponentProvider() {
         return plugin.getComponentProvider();
+    }
+
+    @Override
+    public Optional<MailManager> getMailManager() {
+        return Optional.ofNullable(plugin.getMailManager());
     }
 
     @Override

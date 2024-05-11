@@ -3,6 +3,7 @@ package dev.unnm3d.redischat.api;
 import dev.unnm3d.redischat.channels.Channel;
 import dev.unnm3d.redischat.chat.ChatMessageInfo;
 import dev.unnm3d.redischat.chat.ComponentProvider;
+import dev.unnm3d.redischat.mail.MailManager;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -29,6 +30,13 @@ public abstract class RedisChatAPI {
      * @return The component provider
      */
     public abstract ComponentProvider getComponentProvider();
+
+    /**
+     * Get the mail manager
+     *
+     * @return Optional, the mail feature may be disabled
+     */
+    public abstract Optional<MailManager> getMailManager();
 
     /**
      * Register a channel

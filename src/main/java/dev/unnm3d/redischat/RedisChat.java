@@ -87,6 +87,8 @@ public final class RedisChat extends JavaPlugin {
     private IDiscordHook discordHook;
     @Getter
     private ExecutorService executorService;
+    @Getter
+    private MailManager mailManager;
 
     @Override
     public void onLoad() {
@@ -158,7 +160,8 @@ public final class RedisChat extends JavaPlugin {
 
         //Mail section
         if (config.enableMails) {
-            loadCommandAPICommand(new MailCommand(new MailManager(this), this).getCommand());
+            this.mailManager= new MailManager(this);
+            loadCommandAPICommand(new MailCommand(this.mailManager, this).getCommand());
         }
 
 
@@ -194,6 +197,7 @@ public final class RedisChat extends JavaPlugin {
         loadCommand("spychat", new SpyChatCommand(this), null);
         IgnoreCommand ignoreCommand = new IgnoreCommand(this);
         loadCommand("ignore", ignoreCommand, ignoreCommand);
+        loadCommandAPICommand(new IgnoreWhitelistCommand(this).getCommand());
         loadCommand("clearchat", new ClearChatCommand(this), null);
 
         //RedisChat Placeholders
