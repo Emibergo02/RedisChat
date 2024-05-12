@@ -94,6 +94,12 @@ public abstract class SQLDataManager implements DataManager {
                 placeholders   TEXT        not null,
                 primary key (player_name)
             );
+            """, """
+            create table if not exists whitelist_enabled_players
+            (
+                player_name    varchar(16) not null,
+                primary key (player_name)
+            );
             """
         };
     }
@@ -132,6 +138,12 @@ public abstract class SQLDataManager implements DataManager {
                 plugin.getChannelManager().getMuteManager().serializedUpdate(messageString);
             } else if (subchannel.equals(DataKey.PLAYER_PLACEHOLDERS_UPDATE.toString())) {
                 plugin.getPlaceholderManager().updatePlayerPlaceholders(messageString);
+            } else if (subchannel.equals(DataKey.WHITELIST_ENABLED_UPDATE.toString())) {
+                if (messageString.startsWith("D§")) {
+                    plugin.getChannelManager().getMuteManager().whitelistEnabledUpdate(messageString.substring(2), false);
+                } else {
+                    plugin.getChannelManager().getMuteManager().whitelistEnabledUpdate(messageString, true);
+                }
             }
 
         });
@@ -413,7 +425,10 @@ public abstract class SQLDataManager implements DataManager {
             try (PreparedStatement statement = connection.prepareStatement("""
                     UPDATE player_data SET inv_serialized = NULL, item_serialized = NULL, ec_serialized = NULL;
                     """)) {
-                statement.executeUpdate();
+
+                if (statement.executeUpdate() == 0) {
+                    throw new SQLException("Failed to clear inv share cache: " + statement);
+                }
             }
         } catch (SQLException e) {
             errWarn("Failed to clear inv share cache", e);
@@ -715,14 +730,53 @@ public abstract class SQLDataManager implements DataManager {
             return "public";
         }, plugin.getExecutorService());
     }
+
     @Override
     public CompletionStage<Set<String>> getWhitelistEnabledPlayers() {
-        return null;
+        return CompletableFuture.supplyAsync(() -> {
+            try (Connection connection = getConnection()) {
+                try (PreparedStatement statement = connection.prepareStatement("""
+                        select player_name from whitelist_enabled_players;""")) {
+
+                    statement.setBoolean(1, true);
+                    final ResultSet resultSet = statement.executeQuery();
+                    final Set<String> players = new HashSet<>();
+                    while (resultSet.next()) {
+                        players.add(resultSet.getString("player_name"));
+                    }
+                    return players;
+                }
+            } catch (SQLException e) {
+                errWarn("Failed to fetch whitelist enabled players from database", e);
+            }
+            return Set.of();
+        }, plugin.getExecutorService());
     }
 
     @Override
     public void setWhitelistEnabledPlayer(@NotNull String playerName, boolean enabled) {
+        CompletableFuture.runAsync(() -> {
+            try (Connection connection = getConnection()) {
+                try (PreparedStatement statement = connection.prepareStatement(enabled ?
+                        "INSERT INTO whitelist_enabled_players (`player_name`) VALUES (?)" :
+                        "DELETE FROM whitelist_enabled_players WHERE player_name = ?;"
+                )) {
+                    statement.setString(1, playerName);
 
+                    if (statement.executeUpdate() == 0) {
+                        throw new SQLException("Failed to update whitelist enabled player to database: " + statement);
+                    }
+                    final ByteArrayDataOutput out = ByteStreams.newDataOutput();
+                    out.writeUTF("Forward");
+                    out.writeUTF("ALL");
+                    out.writeUTF(DataKey.WHITELIST_ENABLED_UPDATE.toString());
+                    out.writeUTF(enabled ? playerName : "D§" + playerName);
+                    sendPluginMessage(out.toByteArray());
+                }
+            } catch (SQLException e) {
+                errWarn("Failed to update whitelist enabled player to database", e);
+            }
+        });
     }
 
 
