@@ -25,6 +25,8 @@ import java.util.TimeZone;
 
 @Getter
 public class Mail extends AbstractItem {
+    private static final int PAGE_LINES = 14;
+    private static final int LINE_LENGTH = 19;
 
     private final double id;
     private final MailGUIManager manager;
@@ -110,17 +112,16 @@ public class Mail extends AbstractItem {
 
     /**
      * Opens the mail preview to the player
+     * The most hard part of RedisChat
      *
      * @param player     The player to open the preview to
      * @param readStatus If the mail should be marked as read
      */
     public void openPreview(@NotNull Player player, boolean readStatus) {
         player.closeInventory();
-        //Craft written book with mail contents
-        final ItemStack writtenBook = new ItemStack(Material.WRITTEN_BOOK);
 
-        List<Component> components = new ArrayList<>();
-        List<String> headerLines = Arrays.asList(manager.getPlugin().messages.mailHeader
+        final List<Component> bookPages = new ArrayList<>();
+        final List<String> headerLines = Arrays.asList(manager.getPlugin().messages.mailHeader
                 .replace("%sender%", sender)
                 .replace("%title%", title)
                 .replace("%timestamp%", ZonedDateTime.ofInstant(Instant.ofEpochMilli((long) id),
@@ -131,77 +132,43 @@ public class Mail extends AbstractItem {
 
         final String[] contentLines = content.split("\r?\n");
 
-        // Add the header lines to the first page
-        StringBuilder firstPageText = new StringBuilder(String.join("\n", headerLines) + "\n");
+
         int lineCount = headerLines.size();
         // Fill the rest of the first page with content lines
         int contentIndex = 0;
-        while (lineCount < 14 && contentIndex < contentLines.length) {
-            String line = contentLines[contentIndex++];
-            // Split the line into multiple lines if it is too long
-            manager.getPlugin().getLogger().info(((line.length() / 14) + 1) + " " + (14 - lineCount));
-            if ((line.length() / 14) + 1 <= 14 - lineCount) {
-                while (line.length() > 19) {
-                    firstPageText.append(line, 0, 19).append("\n");
-                    line = line.substring(19);
-                    lineCount++;
-                    manager.getPlugin().getLogger().info("Line substr: " + line);
-                }
-            } else {
-                // Commit to the new page and start a new one
-                contentIndex--;
-                break;
-            }
-            if (!line.isEmpty()) {
-                firstPageText.append(line).append("\n");
 
+        // Set the head
+        StringBuilder componentText = new StringBuilder(String.join("\n", headerLines) + "\n");
+        while (contentIndex < contentLines.length) {
+
+            // Fills the page with content
+            while (lineCount < PAGE_LINES && contentIndex < contentLines.length) {
+                String line = contentLines[contentIndex++];
+                if (line.length() <= LINE_LENGTH) {
+                    componentText.append(line).append("\n");
+                } else {
+                    // If the line is too long, split it and add the first part to the current page
+                    componentText.append(line, 0, LINE_LENGTH).append("\n");
+                    line = line.substring(LINE_LENGTH);
+                    // Put the rest of the line back into the contentLines array for the next page
+                    contentLines[--contentIndex] = line;
+                }
                 lineCount++;
             }
-        }
-
-        // Add the first component to the list
-        components.add(manager.getPlugin().getComponentProvider().parse(firstPageText.toString()));
-
-        // Create all the other pages with remaining content
-        while (contentIndex < contentLines.length) {
-            StringBuilder componentText = new StringBuilder(); //The new page
+            bookPages.add(manager.getPlugin().getComponentProvider().parse(componentText.toString()));
+            componentText = new StringBuilder();
             lineCount = 0;
-            // Fills the page with content
-            while (lineCount < 14 && contentIndex < contentLines.length) {
-                String line = contentLines[contentIndex++];
-
-                //Check if the line is too long to fit in the page
-                manager.getPlugin().getLogger().info(((line.length() / 14) + 1) + " " + (13 - lineCount));
-                if ((line.length() / 14) + 1 <= 14 - lineCount) {
-                    while (line.length() > 19) {// Split the line into multiple lines if it is too long
-                        componentText.append(line, 0, 19).append("\n<dark_gray>");
-                        line = line.substring(19);
-                        lineCount++;
-                    }
-                } else {
-                    //Commit to the new page and start a new one
-                    contentIndex--;
-
-                    break;
-                }
-                if (!line.isEmpty()) {
-                    componentText.append(line).append("\n<dark_gray>");
-
-                    lineCount++;
-                }
-            }
-            components.add(manager.getPlugin().getComponentProvider().parse(componentText.toString()));
         }
 
-
+        //Craft written book with mail contents (easy part)
+        final ItemStack writtenBook = new ItemStack(Material.WRITTEN_BOOK);
         writtenBook.setItemMeta(((BookMeta) writtenBook.getItemMeta())
                 .toBuilder()
                 .author(manager.getPlugin().getComponentProvider().parse(sender))
                 .title(manager.getPlugin().getComponentProvider().parse(title))
-                .pages(components)
+                .pages(bookPages)
                 .build());
         player.openBook(writtenBook);
-        System.out.println("Opening mail preview content:" + content);
         manager.readMail(this, player, readStatus);
     }
 

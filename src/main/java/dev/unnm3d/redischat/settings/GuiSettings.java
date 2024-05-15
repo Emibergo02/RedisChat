@@ -3,8 +3,11 @@ package dev.unnm3d.redischat.settings;
 import de.exlll.configlib.Comment;
 import de.exlll.configlib.Configuration;
 import org.bukkit.Material;
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import xyz.xenondevs.invui.item.builder.ItemBuilder;
 
 import java.lang.reflect.Field;
 import java.util.List;
@@ -20,11 +23,20 @@ public final class GuiSettings implements ConfigValidator {
             "x x x x x x x x x",
             "x x x x x x x x x",
             "# < # P # p # > #");
-    public ItemStack mailItem = new ItemStack(Material.PAPER);
+    public ItemStack mailItem = new ItemStack(Material.BOOK);
+    public ItemStack unreadMailItem = new ItemStack(Material.ENCHANTED_BOOK);
     public ItemStack backButton = getBackButton();
     public ItemStack forwardButton = getForwardButton();
     public ItemStack PublicButton = getPublicButton();
     public ItemStack privateButton = getPrivateButton();
+
+    public List<String> mailSettingsGUIStructure = List.of(
+            "x x x x x x x x x",
+            "x x D x x x U x x",
+            "x x x x x x x x x");
+    public String mailOptionsTitle = "Mail Options";
+    public ItemStack deleteButton = getDeleteButton();
+    public ItemStack unreadButton = getUnreadButton();
 
 
     @Comment("The structure of the channel GUI. Use 'x' for the channel slots, '<' for the back button, '>' for the forward button, 'U' for the unmute all button and 'S' for the silence public button")
@@ -131,6 +143,21 @@ public final class GuiSettings implements ConfigValidator {
         return item;
     }
 
+    private ItemStack getDeleteButton() {
+        return new ItemBuilder(Material.BARRIER)
+                .setDisplayName("§cDelete mail")
+                .setLegacyLore(List.of("§7Click to delete the mail"))
+                .get();
+    }
+
+    private ItemStack getUnreadButton() {
+        return new ItemBuilder(Material.BOOK)
+                .addEnchantment(Enchantment.DURABILITY, 1, false)
+                .addItemFlags(ItemFlag.HIDE_ENCHANTS)
+                .setDisplayName("§cUnread mail")
+                .setLegacyLore(List.of("§7Click to set the mail as unread"))
+                .get();
+    }
 
     public void setIngredient(String key, ItemStack item) {
         //Do the previous code with reflection

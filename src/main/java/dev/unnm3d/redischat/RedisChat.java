@@ -23,7 +23,7 @@ import dev.unnm3d.redischat.discord.SpicordHook;
 import dev.unnm3d.redischat.integrations.OraxenTagResolver;
 import dev.unnm3d.redischat.integrations.PremiumVanishIntegration;
 import dev.unnm3d.redischat.mail.MailCommand;
-import dev.unnm3d.redischat.mail.MailManager;
+import dev.unnm3d.redischat.mail.MailGUIManager;
 import dev.unnm3d.redischat.moderation.MuteCommand;
 import dev.unnm3d.redischat.moderation.SpyChatCommand;
 import dev.unnm3d.redischat.moderation.SpyManager;
@@ -88,11 +88,14 @@ public final class RedisChat extends JavaPlugin {
     @Getter
     private ExecutorService executorService;
     @Getter
-    private MailManager mailManager;
+    private MailGUIManager mailGUIManager;
 
     @Override
     public void onLoad() {
-        CommandAPI.onLoad(new CommandAPIBukkitConfig(this).usePluginNamespace().silentLogs(true).verboseOutput(false));
+        CommandAPI.onLoad(new CommandAPIBukkitConfig(this)
+                .usePluginNamespace()
+                .silentLogs(true)
+                .verboseOutput(false));
     }
 
 
@@ -160,8 +163,8 @@ public final class RedisChat extends JavaPlugin {
 
         //Mail section
         if (config.enableMails) {
-            this.mailManager= new MailManager(this);
-            loadCommandAPICommand(new MailCommand(this.mailManager, this).getCommand());
+            this.mailGUIManager = new MailGUIManager(this);
+            loadCommandAPICommand(new MailCommand(this.mailGUIManager).getCommand());
         }
 
 

@@ -7,13 +7,12 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.kyori.adventure.inventory.Book;
-import net.kyori.adventure.platform.bukkit.BukkitAudiences;
-import net.kyori.adventure.platform.bukkit.BukkitComponentSerializer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.minimessage.tag.standard.StandardTags;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -40,11 +39,9 @@ public class ComponentProvider {
     private final Map<Player, List<Component>> cacheBlocked;
     private final List<TagResolverIntegration> tagResolverIntegrationList;
 
-    private final BukkitAudiences bukkitAudiences;
 
     public ComponentProvider(RedisChat plugin) {
         this.plugin = plugin;
-        this.bukkitAudiences = BukkitAudiences.create(plugin);
         this.miniMessage = MiniMessage.miniMessage();
         this.cacheBlocked = Collections.synchronizedMap(new WeakHashMap<>());
         this.standardTagResolver = StandardTags.defaults();
@@ -162,11 +159,11 @@ public class ComponentProvider {
                 if (plugin.config.enablePlaceholderGlitch && !containsMiniMessageTags) {
                     text = text.replace(placeholderStringToBeReplaced, miniMessage.serialize(
                             //Translate legacy color codes to MiniMessage
-                            BukkitComponentSerializer.legacy().deserialize(parsedPlaceH)
+                            LegacyComponentSerializer.legacySection().deserialize(parsedPlaceH)
                     ));
                 } else if (hasLegacyColors) {
                     //Colored placeholder needs to be pasted after the normal text is parsed
-                    placeholders.put(placeholderStringToBeReplaced, BukkitComponentSerializer.legacy().deserialize(parsedPlaceH));
+                    placeholders.put(placeholderStringToBeReplaced, LegacyComponentSerializer.legacySection().deserialize(parsedPlaceH));
                 } else {
                     text = text.replace(placeholderStringToBeReplaced, parsedPlaceH);
                 }
@@ -336,7 +333,7 @@ public class ComponentProvider {
         if (!plugin.config.useTagsIntegration) return text;
         try {
             for (TagResolverIntegration resolver : this.tagResolverIntegrationList) {
-                text = resolver.parseTags(text).replace("\\", "");
+                text = resolver.parseTags(text).replace("\\<", "<");
             }
         } catch (Exception e) {
             Bukkit.getLogger().warning("Error while parsing tags: " + e.getMessage());
@@ -380,13 +377,13 @@ public class ComponentProvider {
      */
     public @NotNull String parseLegacy(@NotNull String text, boolean parseAmpersand) {
 
-        text = miniMessage.serialize(BukkitComponentSerializer.legacy().deserialize(
+        text = miniMessage.serialize(LegacyComponentSerializer.legacySection().deserialize(
                 parseAmpersand ? replaceAmpersandCodesWithSection(text) : text
         ));
         if (plugin.config.debug) {
             Bukkit.getLogger().info("Parsed legacy: " + text);
         }
-        return text.replace("\\", "");
+        return text.replace("\\<", "<");
 
     }
 
@@ -437,7 +434,7 @@ public class ComponentProvider {
     @SuppressWarnings("ResultOfMethodCallIgnored")
     public void logComponent(Component component) {
         if (!plugin.config.chatLogging) {
-            bukkitAudiences.sender(plugin.getServer().getConsoleSender()).sendMessage(component);
+            plugin.getServer().getConsoleSender().sendMessage(component);
             return;
         }
 
@@ -488,14 +485,8 @@ public class ComponentProvider {
     }
 
     public void sendMessage(CommandSender sender, Component component) {
-        if (sender instanceof Player player)
-            bukkitAudiences.player(player).sendMessage(component);
-        else
-            bukkitAudiences.sender(sender).sendMessage(component);
+        sender.sendMessage(component);
     }
 
-    public void openBook(Player player, Book book) {
-        bukkitAudiences.player(player).openBook(book);
-    }
 }
 

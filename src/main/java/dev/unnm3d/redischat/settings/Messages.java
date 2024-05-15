@@ -42,7 +42,21 @@ public final class Messages implements ConfigValidator {
     public String mailEditorConfirm = "<yellow>RedisChat</yellow> <gray>»</gray> Valid mail. What would you do?<br><click:run_command:/rmail webui %token% confirm>[<green>Confirm, send!</green>]</click>  <click:run_command:/rmail webui %token% preview>[<aqua>Preview</aqua>]</click>  <click:run_command:/rmail webui %token% abort>[<red>Dismiss</red>]</click>";
     public String mailError = "<yellow>RedisChat</yellow> <gray>»</gray> <red>You do not have any pending mail!</red>";
     public String mailEditorSent = "<yellow>RedisChat</yellow> <gray>»</gray> <green>Mail sent!</green>";
-    public String mailEditorAbort = "<yellow>RedisChat</yellow> <gray>»</gray> <red>Mail aborted!</red>";
+    public String mailEditorFailed = "<yellow>RedisChat</yellow> <gray>»</gray> <red>Mail failed to send!</red>";
+    @Comment("The string for title in command suggestion (example: <title> will be -> <supertitle>")
+    public String mailTitleSuggestion = "title";
+    @Comment("The text after the /mail command (example: /mail send <player> will be -> /mail send <user>")
+    public String mailStringPlayer = "player";
+    public String mailReceived = "<yellow>RedisChat</yellow> <gray>»</gray> <aqua>You received a mail from %sender%! Object: %title%</aqua>";
+    public String mailHeader=
+            """
+            <color:dark_gray>Sender: %sender%
+            Object:
+            %title%
+            <color:dark_gray>Date:
+            %timestamp%
+            <color:dark_gray><st>-------------------</st>
+            """;
     public String noConsole = "<yellow>RedisChat</yellow> <gray>»</gray> <red>You cannot execute this command from console</red>";
     public String itemSet = "<yellow>RedisChat</yellow> <gray>»</gray> <green>Item set!</green>";
     public String noPermission = "<yellow>RedisChat</yellow> <gray>»</gray> <red>You do not have permission to execute this command</red>";
@@ -66,10 +80,6 @@ public final class Messages implements ConfigValidator {
     public String msgMessageSuggestion = "message";
     @Comment("The text after the /r command (example: /r <message> will be -> /r <text>")
     public String replySuggestion = "message";
-    @Comment("The string for title in command suggestion (example: <title> will be -> <supertitle>")
-    public String mailTitleSuggestion = "title";
-    @Comment("The text after the /mail command (example: /mail send <player> will be -> /mail send <user>")
-    public String mailStringPlayer = "player";
     @Comment("The text after the /staffchat command (example: /staffchat <message> will be -> /staffchat <text>")
     public String staffChatSuggestion = "message";
     public String muted_player = "<yellow>RedisChat</yellow> <gray>»</gray> <aqua>You muted %player% on channel %channel%!</aqua>";

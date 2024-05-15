@@ -2,6 +2,7 @@ package dev.unnm3d.redischat.datamanagers;
 
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.api.DataManager;
+import dev.unnm3d.redischat.api.RedisChatAPI;
 import dev.unnm3d.redischat.channels.Channel;
 import dev.unnm3d.redischat.channels.PlayerChannel;
 import dev.unnm3d.redischat.chat.ChatMessageInfo;
@@ -17,10 +18,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.time.Duration;
 import java.util.*;
-import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 
@@ -38,7 +36,8 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
                 DataKey.CHANNEL_UPDATE.toString(),
                 DataKey.MUTED_UPDATE.toString(),
                 DataKey.PLAYER_PLACEHOLDERS.toString(),
-                DataKey.WHITELIST_ENABLED_UPDATE.toString());
+                DataKey.WHITELIST_ENABLED_UPDATE.toString(),
+                DataKey.MAIL_UPDATE_CHANNEL.toString());
     }
 
     public static RedisDataManager startup(RedisChat redisChat) {
@@ -89,6 +88,8 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
                 plugin.getChannelManager().updateChannel(ch.getName(), ch);
             }
 
+        } else if (channel.equals(DataKey.MAIL_UPDATE_CHANNEL.toString())) {
+            plugin.getMailGUIManager().receiveMailUpdate(message);
         } else if (channel.equals(DataKey.MUTED_UPDATE.toString())) {
             plugin.getChannelManager().getMuteManager().serializedUpdate(message);
         } else if (channel.equals(DataKey.PLAYER_PLACEHOLDERS.toString())) {
@@ -349,19 +350,24 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
 
     @Override
     public CompletionStage<List<Mail>> getPlayerPrivateMail(@NotNull String playerName) {
-        return getConnectionAsync(connection ->
-                connection.hgetall(DataKey.PRIVATE_MAIL_PREFIX + playerName)
-                        .thenApply(this::deserializeMails)
-                        .exceptionally(throwable -> {
-                            throwable.printStackTrace();
-                            plugin.getLogger().warning("Error getting private mails");
-                            return null;
-                        }));
+        return CompletableFuture.supplyAsync(() -> executeTransaction(commands -> {
+                    commands.hgetall(DataKey.PRIVATE_MAIL_PREFIX + playerName);
+                    commands.smembers(DataKey.READ_MAIL_MAP + playerName);
+                }).map(result -> {
+                    final List<Mail> mails = deserializeMails((Map<String, String>) result.get(0));
+                    final Set<Double> readMailIds = ((Set<String>) result.get(1)).stream()
+                            .map(Double::parseDouble)
+                            .collect(Collectors.toSet());
+                    mails.forEach(mail -> mail.setRead(readMailIds.contains(mail.getId())));
+                    return mails;
+                }).orElse(List.of()),
+                plugin.getExecutorService());
     }
 
     @Override
     public CompletionStage<Boolean> setPlayerPrivateMail(@NotNull Mail mail) {
         return getConnectionPipeline(connection -> {
+            connection.publish(DataKey.MAIL_UPDATE_CHANNEL.toString(), mail.serializeWithId());
             connection.hset(DataKey.PRIVATE_MAIL_PREFIX + mail.getReceiver(), String.valueOf(mail.getId()), mail.serialize());
             mail.setCategory(Mail.MailCategory.SENT);
             return connection.hset(DataKey.PRIVATE_MAIL_PREFIX + mail.getSender(), String.valueOf(mail.getId()), mail.serialize()).exceptionally(throwable -> {
@@ -378,23 +384,57 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
 
     @Override
     public CompletionStage<Boolean> setPublicMail(@NotNull Mail mail) {
-        return getConnectionAsync(connection ->
-                connection.hset(DataKey.PUBLIC_MAIL.toString(), String.valueOf(mail.getId()), mail.serialize()).exceptionally(throwable -> {
+        return getConnectionPipeline(connection -> {
+            connection.publish(DataKey.MAIL_UPDATE_CHANNEL.toString(), mail.serializeWithId());
+            return connection.hset(DataKey.PUBLIC_MAIL.toString(), String.valueOf(mail.getId()), mail.serialize()).exceptionally(throwable -> {
+                throwable.printStackTrace();
+                plugin.getLogger().warning("Error setting public mail");
+                return null;
+            });
+        });
+    }
+
+    @Override
+    public CompletableFuture<List<Mail>> getPublicMails(@NotNull String playerName) {
+        return CompletableFuture.supplyAsync(() -> executeTransaction(commands -> {
+                    commands.hgetall(DataKey.PUBLIC_MAIL.toString());
+                    commands.smembers(DataKey.READ_MAIL_MAP + playerName);
+                }).map(result -> {
+                    final List<Mail> mails = deserializeMails((Map<String, String>) result.get(0));
+                    final Set<Double> readMailIds = ((Set<String>) result.get(1)).stream()
+                            .map(Double::parseDouble)
+                            .collect(Collectors.toSet());
+                    mails.forEach(mail -> mail.setRead(readMailIds.contains(mail.getId())));
+                    return mails;
+                }).orElse(List.of()),
+                plugin.getExecutorService());
+    }
+
+    @Override
+    public void setMailRead(@NotNull String playerName, @NotNull Mail mail) {
+        getConnectionAsync(connection -> mail.isRead() ? connection.sadd(DataKey.READ_MAIL_MAP + playerName, String.valueOf(mail.getId()))
+                .exceptionally(throwable -> {
                     throwable.printStackTrace();
-                    plugin.getLogger().warning("Error setting public mail");
+                    plugin.getLogger().warning("Error setting mail read");
+                    return null;
+                }) : connection.srem(DataKey.READ_MAIL_MAP + playerName, String.valueOf(mail.getId()))
+                .exceptionally(throwable -> {
+                    throwable.printStackTrace();
+                    plugin.getLogger().warning("Error setting mail read");
                     return null;
                 }));
     }
 
     @Override
-    public CompletionStage<List<Mail>> getPublicMails() {
-        return getConnectionAsync(connection ->
-                connection.hgetall(DataKey.PUBLIC_MAIL.toString())
-                        .thenApply(this::deserializeMails).exceptionally(throwable -> {
-                            throwable.printStackTrace();
-                            plugin.getLogger().warning("Error getting public mails");
-                            return null;
-                        }));
+    public void deleteMail(@NotNull Mail mail) {
+        getConnectionPipeline(connection -> {
+            if (mail.getCategory() == Mail.MailCategory.PUBLIC) {
+                return connection.hdel(DataKey.PUBLIC_MAIL.toString(), String.valueOf(mail.getId()));
+            } else {
+                connection.hdel(DataKey.PRIVATE_MAIL_PREFIX + mail.getSender(), String.valueOf(mail.getId()));
+                return connection.hdel(DataKey.PRIVATE_MAIL_PREFIX + mail.getReceiver(), String.valueOf(mail.getId()));
+            }
+        });
     }
 
     @Override
@@ -645,6 +685,21 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     @Override
     public void close() {
         super.close();
+    }
+
+    private List<Mail> deserializeMails(Map<String, String> timestampMail) {
+        return Optional.ofNullable(RedisChatAPI.getAPI())
+                .map(RedisChatAPI::getMailManager)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .map(mailGUIManager -> timestampMail.entrySet().stream()
+                        // From string to Mail and sort by timestamp
+                        .map(entry -> new AbstractMap.SimpleEntry<>(Double.parseDouble(entry.getKey()), entry.getValue()))
+                        .sorted(Map.Entry.comparingByKey())
+                        .map(entry -> new Mail(mailGUIManager, entry.getKey(), entry.getValue()))
+                        .toList())
+                .orElse(new ArrayList<>());
+
     }
 
 }

@@ -38,6 +38,9 @@ public class PlayerListManager {
                 if (!tempList.isEmpty())
                     plugin.getDataManager().publishPlayerList(tempList);
                 tempList.forEach(s -> playerList.put(s, System.currentTimeMillis()));
+
+                plugin.getServer().getOnlinePlayers().forEach(player ->
+                        player.setCustomChatCompletions(getPlayerList(player)));
             }
         }.runTaskTimerAsynchronously(plugin, 0, 60);//3 seconds
     }

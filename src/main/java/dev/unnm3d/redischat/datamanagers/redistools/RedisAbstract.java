@@ -1,14 +1,19 @@
 package dev.unnm3d.redischat.datamanagers.redistools;
 
 import io.lettuce.core.RedisClient;
+import io.lettuce.core.TransactionResult;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.async.RedisAsyncCommands;
+import io.lettuce.core.api.sync.RedisCommands;
 import io.lettuce.core.pubsub.RedisPubSubListener;
 import io.lettuce.core.pubsub.StatefulRedisPubSubConnection;
 import org.bukkit.Bukkit;
 
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 
@@ -75,6 +80,14 @@ public abstract class RedisAbstract {
         connection.flushCommands();
         connection.setAutoFlushCommands(true);
         return completionStage;
+    }
+
+    public Optional<List<Object>> executeTransaction(Consumer<RedisCommands<String, String>> redisCommandsConsumer) {
+        final RedisCommands<String, String> syncCommands = roundRobinConnectionPool.get().sync();
+        syncCommands.multi();
+        redisCommandsConsumer.accept(syncCommands);
+        final TransactionResult transactionResult = syncCommands.exec();
+        return Optional.ofNullable(transactionResult.wasDiscarded() ? null : transactionResult.stream().toList());
     }
 
     public void close() {

@@ -7,7 +7,7 @@ import dev.unnm3d.redischat.api.AsyncRedisChatMessageEvent;
 import dev.unnm3d.redischat.api.RedisChatAPI;
 import dev.unnm3d.redischat.api.VanishIntegration;
 import dev.unnm3d.redischat.chat.*;
-import dev.unnm3d.redischat.mail.MailManager;
+import dev.unnm3d.redischat.mail.MailGUIManager;
 import dev.unnm3d.redischat.moderation.MuteManager;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
@@ -21,10 +21,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.xenondevs.invui.window.Window;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ChannelManager extends RedisChatAPI {
@@ -64,8 +61,8 @@ public class ChannelManager extends RedisChatAPI {
     }
 
     @Override
-    public Optional<MailManager> getMailManager() {
-        return Optional.ofNullable(plugin.getMailManager());
+    public Optional<MailGUIManager> getMailManager() {
+        return Optional.ofNullable(plugin.getMailGUIManager());
     }
 
     @Override
@@ -321,9 +318,9 @@ public class ChannelManager extends RedisChatAPI {
         }
 
         //Send to recipient or all players
-        final Collection<? extends Player> recipients =
+        final Set<Player> recipients =
                 recipient == null ?
-                        plugin.getServer().getOnlinePlayers() :
+                        new HashSet<>(plugin.getServer().getOnlinePlayers()) :
                         Collections.singleton(recipient);
 
         recipients.stream()

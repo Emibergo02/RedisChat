@@ -13,6 +13,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
@@ -63,7 +64,10 @@ public interface DataManager {
 
     CompletionStage<Boolean> setPublicMail(@NotNull Mail mail);
 
-    CompletionStage<List<Mail>> getPublicMails();
+    CompletableFuture<List<Mail>> getPublicMails(@NotNull String playerName);
+
+    void setMailRead(@NotNull String playerName, @NotNull Mail mail);
+    void deleteMail(@NotNull Mail mail);
 
     void setPlayerChannelStatuses(@NotNull String playerName, @NotNull Map<String, String> channelStatuses);
 
@@ -117,13 +121,6 @@ public interface DataManager {
             exception.printStackTrace();
             return new ItemStack[0];
         }
-    }
-
-    default List<Mail> deserializeMails(Map<String, String> timestampMail) {
-        return timestampMail.entrySet().stream()
-                .map(entry -> new AbstractMap.SimpleEntry<>(Double.parseDouble(entry.getKey()), entry.getValue()))
-                .sorted(Map.Entry.comparingByKey())
-                .map(entry -> new Mail(entry.getKey(), entry.getValue())).toList();
     }
 
     default String serializePlayerPlaceholders(Map<String, String> placeholders) {

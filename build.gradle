@@ -6,7 +6,7 @@ plugins {
 
 
 group = 'dev.unnm3d'
-version = '4.5.3'
+version = '4.6.0'
 
 
 repositories {
@@ -21,21 +21,20 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'net.kyori:adventure-text-minimessage:4.16.0'
-    compileOnly 'net.kyori:adventure-text-serializer-plain:4.16.0'
-    compileOnly 'net.kyori:adventure-platform-bukkit:4.3.2'
+    compileOnly 'net.kyori:adventure-text-minimessage:4.17.0'
+    compileOnly 'net.kyori:adventure-text-serializer-plain:4.17.0'
 
     implementation 'com.github.Exlll.ConfigLib:configlib-paper:v4.5.0'
-    implementation 'xyz.xenondevs.invui:invui-core:1.24'
-    implementation 'xyz.xenondevs.invui:inventory-access-r7:1.24'
-    implementation 'xyz.xenondevs.invui:inventory-access-r9:1.24'
-    implementation 'xyz.xenondevs.invui:inventory-access-r11:1.24'
-    implementation 'xyz.xenondevs.invui:inventory-access-r14:1.24'
-    implementation 'xyz.xenondevs.invui:inventory-access-r15:1.24'
-    implementation 'xyz.xenondevs.invui:inventory-access-r16:1.24'
-    implementation 'xyz.xenondevs.invui:inventory-access-r17:1.24'
-    implementation 'xyz.xenondevs.invui:inventory-access-r18:1.24'
-    implementation 'dev.jorel:commandapi-bukkit-shade:9.4.0'
+    implementation 'xyz.xenondevs.invui:invui-core:1.30'
+    implementation 'xyz.xenondevs.invui:inventory-access-r7:1.30'
+    implementation 'xyz.xenondevs.invui:inventory-access-r9:1.30'
+    implementation 'xyz.xenondevs.invui:inventory-access-r11:1.30'
+    implementation 'xyz.xenondevs.invui:inventory-access-r14:1.30'
+    implementation 'xyz.xenondevs.invui:inventory-access-r15:1.30'
+    implementation 'xyz.xenondevs.invui:inventory-access-r16:1.30'
+    implementation 'xyz.xenondevs.invui:inventory-access-r17:1.30'
+    implementation 'xyz.xenondevs.invui:inventory-access-r18:1.30'
+    implementation 'dev.jorel:commandapi-bukkit-shade:9.4.1'
     implementation 'com.github.Anon8281:UniversalScheduler:0.1.6'
 
     compileOnly 'io.papermc.paper:paper-api:1.20.1-R0.1-SNAPSHOT'
@@ -66,7 +65,6 @@ shadowJar {
         include dependency('com.github.Exlll.ConfigLib:configlib-paper')
         include dependency('com.github.Exlll.ConfigLib:configlib-yaml')
         include dependency("com.github.Exlll.ConfigLib:configlib-core")
-
         include dependency('xyz.xenondevs.invui:invui-core')
         include dependency('xyz.xenondevs.invui:inventory-access')
         include dependency('xyz.xenondevs.invui:inventory-access-r7')
@@ -82,7 +80,7 @@ shadowJar {
     }
 
     exclude 'colors.bin'
-    //relocate 'net.kyori.adventure', 'dev.unnm3d.redischat.libraries.adventure'
+
 
     relocate 'de.exlll.configlib', 'dev.unnm3d.redischat.libraries.configlib'
     relocate 'xyz.xenondevs.invui', 'dev.unnm3d.redischat.libraries.invui'
