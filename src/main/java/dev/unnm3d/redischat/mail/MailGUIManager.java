@@ -1,6 +1,5 @@
 package dev.unnm3d.redischat.mail;
 
-import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.api.events.*;
 import lombok.Getter;
