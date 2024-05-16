@@ -1,5 +1,6 @@
 package dev.unnm3d.redischat.mail;
 
+import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.api.events.*;
 import lombok.Getter;
@@ -46,15 +47,17 @@ public class MailGUIManager {
         final MailEditorEvent event = new MailEditorEvent(new Mail(this, sender.getName(), target, title),
                 MailEditorEvent.MailEditorState.STARTED);
 
-        this.editorMode.put(sender.getUniqueId(), event.getMail());
+        plugin.getServer().getScheduler().runTask(plugin, () -> {
+            plugin.getServer().getPluginManager().callEvent(event);
 
-        plugin.getComponentProvider().sendMessage(sender,
-                plugin.messages.mailEditorStart
-                        .replace("%link%", plugin.getWebEditorAPI().getEditorUrl(token))
-        );
-        plugin.getServer().getScheduler().runTaskLaterAsynchronously(plugin, () ->
-                        editorMode.values().removeIf(mail -> mail.getSender().equals(sender.getName())),
-                plugin.config.mailEditorTimeout * 20L);
+            this.editorMode.put(sender.getUniqueId(), event.getMail());
+            System.out.println("Starting editor mode for " + sender.getUniqueId() + " with mail " + event.getMail().serializeWithId());
+
+            plugin.getComponentProvider().sendMessage(sender,
+                    plugin.messages.mailEditorStart
+                            .replace("%link%", plugin.getWebEditorAPI().getEditorUrl(token)));
+        });
+
     }
 
     /**
@@ -65,14 +68,19 @@ public class MailGUIManager {
      * @param content The content of the mail
      */
     public void stopEditorMode(@NotNull Player sender, @NotNull String content) {
-        editorMode.computeIfPresent(sender.getUniqueId(), (s, mail) -> {
-            System.out.println(content);
+
+        plugin.getServer().getScheduler().runTask(plugin, () -> {
+            final Mail mail = editorMode.get(sender.getUniqueId());
+            if (mail == null) {
+                plugin.getComponentProvider().sendMessage(sender, plugin.messages.mailError);
+                return;
+            }
             mail.setContent(content);
-            return mail;
+
+            final MailEditorEvent event = new MailEditorEvent(mail, MailEditorEvent.MailEditorState.COMPLETED);
+            plugin.getServer().getPluginManager().callEvent(event);
+            editorMode.put(sender.getUniqueId(), event.getMail());
         });
-        plugin.getServer().getScheduler().runTask(plugin, () ->
-                plugin.getServer().getPluginManager().callEvent(new MailEditorEvent(editorMode.get(sender.getUniqueId()),
-                        MailEditorEvent.MailEditorState.COMPLETED)));
     }
 
     /**
@@ -98,6 +106,7 @@ public class MailGUIManager {
      */
     public void confirmSendMail(Player sender, boolean confirm) {
         final Mail mail = editorMode.remove(sender.getUniqueId());
+        System.out.println("Removing mail " + mail + " from editor mode");
         if (mail == null) {
             plugin.getComponentProvider().sendMessage(sender, plugin.messages.mailError);
             return;
@@ -167,9 +176,12 @@ public class MailGUIManager {
      */
     public void deleteMail(@NotNull Mail mail, @NotNull Player deleter) {
         final MailDeleteEvent event = new MailDeleteEvent(mail, deleter);
-        plugin.getServer().getPluginManager().callEvent(event);
-        if (event.isCancelled()) return;
-        plugin.getDataManager().deleteMail(mail);
+        plugin.getServer().getScheduler().runTask(plugin, () -> {
+            plugin.getServer().getPluginManager().callEvent(event);
+            if (event.isCancelled()) return;
+            plugin.getDataManager().deleteMail(mail);
+            plugin.messages.sendMessage(deleter, plugin.messages.mailDeleted.replace("%title%", mail.getTitle()));
+        });
     }
 
     /**
@@ -178,10 +190,13 @@ public class MailGUIManager {
      * @param mail Mail to change the read status
      */
     public void readMail(@NotNull Mail mail, @NotNull Player player, boolean read) {
+        //Format mail id double 3 decimal places
         mail.setRead(read);
         plugin.getServer().getScheduler().runTask(plugin, () ->
                 plugin.getServer().getPluginManager().callEvent(new MailReadStatusChangeEvent(mail, player)));
         plugin.getDataManager().setMailRead(player.getName(), mail);
+        if (!read)
+            plugin.messages.sendMessage(player, plugin.messages.mailUnRead.replace("%title%", mail.getTitle()));
     }
 
 

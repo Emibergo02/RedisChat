@@ -695,7 +695,9 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
                 .map(mailGUIManager -> timestampMail.entrySet().stream()
                         // From string to Mail and sort by timestamp
                         .map(entry -> new AbstractMap.SimpleEntry<>(Double.parseDouble(entry.getKey()), entry.getValue()))
-                        .sorted(Map.Entry.comparingByKey())
+                        .sorted(Map.Entry.comparingByKey(
+                                Comparator.reverseOrder()
+                        ))
                         .map(entry -> new Mail(mailGUIManager, entry.getKey(), entry.getValue()))
                         .toList())
                 .orElse(new ArrayList<>());

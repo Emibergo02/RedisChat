@@ -2,10 +2,7 @@ package dev.unnm3d.redischat.mail;
 
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.SuggestionInfo;
-import dev.jorel.commandapi.arguments.ArgumentSuggestions;
-import dev.jorel.commandapi.arguments.GreedyStringArgument;
-import dev.jorel.commandapi.arguments.MultiLiteralArgument;
-import dev.jorel.commandapi.arguments.StringArgument;
+import dev.jorel.commandapi.arguments.*;
 import dev.unnm3d.redischat.Permissions;
 import lombok.AllArgsConstructor;
 import org.bukkit.command.CommandSender;
@@ -27,6 +24,8 @@ public class MailCommand {
                 .withAliases(mailGUIManager.getPlugin().config.getCommandAliases("rmail"))
                 .withSubcommand(getSendSubCommand())
                 .withSubcommand(getWebUISubCommand())
+                .withSubcommand(getDeleteCommand())
+                .withSubcommand(getUnreadCommand())
                 .executesPlayer((sender, args) -> {
                     mailGUIManager.openPublicMailGui(sender);
                 });
@@ -37,13 +36,12 @@ public class MailCommand {
         return new CommandAPICommand("send")
                 .withPermission(Permissions.MAIL_WRITE.getPermission())
                 .withArguments(
-                        new StringArgument(mailGUIManager.getPlugin().messages.mailStringPlayer)
+                        new StringArgument("player")
                                 .replaceSuggestions(ArgumentSuggestions.stringsAsync(getPlayerRecipients())),
-                        new GreedyStringArgument(mailGUIManager.getPlugin().messages.mailTitleSuggestion)
+                        new GreedyStringArgument("title")
                                 .replaceSuggestions(ArgumentSuggestions.strings("<aqua>Mail Object/Title</aqua>")))
                 .executesPlayer((sender, args) -> {
                     String recipient = (String) args.get(0);
-                    assert recipient != null;
                     if (recipient.equals("-Public") && !sender.hasPermission(Permissions.MAIL_WRITE_PUBLIC.getPermission())) {
                         mailGUIManager.getPlugin().getComponentProvider().sendMessage(sender, mailGUIManager.getPlugin().messages.noPermission);
                         return;
@@ -51,10 +49,58 @@ public class MailCommand {
 
                     mailGUIManager.getPlugin().getWebEditorAPI().startSession("Mail Content", "/rmail webui {token}", "RedisMail")
                             .thenAccept(session -> mailGUIManager.startEditorMode(
-                                    sender,
-                                    recipient,
-                                    (String) args.get(1),
-                                    session));
+                                    sender, recipient,
+                                    (String) args.get(1), session
+                            )).exceptionally(throwable -> {
+                        throwable.printStackTrace();
+                        return null;
+                            });
+                });
+    }
+
+    public CommandAPICommand getDeleteCommand() {
+        return new CommandAPICommand("delete")
+                .withPermission(Permissions.MAIL_DELETE.getPermission())
+                .withArguments(new DoubleArgument("id"))
+                .executesPlayer((sender, args) -> {
+                    if (args.count() == 0) return;
+
+                    double id = (Double) args.get(0);
+
+                    mailGUIManager.getPrivateMails(sender.getName()).thenAccept(mails -> mails.stream()
+                            .filter(m -> m.getId() == id)
+                            .findFirst()
+                            .ifPresentOrElse(mail -> {
+                                        System.out.println("Deleting mail " + mail.getId() + " from " + mail.getSender() + " to " + mail.getReceiver());
+                                        mailGUIManager.deleteMail(mail, sender);
+
+                                    },
+                                    () -> mailGUIManager.getPlugin().getComponentProvider().sendMessage(sender, mailGUIManager.getPlugin().messages.mailNotFound)
+                            ));
+                });
+    }
+
+    public CommandAPICommand getUnreadCommand() {
+        return new CommandAPICommand("unread")
+                .withPermission(Permissions.MAIL_UNREAD.getPermission())
+                .withArguments(new DoubleArgument("id"))
+                .withArguments(new MultiLiteralArgument("type", "private", "public"))
+                .executesPlayer((sender, args) -> {
+                    if (args.count() < 2) return;
+
+                    double id = (Double) args.get(0);
+                    assert args.get(1) != null;
+                    final CompletableFuture<List<Mail>> mailList = args.get(1).equals("private") ?
+                            mailGUIManager.getPrivateMails(sender.getName()) :
+                            mailGUIManager.getPublicMails(sender.getName());
+
+                    mailList.thenAccept(mails -> mails.stream()
+                            .filter(m -> m.getId() == id)
+                            .findFirst()
+                            .ifPresentOrElse(
+                                    mail -> mailGUIManager.readMail(mail, sender, false),
+                                    () -> mailGUIManager.getPlugin().getComponentProvider().sendMessage(sender, mailGUIManager.getPlugin().messages.mailNotFound)
+                            ));
                 });
     }
 

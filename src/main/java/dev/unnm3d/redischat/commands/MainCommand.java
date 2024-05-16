@@ -77,16 +77,21 @@ public class MainCommand {
                             return;
                         }
                         if (fieldString == null) {
-                            plugin.messages.sendMessage(sender, plugin.messages.editMessageError);
+                            plugin.messages.sendMessage(sender, plugin.messages.edit_message_error);
                             return;
                         }
                         adventureWebuiEditorAPI.startSession(fieldString, "/redischat savemessage " + configField + " {token}", "RedisEconomy")
                                 .thenAccept(token ->
-                                        plugin.messages.sendMessage(sender, plugin.messages.editMessageClickHere
+                                        plugin.messages.sendMessage(sender, plugin.messages.edit_message_click_here
                                                 .replace("%field%", configField)
-                                                .replace("%url%", adventureWebuiEditorAPI.getEditorUrl(token))));
+                                                .replace("%url%", adventureWebuiEditorAPI.getEditorUrl(token))))
+                                .exceptionally(throwable -> {
+                                    plugin.messages.sendMessage(sender, plugin.messages.edit_message_error);
+                                    throwable.printStackTrace();
+                                    return null;
+                                });
                     } catch (NoSuchFieldException | IllegalAccessException e) {
-                        plugin.messages.sendMessage(sender, plugin.messages.editMessageError);
+                        plugin.messages.sendMessage(sender, plugin.messages.edit_message_error);
                     }
                 }, ExecutorType.CONSOLE, ExecutorType.PLAYER);
     }
@@ -108,14 +113,18 @@ public class MainCommand {
                         try {
                             if (plugin.messages.setStringField(configField, message)) {
                                 plugin.messages.sendMessage(sender,
-                                        plugin.messages.editMessageSuccess.replace("%field%", configField));
+                                        plugin.messages.edit_message_field.replace("%field%", configField));
                                 plugin.saveMessages();
                             } else {
-                                plugin.messages.sendMessage(sender, plugin.messages.editMessageError);
+                                plugin.messages.sendMessage(sender, plugin.messages.edit_message_error);
                             }
                         } catch (IllegalAccessException | NoSuchFieldException e) {
-                            plugin.messages.sendMessage(sender, plugin.messages.editMessageError);
+                            plugin.messages.sendMessage(sender, plugin.messages.edit_message_error);
                         }
+                    }).exceptionally(throwable -> {
+                        plugin.messages.sendMessage(sender, plugin.messages.edit_message_error);
+                        throwable.printStackTrace();
+                        return null;
                     });
                 });
     }

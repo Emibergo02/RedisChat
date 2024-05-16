@@ -93,12 +93,31 @@ public class Mail extends AbstractItem {
             itemBuilder = new ItemBuilder(manager.getPlugin().guiSettings.unreadMailItem);
         }
 
-        final ZonedDateTime cal = ZonedDateTime.ofInstant(Instant.ofEpochMilli((long) id),
-                TimeZone.getTimeZone(manager.getPlugin().config.mailTimestampZone).toZoneId());
-        final String timestampFormat = " <aqua>" + DateTimeFormatter.ofPattern(manager.getPlugin().config.mailTimestampFormat).format(cal);
+        final String timestampFormat = ZonedDateTime.ofInstant(Instant.ofEpochMilli((long) id),
+                        TimeZone.getTimeZone(manager.getPlugin().config.mailTimestampZone).toZoneId())
+                .format(DateTimeFormatter.ofPattern(manager.getPlugin().config.mailTimestampFormat));
 
-        return itemBuilder.setDisplayName(new AdventureComponentWrapper(manager.getPlugin().getComponentProvider().parse("<yellow>" + title + timestampFormat)))
-                .addLoreLines(new AdventureComponentWrapper(manager.getPlugin().getComponentProvider().parse("<grey>" + content)));
+        final StringBuilder abbreviatedContent = new StringBuilder(
+                content.contains("\n") ? content.substring(0, content.indexOf("\n")) : content);
+        abbreviatedContent.append("...");
+
+        final AdventureComponentWrapper[] lore = manager.getPlugin().messages.mailItemLore.stream()
+                .map(line -> new AdventureComponentWrapper(manager.getPlugin().getComponentProvider().parse(
+                        line.replace("%sender%", sender)
+                                .replace("%title%", title)
+                                .replace("%timestamp%", timestampFormat)
+                                .replace("%content%", abbreviatedContent.toString().replace("\r", ""))
+                )))
+                .toArray(AdventureComponentWrapper[]::new);
+
+        return itemBuilder
+                .setDisplayName(new AdventureComponentWrapper(
+                        manager.getPlugin().getComponentProvider().parse(
+                                manager.getPlugin().messages.mailItemDisplayName
+                                        .replace("%sender%", sender)
+                                        .replace("%title%", title)
+                                        .replace("%timestamp%", timestampFormat))))
+                .addLoreLines(lore);
     }
 
     @Override
@@ -121,16 +140,21 @@ public class Mail extends AbstractItem {
         player.closeInventory();
 
         final List<Component> bookPages = new ArrayList<>();
-        final List<String> headerLines = Arrays.asList(manager.getPlugin().messages.mailHeader
+        final String mailHeader = category == MailCategory.PUBLIC ? manager.getPlugin().messages.publicMailHeader : manager.getPlugin().messages.privateMailHeader;
+        final List<String> headerLines = Arrays.asList(mailHeader
                 .replace("%sender%", sender)
                 .replace("%title%", title)
                 .replace("%timestamp%", ZonedDateTime.ofInstant(Instant.ofEpochMilli((long) id),
                                 TimeZone.getTimeZone(manager.getPlugin().config.mailTimestampZone).toZoneId())
                         .format(DateTimeFormatter.ofPattern(manager.getPlugin().config.mailTimestampFormat))
                 )
+                .replace("%mail_id%", String.format("%.3f", this.id))
                 .split("\r?\n"));
 
-        final String[] contentLines = content.split("\r?\n");
+        final String[] contentLines = content
+                .replace("run_command", "suggest_command")
+                .replace("open_url", "suggest_command")
+                .split("\r?\n");
 
 
         int lineCount = headerLines.size();
@@ -155,7 +179,9 @@ public class Mail extends AbstractItem {
                 }
                 lineCount++;
             }
-            bookPages.add(manager.getPlugin().getComponentProvider().parse(componentText.toString()));
+
+            bookPages.add(manager.getPlugin().getComponentProvider()
+                            .parse(player, componentText.toString(), false, false, true));
             componentText = new StringBuilder();
             lineCount = 0;
         }

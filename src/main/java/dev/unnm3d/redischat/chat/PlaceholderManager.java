@@ -35,7 +35,6 @@ public class PlaceholderManager implements Listener {
     public void updatePlayerPlaceholders(String serializedPlaceholders) {
         final String playerName = serializedPlaceholders.substring(0,serializedPlaceholders.indexOf("§;"));
         final String placeholders = serializedPlaceholders.substring(serializedPlaceholders.indexOf("§;") + 2);
-        System.out.println(playerName+" "+placeholders);
         playerPlaceholders.put(playerName, new ConcurrentHashMap<>(plugin.getDataManager().deserializePlayerPlaceholders(placeholders)));
     }
 

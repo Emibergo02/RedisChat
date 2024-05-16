@@ -54,25 +54,23 @@ public final class AdventureWebuiEditorAPI {
                 .build();
         final CompletableFuture<String> result = new CompletableFuture<>();
 
-        this.client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).exceptionally(throwable -> {
-            throwable.printStackTrace();
-            return null;
-        }).thenApply(stringHttpResponse -> {
-            if (stringHttpResponse.statusCode() != 200) {
-                result.completeExceptionally(new IOException("The server could not handle the request."));
-            } else {
-                final String body = stringHttpResponse.body();
-                final Matcher matcher = TOKEN_PATTERN.matcher(body);
-                if (matcher.find()) {
-                    final String group = matcher.group(0);
-                    result.complete(group);
-                    return group;
-                }
+        this.client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                .thenApply(stringHttpResponse -> {
+                    if (stringHttpResponse.statusCode() != 200) {
+                        result.completeExceptionally(new IOException("The server could not handle the request."));
+                    } else {
+                        final String body = stringHttpResponse.body();
+                        final Matcher matcher = TOKEN_PATTERN.matcher(body);
+                        if (matcher.find()) {
+                            final String group = matcher.group(0);
+                            result.complete(group);
+                            return group;
+                        }
 
-                result.completeExceptionally(new IOException("The result did not contain a token."));
-            }
-            return null;
-        });
+                        result.completeExceptionally(new IOException("The result did not contain a token."));
+                    }
+                    return null;
+                });
 
         return result;
     }
