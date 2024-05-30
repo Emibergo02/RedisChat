@@ -126,7 +126,6 @@ publishing {
             artifactId = 'redischat'
             version = "$version"
             artifact shadowJar
-            artifact javadocJar
             artifact sourcesJar
         }
     }
