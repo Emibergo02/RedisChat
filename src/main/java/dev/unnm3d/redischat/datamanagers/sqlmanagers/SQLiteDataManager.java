@@ -15,9 +15,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 public class SQLiteDataManager extends SQLDataManager {
     private HikariDataSource dataSource;
@@ -25,7 +25,6 @@ public class SQLiteDataManager extends SQLDataManager {
     public SQLiteDataManager(RedisChat plugin) {
         super(plugin);
         initialize();
-        listenPluginMessages();
     }
 
     @Override
@@ -70,6 +69,7 @@ public class SQLiteDataManager extends SQLDataManager {
             errWarn("Failed to insert reply name into database", e);
         }
     }
+
     @Override
     public void setSpying(@NotNull String playerName, boolean spy) {
         try (Connection connection = getConnection()) {
@@ -163,6 +163,7 @@ public class SQLiteDataManager extends SQLDataManager {
             errWarn("Failed to insert serialized inventory into database", e);
         }
     }
+
     @Override
     public void addItem(@NotNull String name, ItemStack item) {
         try (Connection connection = getConnection()) {
@@ -209,10 +210,7 @@ public class SQLiteDataManager extends SQLDataManager {
         try (Connection connection = getConnection()) {
             try (PreparedStatement statement = connection.prepareStatement("""
                     UPDATE player_data SET 
-                    inv_serialized = NULL, 
-                    item_serialized = NULL, 
-                    ec_serialized = NULL;
-                    """)) {
+                    (inv_serialized, item_serialized, ec_serialized) = (NULL, NULL, NULL);""")) {
                 System.out.println(statement);
                 if (statement.executeUpdate() == 0) {
                     throw new SQLException("Failed to clear inv share cache: " + statement);
@@ -224,15 +222,15 @@ public class SQLiteDataManager extends SQLDataManager {
     }
 
     @Override
-    public void setMailRead(@NotNull String playerName, @NotNull Mail mail) {
-        CompletableFuture.runAsync(() -> {
+    public CompletionStage<Boolean> setMailRead(@NotNull String playerName, @NotNull Mail mail) {
+        return CompletableFuture.supplyAsync(() -> {
             try (Connection connection = getConnection()) {
-                try (PreparedStatement statement = connection.prepareStatement(mail.isRead()?"""
+                try (PreparedStatement statement = connection.prepareStatement(mail.isRead() ? """
                         INSERT OR IGNORE INTO read_mails
                             (`player_name`, `mail_id`)
                         VALUES
                             (?,?);
-                        """:"""
+                        """ : """
                         DELETE FROM read_mails
                         WHERE player_name = ? AND mail_id = ?;
                         """)) {
@@ -242,40 +240,44 @@ public class SQLiteDataManager extends SQLDataManager {
                     if (statement.executeUpdate() == 0) {
                         throw new SQLException("Failed to insert read mail into database: " + statement);
                     }
+                    return true;
                 }
             } catch (SQLException e) {
                 errWarn("Failed to insert read mail into database", e);
             }
+            return false;
         }, plugin.getExecutorService());
     }
-    @Override
-    public void deleteMail(@NotNull Mail mail) {
-        CompletableFuture.runAsync(() -> {
-            try (Connection connection = getConnection()) {
-                connection.setAutoCommit(false);
-                try (PreparedStatement statement = connection.prepareStatement("""
-                        BEGIN TRANSACTION;
-                        DELETE FROM mails WHERE id =?;
-                        DELETE FROM read_mails WHERE mail_id =?;
-                        COMMIT;
-                        """)) {
 
-                    statement.setDouble(1, mail.getId());
-                    statement.setDouble(2, mail.getId());
-                    if (statement.executeUpdate() == 0) {
-                        throw new SQLException("Failed to delete mail from database: " + statement);
+    @Override
+    public CompletionStage<Boolean> deleteMail(@NotNull Mail mail) {
+        return CompletableFuture.supplyAsync(() -> {
+            try (Connection connection = getConnection()) {
+                try (PreparedStatement deleteMailStatement = connection.prepareStatement(
+                        "DELETE FROM mails WHERE id =?;");
+                     PreparedStatement deleteReadMailStatement = connection.prepareStatement(
+                             "DELETE FROM read_mails WHERE mail_id =?;")) {
+
+                    deleteMailStatement.setDouble(1, mail.getId());
+                    deleteReadMailStatement.setDouble(1, mail.getId());
+                    if (deleteMailStatement.executeUpdate() == 0) {
+                        throw new SQLException("Failed to delete mail from database: " + deleteMailStatement);
                     }
-                    connection.commit();
+                    if (deleteReadMailStatement.executeUpdate() == 0) {
+                        throw new SQLException("Failed to delete read mail from database: " + deleteMailStatement);
+                    }
+                    return true;
                 }
             } catch (SQLException e) {
                 errWarn("Failed to delete mail from database", e);
             }
+            return false;
         }, plugin.getExecutorService());
     }
 
     @Override
     public void registerChannel(@NotNull Channel channel) {
-        CompletableFuture.supplyAsync(() -> {
+        CompletableFuture.runAsync(() -> {
             try (Connection connection = getConnection()) {
                 try (PreparedStatement statement = connection.prepareStatement("""
                         INSERT OR REPLACE INTO channels
@@ -299,7 +301,6 @@ public class SQLiteDataManager extends SQLDataManager {
 
                     sendChannelUpdate(channel.getName(), channel);
 
-                    return true;
                 }
             } catch (SQLException e) {
                 if (e instanceof JdbcSQLIntegrityConstraintViolationException)
@@ -308,7 +309,6 @@ public class SQLiteDataManager extends SQLDataManager {
                     e.printStackTrace();
                 }
             }
-            return false;
         }, plugin.getExecutorService());
     }
 
@@ -320,8 +320,7 @@ public class SQLiteDataManager extends SQLDataManager {
                         INSERT OR REPLACE INTO player_channels (`player_name`, `channel_name`, `status`) VALUES
                         """ +
                         String.join(",", Collections.nCopies(channelStatuses.size(), "(?,?,?)")) + ";"
-                        )) {
-                    System.out.println(statement);
+                )) {
                     int i = 0;
                     for (Map.Entry<String, String> stringStringEntry : channelStatuses.entrySet()) {
                         statement.setString(i * 3 + 1, playerName);

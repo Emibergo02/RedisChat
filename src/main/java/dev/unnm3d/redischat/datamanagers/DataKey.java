@@ -18,7 +18,6 @@ public enum DataKey {
     RATE_LIMIT_PREFIX("rchat:ratelimit_"),
     REPLY("rchat:reply"),
     PLAYER_PLACEHOLDERS("rchat:p_ph"),
-    PLAYER_PLACEHOLDERS_UPDATE("rchat:p_ph_update"),
     INVSHARE_ITEM("rchat:item"),
     INVSHARE_INVENTORY("rchat:inventory"),
     INVSHARE_ENDERCHEST("rchat:enderchest"),

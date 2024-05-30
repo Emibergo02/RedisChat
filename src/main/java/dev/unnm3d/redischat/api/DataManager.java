@@ -66,8 +66,9 @@ public interface DataManager {
 
     CompletableFuture<List<Mail>> getPublicMails(@NotNull String playerName);
 
-    void setMailRead(@NotNull String playerName, @NotNull Mail mail);
-    void deleteMail(@NotNull Mail mail);
+    CompletionStage<Boolean> setMailRead(@NotNull String playerName, @NotNull Mail mail);
+
+    CompletionStage<Boolean> deleteMail(@NotNull Mail mail);
 
     void setPlayerChannelStatuses(@NotNull String playerName, @NotNull Map<String, String> channelStatuses);
 

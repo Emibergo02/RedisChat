@@ -15,7 +15,6 @@ public class MySQLDataManager extends SQLDataManager {
     public MySQLDataManager(RedisChat plugin) {
         super(plugin);
         initialize();
-        listenPluginMessages();
     }
 
     @Override

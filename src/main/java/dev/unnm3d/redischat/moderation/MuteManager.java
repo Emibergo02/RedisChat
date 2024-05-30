@@ -217,6 +217,7 @@ public class MuteManager {
 
     public void setWhitelistEnabledPlayer(String playerName, boolean enabled) {
         plugin.getDataManager().setWhitelistEnabledPlayer(playerName, enabled);
+        whitelistEnabledUpdate(playerName, enabled);
     }
 
     public void whitelistEnabledUpdate(String playerName, boolean enabled) {

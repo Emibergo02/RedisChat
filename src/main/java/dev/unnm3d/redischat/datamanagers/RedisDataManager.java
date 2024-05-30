@@ -411,30 +411,33 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     }
 
     @Override
-    public void setMailRead(@NotNull String playerName, @NotNull Mail mail) {
-        getConnectionAsync(connection -> mail.isRead() ? connection.sadd(DataKey.READ_MAIL_MAP + playerName, String.valueOf(mail.getId()))
+    public CompletionStage<Boolean> setMailRead(@NotNull String playerName, @NotNull Mail mail) {
+        return getConnectionAsync(connection -> mail.isRead() ? connection.sadd(DataKey.READ_MAIL_MAP + playerName, String.valueOf(mail.getId()))
                 .exceptionally(throwable -> {
                     throwable.printStackTrace();
                     plugin.getLogger().warning("Error setting mail read");
-                    return null;
+                    return -1L;
                 }) : connection.srem(DataKey.READ_MAIL_MAP + playerName, String.valueOf(mail.getId()))
                 .exceptionally(throwable -> {
                     throwable.printStackTrace();
                     plugin.getLogger().warning("Error setting mail read");
-                    return null;
-                }));
+                    return -1L;
+                })).thenApply(aLong -> aLong > 0);
     }
 
     @Override
-    public void deleteMail(@NotNull Mail mail) {
-        getConnectionPipeline(connection -> {
-            if (mail.getCategory() == Mail.MailCategory.PUBLIC) {
-                return connection.hdel(DataKey.PUBLIC_MAIL.toString(), String.valueOf(mail.getId()));
-            } else {
-                connection.hdel(DataKey.PRIVATE_MAIL_PREFIX + mail.getSender(), String.valueOf(mail.getId()));
-                return connection.hdel(DataKey.PRIVATE_MAIL_PREFIX + mail.getReceiver(), String.valueOf(mail.getId()));
-            }
-        });
+    public CompletionStage<Boolean> deleteMail(@NotNull Mail mail) {
+        return getConnectionPipeline(connection -> switch (mail.getCategory()) {
+            case PUBLIC -> connection.hdel(DataKey.PUBLIC_MAIL.toString(), String.valueOf(mail.getId()));
+            case SENT -> connection.hdel(DataKey.PRIVATE_MAIL_PREFIX + mail.getSender(), String.valueOf(mail.getId()));
+            case PRIVATE ->
+                    connection.hdel(DataKey.PRIVATE_MAIL_PREFIX + mail.getReceiver(), String.valueOf(mail.getId()));
+        }).thenApply(aLong -> aLong > 0)
+                .exceptionally(throwable -> {
+                    throwable.printStackTrace();
+                    plugin.getLogger().warning("Error deleting mail");
+                    return false;
+                });
     }
 
     @Override
