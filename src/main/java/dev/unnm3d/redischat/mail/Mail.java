@@ -15,13 +15,12 @@ import xyz.xenondevs.invui.item.ItemProvider;
 import xyz.xenondevs.invui.item.builder.ItemBuilder;
 import xyz.xenondevs.invui.item.impl.AbstractItem;
 
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.TimeZone;
+import java.util.*;
 
 @Getter
 public class Mail extends AbstractItem {
@@ -148,7 +147,7 @@ public class Mail extends AbstractItem {
                                 TimeZone.getTimeZone(manager.getPlugin().config.mailTimestampZone).toZoneId())
                         .format(DateTimeFormatter.ofPattern(manager.getPlugin().config.mailTimestampFormat))
                 )
-                .replace("%mail_id%", String.format("%.3f", this.id))
+                .replace("%mail_id%", String.format(Locale.US, "%.2f", this.id))
                 .split("\r?\n"));
 
         final String[] contentLines = content

@@ -230,21 +230,13 @@ public class ComponentProvider {
                         if (p.getInventory().getItemInMainHand().getItemMeta().hasDisplayName()) {
                             toParseItemComponent = toParseItemComponent.replaceText(rTextBuilder ->
                                     rTextBuilder.matchLiteral("%item_name%")
-                                            .replacement(
-                                                    parse(player,
-                                                            parseLegacy(p.getInventory().getItemInMainHand().getItemMeta().getDisplayName(), false),
-                                                            false,
-                                                            false,
-                                                            false,
-                                                            this.standardTagResolver))
+                                            .replacement(p.getInventory().getItemInMainHand().getItemMeta().displayName())
                             );
                         } else {
                             toParseItemComponent = toParseItemComponent.replaceText(rTextBuilder ->
                                     rTextBuilder.matchLiteral("%item_name%")
-                                            .replacement(
-                                                    parse(player,
-                                                            Component.translatable(p.getInventory().getItemInMainHand().getType().translationKey()))
-                            );
+                                            .replacement(Component.translatable(
+                                                    p.getInventory().getItemInMainHand().getType().translationKey())));
                         }
                 } else {
                     toParseItemComponent = toParseItemComponent.replaceText(rTextBuilder ->

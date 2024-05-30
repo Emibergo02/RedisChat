@@ -15,8 +15,8 @@ import dev.unnm3d.redischat.channels.ChannelManager;
 import dev.unnm3d.redischat.chat.*;
 import dev.unnm3d.redischat.commands.*;
 import dev.unnm3d.redischat.datamanagers.RedisDataManager;
-import dev.unnm3d.redischat.datamanagers.sqlmanagers.H2SQLDataManager;
 import dev.unnm3d.redischat.datamanagers.sqlmanagers.MySQLDataManager;
+import dev.unnm3d.redischat.datamanagers.sqlmanagers.SQLiteDataManager;
 import dev.unnm3d.redischat.discord.DiscordWebhook;
 import dev.unnm3d.redischat.discord.IDiscordHook;
 import dev.unnm3d.redischat.discord.SpicordHook;
@@ -95,6 +95,7 @@ public final class RedisChat extends JavaPlugin {
         CommandAPI.onLoad(new CommandAPIBukkitConfig(this)
                 .usePluginNamespace()
                 .silentLogs(true)
+                .shouldHookPaperReload(true)
                 .verboseOutput(false));
     }
 
@@ -115,11 +116,11 @@ public final class RedisChat extends JavaPlugin {
         this.executorService = Executors.newFixedThreadPool(config.chatThreads);
 
         //Redis section
-        switch (config.getDataType()) {
-            case REDIS -> this.dataManager = RedisDataManager.startup(this);
-            case MYSQL -> this.dataManager = new MySQLDataManager(this);
-            case H2 -> this.dataManager = new H2SQLDataManager(this);
-        }
+        this.dataManager = switch (config.getDataType()) {
+            case REDIS -> RedisDataManager.startup(this);
+            case MYSQL -> new MySQLDataManager(this);
+            case SQLITE -> new SQLiteDataManager(this);
+        };
 
         //Permission section
         if (getServer().getPluginManager().getPlugin("LuckPerms") != null) {

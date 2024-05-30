@@ -10,7 +10,7 @@ libraries:
   - org.snakeyaml:snakeyaml-engine:2.3
   - org.jetbrains:annotations:24.0.1
   - com.zaxxer:HikariCP:5.0.1
-  - com.h2database:h2:2.2.220
+  - org.xerial:sqlite-jdbc:3.45.3.0
   - org.projectlombok:lombok:1.18.26
   - org.apache.commons:commons-collections4:4.4
   - net.kyori:adventure-text-minimessage:4.16.0

@@ -143,7 +143,7 @@ public abstract class SQLDataManager implements DataManager {
                 }
             } else if (subchannel.equals(DataKey.MAIL_UPDATE_CHANNEL.toString())) {
                 plugin.getMailGUIManager().receiveMailUpdate(messageString);
-            }else if (subchannel.equals(DataKey.MUTED_UPDATE.toString())) {
+            } else if (subchannel.equals(DataKey.MUTED_UPDATE.toString())) {
                 plugin.getChannelManager().getMuteManager().serializedUpdate(messageString);
             } else if (subchannel.equals(DataKey.PLAYER_PLACEHOLDERS_UPDATE.toString())) {
                 plugin.getPlaceholderManager().updatePlayerPlaceholders(messageString);
@@ -372,7 +372,8 @@ public abstract class SQLDataManager implements DataManager {
                         (`player_name`, `inv_serialized`)
                     VALUES
                         (?,?)
-                    ON DUPLICATE KEY UPDATE `inv_serialized` = VALUES(`inv_serialized`);""")) {
+                    ON DUPLICATE KEY UPDATE `inv_serialized` = VALUES(`inv_serialized`);
+                    """)) {
 
                 statement.setString(1, name);
                 statement.setString(2, serialize(inv));
@@ -434,7 +435,7 @@ public abstract class SQLDataManager implements DataManager {
             try (PreparedStatement statement = connection.prepareStatement("""
                     UPDATE player_data SET inv_serialized = NULL, item_serialized = NULL, ec_serialized = NULL;
                     """)) {
-
+                System.out.println(statement);
                 if (statement.executeUpdate() == 0) {
                     throw new SQLException("Failed to clear inv share cache: " + statement);
                 }
@@ -523,7 +524,8 @@ public abstract class SQLDataManager implements DataManager {
                 try (PreparedStatement statement = connection.prepareStatement("""
                         select id, serializedMail, player_name from mails
                         left join read_mails on mails.id = read_mails.mail_id and read_mails.player_name = ?
-                        where recipient = ?;""")) {
+                        where recipient = ?;
+                        """)) {
 
                     statement.setString(1, playerName);
                     statement.setString(2, playerName);
@@ -615,12 +617,16 @@ public abstract class SQLDataManager implements DataManager {
                         left join read_mails on mails.id = read_mails.mail_id and read_mails.player_name = ?
                         where recipient = '-Public';""")) {
 
+                    statement.setString(1, playerName);
+
                     final ResultSet resultSet = statement.executeQuery();
                     final List<Mail> mails = new ArrayList<>();
                     while (resultSet.next()) {
                         Mail mail = new Mail(plugin.getMailGUIManager(),
                                 resultSet.getDouble("id"),
                                 resultSet.getString("serializedMail"));
+                        System.out.println(statement);
+                        System.out.println("Setting mail read to " + (resultSet.getString("player_name") != null) + resultSet.getString("player_name"));
                         mail.setRead(resultSet.getString("player_name") != null);
                         mails.add(mail);
                     }
@@ -637,11 +643,14 @@ public abstract class SQLDataManager implements DataManager {
     public void setMailRead(@NotNull String playerName, @NotNull Mail mail) {
         CompletableFuture.runAsync(() -> {
             try (Connection connection = getConnection()) {
-                try (PreparedStatement statement = connection.prepareStatement("""
+                try (PreparedStatement statement = connection.prepareStatement(mail.isRead()?"""
                         INSERT IGNORE INTO read_mails
                             (`player_name`, `mail_id`)
                         VALUES
                             (?,?);
+                        """:"""
+                        DELETE FROM read_mails
+                        WHERE player_name = ? AND mail_id = ?;
                         """)) {
 
                     statement.setString(1, playerName);
@@ -655,6 +664,7 @@ public abstract class SQLDataManager implements DataManager {
             }
         }, plugin.getExecutorService());
     }
+
     @Override
     public void deleteMail(@NotNull Mail mail) {
         CompletableFuture.runAsync(() -> {
@@ -723,47 +733,13 @@ public abstract class SQLDataManager implements DataManager {
         }, plugin.getExecutorService());
     }
 
-    private void sendChannelUpdate(String channelName, @Nullable Channel channel) {
-        final ByteArrayDataOutput out = ByteStreams.newDataOutput();
-        out.writeUTF("Forward");
-        out.writeUTF("ALL");
-        out.writeUTF(DataKey.CHANNEL_UPDATE.toString());
-
-        if (channel == null) {
-            out.writeUTF("delete§" + channelName);
-        } else {
-            out.writeUTF(channel.serialize());
-        }
-
-        sendPluginMessage(out.toByteArray());
-    }
-
-    public void sendPlayerPlaceholdersUpdate(String serializedPlaceholders) {
-        final ByteArrayDataOutput out = ByteStreams.newDataOutput();
-        out.writeUTF("Forward");
-        out.writeUTF("ALL");
-        out.writeUTF(DataKey.PLAYER_PLACEHOLDERS_UPDATE.toString());
-        out.writeUTF(serializedPlaceholders);
-        sendPluginMessage(out.toByteArray());
-    }
-
-    private void sendMailUpdate(@NotNull Mail mail) {
-        final ByteArrayDataOutput out = ByteStreams.newDataOutput();
-        out.writeUTF("Forward");
-        out.writeUTF("ALL");
-        out.writeUTF(DataKey.MAIL_UPDATE_CHANNEL.toString());
-        out.writeUTF(mail.serialize());
-
-        sendPluginMessage(out.toByteArray());
-    }
-
     @Override
     public void unregisterChannel(@NotNull String channelName) {
         CompletableFuture.supplyAsync(() -> {
             try (Connection connection = getConnection()) {
                 try (PreparedStatement statement = connection.prepareStatement("""
                         DELETE FROM channels
-                            where name = ?;""")) {
+                        where name = ?;""")) {
 
                     statement.setString(1, channelName);
                     if (statement.executeUpdate() == 0) {
@@ -923,9 +899,10 @@ public abstract class SQLDataManager implements DataManager {
                         """ +
                         String.join(",", Collections.nCopies(channelStatuses.size(), "(?,?,?)")) +
                         """
-                                                        
+                                                                
                                 ON DUPLICATE KEY UPDATE status = VALUES(`status`);
                                 """)) {
+                    System.out.println(statement);
                     int i = 0;
                     for (Map.Entry<String, String> stringStringEntry : channelStatuses.entrySet()) {
                         statement.setString(i * 3 + 1, playerName);
@@ -966,7 +943,7 @@ public abstract class SQLDataManager implements DataManager {
         }, plugin.getExecutorService());
     }
 
-    private void errWarn(String msg, Exception exception) {
+    protected void errWarn(String msg, Exception exception) {
         if (plugin.config.debug) {
             exception.printStackTrace();
             return;
@@ -1003,7 +980,51 @@ public abstract class SQLDataManager implements DataManager {
         plugin.getChannelManager().sendAndKeepLocal(packet);
     }
 
-    private void sendPluginMessage(byte[] byteArray) {
+    void sendChannelUpdate(String channelName, @Nullable Channel channel) {
+        final ByteArrayDataOutput out = ByteStreams.newDataOutput();
+        out.writeUTF("Forward");
+        out.writeUTF("ALL");
+        out.writeUTF(DataKey.CHANNEL_UPDATE.toString());
+
+        if (channel == null) {
+            out.writeUTF("delete§" + channelName);
+        } else {
+            out.writeUTF(channel.serialize());
+        }
+
+        sendPluginMessage(out.toByteArray());
+    }
+
+    void sendPlayerPlaceholdersUpdate(String serializedPlaceholders) {
+        final ByteArrayDataOutput out = ByteStreams.newDataOutput();
+        out.writeUTF("Forward");
+        out.writeUTF("ALL");
+        out.writeUTF(DataKey.PLAYER_PLACEHOLDERS_UPDATE.toString());
+        out.writeUTF(serializedPlaceholders);
+        sendPluginMessage(out.toByteArray());
+    }
+
+    void sendMailUpdate(@NotNull Mail mail) {
+        final ByteArrayDataOutput out = ByteStreams.newDataOutput();
+        out.writeUTF("Forward");
+        out.writeUTF("ALL");
+        out.writeUTF(DataKey.MAIL_UPDATE_CHANNEL.toString());
+        out.writeUTF(mail.serialize());
+
+        sendPluginMessage(out.toByteArray());
+    }
+
+    void sendMutedEntityUpdate(@NotNull String entityKey, @NotNull Set<String> entitiesValue) {
+        final ByteArrayDataOutput out = ByteStreams.newDataOutput();
+        out.writeUTF("Forward");
+        out.writeUTF("ALL");
+        out.writeUTF(DataKey.MUTED_UPDATE.toString());
+        out.writeUTF(entityKey + ";" + String.join(",", entitiesValue));
+
+        sendPluginMessage(out.toByteArray());
+    }
+
+    void sendPluginMessage(byte[] byteArray) {
         if (plugin.getServer().getOnlinePlayers().isEmpty()) return;
         plugin.getServer().getOnlinePlayers().iterator().next()
                 .sendPluginMessage(plugin, "BungeeCord", byteArray);
@@ -1022,16 +1043,6 @@ public abstract class SQLDataManager implements DataManager {
 
         if (plugin.getPlayerListManager() != null)
             plugin.getPlayerListManager().updatePlayerList(playerNames);
-    }
-
-    public void sendMutedEntityUpdate(@NotNull String entityKey, @NotNull Set<String> entitiesValue) {
-        final ByteArrayDataOutput out = ByteStreams.newDataOutput();
-        out.writeUTF("Forward");
-        out.writeUTF("ALL");
-        out.writeUTF(DataKey.MUTED_UPDATE.toString());
-        out.writeUTF(entityKey + ";" + String.join(",", entitiesValue));
-
-        sendPluginMessage(out.toByteArray());
     }
 
     @Override

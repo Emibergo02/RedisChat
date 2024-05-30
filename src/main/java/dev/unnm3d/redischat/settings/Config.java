@@ -19,7 +19,7 @@ public final class Config implements ConfigValidator {
     @Comment({"RedisChat storage type, can be REDIS , MySQL+PM or H2+PM (PM means PluginMessages)",
             "If you use Mysql you need a proxy. The plugin will send the data to the proxy via pluginmessages",
             "If you use REDIS you don't need any proxy, THIS IS THE RECOMMENDED AND MOST EFFICIENT OPTION"})
-    public String dataMedium = DataType.H2.keyName;
+    public String dataMedium = DataType.SQLITE.keyName;
     @Comment("Leave password or user empty if you don't have a password or user")
     public RedisSettings redis = new RedisSettings("localhost",
             6379,
@@ -229,6 +229,8 @@ public final class Config implements ConfigValidator {
     public boolean sendWarnWhenIgnoring = true;
     @Comment("Enable or disable the staff chat")
     public boolean enableStaffChat = true;
+    @Comment("Enable or disable the chat color GUI")
+    public boolean enableChatColorGUI = false;
     @Comment("Messages with this prefix will be sent to staff chat")
     public String staffChatPrefix = "!";
     @Comment("The format of the staff chat messages")
@@ -244,8 +246,6 @@ public final class Config implements ConfigValidator {
     public String mailTimestampFormat = "dd/MM/yyyy HH:mm";
     @Comment("The timezone of the timestamp in mails (by default is Central European Time)")
     public String mailTimestampZone = "UTC+1";
-    @Comment("The timeout of the mail editor in seconds")
-    public int mailEditorTimeout = 300;
     @Comment("Those commands will be disabled")
     public List<String> disabledCommands = List.of();
     @Comment("The [inv], [item] and [ec] placeholders will be considered as minimessage tags")
@@ -393,7 +393,7 @@ public final class Config implements ConfigValidator {
     public enum DataType {
         MYSQL("MYSQL+PM"),
         REDIS("REDIS"),
-        H2("H2+PM"),
+        SQLITE("SQLITE+PM"),
         ;
         private final String keyName;
 

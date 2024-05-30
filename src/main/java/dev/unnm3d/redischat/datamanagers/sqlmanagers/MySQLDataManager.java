@@ -22,15 +22,19 @@ public class MySQLDataManager extends SQLDataManager {
     protected void initialize() throws IllegalStateException {
         // Initialize the Hikari pooled connection
         dataSource = new HikariDataSource();
-        dataSource.setJdbcUrl("jdbc:" + (plugin.config.mysql.driverClass().contains("mariadb") ? "mariadb" : "mysql")
-                + "://"
-                + plugin.config.mysql.host()
-                + ":"
-                + plugin.config.mysql.port()
-                + "/"
-                + plugin.config.mysql.database()
-                + plugin.config.mysql.connectionParameters()
-        );
+        if (plugin.config.mysql.driverClass().contains("sqlite")) {
+            dataSource.setJdbcUrl("jdbc:sqlite:" + plugin.getDataFolder().getAbsolutePath() + "/" + plugin.config.mysql.database() + ".db");
+        } else {
+            dataSource.setJdbcUrl("jdbc:" + (plugin.config.mysql.driverClass().contains("mariadb") ? "mariadb" : "mysql")
+                    + "://"
+                    + plugin.config.mysql.host()
+                    + ":"
+                    + plugin.config.mysql.port()
+                    + "/"
+                    + plugin.config.mysql.database()
+                    + plugin.config.mysql.connectionParameters()
+            );
+        }
 
         // Authenticate with the database
         dataSource.setUsername(plugin.config.mysql.username());
