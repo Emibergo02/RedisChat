@@ -16,7 +16,7 @@ import java.util.TreeMap;
 @Configuration
 public final class Config implements ConfigValidator {
 
-    @Comment({"RedisChat storage type, can be REDIS , MySQL+PM or H2+PM (PM means PluginMessages)",
+    @Comment({"RedisChat storage type, can be REDIS , MySQL+PM or SQLITE+PM (PM means PluginMessages)",
             "If you use Mysql you need a proxy. The plugin will send the data to the proxy via pluginmessages",
             "If you use REDIS you don't need any proxy, THIS IS THE RECOMMENDED AND MOST EFFICIENT OPTION"})
     public String dataMedium = DataType.SQLITE.keyName;
@@ -332,6 +332,10 @@ public final class Config implements ConfigValidator {
             commandAliases.put("rbroadcastraw", List.of("broadcastraw", "bcraw"));
             Bukkit.getLogger().warning("You didn't set any aliases for rbroadcastraw, using default aliases");
         }
+        if(dataMedium.equalsIgnoreCase("H2+PM")){
+            dataMedium = DataType.SQLITE.keyName;
+            Bukkit.getLogger().warning("H2+PM has been deprecated, using SQLITE+PM as default");
+        }
         for (Announcement announcement : announcer) {
             if (announcement.channelName == null || announcement.channelName.isEmpty()) {
                 Bukkit.getLogger().warning("Announce " + announcement.announcementName() + " doesn't have a channel name, using \"public\" as default");
@@ -389,7 +393,8 @@ public final class Config implements ConfigValidator {
     }
 
     public DataType getDataType() {
-        return DataType.fromString(dataMedium.toUpperCase());
+        final DataType type = DataType.fromString(dataMedium.toUpperCase());
+        return type == null ? DataType.SQLITE : type;
     }
 
     public enum DataType {

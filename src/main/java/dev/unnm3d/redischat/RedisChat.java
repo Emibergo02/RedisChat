@@ -157,7 +157,7 @@ public final class RedisChat extends JavaPlugin {
                 this.joinQuitManager = new JoinQuitManager(this);
                 getServer().getPluginManager().registerEvents(this.joinQuitManager, this);
             } else {
-                getLogger().warning("Join/Quit messages are not supported with H2 or MySQL");
+                getLogger().warning("Join/Quit messages are not supported with SQLite or MySQL");
             }
         }
 
@@ -189,8 +189,8 @@ public final class RedisChat extends JavaPlugin {
             loadCommandAPICommand(new MuteCommand(this).getMuteCommand());
             loadCommandAPICommand(new MuteCommand(this).getUnMuteCommand());
         } else {
-            getLogger().warning("Mute command is currently not supported with H2 or MySQL");
-            getLogger().warning("UnMute command is currently not supported with H2 or MySQL");
+            getLogger().warning("Mute command is currently not supported with SQLite or MySQL");
+            getLogger().warning("UnMute command is currently not supported with SQLite or MySQL");
         }
 
         //Old command API

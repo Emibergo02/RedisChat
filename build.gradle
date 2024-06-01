@@ -44,7 +44,6 @@ dependencies {
     compileOnly 'org.jetbrains:annotations:24.0.1'
     compileOnly 'com.zaxxer:HikariCP:5.0.1'
     compileOnly 'org.mariadb.jdbc:mariadb-java-client:3.1.4'
-    compileOnly 'com.h2database:h2:2.2.220'
     compileOnly 'net.luckperms:api:5.4'
     compileOnly 'com.github.MilkBowl:VaultAPI:1.7'
     compileOnly 'com.github.oraxen:oraxen:1.162.0'
