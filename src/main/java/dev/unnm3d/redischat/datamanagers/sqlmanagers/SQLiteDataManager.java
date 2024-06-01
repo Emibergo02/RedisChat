@@ -6,7 +6,6 @@ import dev.unnm3d.redischat.channels.Channel;
 import dev.unnm3d.redischat.mail.Mail;
 import org.bukkit.Bukkit;
 import org.bukkit.inventory.ItemStack;
-import org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.Connection;
@@ -276,8 +275,9 @@ public class SQLiteDataManager extends SQLDataManager {
 
                 }
             } catch (SQLException e) {
-                if (e instanceof JdbcSQLIntegrityConstraintViolationException)
+                if(e.getMessage().contains("Duplicate entry")) {
                     Bukkit.getLogger().warning("Channel " + channel.getName() + "already exists in database");
+                }
                 if (plugin.config.debug) {
                     e.printStackTrace();
                 }

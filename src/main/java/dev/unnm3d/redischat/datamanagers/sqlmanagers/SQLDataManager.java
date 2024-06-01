@@ -14,7 +14,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.inventory.ItemStack;
-import org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -683,8 +682,9 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
 
                 }
             } catch (SQLException e) {
-                if (e instanceof JdbcSQLIntegrityConstraintViolationException)
+                if(e.getMessage().contains("Duplicate entry")) {
                     Bukkit.getLogger().warning("Channel " + channel.getName() + "already exists in database");
+                }
                 if (plugin.config.debug) {
                     e.printStackTrace();
                 }
