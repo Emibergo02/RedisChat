@@ -30,7 +30,7 @@ public class Mail extends AbstractItem {
     private final double id;
     private final MailGUIManager manager;
     @Setter
-    MailCategory category;
+    private MailCategory category;
     private final String sender;
     private final String receiver;
     private final String title;

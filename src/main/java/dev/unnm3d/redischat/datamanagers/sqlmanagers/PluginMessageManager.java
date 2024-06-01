@@ -107,8 +107,9 @@ public abstract class PluginMessageManager {
         out.writeUTF("Forward");
         out.writeUTF("ALL");
         out.writeUTF(DataKey.MAIL_UPDATE_CHANNEL.toString());
-        out.writeUTF(mail.serialize());
+        out.writeUTF(mail.serializeWithId());
 
+        plugin.getMailGUIManager().receiveMailUpdate(mail.serializeWithId());
         sendPluginMessage(out.toByteArray());
     }
 

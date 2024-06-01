@@ -211,7 +211,6 @@ public class SQLiteDataManager extends SQLDataManager {
             try (PreparedStatement statement = connection.prepareStatement("""
                     UPDATE player_data SET 
                     (inv_serialized, item_serialized, ec_serialized) = (NULL, NULL, NULL);""")) {
-                System.out.println(statement);
                 if (statement.executeUpdate() == 0) {
                     throw new SQLException("Failed to clear inv share cache: " + statement);
                 }
@@ -244,32 +243,6 @@ public class SQLiteDataManager extends SQLDataManager {
                 }
             } catch (SQLException e) {
                 errWarn("Failed to insert read mail into database", e);
-            }
-            return false;
-        }, plugin.getExecutorService());
-    }
-
-    @Override
-    public CompletionStage<Boolean> deleteMail(@NotNull Mail mail) {
-        return CompletableFuture.supplyAsync(() -> {
-            try (Connection connection = getConnection()) {
-                try (PreparedStatement deleteMailStatement = connection.prepareStatement(
-                        "DELETE FROM mails WHERE id =?;");
-                     PreparedStatement deleteReadMailStatement = connection.prepareStatement(
-                             "DELETE FROM read_mails WHERE mail_id =?;")) {
-
-                    deleteMailStatement.setDouble(1, mail.getId());
-                    deleteReadMailStatement.setDouble(1, mail.getId());
-                    if (deleteMailStatement.executeUpdate() == 0) {
-                        throw new SQLException("Failed to delete mail from database: " + deleteMailStatement);
-                    }
-                    if (deleteReadMailStatement.executeUpdate() == 0) {
-                        throw new SQLException("Failed to delete read mail from database: " + deleteMailStatement);
-                    }
-                    return true;
-                }
-            } catch (SQLException e) {
-                errWarn("Failed to delete mail from database", e);
             }
             return false;
         }, plugin.getExecutorService());

@@ -162,13 +162,14 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
     @Override
     public boolean isRateLimited(@NotNull String playerName, @NotNull Channel channel) {
         final Map.Entry<Integer, Long> info = this.rateLimit.get(playerName);
-        if (info != null)
-            if (System.currentTimeMillis() - info.getValue() > channel.getRateLimitPeriod() * 1000L) {
+        if (info != null) {
+            long elapsedTime = System.currentTimeMillis() - info.getValue();
+            if (elapsedTime > channel.getRateLimitPeriod() * 1000L) {
                 this.rateLimit.remove(playerName);
                 return false;
-            } else {
-                return true;
             }
+            return info.getKey() >= channel.getRateLimit();
+        }
         return false;
     }
 
@@ -388,7 +389,7 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
             try (PreparedStatement statement = connection.prepareStatement("""
                     UPDATE player_data SET inv_serialized = NULL, item_serialized = NULL, ec_serialized = NULL;
                     """)) {
-                System.out.println(statement);
+
                 if (statement.executeUpdate() == 0) {
                     throw new SQLException("Failed to clear inv share cache: " + statement);
                 }
@@ -515,6 +516,8 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
                     statement.setDouble(1, mail.getId());
                     statement.setString(2, mail.getReceiver());
                     statement.setString(3, mail.serialize());
+                    sendMailUpdate(mail);
+
                     mail.setCategory(Mail.MailCategory.SENT);
                     statement.setDouble(4, mail.getId() + 0.001);
                     statement.setString(5, mail.getSender());
@@ -523,7 +526,6 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
                     if (statement.executeUpdate() == 0) {
                         throw new SQLException("Failed to insert serialized private mail into database: " + statement);
                     }
-                    sendMailUpdate(mail);
                     return true;
                 }
             } catch (SQLException e) {
@@ -575,11 +577,10 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
                     final ResultSet resultSet = statement.executeQuery();
                     final List<Mail> mails = new ArrayList<>();
                     while (resultSet.next()) {
-                        Mail mail = new Mail(plugin.getMailGUIManager(),
+                        final Mail mail = new Mail(plugin.getMailGUIManager(),
                                 resultSet.getDouble("id"),
                                 resultSet.getString("serializedMail"));
-                        System.out.println(statement);
-                        System.out.println("Setting mail read to " + (resultSet.getString("player_name") != null) + resultSet.getString("player_name"));
+
                         mail.setRead(resultSet.getString("player_name") != null);
                         mails.add(mail);
                     }
@@ -624,16 +625,19 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
     public CompletionStage<Boolean> deleteMail(@NotNull Mail mail) {
         return CompletableFuture.supplyAsync(() -> {
             try (Connection connection = getConnection()) {
-                try (PreparedStatement statement = connection.prepareStatement("""
-                        DELETE mails,read_mails 
-                        FROM mails INNER JOIN read_mails 
-                        ON mails.id = read_mails.mail_id and mails.id = ?;
-                        """)) {
+                try (PreparedStatement deleteMailStatement = connection.prepareStatement(
+                        "DELETE FROM mails WHERE id =?;");
+                     PreparedStatement deleteReadMailStatement = connection.prepareStatement(
+                             "DELETE FROM read_mails WHERE mail_id =?;")) {
 
-                    statement.setDouble(1, mail.getId());
-                    if (statement.executeUpdate() == 0) {
-                        throw new SQLException("Failed to delete mail from database: " + statement);
+                    deleteMailStatement.setDouble(1, mail.getId());
+                    if (deleteMailStatement.executeUpdate() == 0) {
+                        throw new SQLException("Failed to delete mail from database: " + deleteMailStatement);
                     }
+
+                    deleteReadMailStatement.setDouble(1, mail.getId());
+                    deleteReadMailStatement.executeUpdate();
+
                     return true;
                 }
             } catch (SQLException e) {
@@ -853,7 +857,7 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
                                                                 
                                 ON DUPLICATE KEY UPDATE status = VALUES(`status`);
                                 """)) {
-                    System.out.println(statement);
+
                     int i = 0;
                     for (Map.Entry<String, String> stringStringEntry : channelStatuses.entrySet()) {
                         statement.setString(i * 3 + 1, playerName);
@@ -894,7 +898,6 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
         }, plugin.getExecutorService());
     }
 
-    @SuppressWarnings("UnstableApiUsage")
     @Override
     public void sendChatMessage(@NotNull ChatMessageInfo packet) {
         String publishChannel = DataKey.CHAT_CHANNEL.toString();
@@ -904,10 +907,9 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
             if (chName.equals(KnownChatEntities.STAFFCHAT_CHANNEL_NAME.toString()))
                 publishChannel = DataKey.GLOBAL_CHANNEL.withoutCluster();//Exception for staffchat: it's a global channel
 
-            final Map.Entry<Integer, Long> info = this.rateLimit.get(packet.getSender().getName());
-            if (info != null) {
-                this.rateLimit.put(packet.getSender().getName(), new AbstractMap.SimpleEntry<>(info.getKey() + 1, System.currentTimeMillis()));
-            } else {
+            if (this.rateLimit.computeIfPresent(packet.getSender().getName(), (key, value) ->
+                    new AbstractMap.SimpleEntry<>(value.getKey() + 1, System.currentTimeMillis())) == null) {
+                //If the map doesn't contain the player, we add it
                 this.rateLimit.put(packet.getSender().getName(), new AbstractMap.SimpleEntry<>(1, System.currentTimeMillis()));
             }
         }

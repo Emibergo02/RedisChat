@@ -70,11 +70,7 @@ public class MailCommand {
                     mailGUIManager.getPrivateMails(sender.getName()).thenAccept(mails -> mails.stream()
                             .filter(m -> m.getId() == id)
                             .findFirst()
-                            .ifPresentOrElse(mail -> {
-                                        System.out.println("Deleting mail " + mail.getId() + " from " + mail.getSender() + " to " + mail.getReceiver());
-                                        mailGUIManager.deleteMail(mail, sender);
-
-                                    },
+                            .ifPresentOrElse(mail -> mailGUIManager.deleteMail(mail, sender),
                                     () -> mailGUIManager.getPlugin().getComponentProvider().sendMessage(sender, mailGUIManager.getPlugin().messages.mailNotFound)
                             ));
                 });

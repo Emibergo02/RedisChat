@@ -1,4 +1,4 @@
-package dev.unnm3d.redischat.api;
+package dev.unnm3d.redischat.api.events;
 
 import dev.unnm3d.redischat.channels.Channel;
 import lombok.Getter;

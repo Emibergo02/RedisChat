@@ -231,6 +231,8 @@ public final class Config implements ConfigValidator {
     public boolean enableStaffChat = true;
     @Comment("Enable or disable the chat color GUI")
     public boolean enableChatColorGUI = false;
+    @Comment("Enable to complete chat suggestions with player names from RedisChat's shared player list")
+    public boolean completeChatSuggestion = true;
     @Comment("Messages with this prefix will be sent to staff chat")
     public String staffChatPrefix = "!";
     @Comment("The format of the staff chat messages")

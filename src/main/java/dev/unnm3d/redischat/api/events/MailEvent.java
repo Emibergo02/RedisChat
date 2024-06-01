@@ -3,6 +3,7 @@ package dev.unnm3d.redischat.api.events;
 import dev.unnm3d.redischat.mail.Mail;
 import lombok.Getter;
 import lombok.Setter;
+import org.bukkit.Bukkit;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
@@ -15,6 +16,7 @@ public abstract class MailEvent extends Event {
     private Mail mail;
 
     public MailEvent(Mail mail) {
+        super(!Bukkit.isPrimaryThread());
         this.mail = mail;
     }
 
