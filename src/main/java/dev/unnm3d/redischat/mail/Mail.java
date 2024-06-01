@@ -15,8 +15,6 @@ import xyz.xenondevs.invui.item.ItemProvider;
 import xyz.xenondevs.invui.item.builder.ItemBuilder;
 import xyz.xenondevs.invui.item.impl.AbstractItem;
 
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -180,7 +178,7 @@ public class Mail extends AbstractItem {
             }
 
             bookPages.add(manager.getPlugin().getComponentProvider()
-                            .parse(player, componentText.toString(), false, false, true));
+                    .parse(player, componentText.toString(), false, false, true));
             componentText = new StringBuilder();
             lineCount = 0;
         }
