@@ -43,7 +43,7 @@ public final class Messages implements ConfigValidator {
     public String mailEditorConfirm = "<yellow>RedisChat</yellow> <gray>»</gray> Valid mail. What would you do?<br><click:run_command:/rmail webui %token% confirm>[<green>Confirm, send!</green>]</click>  <click:run_command:/rmail webui %token% preview>[<aqua>Preview</aqua>]</click>  <click:run_command:/rmail webui %token% abort>[<red>Dismiss</red>]</click>";
     public String mailEditorSent = "<yellow>RedisChat</yellow> <gray>»</gray> <green>Mail sent!</green>";
     public String mailEditorFailed = "<yellow>RedisChat</yellow> <gray>»</gray> <red>Mail failed to send!</red>";
-    public String mailError = "<yellow>RedisChat</yellow> <gray>»</gray> <red>You do not have any pending mail!</red>";
+    public String mailError = "<yellow>RedisChat</yellow> <gray>»</gray> <red>An error occurred while modifying the mail!</red>";
     public String mailDeleted = "<yellow>RedisChat</yellow> <gray>»</gray> <green>Mail %title% deleted successfully!</green>";
     public String mailNotFound = "<yellow>RedisChat</yellow> <gray>»</gray> <red>Mail not found!</red>";
     public String mailUnRead = "<yellow>RedisChat</yellow> <gray>»</gray> <red>Mail %title% marked as unread!</red>";

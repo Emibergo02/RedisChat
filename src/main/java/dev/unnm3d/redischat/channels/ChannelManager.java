@@ -226,6 +226,11 @@ public class ChannelManager extends RedisChatAPI {
         }
     }
 
+    /**
+     * Player chat event, called by the chat listener
+     * @param player Player
+     * @param finalMessage The message to be sent
+     */
     public void playerChat(Player player, @NotNull final String finalMessage) {
         final long init = System.currentTimeMillis();
         plugin.getDataManager().getActivePlayerChannel(player.getName(), registeredChannels)
