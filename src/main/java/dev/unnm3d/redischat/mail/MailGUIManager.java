@@ -199,7 +199,7 @@ public class MailGUIManager {
      * Get all public mails with the given player read status
      *
      * @param playerName The player name to get read statuses
-     * @return CompletableFuture<List < Mail>> with all public mails
+     * @return CompletableFuture with all public mails
      */
     public CompletableFuture<List<Mail>> getPublicMails(@NotNull String playerName) {
         return plugin.getDataManager().getPublicMails(playerName);
@@ -209,7 +209,7 @@ public class MailGUIManager {
      * Get all private mails of the given player
      *
      * @param playerName The player name to get private mails
-     * @return CompletableFuture<List < Mail>> with all player private mails
+     * @return CompletableFuture with all player private mails
      */
     public CompletableFuture<List<Mail>> getPrivateMails(@NotNull String playerName) {
         return plugin.getDataManager().getPlayerPrivateMail(playerName).toCompletableFuture();

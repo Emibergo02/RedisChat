@@ -39,7 +39,7 @@ public class PlayerListManager {
                     plugin.getDataManager().publishPlayerList(tempList);
                 tempList.forEach(s -> playerList.put(s, System.currentTimeMillis()));
 
-                if (plugin.config.completeChatSuggestion) {
+                if (plugin.config.completeChatSuggestions) {
                     plugin.getServer().getOnlinePlayers().forEach(player ->
                             player.setCustomChatCompletions(getPlayerList(player)));
                 }
