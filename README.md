@@ -5,3 +5,4 @@ multi-server chat made for large scalable networks
 
 README coming soon
 More info on [the Gitbook page](https://emibergo.gitbook.io/redischat/)
+[Javadoc here](https://emibergo02.github.io/RedisChat/)
