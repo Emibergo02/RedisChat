@@ -1,8 +1,9 @@
 package dev.unnm3d.redischat.api.events;
 
-import dev.unnm3d.redischat.channels.Channel;
+import dev.unnm3d.redischat.chat.objects.NewChannel;
 import lombok.Getter;
 import lombok.Setter;
+import net.kyori.adventure.text.Component;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
@@ -16,11 +17,11 @@ public class AsyncRedisChatMessageEvent extends Event implements Cancellable {
     private final CommandSender sender;
     @Setter
     @Getter
-    private Channel channel;
+    private NewChannel channel;
     @Getter
-    private final String format;
+    private final Component format;
     @Getter
-    private final String message;
+    private final Component content;
     private boolean cancelled;
 
     /**
@@ -29,14 +30,14 @@ public class AsyncRedisChatMessageEvent extends Event implements Cancellable {
      * @param sender  The sender of the message
      * @param channel The channel of the message
      * @param format  The format of the message
-     * @param message The message content
+     * @param content The message content
      */
-    public AsyncRedisChatMessageEvent(CommandSender sender, Channel channel, String format, String message) {
+    public AsyncRedisChatMessageEvent(CommandSender sender, NewChannel channel, Component format, Component content) {
         super(true);
         this.sender = sender;
         this.channel = channel;
         this.format = format;
-        this.message = message;
+        this.content = content;
         this.cancelled = false;
     }
 

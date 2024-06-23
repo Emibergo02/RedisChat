@@ -1,8 +1,8 @@
 package dev.unnm3d.redischat.discord;
 
 import dev.unnm3d.redischat.RedisChat;
-import dev.unnm3d.redischat.channels.Channel;
-import dev.unnm3d.redischat.chat.ChatMessageInfo;
+import dev.unnm3d.redischat.chat.objects.NewChannel;
+import dev.unnm3d.redischat.chat.objects.NewChatMessage;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 
@@ -23,7 +23,7 @@ public class DiscordWebhook implements IDiscordHook {
     }
 
     @Override
-    public void sendDiscordMessage(Channel channel, ChatMessageInfo message) {
+    public void sendDiscordMessage(NewChannel channel, NewChatMessage message) {
         if (channel.getDiscordWebhook() == null || channel.getDiscordWebhook().isEmpty() || message.getSender().isDiscord())
             return;
 
@@ -47,7 +47,7 @@ public class DiscordWebhook implements IDiscordHook {
                                     """,
                             message.getSender().isServer() ? "Server" : message.getSender().getName(),
                             uuid == null ? "" : "https://crafatar.com/avatars/" + uuid + "?size=64&default=MHF_Steve&overlay",
-                            MiniMessage.miniMessage().stripTags(message.getMessage())
+                            MiniMessage.miniMessage().stripTags(message.getContent())
                     ).getBytes(StandardCharsets.UTF_8)));
                 }
                 connection.getInputStream();

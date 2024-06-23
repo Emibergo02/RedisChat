@@ -11,7 +11,7 @@ import java.lang.reflect.Field;
 import java.util.List;
 
 @Configuration
-public final class Messages implements ConfigValidator {
+public final class Messages {
 
     public String player_not_online = "<yellow>RedisChat</yellow> <gray>»</gray> <red>The player %player% is not online</red>";
     public String cannot_message_yourself = "<yellow>RedisChat</yellow> <gray>»</gray> <red>You cannot message yourself</red>";
@@ -99,7 +99,7 @@ public final class Messages implements ConfigValidator {
     public String muted_player = "<yellow>RedisChat</yellow> <gray>»</gray> <aqua>You muted %player% on channel %channel%!</aqua>";
     public String unmuted_player = "<yellow>RedisChat</yellow> <gray>»</gray> <aqua>You unmuted %player% on channel %channel%!</aqua>";
     public String muted_on_channel = "<yellow>RedisChat</yellow> <gray>»</gray> <aqua>You've been muted in this channel (%channel%)!</aqua>";
-    public String publicly_ignored_player = "<click:run_command:'/ignore list'><hover:show_text:'Click to see ignored players'><color:#545454>Ignored message</color></hover></click>";
+    public String ignored_player = "<click:run_command:'/ignore list'><hover:show_text:'Click to see ignored players'><color:#545454>Ignored message</color></hover></click>";
     public String invalid_color = "<yellow>RedisChat</yellow> <gray>»</gray> <red>Invalid color!</red>";
     public String color_set= "<yellow>RedisChat</yellow> <gray>»</gray> <green>You successfully set your chat color!</green>";
     public String placeholder_set= "<yellow>RedisChat</yellow> <gray>»</gray> <green>You successfully set %redischat_%placeholder%% to \"%value%\" for player %player%!</green>";
@@ -125,10 +125,5 @@ public final class Messages implements ConfigValidator {
         if (field == null) return false;
         field.set(this, text);
         return true;
-    }
-
-    @Override
-    public void validateConfig() {
-
     }
 }

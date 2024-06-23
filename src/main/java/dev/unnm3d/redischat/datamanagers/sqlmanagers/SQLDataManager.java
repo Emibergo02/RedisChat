@@ -4,15 +4,14 @@ import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.api.DataManager;
-import dev.unnm3d.redischat.channels.Channel;
 import dev.unnm3d.redischat.channels.PlayerChannel;
-import dev.unnm3d.redischat.chat.ChatMessageInfo;
 import dev.unnm3d.redischat.chat.KnownChatEntities;
+import dev.unnm3d.redischat.chat.objects.NewChannel;
+import dev.unnm3d.redischat.chat.objects.NewChatMessage;
 import dev.unnm3d.redischat.datamanagers.DataKey;
 import dev.unnm3d.redischat.mail.Mail;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -159,7 +158,7 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
     }
 
     @Override
-    public boolean isRateLimited(@NotNull String playerName, @NotNull Channel channel) {
+    public boolean isRateLimited(@NotNull String playerName, @NotNull NewChannel channel) {
         final Map.Entry<Integer, Long> info = this.rateLimit.get(playerName);
         if (info != null) {
             long elapsedTime = System.currentTimeMillis() - info.getValue();
@@ -647,7 +646,7 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
     }
 
     @Override
-    public void registerChannel(@NotNull Channel channel) {
+    public void registerChannel(@NotNull NewChannel channel) {
         CompletableFuture.runAsync(() -> {
             try (Connection connection = getConnection()) {
                 try (PreparedStatement statement = connection.prepareStatement("""
@@ -666,10 +665,12 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
                             """)) {
 
                     statement.setString(1, channel.getName());
-                    statement.setString(2, channel.getFormat());
+                    //TODO: format ai canali
+                    statement.setString(2, "%message%");
                     statement.setInt(3, channel.getRateLimit());
                     statement.setInt(4, channel.getRateLimitPeriod());
-                    statement.setInt(5, channel.getProximityDistance());
+                    //TODO: Proximity distance
+                    statement.setInt(5, -1);
                     statement.setString(6, channel.getDiscordWebhook());
                     statement.setBoolean(7, channel.isFiltered());
                     final String soundString = channel.getNotificationSound() == null ? null : channel.getNotificationSound().toString();
@@ -682,7 +683,7 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
 
                 }
             } catch (SQLException e) {
-                if(e.getMessage().contains("Duplicate entry")) {
+                if (e.getMessage().contains("Duplicate entry")) {
                     Bukkit.getLogger().warning("Channel " + channel.getName() + "already exists in database");
                 }
                 if (plugin.config.debug) {
@@ -717,7 +718,7 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
     }
 
     @Override
-    public CompletionStage<@Nullable String> getActivePlayerChannel(@NotNull String playerName, Map<String, Channel> registeredChannels) {
+    public CompletionStage<@Nullable String> getActivePlayerChannel(@NotNull String playerName, Map<String, NewChannel> registeredChannels) {
         return CompletableFuture.supplyAsync(() -> {
             try (Connection connection = getConnection()) {
                 try (PreparedStatement statement = connection.prepareStatement("""
@@ -786,7 +787,7 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
 
 
     @Override
-    public CompletionStage<List<PlayerChannel>> getPlayerChannelStatuses(@NotNull String playerName, Map<String, Channel> registeredChannels) {
+    public CompletionStage<List<PlayerChannel>> getPlayerChannelStatuses(@NotNull String playerName, Map<String, NewChannel> registeredChannels) {
         return CompletableFuture.supplyAsync(() -> {
             try (Connection connection = getConnection()) {
                 try (PreparedStatement statement = connection.prepareStatement("""
@@ -798,7 +799,7 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
                     final ResultSet resultSet = statement.executeQuery();
                     final List<PlayerChannel> playerChannels = new ArrayList<>();
                     while (resultSet.next()) {
-                        Channel channel = registeredChannels.get(resultSet.getString("channel_name"));
+                        NewChannel channel = registeredChannels.get(resultSet.getString("channel_name"));
                         if (channel != null)
                             playerChannels.add(new PlayerChannel(
                                     channel,
@@ -815,25 +816,22 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
 
 
     @Override
-    public CompletionStage<List<Channel>> getChannels() {
+    public CompletionStage<List<NewChannel>> getChannels() {
         return CompletableFuture.supplyAsync(() -> {
             try (Connection connection = getConnection()) {
                 try (PreparedStatement statement = connection.prepareStatement("""
                         select * from channels;""")) {
 
                     final ResultSet resultSet = statement.executeQuery();
-                    final List<Channel> channels = new ArrayList<>();
+                    final List<NewChannel> channels = new ArrayList<>();
                     while (resultSet.next()) {
-                        String notificationSoundString = resultSet.getString("notificationSound");
-                        channels.add(new Channel(
-                                resultSet.getString("name"),
-                                resultSet.getString("format"),
-                                resultSet.getInt("rate_limit"),
-                                resultSet.getInt("rate_limit_period"),
-                                resultSet.getInt("proximity_distance"),
-                                resultSet.getString("discordWebhook"),
-                                resultSet.getBoolean("filtered"),
-                                notificationSoundString == null ? null : Sound.valueOf(notificationSoundString)));
+                        channels.add(NewChannel.channelBuilder(resultSet.getString("name"))
+                                .rateLimit(resultSet.getInt("rate_limit"))
+                                .rateLimitPeriod(resultSet.getInt("rate_limit_period"))
+                                .discordWebhook(resultSet.getString("discordWebhook"))
+                                .filtered(resultSet.getBoolean("filtered"))
+                                .notificationSound(resultSet.getString("notificationSound"))
+                                .build());
                     }
                     return channels;
                 }
@@ -899,7 +897,7 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
     }
 
     @Override
-    public void sendChatMessage(@NotNull ChatMessageInfo packet) {
+    public void sendChatMessage(@NotNull NewChatMessage packet) {
         String publishChannel = DataKey.CHAT_CHANNEL.toString();
         if (packet.getReceiver().isChannel()) {//If it's a channel message we need to increment the rate limit
             final String chName = packet.getReceiver().getName();

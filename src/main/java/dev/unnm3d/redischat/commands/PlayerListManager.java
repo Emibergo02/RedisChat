@@ -74,6 +74,7 @@ public class PlayerListManager {
     }
 
     public boolean isVanished(Player player) {
+        System.out.println("RedisChat debug: player " + player.getName() + " has vanish metadata: " + player.getMetadata("vanished").stream().anyMatch(MetadataValue::asBoolean));
         return player.getMetadata("vanished").stream().anyMatch(MetadataValue::asBoolean) ||
                 vanishIntegrations.stream().anyMatch(vanishIntegration -> vanishIntegration.isVanished(player));
     }

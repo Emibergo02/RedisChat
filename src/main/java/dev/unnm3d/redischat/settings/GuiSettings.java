@@ -217,7 +217,7 @@ public final class GuiSettings implements ConfigValidator {
     }
 
     @Override
-    public void validateConfig() {
-
+    public boolean validateConfig() {
+        return false;
     }
 }

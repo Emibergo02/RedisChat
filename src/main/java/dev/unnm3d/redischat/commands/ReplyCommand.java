@@ -4,9 +4,9 @@ import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.arguments.GreedyStringArgument;
 import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
-import dev.unnm3d.redischat.chat.ChatActor;
 import dev.unnm3d.redischat.chat.ChatFormat;
-import dev.unnm3d.redischat.chat.ChatMessageInfo;
+import dev.unnm3d.redischat.chat.objects.ChannelAudience;
+import dev.unnm3d.redischat.chat.objects.NewChatMessage;
 import lombok.AllArgsConstructor;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -68,11 +68,13 @@ public class ReplyCommand {
                                 final Component toBeReplaced = plugin.getComponentProvider().parseCustomPlaceholders(sender, temp);
 
                                 //Send to other servers
-                                plugin.getDataManager().sendChatMessage(new ChatMessageInfo(new ChatActor(sender.getName(), ChatActor.ActorType.PLAYER),
-                                        MiniMessage.miniMessage().serialize(formatted),
-                                        MiniMessage.miniMessage().serialize(toBeReplaced),
-                                        new ChatActor(receiver.get(), ChatActor.ActorType.PLAYER)
-                                ));
+                                plugin.getDataManager().sendChatMessage(
+                                        new NewChatMessage(
+                                                ChannelAudience.newPlayerAudience(sender.getName()),
+                                                MiniMessage.miniMessage().serialize(formatted),
+                                                MiniMessage.miniMessage().serialize(toBeReplaced),
+                                                ChannelAudience.newPlayerAudience(receiver.get())
+                                        ));
 
                                 plugin.getComponentProvider().sendMessage(sender, formatted.replaceText(aBuilder -> aBuilder.matchLiteral("%message%").replacement(toBeReplaced)));
 

@@ -279,7 +279,8 @@ public final class Config implements ConfigValidator {
     public SpicordSettings spicord = new SpicordSettings(true, "<blue>[Discord]</blue> %role% %username% » %message%", "**%channel%** %sender% » %message%", Map.of("public", "1127207189547847740"));
 
     @Override
-    public void validateConfig() {
+    public boolean validateConfig() {
+        boolean modified = false;
         formats.forEach(format -> {
             if (!format.format().contains("%message%")) {
                 Bukkit.getLogger().severe("Format " + format.permission() + " doesn't contain %message% placeholder");
@@ -315,25 +316,30 @@ public final class Config implements ConfigValidator {
         if (!commandAliases.containsKey("mutechat")) {
             commandAliases = new HashMap<>(commandAliases);
             commandAliases.put("mutechat", List.of("mute"));
+            modified = true;
             Bukkit.getLogger().warning("You didn't set any aliases for mutechat, using default aliases");
         }
         if (!commandAliases.containsKey("unmutechat")) {
             commandAliases = new HashMap<>(commandAliases);
             commandAliases.put("unmutechat", List.of("unmute"));
+            modified = true;
             Bukkit.getLogger().warning("You didn't set any aliases for unmutechat, using default aliases");
         }
         if (!commandAliases.containsKey("rbroadcast")) {
             commandAliases = new HashMap<>(commandAliases);
             commandAliases.put("rbroadcast", List.of("broadcast", "bc"));
+            modified = true;
             Bukkit.getLogger().warning("You didn't set any aliases for rbroadcast, using default aliases");
         }
         if (!commandAliases.containsKey("rbroadcastraw")) {
             commandAliases = new HashMap<>(commandAliases);
             commandAliases.put("rbroadcastraw", List.of("broadcastraw", "bcraw"));
+            modified = true;
             Bukkit.getLogger().warning("You didn't set any aliases for rbroadcastraw, using default aliases");
         }
         if(dataMedium.equalsIgnoreCase("H2+PM")){
             dataMedium = DataType.SQLITE.keyName;
+            modified = true;
             Bukkit.getLogger().warning("H2+PM has been deprecated, using SQLITE+PM as default");
         }
         for (Announcement announcement : announcer) {
@@ -341,6 +347,7 @@ public final class Config implements ConfigValidator {
                 Bukkit.getLogger().warning("Announce " + announcement.announcementName() + " doesn't have a channel name, using \"public\" as default");
             }
         }
+        return modified;
     }
 
     public record RedisSettings(String host, int port, String user, String password,

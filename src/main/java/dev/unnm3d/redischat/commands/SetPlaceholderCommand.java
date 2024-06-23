@@ -36,7 +36,7 @@ public class SetPlaceholderCommand implements CommandExecutor, TabCompleter {
         plugin.messages.sendMessage(sender, plugin.messages.placeholder_set
                 .replace("%player%", args[0])
                 .replace("%placeholder%", args[1])
-                .replace("%value%", args[2].replace("<","\\<"))
+                .replace("%value%", args[2].replace("<", "\\<"))
         );
         return true;
     }

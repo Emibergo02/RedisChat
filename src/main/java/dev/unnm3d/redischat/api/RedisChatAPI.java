@@ -1,8 +1,8 @@
 package dev.unnm3d.redischat.api;
 
-import dev.unnm3d.redischat.channels.Channel;
-import dev.unnm3d.redischat.chat.ChatMessageInfo;
 import dev.unnm3d.redischat.chat.ComponentProvider;
+import dev.unnm3d.redischat.chat.objects.NewChannel;
+import dev.unnm3d.redischat.chat.objects.NewChatMessage;
 import dev.unnm3d.redischat.mail.MailGUIManager;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -43,7 +43,7 @@ public abstract class RedisChatAPI {
      *
      * @param channel The channel to register
      */
-    public abstract void registerChannel(Channel channel);
+    public abstract void registerChannel(NewChannel channel);
 
     /**
      * Unregister a channel
@@ -59,24 +59,14 @@ public abstract class RedisChatAPI {
      */
     public abstract void openChannelsGUI(Player player);
 
-    /**
-     * Check if a player is rate-limited in a channel
-     * If the data medium is not REDIS, the rate-limit register will be local
-     *
-     * @param player  The player
-     * @param channel The channel
-     * @return true if the player is rate-limited, false otherwise
-     */
-    protected abstract boolean isRateLimited(CommandSender player, Channel channel);
 
     /**
      * Sends a message into the RedisChat system (cross-server)
      *
      * @param player  The player who sent the message
-     * @param channel The channel the message was sent to
      * @param message The message content
      */
-    public abstract void playerChannelMessage(CommandSender player, Channel channel, @NotNull String message);
+    public abstract void outgoingMessage(CommandSender player, @NotNull String message);
 
     /**
      * Sends a private or public message inside the current server
@@ -84,26 +74,16 @@ public abstract class RedisChatAPI {
      *
      * @param chatMessageInfo The ChatMessageInfo to send
      */
-    public abstract void sendAndKeepLocal(ChatMessageInfo chatMessageInfo);
+    public abstract void sendAndKeepLocal(NewChatMessage chatMessageInfo);
 
     /**
      * Send a generic (non-private) ChatMessageInfo to all local players
      * Checks multicast permissions and mentions
      * (It calls sendComponentOrCache at the end)
      *
-     * @param chatMessageInfo The chat message to send
-     * @param recipient       The receiver of the message, null if it's a global/broadcasted message
+     * @param chatMessage The message to send
      */
-    public abstract void sendGenericChat(@NotNull ChatMessageInfo chatMessageInfo, @Nullable Player recipient);
-
-
-    /**
-     * Sends a private message to the receiver inside the chatMessageInfo
-     * It is the final step of the private message process
-     *
-     * @param chatMessageInfo The chat packet to send
-     */
-    public abstract void sendPrivateChat(@NotNull ChatMessageInfo chatMessageInfo);
+    public abstract void sendGenericChat(@NotNull NewChatMessage chatMessage);
 
 
     /**
@@ -128,7 +108,7 @@ public abstract class RedisChatAPI {
      * @param channelName The name of the channel
      * @return The channel
      */
-    public abstract Optional<Channel> getChannel(@Nullable String channelName);
+    public abstract Optional<NewChannel> getChannel(@Nullable String channelName);
 
     /**
      * Get the public channel
@@ -137,14 +117,14 @@ public abstract class RedisChatAPI {
      * @param player The player
      * @return The public channel
      */
-    public abstract Channel getPublicChannel(CommandSender player);
+    public abstract NewChannel getPublicChannel(CommandSender player);
 
     /**
      * Get the staff chat channel
      *
      * @return The staff chat channel
      */
-    public abstract Channel getStaffChatChannel();
+    public abstract NewChannel getStaffChatChannel();
 
     /**
      * Add vanish "canSee" integration

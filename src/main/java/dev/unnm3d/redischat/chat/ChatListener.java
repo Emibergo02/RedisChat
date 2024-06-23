@@ -17,7 +17,7 @@ public class ChatListener implements Listener {
         if (event.isCancelled()) return;
         event.setCancelled(true);
 
-        plugin.getChannelManager().playerChat(event.getPlayer(), event.getMessage());
+        plugin.getChannelManager().outgoingMessage(event.getPlayer(), event.getMessage());
     }
 
 

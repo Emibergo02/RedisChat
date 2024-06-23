@@ -35,7 +35,7 @@ public class ComponentProvider {
     private final MiniMessage miniMessage;
     @Getter
     private final TagResolver standardTagResolver;
-    private final Map<Player, List<Component>> cacheBlocked;
+    private final Map<CommandSender, List<Component>> cacheBlocked;
     private final List<TagResolverIntegration> tagResolverIntegrationList;
 
 
@@ -380,7 +380,7 @@ public class ComponentProvider {
      * @param player    The player to send the component to
      * @param component The component to send
      */
-    public void sendComponentOrCache(@NotNull Player player, @NotNull Component component) {
+    public void sendComponentOrCache(@NotNull CommandSender player, @NotNull Component component) {
         if (cacheBlocked.computeIfPresent(player,
                 (player1, components) -> {
                     components.add(component);

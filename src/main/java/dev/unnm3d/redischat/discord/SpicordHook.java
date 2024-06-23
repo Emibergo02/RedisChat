@@ -1,9 +1,9 @@
 package dev.unnm3d.redischat.discord;
 
 import dev.unnm3d.redischat.RedisChat;
-import dev.unnm3d.redischat.channels.Channel;
-import dev.unnm3d.redischat.chat.ChatActor;
-import dev.unnm3d.redischat.chat.ChatMessageInfo;
+import dev.unnm3d.redischat.chat.objects.ChannelAudience;
+import dev.unnm3d.redischat.chat.objects.NewChannel;
+import dev.unnm3d.redischat.chat.objects.NewChatMessage;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -47,7 +47,7 @@ public class SpicordHook extends SimpleAddon implements IDiscordHook {
     }
 
     @Override
-    public void sendDiscordMessage(Channel channel, ChatMessageInfo chatMessageInfo) {
+    public void sendDiscordMessage(NewChannel channel, NewChatMessage chatMessageInfo) {
         if (chatMessageInfo.getSender().isDiscord()) return;
         if (this.bot == null || this.bot.getJda() == null) {
             plugin.getLogger().warning("Unable to send message to Discord channel " + channel.getName() + ": bot not found");
@@ -66,7 +66,7 @@ public class SpicordHook extends SimpleAddon implements IDiscordHook {
 
 
         final Component discordComponent = chatMessageInfo.getSender().isServer() ?
-                MiniMessage.miniMessage().deserialize(chatMessageInfo.getMessage()) :
+                MiniMessage.miniMessage().deserialize(chatMessageInfo.getContent()) :
                 plugin.getComponentProvider()
                         .parsePlaceholders(null, //Parse placeholder for format
                                 plugin.config.spicord.discordFormat()
@@ -74,7 +74,7 @@ public class SpicordHook extends SimpleAddon implements IDiscordHook {
                                         .replace("%sender%", chatMessageInfo.getSender().getName()))
                         .replaceText(rBuilder -> //Replace %message% with the actual message component
                                 rBuilder.matchLiteral("%message%")
-                                        .replacement(MiniMessage.miniMessage().deserialize(chatMessageInfo.getMessage())));
+                                        .replacement(MiniMessage.miniMessage().deserialize(chatMessageInfo.getContent())));
 
         textChannel.sendMessage(new MessageCreateBuilder()
                 .setAllowedMentions(List.of())// Disable mentions
@@ -96,13 +96,14 @@ public class SpicordHook extends SimpleAddon implements IDiscordHook {
                     highestRole = event.getMember().getRoles().get(0);
                 }
 
-                plugin.getDataManager().sendChatMessage(new ChatMessageInfo(
-                        new ChatActor(event.getAuthor().getName(), ChatActor.ActorType.DISCORD),
+                plugin.getDataManager().sendChatMessage(new NewChatMessage(
+                        ChannelAudience.newDiscordAudience(event.getAuthor().getName()),
                         plugin.config.spicord.chatFormat()
                                 .replace("%username%", event.getAuthor().getEffectiveName())
                                 .replace("%role%", highestRole.getName()),
                         event.getMessage().getContentStripped(),
-                        new ChatActor(channelLink.getKey(), ChatActor.ActorType.CHANNEL)));
+                        new ChannelAudience(channelLink.getKey())
+                ));
             }
         }
     }

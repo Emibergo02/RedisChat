@@ -13,6 +13,7 @@ import dev.unnm3d.redischat.api.DataManager;
 import dev.unnm3d.redischat.channels.ChannelCommand;
 import dev.unnm3d.redischat.channels.ChannelManager;
 import dev.unnm3d.redischat.chat.*;
+import dev.unnm3d.redischat.chat.filters.FilterManager;
 import dev.unnm3d.redischat.commands.*;
 import dev.unnm3d.redischat.datamanagers.RedisDataManager;
 import dev.unnm3d.redischat.datamanagers.sqlmanagers.MySQLDataManager;
@@ -32,6 +33,7 @@ import dev.unnm3d.redischat.permission.LuckPermsProvider;
 import dev.unnm3d.redischat.permission.PermissionProvider;
 import dev.unnm3d.redischat.permission.VaultPermissionProvider;
 import dev.unnm3d.redischat.settings.Config;
+import dev.unnm3d.redischat.settings.FiltersConfig;
 import dev.unnm3d.redischat.settings.GuiSettings;
 import dev.unnm3d.redischat.settings.Messages;
 import dev.unnm3d.redischat.task.AnnouncerManager;
@@ -59,9 +61,7 @@ public final class RedisChat extends JavaPlugin {
     private static RedisChat instance;
     @Getter
     private static TaskScheduler scheduler;
-    public Config config;
     private List<String> registeredCommands;
-    public Messages messages;
     public GuiSettings guiSettings;
     @Getter
     private DataManager dataManager;
@@ -69,6 +69,8 @@ public final class RedisChat extends JavaPlugin {
     private PlayerListManager playerListManager;
     @Getter
     private ChannelManager channelManager;
+    @Getter
+    private FilterManager filterManager;
     @Getter
     private AnnouncerManager announcerManager;
     @Getter
@@ -89,6 +91,11 @@ public final class RedisChat extends JavaPlugin {
     private ExecutorService executorService;
     @Getter
     private MailGUIManager mailGUIManager;
+
+    public Config config;
+    public FiltersConfig filters;
+    public Messages messages;
+
 
     @Override
     public void onLoad() {
@@ -148,6 +155,9 @@ public final class RedisChat extends JavaPlugin {
 
         if (config.enableStaffChat)
             loadCommandAPICommand(new StaffChatCommand(this).getCommand());
+
+        //Load filters
+        this.filterManager = new FilterManager(this);
 
         this.channelManager = new ChannelManager(this);
         loadCommandAPICommand(new ChannelCommand(this).getCommand());
@@ -255,7 +265,21 @@ public final class RedisChat extends JavaPlugin {
                         .charset(StandardCharsets.UTF_8)
                         .build()
         );
-        this.config.validateConfig();
+        if(this.config.validateConfig())
+            YamlConfigurations.save(configFile, Config.class, this.config);
+
+        Path filtersFile = new File(getDataFolder(), "filters.yml").toPath();
+        this.filters = YamlConfigurations.update(
+                filtersFile,
+                FiltersConfig.class,
+                YamlConfigurationProperties.newBuilder()
+                        .header("RedisChat filters")
+                        .footer("Authors: Unnm3d")
+                        .charset(StandardCharsets.UTF_8)
+                        .build()
+        );
+        if(this.filters.validateConfig())
+            YamlConfigurations.save(filtersFile, FiltersConfig.class, this.filters);
 
         Path messagesFile = new File(getDataFolder(), "messages.yml").toPath();
         this.messages = YamlConfigurations.update(
@@ -267,7 +291,6 @@ public final class RedisChat extends JavaPlugin {
                         .charset(StandardCharsets.UTF_8)
                         .build()
         );
-        this.messages.validateConfig();
 
         Path guiSettingsFile = new File(getDataFolder(), "guis.yml").toPath();
         this.guiSettings = YamlConfigurations.update(
@@ -279,11 +302,12 @@ public final class RedisChat extends JavaPlugin {
                         .charset(StandardCharsets.UTF_8)
                         .build()
         );
-        this.guiSettings.validateConfig();
+        if(this.guiSettings.validateConfig())
+            YamlConfigurations.save(guiSettingsFile, GuiSettings.class, this.guiSettings);
     }
 
     public void saveMessages() {
-        YamlConfigurations.save(new File(this.getDataFolder(), "messages.yml").toPath(), Messages.class, messages);
+
     }
 
     public void saveGuiSettings() {

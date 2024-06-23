@@ -3,18 +3,23 @@ package dev.unnm3d.redischat.channels;
 import com.github.Anon8281.universalScheduler.UniversalRunnable;
 import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
-import dev.unnm3d.redischat.api.events.AsyncRedisChatMessageEvent;
 import dev.unnm3d.redischat.api.RedisChatAPI;
 import dev.unnm3d.redischat.api.VanishIntegration;
-import dev.unnm3d.redischat.chat.*;
+import dev.unnm3d.redischat.api.events.AsyncRedisChatMessageEvent;
+import dev.unnm3d.redischat.chat.ComponentProvider;
+import dev.unnm3d.redischat.chat.KnownChatEntities;
+import dev.unnm3d.redischat.chat.filters.FilterManager;
+import dev.unnm3d.redischat.chat.filters.FilterResult;
+import dev.unnm3d.redischat.chat.objects.AudienceType;
+import dev.unnm3d.redischat.chat.objects.ChannelAudience;
+import dev.unnm3d.redischat.chat.objects.NewChannel;
+import dev.unnm3d.redischat.chat.objects.NewChatMessage;
 import dev.unnm3d.redischat.mail.MailGUIManager;
 import dev.unnm3d.redischat.moderation.MuteManager;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
-import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -28,7 +33,7 @@ public class ChannelManager extends RedisChatAPI {
 
     private final RedisChat plugin;
     @Getter
-    private final ConcurrentHashMap<String, Channel> registeredChannels;
+    private final ConcurrentHashMap<String, NewChannel> registeredChannels;
     @Getter
     private final MuteManager muteManager;
     @Getter
@@ -41,6 +46,7 @@ public class ChannelManager extends RedisChatAPI {
         this.plugin = plugin;
         this.registeredChannels = new ConcurrentHashMap<>();
         this.muteManager = new MuteManager(plugin);
+
         this.channelGUI = new ChannelGUI(plugin);
         updateChannels();
     }
@@ -66,12 +72,12 @@ public class ChannelManager extends RedisChatAPI {
     }
 
     @Override
-    public void registerChannel(Channel channel) {
+    public void registerChannel(NewChannel channel) {
         registeredChannels.put(channel.getName(), channel);
         plugin.getDataManager().registerChannel(channel);
     }
 
-    public void updateChannel(String channelName, @Nullable Channel channel) {
+    public void updateChannel(String channelName, @Nullable NewChannel channel) {
         if (channel == null) {
             registeredChannels.remove(channelName);
             return;
@@ -102,152 +108,74 @@ public class ChannelManager extends RedisChatAPI {
                                         .open(player)));
     }
 
-    @Override
-    protected boolean isRateLimited(CommandSender player, Channel channel) {
-        if (!player.hasPermission(Permissions.BYPASS_RATE_LIMIT.getPermission())) {
-            if (plugin.getDataManager().isRateLimited(player.getName(), channel)) {
-                plugin.messages.sendMessage(player, plugin.messages.rate_limited);
-                return true;
-            }
-        }
-        return false;
-    }
 
-    private String antiCaps(CommandSender player, String message) {
-        if (getComponentProvider().antiCaps(message)) {
-            plugin.messages.sendMessage(player, plugin.messages.caps);
-            return message.toLowerCase();
-        }
-        return message;
-    }
+    public void outgoingMessage(CommandSender player, NewChannel chatChannel, @NotNull final String message) {
 
-    @Override
-    public void playerChannelMessage(CommandSender player, @NotNull Channel channel, @NotNull String message) {
-        final long init = System.currentTimeMillis();
+        NewChatMessage chatMessage = new NewChatMessage(
+                new ChannelAudience(player.getName(), AudienceType.PLAYER),
+                chatChannel.getFormat(),
+                chatChannel.getName().equals(KnownChatEntities.STAFFCHAT_CHANNEL_NAME.toString()) ?
+                        message.substring(1) :
+                        message,
+                new ChannelAudience(chatChannel.getName())
+        );
 
-        if (muteManager.isMutedOnChannel(player.getName(), channel.getName())) {
-            plugin.messages.sendMessage(player, plugin.messages.muted_on_channel.replace("%channel%", channel.getName()));
+
+        //Filter and send filter message if present
+        final FilterResult result = plugin.getFilterManager().filterMessage(player, chatMessage, FilterManager.FilterType.OUTGOING);
+        chatMessage = result.message();
+
+        if (result.filtered()) {
+            result.filteredReason().ifPresent(component ->
+                    getComponentProvider().sendComponentOrCache(player, component));
             return;
         }
 
-        if (!player.hasPermission(Permissions.CHANNEL_PREFIX.getPermission() + channel.getName())) {
-            plugin.messages.sendMessage(player, plugin.messages.channelNoPermission.replace("%channel%", channel.getName()));
-            return;
-        }
-
-        if (isRateLimited(player, channel)) return;
-
-        if (plugin.config.debug) {
-            plugin.getLogger().info("2) Rate limit (Redis): " + (System.currentTimeMillis() - init) + "ms");
-        }
-
-        //Placeholders and purge minimessage tags if player doesn't have permission
-        boolean parsePlaceholders = player.hasPermission(Permissions.USE_FORMATTING.getPermission());
-
-        if (!parsePlaceholders) {
-            message = getComponentProvider().purgeTags(message);
-        }
-
-        if (!player.hasPermission(Permissions.USE_DANGEROUS.getPermission())) {
-            message = message
-                    .replace("run_command", "copy_to_clipboard")
-                    .replace("suggest_command", "copy_to_clipboard");
-        }
-
-        if (message.trim().isEmpty()) return;//Check if message is empty after purging tags
-
-        if (plugin.config.debug) {
-            plugin.getLogger().info("2) Placeholders or purge tags: " + (System.currentTimeMillis() - init) + "ms");
-        }
-
-        if (channel.isFiltered()) {
-            message = antiCaps(player, message);
-
-            //Word filter
-            final String originalMessage = message;
-            message = getComponentProvider().sanitize(message);
-            if (plugin.config.doNotSendCensoredMessage && !originalMessage.equals(message)) {
-                plugin.messages.sendMessage(player, plugin.messages.messageContainsBadWords);
-                return;
-            }
-        }
-
-        if (plugin.config.debug) {
-            plugin.getLogger().info("2) Word filter: " + (System.currentTimeMillis() - init) + "ms");
-        }
-
-        //Check inv update
-        message = plugin.getComponentProvider().invShareFormatting(player, message);
-
-
-        final Component formatted = getComponentProvider().parse(player, channel.getFormat(), true, false, false);
+        final Component formatComponent = getComponentProvider().parse(player, chatMessage.getFormat(),
+                true, false, false);
 
         //Parse to MiniMessage component (placeholders, tags and mentions)
-        Component toBeReplaced = getComponentProvider().parse(player, message, parsePlaceholders, true, true,
+        final Component contentComponent = getComponentProvider().parse(player, chatMessage.getContent(),
+                true, true, true,
                 getComponentProvider().getRedisChatTagResolver(player));
 
-        //Parse customs
-        toBeReplaced = getComponentProvider().parseCustomPlaceholders(player, toBeReplaced);
-
-        if (plugin.config.debug) {
-            plugin.getLogger().info("2) Format + message parsing: " + (System.currentTimeMillis() - init) + "ms");
-        }
 
         //Call event and check cancellation
-        final AsyncRedisChatMessageEvent event = new AsyncRedisChatMessageEvent(player, channel,
-                miniMessage.serialize(formatted),
-                miniMessage.serialize(toBeReplaced));
+        final AsyncRedisChatMessageEvent event = new AsyncRedisChatMessageEvent(player,
+                chatChannel,
+                formatComponent,
+                contentComponent);
         plugin.getServer().getPluginManager().callEvent(event);
         if (event.isCancelled()) return;
 
-        //Check if message is empty after parsing
-        if (PlainTextComponentSerializer.plainText().serialize(toBeReplaced).trim().isEmpty()) {
-            plugin.messages.sendMessage(player, plugin.messages.empty_message);
+        //Reserialize components
+        chatMessage.setFormat(MiniMessage.miniMessage().serialize(event.getFormat()));
+        chatMessage.setContent(MiniMessage.miniMessage().serialize(event.getContent()));
+
+        if (chatChannel.getProximityDistance() > 0) {// Send to local server
+            sendGenericChat(chatMessage);
             return;
         }
 
-        final ChatMessageInfo cmi = new ChatMessageInfo(
-                new ChatActor(player.getName(), ChatActor.ActorType.PLAYER),
-                event.getFormat(),
-                event.getMessage(),
-                new ChatActor(event.getChannel().getName(), ChatActor.ActorType.CHANNEL));
-
-        if (channel.getProximityDistance() > 0) {// Send to local server
-            sendGenericChat(cmi, null);
-            return;
-        }
-
-        // Send to other servers
-        plugin.getDataManager().sendChatMessage(cmi);
-
-
-        if (plugin.config.debug) {
-            plugin.getLogger().info("2) Send (Redis): " + (System.currentTimeMillis() - init) + "ms, Millis: " + System.currentTimeMillis());
-        }
+        plugin.getDataManager().sendChatMessage(chatMessage);
     }
 
     /**
      * Player chat event, called by the chat listener
-     * @param player Player
-     * @param finalMessage The message to be sent
+     *
+     * @param player  Player
+     * @param message The message to be sent
      */
-    public void playerChat(Player player, @NotNull final String finalMessage) {
-        final long init = System.currentTimeMillis();
+    @Override
+    public void outgoingMessage(CommandSender player, @NotNull final String message) {
         plugin.getDataManager().getActivePlayerChannel(player.getName(), registeredChannels)
                 .thenAcceptAsync(channelName -> {
-                    String message = finalMessage;
-                    Channel chatChannel;
-                    if (message.startsWith(plugin.config.staffChatPrefix) &&
-                            player.hasPermission(Permissions.ADMIN_STAFF_CHAT.getPermission()) && plugin.config.enableStaffChat) {
-                        chatChannel = getStaffChatChannel();
-                        message = message.substring(1);
-                    } else {
-                        chatChannel = getChannel(channelName).orElse(getPublicChannel(player));
-                    }
-                    if (plugin.config.debug) {
-                        plugin.getLogger().info("1) Active channel (Redis) + channel parsing: " + (System.currentTimeMillis() - init) + "ms");
-                    }
-                    playerChannelMessage(player, chatChannel, message);
+                    final NewChannel chatChannel = isStaffChatEnabled(message, player) ?
+                            getStaffChatChannel() :
+                            getChannel(channelName).orElse(getPublicChannel(player));
+
+                    outgoingMessage(player, chatChannel, message);
+
                 }, plugin.getExecutorService())
                 .exceptionally(throwable -> {
                     throwable.printStackTrace();
@@ -255,159 +183,74 @@ public class ChannelManager extends RedisChatAPI {
                 });
     }
 
-
-    @Override
-    public void sendAndKeepLocal(ChatMessageInfo chatMessageInfo) {
-        sendLocalChatMessage(chatMessageInfo, null);
+    private boolean isStaffChatEnabled(String message, CommandSender player) {
+        return plugin.config.enableStaffChat &&
+                message.startsWith(plugin.config.staffChatPrefix) &&
+                player.hasPermission(Permissions.ADMIN_STAFF_CHAT.getPermission());
     }
 
-    public void sendLocalChatMessage(ChatMessageInfo chatMessageInfo, @Nullable Player recipient) {
-        long init = System.currentTimeMillis();
-        //Private message
-        if (chatMessageInfo.getReceiver().isPlayer()) {
-            final Component spyComponent =
-                    miniMessage.deserialize(plugin.messages.spychat_format
-                                    .replace("%receiver%", chatMessageInfo.getReceiver().getName())
-                                    .replace("%sender%", chatMessageInfo.getSender().getName()))
-                            .replaceText(builder -> builder.matchLiteral("%message%").replacement(
-                                    miniMessage.deserialize(chatMessageInfo.getMessage())
-                            ));
-            //Send private message to receiver only if not ignoring
-            plugin.getServer().getOnlinePlayers().stream()
-                    .filter(player -> player.getName().equals(chatMessageInfo.getReceiver().getName()))
-                    .findFirst()
-                    .ifPresent(player -> {
-                        boolean ignored = muteManager.isPlayerIgnored(chatMessageInfo.getReceiver().getName(), chatMessageInfo.getSender().getName());
-                        if (!ignored) {
-                            plugin.getChannelManager().sendPrivateChat(chatMessageInfo);
-                        }
-                        if (plugin.config.debug) {
-                            plugin.getLogger().info("Private message sent to " +
-                                    chatMessageInfo.getReceiver().getName() + " with ignore: " +
-                                    ignored + " in " + (System.currentTimeMillis() - init) + "ms");
-                        }
-                    });
 
-            //Send to spies
-            plugin.getServer().getOnlinePlayers().stream()
-                    .filter(player -> plugin.getSpyManager().isSpying(player.getName()))
-                    .forEach(player -> getComponentProvider().sendComponentOrCache(player, spyComponent));
-
-            //Logging system
-            getComponentProvider().logComponent(spyComponent);
-            return;
-        }
-
-        sendGenericChat(chatMessageInfo, recipient);
+    @Override
+    public void sendAndKeepLocal(NewChatMessage chatMessageInfo) {
+        NewChannel channel = getChannel(chatMessageInfo.getReceiver().getName()).orElse(getPublicChannel(null));
+        sendGenericChat(chatMessageInfo);
     }
 
     @Override
-    public void sendGenericChat(@NotNull ChatMessageInfo chatMessageInfo, @Nullable Player recipient) {
-        long init = System.currentTimeMillis();
+    public void sendGenericChat(NewChatMessage chatMessage) {
+        final Component formattedComponent = miniMessage.deserialize(chatMessage.getFormat())
+                .replaceText(builder -> builder.matchLiteral("%message%").replacement(
+                        miniMessage.deserialize(chatMessage.getContent())
+                ));
 
-        Channel channel;
-        if (chatMessageInfo.getReceiver().isChannel()) {
-            channel = plugin.getChannelManager().getChannel(chatMessageInfo.getReceiver().getName()).orElse(getGenericPublic());
-        } else {
-            channel = getGenericPublic();
-        }
+        final Set<Player> recipients = chatMessage.getReceiver().isPlayer() ?
+                Collections.singleton(Bukkit.getPlayer(chatMessage.getReceiver().getName())) :
+                new HashSet<>(plugin.getServer().getOnlinePlayers());
 
-        final Component formattedComponent = miniMessage.deserialize(chatMessageInfo.getFormatting()).replaceText(
-                builder -> builder.matchLiteral("%message%").replacement(
-                        miniMessage.deserialize(chatMessageInfo.getMessage())
-                )
-        );
 
-        if (plugin.config.debug) {
-            plugin.getLogger().info("R3) Componentize local message: " + (System.currentTimeMillis() - init) + "ms");
-        }
-
-        //Send to recipient or all players
-        final Set<Player> recipients =
-                recipient == null ?
-                        new HashSet<>(plugin.getServer().getOnlinePlayers()) :
-                        Collections.singleton(recipient);
-
-        recipients.stream()
-                //Filter players with permission to see the channel contents
-                .filter(player -> player.hasPermission(Permissions.CHANNEL_PREFIX.getPermission() + channel.getName()))
-                //Filter players with permission to see the single message
-                .filter(player -> {
-                    if (chatMessageInfo.getReceiver().needPermission()) {
-                        return player.hasPermission(chatMessageInfo.getReceiver().getName());
-                    }
-                    return true;
-                })
-                //Check if player is in proximity
-                .filter(player -> checkProximity(player, chatMessageInfo.getSender().getName(), channel))
-                .forEach(player -> {
-                    //Send sound if mentioned
-                    if (chatMessageInfo.getMessage().contains(player.getName())) {
-                        if (!plugin.config.mentionSound.isEmpty()) {
-                            final String[] split = plugin.config.mentionSound.split(":");
-                            player.playSound(player.getLocation(), Sound.valueOf(split[0]), Float.parseFloat(split[1]), Float.parseFloat(split[2]));
-                        }
-                    }
-
-                    //Ignore public messages
-                    if (plugin.config.ignorePublicMessages && muteManager.isPlayerIgnored(player.getName(), chatMessageInfo.getSender().getName())) {
-                        if (!plugin.config.sendWarnWhenIgnoring) return;//If not sending warning, just ignore
-
-                        getComponentProvider().sendComponentOrCache(player, miniMessage.deserialize(
-                                plugin.messages.publicly_ignored_player.replace("%player%", chatMessageInfo.getSender().getName())));
-                        return;
-                    }
-
-                    getComponentProvider().sendComponentOrCache(player, formattedComponent);
-                });
-
-        //Logging system
-        if (recipient == null)
+        if (chatMessage.getReceiver().isChannel()) {
             getComponentProvider().logComponent(formattedComponent);
-
-        // Send to discord integration
-        if (recipient == null)
-            plugin.getDiscordHook().sendDiscordMessage(channel, chatMessageInfo);
-
-        if (plugin.config.debug) {
-            plugin.getLogger().info("R4) Log and send message: " + (System.currentTimeMillis() - init) + "ms");
         }
-    }
 
-    private boolean checkProximity(@NotNull Player receiver, String senderName, Channel channel) {
-        if (channel.getProximityDistance() <= 0) return true;
-        final Player sender = Bukkit.getPlayer(senderName);
-        if (sender == null) return false;
-        if (!sender.getWorld().equals(receiver.getWorld())) return false;
-        return !(sender.getLocation().distance(receiver.getLocation()) > channel.getProximityDistance());
-    }
-
-    @Override
-    public void sendPrivateChat(@NotNull ChatMessageInfo chatMessageInfo) {
-        final Player p = Bukkit.getPlayer(chatMessageInfo.getReceiver().getName());
-        if (p != null)
-            if (p.isOnline()) {
-                final ChatFormat chatFormat = plugin.config.getChatFormat(p);
-
-                Component formatted = getComponentProvider().parse(null,
-                        chatFormat.receive_private_format()
-                                .replace("%receiver%", chatMessageInfo.getReceiver().getName())
-                                .replace("%sender%", chatMessageInfo.getSender().getName()),
-                        //Parameters disabled: already parsed on sender side
-                        false, false, false,
-                        getComponentProvider().getStandardTagResolver());
-
-                final Component toBeReplaced = getComponentProvider().parse(p, chatMessageInfo.getMessage(),
-                        false, false, false,
-                        getComponentProvider().getStandardTagResolver());
-                //Put message into format
-                formatted = formatted.replaceText(
-                        builder -> builder.matchLiteral("%message%").replacement(toBeReplaced)
-                );
-                getComponentProvider().sendComponentOrCache(p, formatted);
-                if (!plugin.config.privateMessageNotificationSound.isEmpty())
-                    p.playSound(p.getLocation(), Sound.valueOf(plugin.config.privateMessageNotificationSound), 1, 1.0f);
+        for (Player recipient : recipients) {
+            FilterResult result = plugin.getFilterManager().filterMessage(recipient, chatMessage, FilterManager.FilterType.INCOMING);
+            if (result.filtered()) {
+                result.filteredReason().ifPresent(component ->
+                        getComponentProvider().sendComponentOrCache(recipient, component));
+                continue;
             }
+
+            //Channel sound
+            plugin.getChannelManager().getChannel(chatMessage.getReceiver().getName()).ifPresent(channel1 -> {
+                if (channel1.getNotificationSound() != null) {
+                    recipient.playSound(recipient.getLocation(), channel1.getNotificationSound(), 1, 1);
+                }
+            });
+
+            //Mention sound
+            if (chatMessage.getContent().contains(recipient.getName())) {
+                if (!plugin.config.mentionSound.isEmpty()) {
+                    final String[] split = plugin.config.mentionSound.split(":");
+                    recipient.playSound(recipient.getLocation(), split[0], Float.parseFloat(split[1]), Float.parseFloat(split[2]));
+                }
+            }
+
+            //If proximity is enabled, check if player is in range
+            if (!checkProximity(recipient, chatMessage)) {
+                continue;
+            }
+
+            getComponentProvider().sendComponentOrCache(recipient, formattedComponent);
+        }
+
+    }
+
+    private boolean checkProximity(Player recipient, NewChatMessage chatMessage) {
+        if (chatMessage.getReceiver().getProximityDistance() <= 0) return true;
+        final Player sender = Bukkit.getPlayer(chatMessage.getSender().getName());
+        if (sender == null) return false;
+        if (!sender.getWorld().equals(recipient.getWorld())) return false;
+        return !(sender.getLocation().distance(recipient.getLocation()) > chatMessage.getReceiver().getProximityDistance());
     }
 
     @Override
@@ -426,7 +269,7 @@ public class ChannelManager extends RedisChatAPI {
     }
 
     @Override
-    public Optional<Channel> getChannel(@Nullable String channelName) {
+    public Optional<NewChannel> getChannel(@Nullable String channelName) {
         if (channelName == null) return Optional.empty();
         if (channelName.equals(KnownChatEntities.STAFFCHAT_CHANNEL_NAME.toString()))
             return Optional.of(getStaffChatChannel());
@@ -434,35 +277,33 @@ public class ChannelManager extends RedisChatAPI {
     }
 
     @Override
-    public Channel getPublicChannel(@Nullable CommandSender player) {
+    public NewChannel getPublicChannel(@Nullable CommandSender player) {
 
-        final Channel publicChannel = getGenericPublic();
+        final NewChannel publicChannel = getGenericPublic();
         publicChannel.setFormat(plugin.config.getChatFormat(player).format());
 
         return publicChannel;
     }
 
-    private Channel getGenericPublic() {
-        return new Channel(KnownChatEntities.PUBLIC_CHAT.toString(),
-                "",
-                plugin.config.rate_limit,
-                plugin.config.rate_limit_time_seconds,
-                -1,
-                plugin.config.publicDiscordWebhook,
-                true,
-                null);
+    private NewChannel getGenericPublic() {
+        return NewChannel.channelBuilder(KnownChatEntities.PUBLIC_CHAT.toString())
+                .rateLimit(plugin.config.rate_limit)
+                .rateLimitPeriod(plugin.config.rate_limit_time_seconds)
+                .discordWebhook(plugin.config.publicDiscordWebhook)
+                .filtered(true)
+                .notificationSound(null)
+                .build();
     }
 
     @Override
-    public Channel getStaffChatChannel() {
-        return new Channel(KnownChatEntities.STAFFCHAT_CHANNEL_NAME.toString(),
-                plugin.config.staffChatFormat,
-                5,
-                1000,
-                -1,
-                plugin.config.staffChatDiscordWebhook,
-                false,
-                null);
+    public NewChannel getStaffChatChannel() {
+        return NewChannel.channelBuilder(KnownChatEntities.STAFFCHAT_CHANNEL_NAME.toString())
+                .rateLimit(5)
+                .rateLimitPeriod(1000)
+                .discordWebhook(plugin.config.staffChatDiscordWebhook)
+                .filtered(false)
+                .notificationSound(null)
+                .build();
     }
 
     public void setActiveChannel(String playerName, String channelName) {

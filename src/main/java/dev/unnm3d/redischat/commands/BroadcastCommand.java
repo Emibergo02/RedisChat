@@ -6,8 +6,8 @@ import dev.jorel.commandapi.arguments.ArgumentSuggestions;
 import dev.jorel.commandapi.arguments.GreedyStringArgument;
 import dev.jorel.commandapi.arguments.StringArgument;
 import dev.unnm3d.redischat.RedisChat;
-import dev.unnm3d.redischat.chat.ChatActor;
-import dev.unnm3d.redischat.chat.ChatMessageInfo;
+import dev.unnm3d.redischat.chat.objects.ChannelAudience;
+import dev.unnm3d.redischat.chat.objects.NewChatMessage;
 import lombok.AllArgsConstructor;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -37,11 +37,11 @@ public class BroadcastCommand {
                                     true, false, false);
 
                             plugin.getDataManager().sendChatMessage(
-                                    new ChatMessageInfo(
-                                            new ChatActor(),
+                                    new NewChatMessage(
+                                            new ChannelAudience(),
                                             "%message%",
                                             MiniMessage.miniMessage().serialize(component),
-                                            new ChatActor(channel, ChatActor.ActorType.CHANNEL))
+                                            new ChannelAudience(channel))
                             );
                         }
                     }.runTaskAsynchronously(plugin);
@@ -68,11 +68,11 @@ public class BroadcastCommand {
                                     true, false, false);
 
                             plugin.getDataManager().sendChatMessage(
-                                    new ChatMessageInfo(
-                                            new ChatActor(),
+                                    new NewChatMessage(
+                                            new ChannelAudience(),
                                             "%message%",
                                             MiniMessage.miniMessage().serialize(component),
-                                            new ChatActor(channel, ChatActor.ActorType.CHANNEL))
+                                            new ChannelAudience(channel))
                             );
                         }
                     }.runTaskAsynchronously(plugin);

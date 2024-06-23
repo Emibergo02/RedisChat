@@ -24,7 +24,7 @@ public class ChatColorCommand implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (!(sender instanceof Player player)) return true;
-        if(plugin.config.enableChatColorGUI){
+        if (plugin.config.enableChatColorGUI) {
             Window.single()
                     .setTitle(plugin.guiSettings.chatColorGUITitle)
                     .setGui(new ChatColorGUI(plugin))
@@ -56,7 +56,8 @@ public class ChatColorCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
-        if (!sender.hasPermission(Permissions.CHAT_COLOR.getPermission())||plugin.config.enableChatColorGUI) return List.of();
+        if (!sender.hasPermission(Permissions.CHAT_COLOR.getPermission()) || plugin.config.enableChatColorGUI)
+            return List.of();
         final List<String> colors = new ArrayList<>(getAvailableColors());
         colors.add("#RRGGBB");
         return colors.stream().filter(s -> s.toLowerCase().startsWith(args[args.length - 1].toLowerCase())).toList();

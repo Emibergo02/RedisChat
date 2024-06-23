@@ -38,6 +38,7 @@ dependencies {
     implementation 'dev.jorel:commandapi-bukkit-shade:9.5.0-SNAPSHOT'
     implementation 'com.github.Anon8281:UniversalScheduler:0.1.6'
 
+
     compileOnly 'io.papermc.paper:paper-api:1.20.1-R0.1-SNAPSHOT'
     compileOnly 'me.clip:placeholderapi:2.11.3'
     compileOnly 'io.lettuce:lettuce-core:6.2.5.RELEASE'
@@ -53,8 +54,17 @@ dependencies {
     compileOnly 'net.dv8tion:JDA:5.0.0-beta.16'
     compileOnly 'org.apache.commons:commons-collections4:4.4'
 
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.10.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.10.2'
+    testImplementation 'io.papermc.paper:paper-api:1.20.1-R0.1-SNAPSHOT'
 
     annotationProcessor('org.projectlombok:lombok:1.18.32')
+}
+
+test {
+
+    useJUnitPlatform()
 }
 
 shadowJar {
@@ -92,10 +102,10 @@ shadowJar {
 }
 
 def sourceJavaVersion = 21
-def releaseJavaVersion = 17
+def releaseJavaVersion = 21
 
 java {
-    toolchain{
+    toolchain {
         languageVersion = JavaLanguageVersion.of(releaseJavaVersion)
         sourceCompatibility = JavaLanguageVersion.of(sourceJavaVersion)
     }
