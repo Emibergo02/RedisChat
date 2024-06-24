@@ -13,14 +13,15 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Set;
 
 
-public class PrivateFilter extends AbstractFilter<PrivateFilter.PrivateFilterProperties> {
+public class PrivateFilter extends AbstractFilter<FiltersConfig.FilterSettings> {
+    public static final String FILTER_NAME = "private";
 
-    public PrivateFilter(PrivateFilterProperties filterSettings) {
-        super("private", Direction.INCOMING, filterSettings);
+    public PrivateFilter(FiltersConfig.FilterSettings filterSettings) {
+        super(FILTER_NAME, Direction.INCOMING, filterSettings);
     }
 
     public PrivateFilter() {
-        this(new PrivateFilterProperties());
+        this(new FiltersConfig.FilterSettings(FILTER_NAME,true, 1, Set.of(AudienceType.PLAYER), Set.of()));
     }
 
     @Override
@@ -39,14 +40,4 @@ public class PrivateFilter extends AbstractFilter<PrivateFilter.PrivateFilterPro
         return new FilterResult(chatMessage, false, null);
     }
 
-
-    public static PrivateFilterProperties getDefaultFilterSettings() {
-        return new PrivateFilterProperties();
-    }
-
-    public static class PrivateFilterProperties extends FiltersConfig.FilterSettings {
-        public PrivateFilterProperties() {
-            super(true, 1, Set.of(AudienceType.PLAYER), Set.of());
-        }
-    }
 }

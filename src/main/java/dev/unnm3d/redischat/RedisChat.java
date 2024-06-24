@@ -13,7 +13,6 @@ import dev.unnm3d.redischat.api.DataManager;
 import dev.unnm3d.redischat.channels.ChannelCommand;
 import dev.unnm3d.redischat.channels.ChannelManager;
 import dev.unnm3d.redischat.chat.*;
-import dev.unnm3d.redischat.chat.filters.FilterManager;
 import dev.unnm3d.redischat.commands.*;
 import dev.unnm3d.redischat.datamanagers.RedisDataManager;
 import dev.unnm3d.redischat.datamanagers.sqlmanagers.MySQLDataManager;
@@ -70,8 +69,6 @@ public final class RedisChat extends JavaPlugin {
     @Getter
     private ChannelManager channelManager;
     @Getter
-    private FilterManager filterManager;
-    @Getter
     private AnnouncerManager announcerManager;
     @Getter
     private SpyManager spyManager;
@@ -93,7 +90,7 @@ public final class RedisChat extends JavaPlugin {
     private MailGUIManager mailGUIManager;
 
     public Config config;
-    public FiltersConfig filters;
+    public FiltersConfig filterSettings;
     public Messages messages;
 
 
@@ -156,8 +153,6 @@ public final class RedisChat extends JavaPlugin {
         if (config.enableStaffChat)
             loadCommandAPICommand(new StaffChatCommand(this).getCommand());
 
-        //Load filters
-        this.filterManager = new FilterManager(this);
 
         this.channelManager = new ChannelManager(this);
         loadCommandAPICommand(new ChannelCommand(this).getCommand());
@@ -269,7 +264,7 @@ public final class RedisChat extends JavaPlugin {
             YamlConfigurations.save(configFile, Config.class, this.config);
 
         Path filtersFile = new File(getDataFolder(), "filters.yml").toPath();
-        this.filters = YamlConfigurations.update(
+        this.filterSettings = YamlConfigurations.update(
                 filtersFile,
                 FiltersConfig.class,
                 YamlConfigurationProperties.newBuilder()
@@ -278,8 +273,6 @@ public final class RedisChat extends JavaPlugin {
                         .charset(StandardCharsets.UTF_8)
                         .build()
         );
-        if(this.filters.validateConfig())
-            YamlConfigurations.save(filtersFile, FiltersConfig.class, this.filters);
 
         Path messagesFile = new File(getDataFolder(), "messages.yml").toPath();
         this.messages = YamlConfigurations.update(
@@ -307,7 +300,14 @@ public final class RedisChat extends JavaPlugin {
     }
 
     public void saveMessages() {
-
+        YamlConfigurations.save(
+                new File(this.getDataFolder(), "messages.yml").toPath(),
+                Messages.class,
+                messages,
+                YamlConfigurationProperties.newBuilder()
+                        .header("RedisChat messages")
+                        .footer("Authors: Unnm3d")
+                        .build());
     }
 
     public void saveGuiSettings() {
@@ -317,6 +317,17 @@ public final class RedisChat extends JavaPlugin {
                 guiSettings,
                 ConfigLib.BUKKIT_DEFAULT_PROPERTIES.toBuilder()
                         .header("RedisChat guis")
+                        .footer("Authors: Unnm3d")
+                        .build());
+    }
+
+    public void saveFilters() {
+        YamlConfigurations.save(
+                new File(this.getDataFolder(), "filters.yml").toPath(),
+                FiltersConfig.class,
+                filterSettings,
+                YamlConfigurationProperties.newBuilder()
+                        .header("RedisChat filters")
                         .footer("Authors: Unnm3d")
                         .build());
     }

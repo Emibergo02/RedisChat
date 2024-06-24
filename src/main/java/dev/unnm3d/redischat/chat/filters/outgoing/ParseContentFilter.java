@@ -1,11 +1,13 @@
 package dev.unnm3d.redischat.chat.filters.outgoing;
 
+import de.exlll.configlib.Configuration;
 import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.chat.filters.AbstractFilter;
 import dev.unnm3d.redischat.chat.filters.FilterResult;
 import dev.unnm3d.redischat.chat.objects.NewChatMessage;
 import dev.unnm3d.redischat.settings.FiltersConfig;
+import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
@@ -17,10 +19,12 @@ import java.util.Set;
 
 
 public class ParseContentFilter extends AbstractFilter<ParseContentFilter.ContentProperties> {
-    private RedisChat plugin;
+    public static final String FILTER_NAME = "content";
+    private final RedisChat plugin;
 
     public ParseContentFilter(ContentProperties filterSettings) {
-        super("content", Direction.OUTGOING, filterSettings);
+        super(FILTER_NAME, Direction.OUTGOING, filterSettings);
+        this.plugin = RedisChat.getInstance();
     }
 
     public ParseContentFilter() {
@@ -56,13 +60,15 @@ public class ParseContentFilter extends AbstractFilter<ParseContentFilter.Conten
     }
 
 
-    public static ContentProperties getDefaultFilterSettings() {
-        return new ContentProperties();
-    }
-
+    @Getter
     public static class ContentProperties extends FiltersConfig.FilterSettings {
+
+        private boolean parseMentions = true;
+        private boolean parseLinks = true;
+        private boolean parseCustomPlaceholders = true;
+
         public ContentProperties() {
-            super(true, 1, Set.of(), Set.of());
+            super(FILTER_NAME,true, 1, Set.of(), Set.of());
         }
     }
 }

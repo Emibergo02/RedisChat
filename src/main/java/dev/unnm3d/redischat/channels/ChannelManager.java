@@ -8,6 +8,7 @@ import dev.unnm3d.redischat.api.VanishIntegration;
 import dev.unnm3d.redischat.api.events.AsyncRedisChatMessageEvent;
 import dev.unnm3d.redischat.chat.ComponentProvider;
 import dev.unnm3d.redischat.chat.KnownChatEntities;
+import dev.unnm3d.redischat.chat.filters.AbstractFilter;
 import dev.unnm3d.redischat.chat.filters.FilterManager;
 import dev.unnm3d.redischat.chat.filters.FilterResult;
 import dev.unnm3d.redischat.chat.objects.AudienceType;
@@ -37,6 +38,8 @@ public class ChannelManager extends RedisChatAPI {
     @Getter
     private final MuteManager muteManager;
     @Getter
+    private final FilterManager filterManager;
+    @Getter
     private final ChannelGUI channelGUI;
     private static final MiniMessage miniMessage = MiniMessage.miniMessage();
 
@@ -46,8 +49,9 @@ public class ChannelManager extends RedisChatAPI {
         this.plugin = plugin;
         this.registeredChannels = new ConcurrentHashMap<>();
         this.muteManager = new MuteManager(plugin);
-
+        this.filterManager = new FilterManager(plugin);
         this.channelGUI = new ChannelGUI(plugin);
+
         updateChannels();
     }
 
@@ -122,7 +126,7 @@ public class ChannelManager extends RedisChatAPI {
 
 
         //Filter and send filter message if present
-        final FilterResult result = plugin.getFilterManager().filterMessage(player, chatMessage, FilterManager.FilterType.OUTGOING);
+        final FilterResult result = filterManager.filterMessage(player, chatMessage, AbstractFilter.Direction.OUTGOING);
         chatMessage = result.message();
 
         if (result.filtered()) {
@@ -192,7 +196,6 @@ public class ChannelManager extends RedisChatAPI {
 
     @Override
     public void sendAndKeepLocal(NewChatMessage chatMessageInfo) {
-        NewChannel channel = getChannel(chatMessageInfo.getReceiver().getName()).orElse(getPublicChannel(null));
         sendGenericChat(chatMessageInfo);
     }
 
@@ -213,7 +216,7 @@ public class ChannelManager extends RedisChatAPI {
         }
 
         for (Player recipient : recipients) {
-            FilterResult result = plugin.getFilterManager().filterMessage(recipient, chatMessage, FilterManager.FilterType.INCOMING);
+            final FilterResult result = filterManager.filterMessage(recipient, chatMessage, AbstractFilter.Direction.INCOMING);
             if (result.filtered()) {
                 result.filteredReason().ifPresent(component ->
                         getComponentProvider().sendComponentOrCache(recipient, component));

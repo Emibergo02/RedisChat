@@ -14,42 +14,49 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class FilterManager {
-    private final SortedMap<FiltersConfig.FilterSettings, AbstractFilter<? extends FiltersConfig.FilterSettings>> sendFilters;
-    private final SortedMap<FiltersConfig.FilterSettings, AbstractFilter<? extends FiltersConfig.FilterSettings>> receiveFilters;
+    private final RedisChat plugin;
+    private final SortedMap<FiltersConfig.FilterSettings, AbstractFilter<? extends FiltersConfig.FilterSettings>> registeredFilters;
     private final ConcurrentHashMap<CommandSender, Queue<NewChatMessage>> lastMessages;
 
 
-    public FilterManager(RedisChat redisChat) {
-        sendFilters = new TreeMap<>(Comparator.comparingInt(FiltersConfig.FilterSettings::getPriority));
-        receiveFilters = new TreeMap<>(Comparator.comparingInt(FiltersConfig.FilterSettings::getPriority));
+    public FilterManager(RedisChat plugin) {
+        registeredFilters = new TreeMap<>(Comparator.comparingInt(FiltersConfig.FilterSettings::getPriority));
         lastMessages = new ConcurrentHashMap<>();
+        this.plugin = plugin;
+
+        initializeFilters();
     }
 
-    public List<AbstractFilter<? extends FiltersConfig.FilterSettings>> knownFilters() {
-        return List.of(
-                new DiscordFilter(),
-                new IgnorePlayerFilter(),
-                new PermissionFilter(),
-                new PrivateFilter(),
-                new SpyFilter(),
-                new CapsFilter(),
-                new IgnoreFilter(),
-                new MutedChannelFilter(),
-                new SpamFilter(),
-                new TagFilter(),
-                new WordBlacklistFilter()
-        );
-    }
-
-    public void addFilter(@NotNull FiltersConfig.FilterSettings filterSettings, AbstractFilter<? extends FiltersConfig.FilterSettings> filter) {
-        switch (filter.getDirection()) {
-            case INCOMING:
-                receiveFilters.put(filterSettings, filter);
-                break;
-            case OUTGOING:
-                sendFilters.put(filterSettings, filter);
-                break;
+    /**
+     * Initializes the filters
+     * If no filters are present, it will add the default filters
+     * If filters are present, it will add the filters from the config
+     */
+    public void initializeFilters() {
+        if (this.plugin.filterSettings.filters.isEmpty()) {
+            for (AbstractFilter<? extends FiltersConfig.FilterSettings> knownFilter : knownFilters()) {
+                addFilter(knownFilter, knownFilter.getFilterSettings());
+                this.plugin.filterSettings.filters.add(knownFilter.getFilterSettings());
+            }
+            this.plugin.saveFilters();
         }
+        for (FiltersConfig.FilterSettings filter : this.plugin.filterSettings.filters) {
+            AbstractFilter<? extends FiltersConfig.FilterSettings> knownFilter = knownFilters().stream()
+                    .filter(f -> f.getName().equals(filter.getFilterName()))
+                    .findFirst()
+                    .orElse(null);
+            if (knownFilter == null) {
+                continue;
+            }
+            addFilter(knownFilter, filter);
+        }
+    }
+
+    public void addFilter(AbstractFilter<? extends FiltersConfig.FilterSettings> filter, @NotNull FiltersConfig.FilterSettings filterSettings) {
+        registeredFilters.entrySet().stream().filter(value -> value.getValue().getName().equals(filter.getName()))
+                .findFirst()
+                .ifPresent(value -> registeredFilters.remove(value.getKey()));
+        registeredFilters.put(filterSettings, filter);
     }
 
 
@@ -61,10 +68,16 @@ public class FilterManager {
      * @param filterType The type of filter to apply, incoming or outgoing
      * @return The result of the filter
      */
-    public FilterResult filterMessage(CommandSender chatEntity, NewChatMessage message, FilterType filterType) {
-        final SortedMap<FiltersConfig.FilterSettings, AbstractFilter<? extends FiltersConfig.FilterSettings>> filters = filterType == FilterType.INCOMING ? receiveFilters : sendFilters;
+    public FilterResult filterMessage(CommandSender chatEntity, NewChatMessage message, AbstractFilter.Direction filterType) {
         FilterResult result = null;
-        for (Map.Entry<FiltersConfig.FilterSettings, AbstractFilter<? extends FiltersConfig.FilterSettings>> filter : filters.entrySet()) {
+
+        for (Map.Entry<FiltersConfig.FilterSettings, AbstractFilter<? extends FiltersConfig.FilterSettings>> filter : registeredFilters.entrySet()) {
+            //Skip filters for the wrong direction
+            if (filter.getValue().getDirection() != filterType) continue;
+
+            if (!filter.getKey().isEnabled()) continue;
+
+            //If the filter is cancelled, stop filtering
             if (result != null && result.filtered()) {
                 break;
             }
@@ -98,8 +111,20 @@ public class FilterManager {
     }
 
 
-    public enum FilterType {
-        INCOMING,
-        OUTGOING
+    public static Set<AbstractFilter<? extends FiltersConfig.FilterSettings>> knownFilters() {
+        return Set.of(
+                new DiscordFilter(),
+                new IgnorePlayerFilter(),
+                new PermissionFilter(),
+                new PrivateFilter(),
+                new SpyFilter(),
+                new CapsFilter(),
+                new IgnoreFilter(),
+                new MutedChannelFilter(),
+                new ParseContentFilter(),
+                new SpamFilter(),
+                new TagFilter(),
+                new WordBlacklistFilter()
+        );
     }
 }

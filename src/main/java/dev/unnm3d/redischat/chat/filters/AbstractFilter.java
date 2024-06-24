@@ -14,12 +14,10 @@ import java.util.function.BiFunction;
 @AllArgsConstructor
 public abstract class AbstractFilter<T extends FiltersConfig.FilterSettings> implements BiFunction<CommandSender, NewChatMessage, FilterResult> {
 
-    private final String name;
-
-    private final Direction direction;
-
+    protected final String name;
+    protected final Direction direction;
     @Setter
-    private T filterSettings;
+    protected T filterSettings;
 
     @Override
     public FilterResult apply(CommandSender player, NewChatMessage chatMessage) {

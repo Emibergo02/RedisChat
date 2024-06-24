@@ -1,5 +1,6 @@
 package dev.unnm3d.redischat.chat.filters.outgoing;
 
+import de.exlll.configlib.Configuration;
 import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.chat.filters.AbstractFilter;
@@ -14,16 +15,17 @@ import java.util.Optional;
 import java.util.Set;
 
 
-public class SpamFilter extends AbstractFilter<SpamFilter.SpamFilterProperties> {
+public class SpamFilter extends AbstractFilter<FiltersConfig.FilterSettings> {
+    public static final String FILTER_NAME = "spam";
     private final RedisChat plugin;
 
-    public SpamFilter(RedisChat plugin, SpamFilterProperties filterSettings) {
-        super("spam", Direction.OUTGOING, filterSettings);
+    public SpamFilter(RedisChat plugin, FiltersConfig.FilterSettings filterSettings) {
+        super(FILTER_NAME, Direction.OUTGOING, filterSettings);
         this.plugin = plugin;
     }
 
     public SpamFilter() {
-        this(RedisChat.getInstance(), new SpamFilterProperties());
+        this(RedisChat.getInstance(), new FiltersConfig.FilterSettings(FILTER_NAME,true,1, Set.of(), Set.of()));
     }
 
     @Override
@@ -44,16 +46,5 @@ public class SpamFilter extends AbstractFilter<SpamFilter.SpamFilterProperties> 
         }
 
         return new FilterResult(message, false, Optional.empty());
-    }
-
-
-    public static SpamFilterProperties getDefaultFilterSettings() {
-        return new SpamFilterProperties();
-    }
-
-    public static class SpamFilterProperties extends FiltersConfig.FilterSettings {
-        public SpamFilterProperties() {
-            super(true, 1, Set.of(), Set.of());
-        }
     }
 }

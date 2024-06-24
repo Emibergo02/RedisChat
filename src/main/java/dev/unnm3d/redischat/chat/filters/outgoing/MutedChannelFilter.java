@@ -1,5 +1,6 @@
 package dev.unnm3d.redischat.chat.filters.outgoing;
 
+import de.exlll.configlib.Configuration;
 import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.chat.filters.AbstractFilter;
@@ -14,16 +15,17 @@ import java.util.Optional;
 import java.util.Set;
 
 
-public class MutedChannelFilter extends AbstractFilter<MutedChannelFilter.MutedChannelFilterProperties> {
+public class MutedChannelFilter extends AbstractFilter<FiltersConfig.FilterSettings> {
+    public static final String FILTER_NAME = "muted_channel";
     private final RedisChat plugin;
 
-    public MutedChannelFilter(RedisChat plugin, MutedChannelFilterProperties filterSettings) {
-        super("muted_channel", Direction.OUTGOING, filterSettings);
+    public MutedChannelFilter(RedisChat plugin, FiltersConfig.FilterSettings filterSettings) {
+        super(FILTER_NAME, Direction.OUTGOING, filterSettings);
         this.plugin = plugin;
     }
 
     public MutedChannelFilter() {
-        this(RedisChat.getInstance(), new MutedChannelFilterProperties());
+        this(RedisChat.getInstance(), new FiltersConfig.FilterSettings(FILTER_NAME,true, 1, Set.of(AudienceType.CHANNEL), Set.of()));
     }
 
     @Override
@@ -49,16 +51,5 @@ public class MutedChannelFilter extends AbstractFilter<MutedChannelFilter.MutedC
         }
 
         return new FilterResult(message, false, Optional.empty());
-    }
-
-
-    public static MutedChannelFilterProperties getDefaultFilterSettings() {
-        return new MutedChannelFilterProperties();
-    }
-
-    public static class MutedChannelFilterProperties extends FiltersConfig.FilterSettings {
-        public MutedChannelFilterProperties() {
-            super(true, 1, Set.of(AudienceType.CHANNEL), Set.of());
-        }
     }
 }

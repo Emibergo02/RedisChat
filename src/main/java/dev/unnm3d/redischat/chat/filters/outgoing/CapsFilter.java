@@ -1,11 +1,13 @@
 package dev.unnm3d.redischat.chat.filters.outgoing;
 
+import de.exlll.configlib.Configuration;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.chat.filters.AbstractFilter;
 import dev.unnm3d.redischat.chat.filters.FilterResult;
 import dev.unnm3d.redischat.chat.objects.NewChannel;
 import dev.unnm3d.redischat.chat.objects.NewChatMessage;
 import dev.unnm3d.redischat.settings.FiltersConfig;
+import lombok.Getter;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
@@ -14,9 +16,10 @@ import java.util.Set;
 
 
 public class CapsFilter extends AbstractFilter<CapsFilter.CapsFilterProperties> {
+    public static final String FILTER_NAME = "caps";
 
     public CapsFilter(CapsFilterProperties filterSettings) {
-        super("caps", Direction.OUTGOING, filterSettings);
+        super(FILTER_NAME, Direction.OUTGOING, filterSettings);
     }
 
     public CapsFilter() {
@@ -35,7 +38,7 @@ public class CapsFilter extends AbstractFilter<CapsFilter.CapsFilterProperties> 
         for (char c : message.toCharArray())
             if (Character.isUpperCase(c))
                 capsCount++;
-        return capsCount > message.length() / 2 && message.length() > 20;//50% of the message is caps and the message is longer than 20 chars
+        return capsCount > message.length() * (filterSettings.percentageCaps / 100.0);
     }
 
     @Override
@@ -47,7 +50,7 @@ public class CapsFilter extends AbstractFilter<CapsFilter.CapsFilterProperties> 
         if ((isFiltered.isPresent() && isFiltered.get()) || isFiltered.isEmpty()) {
             if (antiCaps(message.getContent())) {
                 message.setContent(message.getContent().toLowerCase());
-                return new FilterResult(message, true, Optional.of(
+                return new FilterResult(message, filterSettings.shouldFilter, Optional.of(
                         RedisChat.getInstance().getComponentProvider().parse(sender,
                                 RedisChat.getInstance().messages.caps,
                                 true,
@@ -59,13 +62,14 @@ public class CapsFilter extends AbstractFilter<CapsFilter.CapsFilterProperties> 
         return new FilterResult(message, false, Optional.empty());
     }
 
-    public static CapsFilterProperties getDefaultFilterSettings() {
-        return new CapsFilterProperties();
-    }
 
+    @Getter
     public static class CapsFilterProperties extends FiltersConfig.FilterSettings {
+        private int percentageCaps=50;
+        private boolean shouldFilter=false;
+
         public CapsFilterProperties() {
-            super(true, 1, Set.of(), Set.of());
+            super(FILTER_NAME,true, 1, Set.of(), Set.of());
         }
     }
 }

@@ -1,11 +1,14 @@
 package dev.unnm3d.redischat.chat.filters.incoming;
 
+import de.exlll.configlib.Configuration;
+import de.exlll.configlib.PolymorphicTypes;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.chat.filters.AbstractFilter;
 import dev.unnm3d.redischat.chat.filters.FilterResult;
 import dev.unnm3d.redischat.chat.objects.AudienceType;
 import dev.unnm3d.redischat.chat.objects.NewChatMessage;
 import dev.unnm3d.redischat.settings.FiltersConfig;
+import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.command.CommandSender;
@@ -16,10 +19,11 @@ import java.util.Set;
 
 public class SpyFilter extends AbstractFilter<SpyFilter.SpyFilterProperties> {
 
+    public static final String FILTER_NAME = "spy";
     private final RedisChat plugin;
 
     public SpyFilter(RedisChat plugin, SpyFilterProperties filterSettings) {
-        super("spy", Direction.INCOMING, filterSettings);
+        super(FILTER_NAME, Direction.INCOMING, filterSettings);
         this.plugin = plugin;
     }
 
@@ -43,18 +47,23 @@ public class SpyFilter extends AbstractFilter<SpyFilter.SpyFilterProperties> {
                     .forEach(player -> plugin.getComponentProvider().sendComponentOrCache(player, spyComponent));
 
             //Log spy component
-            plugin.getComponentProvider().logComponent(spyComponent);
+            if (filterSettings.logSpyMessages)
+                plugin.getComponentProvider().logComponent(spyComponent);
         }
         return new FilterResult(chatMessage, false, null);
     }
 
-    public static SpyFilterProperties getDefaultFilterSettings() {
-        return new SpyFilterProperties();
-    }
 
+    @Getter
+    @PolymorphicTypes({
+            @PolymorphicTypes.Type(type = FiltersConfig.FilterSettings.class, alias = "filter"),
+            @PolymorphicTypes.Type(type = SpyFilterProperties.class, alias = "spy")
+    })
     public static class SpyFilterProperties extends FiltersConfig.FilterSettings {
+        private boolean logSpyMessages = true;
+
         public SpyFilterProperties() {
-            super(true, 1, Set.of(AudienceType.PLAYER), Set.of());
+            super(FILTER_NAME,true, 1, Set.of(AudienceType.PLAYER), Set.of());
         }
     }
 }

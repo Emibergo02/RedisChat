@@ -1,5 +1,6 @@
 package dev.unnm3d.redischat.chat.filters.outgoing;
 
+import de.exlll.configlib.PolymorphicTypes;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.chat.filters.AbstractFilter;
 import dev.unnm3d.redischat.chat.filters.FilterResult;
@@ -13,10 +14,11 @@ import java.util.Set;
 
 
 public class WordBlacklistFilter extends AbstractFilter<WordBlacklistFilter.WordBlacklistFilterProperties> {
+    public static final String FILTER_NAME = "word_blacklist";
     private final RedisChat plugin;
 
     public WordBlacklistFilter(RedisChat plugin, WordBlacklistFilterProperties filterSettings) {
-        super("word_blacklist", Direction.OUTGOING, filterSettings);
+        super(FILTER_NAME, Direction.OUTGOING, filterSettings);
         this.plugin = plugin;
     }
 
@@ -32,7 +34,7 @@ public class WordBlacklistFilter extends AbstractFilter<WordBlacklistFilter.Word
             sanitized = sanitized.replaceAll(regex, plugin.config.blacklistReplacement);
         }
 
-        if (plugin.config.doNotSendCensoredMessage && !sanitized.equals(message.getContent())) {
+        if (filterSettings.blockCensoredMessage && !sanitized.equals(message.getContent())) {
             return new FilterResult(message, true, Optional.of(
                     plugin.getComponentProvider().parse(sender,
                             plugin.messages.messageContainsBadWords,
@@ -51,9 +53,12 @@ public class WordBlacklistFilter extends AbstractFilter<WordBlacklistFilter.Word
         return new WordBlacklistFilterProperties();
     }
 
+
     public static class WordBlacklistFilterProperties extends FiltersConfig.FilterSettings {
+        private boolean blockCensoredMessage = true;
+
         public WordBlacklistFilterProperties() {
-            super(true, 1, Set.of(), Set.of());
+            super(FILTER_NAME,true, 1, Set.of(), Set.of());
         }
     }
 }

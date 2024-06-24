@@ -12,4 +12,8 @@ import java.util.Optional;
  * @param filtered Whether the message was filtered (if true, the message will not be sent)
  */
 public record FilterResult(NewChatMessage message, boolean filtered, Optional<Component> filteredReason) {
+
+    public FilterResult(NewChatMessage message, boolean filtered) {
+        this(message, filtered, Optional.empty());
+    }
 }

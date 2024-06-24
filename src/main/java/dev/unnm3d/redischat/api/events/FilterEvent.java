@@ -1,7 +1,6 @@
 package dev.unnm3d.redischat.api.events;
 
 import dev.unnm3d.redischat.chat.filters.AbstractFilter;
-import dev.unnm3d.redischat.chat.filters.Filter;
 import dev.unnm3d.redischat.chat.filters.FilterResult;
 import dev.unnm3d.redischat.settings.FiltersConfig;
 import lombok.Getter;

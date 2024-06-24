@@ -1,11 +1,13 @@
 package dev.unnm3d.redischat.chat.filters.incoming;
 
+import de.exlll.configlib.Configuration;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.chat.filters.AbstractFilter;
 import dev.unnm3d.redischat.chat.filters.FilterResult;
 import dev.unnm3d.redischat.chat.objects.AudienceType;
 import dev.unnm3d.redischat.chat.objects.NewChatMessage;
 import dev.unnm3d.redischat.settings.FiltersConfig;
+import lombok.Getter;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
@@ -14,9 +16,10 @@ import java.util.Optional;
 import java.util.Set;
 
 public class IgnorePlayerFilter extends AbstractFilter<IgnorePlayerFilter.IgnorePlayerFilterProperties> {
+    public static final String FILTER_NAME = "ignore_player";
 
     public IgnorePlayerFilter(IgnorePlayerFilterProperties filterSettings) {
-        super("ignore", Direction.INCOMING, filterSettings);
+        super(FILTER_NAME, Direction.INCOMING, filterSettings);
     }
 
     public IgnorePlayerFilter() {
@@ -35,8 +38,8 @@ public class IgnorePlayerFilter extends AbstractFilter<IgnorePlayerFilter.Ignore
         }
 
         //If not private
-        if (RedisChat.getInstance().config.ignorePublicMessages && isIgnored) {
-            if (!RedisChat.getInstance().config.sendWarnWhenIgnoring) return new FilterResult(chatMessage, true, null);
+        if (filterSettings.ignorePublicMessages && isIgnored) {
+            if (!filterSettings.sendWarnWhenIgnoring) return new FilterResult(chatMessage, true, null);
 
             return new FilterResult(chatMessage, true,
                     Optional.of(MiniMessage.miniMessage().deserialize(RedisChat.getInstance().messages.ignored_player
@@ -46,14 +49,13 @@ public class IgnorePlayerFilter extends AbstractFilter<IgnorePlayerFilter.Ignore
         return new FilterResult(chatMessage, false, null);
     }
 
-
-    public static IgnorePlayerFilterProperties getDefaultFilterSettings() {
-        return new IgnorePlayerFilterProperties();
-    }
-
+    @Getter
     public static class IgnorePlayerFilterProperties extends FiltersConfig.FilterSettings {
+        private boolean ignorePublicMessages = true;
+        private boolean sendWarnWhenIgnoring = true;
+
         public IgnorePlayerFilterProperties() {
-            super(true, 1, Set.of(AudienceType.PLAYER), Set.of());
+            super(FILTER_NAME,true, 1, Set.of(AudienceType.PLAYER), Set.of());
         }
     }
 }
