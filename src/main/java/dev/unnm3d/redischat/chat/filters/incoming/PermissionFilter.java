@@ -18,10 +18,6 @@ public class PermissionFilter extends AbstractFilter<FiltersConfig.FilterSetting
         super(FILTER_NAME, Direction.INCOMING, filterSettings);
     }
 
-    public PermissionFilter() {
-        this(new FiltersConfig.FilterSettings(FILTER_NAME,true, 1, Set.of(AudienceType.CHANNEL), Set.of()));
-    }
-
     @Override
     public FilterResult applyWithPrevious(CommandSender receiver, @NotNull NewChatMessage chatMessage, NewChatMessage... previousMessages) {
         for (String permission : chatMessage.getReceiver().getPermissions()) {

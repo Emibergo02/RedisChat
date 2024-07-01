@@ -1,5 +1,6 @@
 package dev.unnm3d.redischat.chat.filters.outgoing;
 
+import de.exlll.configlib.Comment;
 import de.exlll.configlib.Configuration;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.chat.filters.AbstractFilter;
@@ -20,10 +21,6 @@ public class CapsFilter extends AbstractFilter<CapsFilter.CapsFilterProperties> 
 
     public CapsFilter(CapsFilterProperties filterSettings) {
         super(FILTER_NAME, Direction.OUTGOING, filterSettings);
-    }
-
-    public CapsFilter() {
-        this(new CapsFilterProperties());
     }
 
 
@@ -63,13 +60,16 @@ public class CapsFilter extends AbstractFilter<CapsFilter.CapsFilterProperties> 
     }
 
 
+    @Configuration
     @Getter
     public static class CapsFilterProperties extends FiltersConfig.FilterSettings {
-        private int percentageCaps=50;
-        private boolean shouldFilter=false;
+        private int percentageCaps;
+        private boolean shouldFilter;
 
         public CapsFilterProperties() {
-            super(FILTER_NAME,true, 1, Set.of(), Set.of());
+            super(true, 8, Set.of(), Set.of());
+            this.percentageCaps = 50;
+            this.shouldFilter = false;
         }
     }
 }

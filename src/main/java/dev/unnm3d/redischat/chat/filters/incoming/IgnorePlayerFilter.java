@@ -1,5 +1,6 @@
 package dev.unnm3d.redischat.chat.filters.incoming;
 
+import de.exlll.configlib.Comment;
 import de.exlll.configlib.Configuration;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.chat.filters.AbstractFilter;
@@ -7,6 +8,7 @@ import dev.unnm3d.redischat.chat.filters.FilterResult;
 import dev.unnm3d.redischat.chat.objects.AudienceType;
 import dev.unnm3d.redischat.chat.objects.NewChatMessage;
 import dev.unnm3d.redischat.settings.FiltersConfig;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.command.CommandSender;
@@ -22,9 +24,6 @@ public class IgnorePlayerFilter extends AbstractFilter<IgnorePlayerFilter.Ignore
         super(FILTER_NAME, Direction.INCOMING, filterSettings);
     }
 
-    public IgnorePlayerFilter() {
-        this(new IgnorePlayerFilterProperties());
-    }
 
     @Override
     public FilterResult applyWithPrevious(CommandSender receiver, @NotNull NewChatMessage chatMessage, NewChatMessage... previousMessages) {
@@ -49,13 +48,16 @@ public class IgnorePlayerFilter extends AbstractFilter<IgnorePlayerFilter.Ignore
         return new FilterResult(chatMessage, false, null);
     }
 
+    @Configuration
     @Getter
     public static class IgnorePlayerFilterProperties extends FiltersConfig.FilterSettings {
-        private boolean ignorePublicMessages = true;
-        private boolean sendWarnWhenIgnoring = true;
+        private boolean ignorePublicMessages;
+        private boolean sendWarnWhenIgnoring;
 
         public IgnorePlayerFilterProperties() {
-            super(FILTER_NAME,true, 1, Set.of(AudienceType.PLAYER), Set.of());
+            super(true, 4, Set.of(AudienceType.PLAYER), Set.of());
+            this.ignorePublicMessages = true;
+            this.sendWarnWhenIgnoring = true;
         }
     }
 }

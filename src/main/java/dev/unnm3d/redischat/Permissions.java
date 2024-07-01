@@ -13,6 +13,7 @@ public enum Permissions {
     MAIL_UNREAD("redischat.mail.unread"),
     IGNORE("redischat.ignore"),
     IGNORE_WHITELIST("redischat.ignore_whitelist"),
+    BYPASS_FILTER_PREFIX("redischat.bypassfilter."),
     USE_FORMATTING("redischat.useformatting"),
     USE_DANGEROUS("redischat.usedangeroustags"),
     USE_ITEM("redischat.showitem"),

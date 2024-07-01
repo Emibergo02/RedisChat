@@ -1,6 +1,10 @@
 package dev.unnm3d.redischat.settings;
 
 import de.exlll.configlib.*;
+import dev.unnm3d.redischat.chat.filters.DefaultSettings;
+import dev.unnm3d.redischat.chat.filters.incoming.IgnorePlayerFilter;
+import dev.unnm3d.redischat.chat.filters.incoming.SpyFilter;
+import dev.unnm3d.redischat.chat.filters.outgoing.*;
 import dev.unnm3d.redischat.chat.objects.AudienceType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,27 +15,35 @@ import java.util.*;
 @Configuration
 public final class FiltersConfig {
 
-    public Set<FilterSettings> filters = new HashSet<>();
+    //INCOMING
+    public FilterSettings discord = DefaultSettings.DISCORD.getFilterSettings();
+    public IgnorePlayerFilter.IgnorePlayerFilterProperties ignorePlayer = (IgnorePlayerFilter.IgnorePlayerFilterProperties) DefaultSettings.IGNORE_PLAYER.getFilterSettings();
+    public FilterSettings permission = DefaultSettings.PERMISSION.getFilterSettings();
+    public FilterSettings privateFilter = DefaultSettings.PRIVATE_IN.getFilterSettings();
+    public SpyFilter.SpyFilterProperties spy = (SpyFilter.SpyFilterProperties) DefaultSettings.SPY.getFilterSettings();
+
+    //OUTGOING
+    public CapsFilter.CapsFilterProperties caps = (CapsFilter.CapsFilterProperties) DefaultSettings.CAPS.getFilterSettings();
+    public DuplicateFilter.DuplicateFilterProperties duplicate = (DuplicateFilter.DuplicateFilterProperties) DefaultSettings.DUPLICATE.getFilterSettings();
+    public IgnoreFilter.IgnoreFilterProperties ignore = (IgnoreFilter.IgnoreFilterProperties) DefaultSettings.IGNORE.getFilterSettings();
+    public FilterSettings mutedChannel = DefaultSettings.MUTED_CHANNEL.getFilterSettings();
+    public ParseContentFilter.ContentProperties content = (ParseContentFilter.ContentProperties) DefaultSettings.CONTENT.getFilterSettings();
+    public FilterSettings tags = DefaultSettings.TAGS.getFilterSettings();
+    public WordBlacklistFilter.WordBlacklistFilterProperties words = (WordBlacklistFilter.WordBlacklistFilterProperties) DefaultSettings.WORDS.getFilterSettings();
 
 
     @Configuration
     @AllArgsConstructor
     @Getter
-    @Polymorphic(property = "propertyClass")
+
     public static class FilterSettings {
-        @Comment("The name of the filter")
-        protected String filterName;
-        @Comment("If the filter is enabled at all")
         protected boolean enabled;
-        @Comment("The default priority of the filter")
         protected int priority;
-        @Comment("The audience type of the filter, if empty it will be applied to all")
         protected Set<AudienceType> audienceWhitelist;
-        @Comment("The filter channels,if empty it will be applied to public channel only")
         protected Set<String> channelWhitelist;
 
         public FilterSettings() {
-            this("empty",false, 1, Set.of(), Set.of());
+            this(false, 1, Set.of(), Set.of());
         }
     }
 }

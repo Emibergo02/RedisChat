@@ -29,6 +29,7 @@ public abstract class AbstractFilter<T extends FiltersConfig.FilterSettings> imp
 
     public enum Direction {
         INCOMING,
-        OUTGOING
+        OUTGOING,
+        BOTH
     }
 }

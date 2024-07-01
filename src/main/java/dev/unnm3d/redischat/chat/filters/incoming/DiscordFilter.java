@@ -20,11 +20,6 @@ public class DiscordFilter extends AbstractFilter<FiltersConfig.FilterSettings> 
         super("discord", Direction.INCOMING, filterSettings);
     }
 
-    public DiscordFilter() {
-        this(new FiltersConfig.FilterSettings("discord",true, 1, Set.of(AudienceType.DISCORD), Set.of()));
-    }
-
-
     @Override
     public FilterResult applyWithPrevious(CommandSender receiver, @NotNull NewChatMessage message, NewChatMessage... previousMessages) {
         if (message.getReceiver().isDiscord()) {

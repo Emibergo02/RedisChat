@@ -1,5 +1,6 @@
 package dev.unnm3d.redischat.api.events;
 
+import dev.unnm3d.redischat.chat.objects.ChannelAudience;
 import dev.unnm3d.redischat.chat.objects.NewChannel;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,7 +18,7 @@ public class AsyncRedisChatMessageEvent extends Event implements Cancellable {
     private final CommandSender sender;
     @Setter
     @Getter
-    private NewChannel channel;
+    private ChannelAudience audience;
     @Getter
     private final Component format;
     @Getter
@@ -27,15 +28,15 @@ public class AsyncRedisChatMessageEvent extends Event implements Cancellable {
     /**
      * Creates a RedisChatMessageEvent
      *
-     * @param sender  The sender of the message
-     * @param channel The channel of the message
-     * @param format  The format of the message
-     * @param content The message content
+     * @param sender   The sender of the message
+     * @param audience The channel of the message
+     * @param format   The format of the message
+     * @param content  The message content
      */
-    public AsyncRedisChatMessageEvent(CommandSender sender, NewChannel channel, Component format, Component content) {
+    public AsyncRedisChatMessageEvent(CommandSender sender, ChannelAudience audience, Component format, Component content) {
         super(true);
         this.sender = sender;
-        this.channel = channel;
+        this.audience = audience;
         this.format = format;
         this.content = content;
         this.cancelled = false;

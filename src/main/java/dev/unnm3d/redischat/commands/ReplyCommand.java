@@ -37,47 +37,10 @@ public class ReplyCommand {
                                     Bukkit.getLogger().info("ReplyCommand redis: " + (System.currentTimeMillis() - init) + "ms");
 
                                 String message = (String) args.get(0);
-                                assert message != null;
 
-                                final ChatFormat chatFormat = plugin.config.getChatFormat(sender);
+                                plugin.getChannelManager().outgoingPrivateMessage(sender, receiver.get(), message);
 
-                                final Component formatted = plugin.getComponentProvider().parse(sender,
-                                        chatFormat.private_format()
-                                                .replace("%receiver%", receiver.get())
-                                                .replace("%sender%", sender.getName()),
-                                        true,
-                                        false,
-                                        false);
-
-                                //Check for minimessage tags permission
-                                boolean parsePlaceholders = sender.hasPermission(Permissions.USE_FORMATTING.getPermission());
-                                if (!parsePlaceholders) {
-                                    message = plugin.getComponentProvider().purgeTags(message);
-                                }
-
-                                // remove blacklisted stuff
-                                message = plugin.getComponentProvider().sanitize(message);
-
-                                //Check inv update
-                                message = plugin.getComponentProvider().invShareFormatting(sender, message);
-
-                                //Parse into minimessage (placeholders, tags and mentions)
-                                final Component temp = plugin.getComponentProvider().parse(sender, message, parsePlaceholders, true, true, plugin.getComponentProvider().getRedisChatTagResolver(sender));
-
-                                //Parse customs
-                                final Component toBeReplaced = plugin.getComponentProvider().parseCustomPlaceholders(sender, temp);
-
-                                //Send to other servers
-                                plugin.getDataManager().sendChatMessage(
-                                        new NewChatMessage(
-                                                ChannelAudience.newPlayerAudience(sender.getName()),
-                                                MiniMessage.miniMessage().serialize(formatted),
-                                                MiniMessage.miniMessage().serialize(toBeReplaced),
-                                                ChannelAudience.newPlayerAudience(receiver.get())
-                                        ));
-
-                                plugin.getComponentProvider().sendMessage(sender, formatted.replaceText(aBuilder -> aBuilder.matchLiteral("%message%").replacement(toBeReplaced)));
-
+                                //Set reply name for /reply
                                 plugin.getDataManager().setReplyName(receiver.get(), sender.getName());
 
                                 if (plugin.config.debug)

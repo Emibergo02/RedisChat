@@ -1,5 +1,6 @@
 package dev.unnm3d.redischat.chat.filters.incoming;
 
+import de.exlll.configlib.Comment;
 import de.exlll.configlib.Configuration;
 import de.exlll.configlib.PolymorphicTypes;
 import dev.unnm3d.redischat.RedisChat;
@@ -27,10 +28,6 @@ public class SpyFilter extends AbstractFilter<SpyFilter.SpyFilterProperties> {
         this.plugin = plugin;
     }
 
-    public SpyFilter() {
-        this(RedisChat.getInstance(), new SpyFilterProperties());
-    }
-
     @Override
     public FilterResult applyWithPrevious(CommandSender receiver, @NotNull NewChatMessage chatMessage, NewChatMessage... previousMessages) {
         if (chatMessage.getReceiver().isPlayer()) {
@@ -54,16 +51,14 @@ public class SpyFilter extends AbstractFilter<SpyFilter.SpyFilterProperties> {
     }
 
 
+    @Configuration
     @Getter
-    @PolymorphicTypes({
-            @PolymorphicTypes.Type(type = FiltersConfig.FilterSettings.class, alias = "filter"),
-            @PolymorphicTypes.Type(type = SpyFilterProperties.class, alias = "spy")
-    })
     public static class SpyFilterProperties extends FiltersConfig.FilterSettings {
-        private boolean logSpyMessages = true;
+        private boolean logSpyMessages;
 
         public SpyFilterProperties() {
-            super(FILTER_NAME,true, 1, Set.of(AudienceType.PLAYER), Set.of());
+            super(true, 7, Set.of(AudienceType.PLAYER), Set.of());
+            this.logSpyMessages = true;
         }
     }
 }

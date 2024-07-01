@@ -21,6 +21,7 @@ import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
+import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -113,17 +114,32 @@ public class ChannelManager extends RedisChatAPI {
     }
 
 
-    public void outgoingMessage(CommandSender player, NewChannel chatChannel, @NotNull final String message) {
+    /**
+     * Send a message to a specific ChannelAudience
+     * @param player    The player that is sending the message
+     * @param receiver  The receiver audience of the message
+     * @param message   The message to be sent
+     */
+    public void outgoingMessage(CommandSender player, ChannelAudience receiver, @NotNull String message) {
+        //Get channel or public channel by default
+        NewChannel currentChannel = getPublicChannel(player);
+
+        if (receiver.getType() == AudienceType.CHANNEL) {
+            if (receiver.getName().equals(KnownChatEntities.STAFFCHAT_CHANNEL_NAME.toString())) {
+                message = message.substring(1);
+                currentChannel = getStaffChatChannel();
+            } else {
+                currentChannel = plugin.getChannelManager().getChannel(receiver.getName()).orElse(currentChannel);
+            }
+        }
+
 
         NewChatMessage chatMessage = new NewChatMessage(
                 new ChannelAudience(player.getName(), AudienceType.PLAYER),
-                chatChannel.getFormat(),
-                chatChannel.getName().equals(KnownChatEntities.STAFFCHAT_CHANNEL_NAME.toString()) ?
-                        message.substring(1) :
-                        message,
-                new ChannelAudience(chatChannel.getName())
+                currentChannel.getFormat(),
+                message,
+                receiver
         );
-
 
         //Filter and send filter message if present
         final FilterResult result = filterManager.filterMessage(player, chatMessage, AbstractFilter.Direction.OUTGOING);
@@ -146,7 +162,7 @@ public class ChannelManager extends RedisChatAPI {
 
         //Call event and check cancellation
         final AsyncRedisChatMessageEvent event = new AsyncRedisChatMessageEvent(player,
-                chatChannel,
+                result.message().getReceiver(),
                 formatComponent,
                 contentComponent);
         plugin.getServer().getPluginManager().callEvent(event);
@@ -156,7 +172,7 @@ public class ChannelManager extends RedisChatAPI {
         chatMessage.setFormat(MiniMessage.miniMessage().serialize(event.getFormat()));
         chatMessage.setContent(MiniMessage.miniMessage().serialize(event.getContent()));
 
-        if (chatChannel.getProximityDistance() > 0) {// Send to local server
+        if (currentChannel.getProximityDistance() > 0) {// Send to local server
             sendGenericChat(chatMessage);
             return;
         }
@@ -174,11 +190,16 @@ public class ChannelManager extends RedisChatAPI {
     public void outgoingMessage(CommandSender player, @NotNull final String message) {
         plugin.getDataManager().getActivePlayerChannel(player.getName(), registeredChannels)
                 .thenAcceptAsync(channelName -> {
-                    final NewChannel chatChannel = isStaffChatEnabled(message, player) ?
-                            getStaffChatChannel() :
-                            getChannel(channelName).orElse(getPublicChannel(player));
+                    if (isStaffChatEnabled(message, player)) {
+                        channelName = KnownChatEntities.STAFFCHAT_CHANNEL_NAME.toString();
+                    } else if (!(channelName != null && registeredChannels.containsKey(channelName))) {
+                        channelName = KnownChatEntities.PUBLIC_CHAT.toString();
+                    }
+                    if (plugin.config.debug) {
+                        plugin.getLogger().info("Outgoing on channel: " + channelName);
+                    }
 
-                    outgoingMessage(player, chatChannel, message);
+                    outgoingMessage(player, new ChannelAudience(channelName), message);
 
                 }, plugin.getExecutorService())
                 .exceptionally(throwable -> {
@@ -186,6 +207,46 @@ public class ChannelManager extends RedisChatAPI {
                     return null;
                 });
     }
+
+    /**
+     * Send a private message to a player
+     *
+     * @param sender            The sender of the message
+     * @param receiverName      The name of the receiver
+     * @param message           The message to be sent
+     */
+    public void outgoingPrivateMessage(@NotNull CommandSender sender, @NotNull String receiverName, @NotNull String message) {
+        final NewChatMessage privateChatMessage = new NewChatMessage(
+                new ChannelAudience(sender.getName(), AudienceType.PLAYER),
+                plugin.config.getChatFormat(sender).private_format()
+                        .replace("%receiver%", receiverName)
+                        .replace("%sender%", sender.getName()),
+                message,
+                new ChannelAudience(receiverName, AudienceType.PLAYER)
+        );
+
+        final FilterResult result = filterManager.filterMessage(sender, privateChatMessage, AbstractFilter.Direction.OUTGOING);
+
+        if (result.filtered()) {
+            result.filteredReason().ifPresent(component ->
+                    getComponentProvider().sendComponentOrCache(sender, component));
+            return;
+        }
+
+        final Component formatComponent = getComponentProvider()
+                //Parse format with placeholders
+                .parse(sender, result.message().getFormat(), true, false, false)
+                //Replace %message% with the content component
+                .replaceText(builder -> builder.matchLiteral("%message%")
+                        .replacement(miniMessage.deserialize(result.message().getContent())));
+
+        //Send the message to the sender
+        plugin.getComponentProvider().sendMessage(sender, formatComponent);
+
+        //Send the message to the receiver
+        plugin.getDataManager().sendChatMessage(privateChatMessage);
+    }
+
 
     private boolean isStaffChatEnabled(String message, CommandSender player) {
         return plugin.config.enableStaffChat &&
@@ -195,25 +256,11 @@ public class ChannelManager extends RedisChatAPI {
 
 
     @Override
-    public void sendAndKeepLocal(NewChatMessage chatMessageInfo) {
-        sendGenericChat(chatMessageInfo);
-    }
-
-    @Override
     public void sendGenericChat(NewChatMessage chatMessage) {
-        final Component formattedComponent = miniMessage.deserialize(chatMessage.getFormat())
-                .replaceText(builder -> builder.matchLiteral("%message%").replacement(
-                        miniMessage.deserialize(chatMessage.getContent())
-                ));
-
         final Set<Player> recipients = chatMessage.getReceiver().isPlayer() ?
                 Collections.singleton(Bukkit.getPlayer(chatMessage.getReceiver().getName())) :
                 new HashSet<>(plugin.getServer().getOnlinePlayers());
 
-
-        if (chatMessage.getReceiver().isChannel()) {
-            getComponentProvider().logComponent(formattedComponent);
-        }
 
         for (Player recipient : recipients) {
             final FilterResult result = filterManager.filterMessage(recipient, chatMessage, AbstractFilter.Direction.INCOMING);
@@ -234,8 +281,19 @@ public class ChannelManager extends RedisChatAPI {
             if (chatMessage.getContent().contains(recipient.getName())) {
                 if (!plugin.config.mentionSound.isEmpty()) {
                     final String[] split = plugin.config.mentionSound.split(":");
-                    recipient.playSound(recipient.getLocation(), split[0], Float.parseFloat(split[1]), Float.parseFloat(split[2]));
+                    recipient.playSound(
+                            recipient.getLocation(),
+                            Sound.valueOf(split[0]).getKey().toString(),
+                            Float.parseFloat(split[1]),
+                            Float.parseFloat(split[2]));
                 }
+            }
+            final Component formattedComponent = miniMessage.deserialize(result.message().getFormat())
+                    .replaceText(builder -> builder.matchLiteral("%message%").replacement(
+                            miniMessage.deserialize(result.message().getContent())
+                    ));
+            if (chatMessage.getReceiver().isChannel()) {
+                getComponentProvider().logComponent(formattedComponent);
             }
 
             //If proximity is enabled, check if player is in range

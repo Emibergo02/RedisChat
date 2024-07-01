@@ -913,7 +913,7 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
         }
 
         sendChatPluginMessage(publishChannel, packet);
-        plugin.getChannelManager().sendAndKeepLocal(packet);
+        plugin.getChannelManager().sendGenericChat(packet);
     }
 
     @SuppressWarnings("UnstableApiUsage")

@@ -24,10 +24,6 @@ public class SpamFilter extends AbstractFilter<FiltersConfig.FilterSettings> {
         this.plugin = plugin;
     }
 
-    public SpamFilter() {
-        this(RedisChat.getInstance(), new FiltersConfig.FilterSettings(FILTER_NAME,true,1, Set.of(), Set.of()));
-    }
-
     @Override
     public FilterResult applyWithPrevious(CommandSender sender, @NotNull NewChatMessage message, NewChatMessage... previousMessages) {
         if (!message.getReceiver().isChannel()) return new FilterResult(message, false, Optional.empty());

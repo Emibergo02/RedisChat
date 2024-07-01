@@ -6,6 +6,7 @@ import dev.unnm3d.redischat.api.TagResolverIntegration;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import me.clip.placeholderapi.PlaceholderAPI;
+import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
@@ -17,6 +18,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -37,6 +39,8 @@ public class ComponentProvider {
     private final TagResolver standardTagResolver;
     private final Map<CommandSender, List<Component>> cacheBlocked;
     private final List<TagResolverIntegration> tagResolverIntegrationList;
+    @Getter
+    private final BukkitAudiences bukkitAudiences;
 
 
     public ComponentProvider(RedisChat plugin) {
@@ -45,6 +49,7 @@ public class ComponentProvider {
         this.cacheBlocked = Collections.synchronizedMap(new WeakHashMap<>());
         this.standardTagResolver = StandardTags.defaults();
         this.tagResolverIntegrationList = new ArrayList<>();
+        this.bukkitAudiences = BukkitAudiences.create(plugin);
     }
 
     /**
@@ -219,31 +224,28 @@ public class ComponentProvider {
             builder.resolver(inv);
         }
 
-        if (player.hasPermission(Permissions.USE_ITEM.getPermission())) {
+        if (player.hasPermission(Permissions.USE_ITEM.getPermission()) && player instanceof Player p) {
             String toParseItem = plugin.config.itemFormat;
             toParseItem = toParseItem.replace("%player%", player.getName());
             toParseItem = toParseItem.replace("%command%", "/invshare " + player.getName() + "-item");
             Component toParseItemComponent = parse(player, toParseItem, true, false, false, this.standardTagResolver);
-            if (player instanceof Player p) {
-                if (!p.getInventory().getItemInMainHand().getType().isAir()) {
-                    if (p.getInventory().getItemInMainHand().getItemMeta() != null)
-                        if (p.getInventory().getItemInMainHand().getItemMeta().hasDisplayName()) {
-                            toParseItemComponent = toParseItemComponent.replaceText(rTextBuilder ->
-                                    rTextBuilder.matchLiteral("%item_name%")
-                                            .replacement(p.getInventory().getItemInMainHand().getItemMeta().displayName())
-                            );
-                        } else {
-                            toParseItemComponent = toParseItemComponent.replaceText(rTextBuilder ->
-                                    rTextBuilder.matchLiteral("%item_name%")
-                                            .replacement(Component.translatable(
-                                                    p.getInventory().getItemInMainHand().getType().translationKey())));
-                        }
-                } else {
-                    toParseItemComponent = toParseItemComponent.replaceText(rTextBuilder ->
-                            rTextBuilder.matchLiteral("%item_name%")
-                                    .replacement("Nothing")
-                    );
-                }
+
+            final ItemMeta itemMeta = p.getInventory().getItemInMainHand().getItemMeta();
+
+            if (p.getInventory().getItemInMainHand().getType().isAir()) {
+                toParseItemComponent = toParseItemComponent.replaceText(rTextBuilder ->
+                        rTextBuilder.matchLiteral("%item_name%")
+                                .replacement("Nothing")
+                );
+            } else if (itemMeta != null && itemMeta.hasItemName()) {
+                toParseItemComponent = toParseItemComponent.replaceText(rTextBuilder ->
+                        rTextBuilder.matchLiteral("%item_name%")
+                                .replacement(LegacyComponentSerializer.legacySection().deserialize(itemMeta.getItemName())));
+            } else {
+                toParseItemComponent = toParseItemComponent.replaceText(rTextBuilder ->
+                        rTextBuilder.matchLiteral("%item_name%")
+                                .replacement(Component.translatable(
+                                        p.getInventory().getItemInMainHand().getType().getTranslationKey())));
             }
             TagResolver item = Placeholder.component("item", toParseItemComponent);
             builder.resolver(item);
@@ -330,33 +332,6 @@ public class ComponentProvider {
     }
 
     /**
-     * Sanitize a message from blacklisted regexes
-     *
-     * @param message The message to sanitize
-     * @return The sanitized message
-     */
-    public @NotNull String sanitize(@NotNull String message) {
-        for (String regex : plugin.config.regex_blacklist) {
-            message = message.replaceAll(regex, plugin.config.blacklistReplacement);
-        }
-        return message;
-    }
-
-    /**
-     * Transform uppercase messages into lowercase
-     *
-     * @param message The message to transform
-     * @return The transformed message
-     */
-    public boolean antiCaps(@NotNull String message) {
-        int capsCount = 0;
-        for (char c : message.toCharArray())
-            if (Character.isUpperCase(c))
-                capsCount++;
-        return capsCount > message.length() / 2 && message.length() > 20;//50% of the message is caps and the message is longer than 20 chars
-    }
-
-    /**
      * Parse legacy color codes (§ and ampersand)
      *
      * @param text The text to parse
@@ -421,7 +396,7 @@ public class ComponentProvider {
     @SuppressWarnings("ResultOfMethodCallIgnored")
     public void logComponent(Component component) {
         if (!plugin.config.chatLogging) {
-            plugin.getServer().getConsoleSender().sendMessage(component);
+            sendMessage(plugin.getServer().getConsoleSender(), component);
             return;
         }
 
@@ -472,7 +447,7 @@ public class ComponentProvider {
     }
 
     public void sendMessage(CommandSender sender, Component component) {
-        sender.sendMessage(component);
+        bukkitAudiences.sender(sender).sendMessage(component);
     }
 
 }

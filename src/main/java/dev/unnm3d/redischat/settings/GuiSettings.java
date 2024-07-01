@@ -174,7 +174,7 @@ public final class GuiSettings implements ConfigValidator {
 
     private ItemStack getUnreadButton() {
         return new ItemBuilder(Material.BOOK)
-                .addEnchantment(Enchantment.DURABILITY, 1, false)
+                .addEnchantment(Enchantment.DEPTH_STRIDER, 1, false)
                 .addItemFlags(ItemFlag.HIDE_ENCHANTS)
                 .setDisplayName("§cUnread mail")
                 .setLegacyLore(List.of("§7Click to set the mail as unread"))

@@ -1,6 +1,5 @@
 package dev.unnm3d.redischat.chat.filters.outgoing;
 
-import de.exlll.configlib.Configuration;
 import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.chat.filters.AbstractFilter;
@@ -13,7 +12,6 @@ import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
-import java.util.Set;
 
 
 public class TagFilter extends AbstractFilter<FiltersConfig.FilterSettings> {
@@ -24,11 +22,6 @@ public class TagFilter extends AbstractFilter<FiltersConfig.FilterSettings> {
         super(FILTER_NAME, Direction.OUTGOING, filterSettings);
         this.plugin = plugin;
     }
-
-    public TagFilter() {
-        this(RedisChat.getInstance(), new FiltersConfig.FilterSettings(FILTER_NAME,true,1, Set.of(), Set.of()));
-    }
-
 
     @Override
     public FilterResult applyWithPrevious(CommandSender sender, @NotNull NewChatMessage chatMessage, NewChatMessage... previousMessages) {

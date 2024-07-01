@@ -268,8 +268,17 @@ public final class RedisChat extends JavaPlugin {
                 filtersFile,
                 FiltersConfig.class,
                 YamlConfigurationProperties.newBuilder()
-                        .header("RedisChat filters")
-                        .footer("Authors: Unnm3d")
+                        .header("""
+                                How to configure filters:
+                                    enabled: true/false  # If the filter is enabled at all
+                                    priority: 1  # The priority of the filter
+                                    audienceWhitelist:  # The audience type of the filter (who is the target of the filter)
+                                      - DISCORD
+                                      - PLAYER   #Private messages
+                                      - CHANNEL  #Channel messages
+                                    channelWhitelist: []  # Which channels are affected by the filter, leave empty for all channels
+                                    
+                                """)
                         .charset(StandardCharsets.UTF_8)
                         .build()
         );

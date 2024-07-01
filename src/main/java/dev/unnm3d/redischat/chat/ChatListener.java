@@ -12,11 +12,11 @@ import org.bukkit.event.player.PlayerJoinEvent;
 public class ChatListener implements Listener {
     private final RedisChat plugin;
 
-
+    //Suppress deprecation warning because we could be using Spigot
+    @SuppressWarnings("deprecation")
     public void listenChat(AsyncPlayerChatEvent event) {
         if (event.isCancelled()) return;
         event.setCancelled(true);
-
         plugin.getChannelManager().outgoingMessage(event.getPlayer(), event.getMessage());
     }
 

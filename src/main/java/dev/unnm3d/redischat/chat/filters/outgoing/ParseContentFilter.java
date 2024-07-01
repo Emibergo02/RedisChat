@@ -1,5 +1,6 @@
 package dev.unnm3d.redischat.chat.filters.outgoing;
 
+import de.exlll.configlib.Comment;
 import de.exlll.configlib.Configuration;
 import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
@@ -25,10 +26,6 @@ public class ParseContentFilter extends AbstractFilter<ParseContentFilter.Conten
     public ParseContentFilter(ContentProperties filterSettings) {
         super(FILTER_NAME, Direction.OUTGOING, filterSettings);
         this.plugin = RedisChat.getInstance();
-    }
-
-    public ParseContentFilter() {
-        this(new ParseContentFilter.ContentProperties());
     }
 
     @Override
@@ -60,15 +57,18 @@ public class ParseContentFilter extends AbstractFilter<ParseContentFilter.Conten
     }
 
 
+    @Configuration
     @Getter
     public static class ContentProperties extends FiltersConfig.FilterSettings {
-
-        private boolean parseMentions = true;
-        private boolean parseLinks = true;
-        private boolean parseCustomPlaceholders = true;
+        private boolean parseMentions;
+        private boolean parseLinks;
+        private boolean parseCustomPlaceholders;
 
         public ContentProperties() {
-            super(FILTER_NAME,true, 1, Set.of(), Set.of());
+            super(true, 10, Set.of(), Set.of());
+            this.parseMentions = true;
+            this.parseLinks = true;
+            this.parseCustomPlaceholders = true;
         }
     }
 }

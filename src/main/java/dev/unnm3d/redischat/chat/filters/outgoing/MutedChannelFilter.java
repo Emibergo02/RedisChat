@@ -24,10 +24,6 @@ public class MutedChannelFilter extends AbstractFilter<FiltersConfig.FilterSetti
         this.plugin = plugin;
     }
 
-    public MutedChannelFilter() {
-        this(RedisChat.getInstance(), new FiltersConfig.FilterSettings(FILTER_NAME,true, 1, Set.of(AudienceType.CHANNEL), Set.of()));
-    }
-
     @Override
     public FilterResult applyWithPrevious(CommandSender sender, @NotNull NewChatMessage message, NewChatMessage... previousMessages) {
 

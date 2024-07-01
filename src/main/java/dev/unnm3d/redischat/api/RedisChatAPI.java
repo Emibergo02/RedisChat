@@ -68,13 +68,6 @@ public abstract class RedisChatAPI {
      */
     public abstract void outgoingMessage(CommandSender player, @NotNull String message);
 
-    /**
-     * Sends a private or public message inside the current server
-     * Registers the message inside keep chat feature (1.20.2+ Check docs for more info)
-     *
-     * @param chatMessageInfo The ChatMessageInfo to send
-     */
-    public abstract void sendAndKeepLocal(NewChatMessage chatMessageInfo);
 
     /**
      * Send a generic (non-private) ChatMessageInfo to all local players

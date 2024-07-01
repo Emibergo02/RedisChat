@@ -187,14 +187,6 @@ public final class Config implements ConfigValidator {
             "(?i)卍",
             "(?i)♿"
     );
-    @Comment({"Whether to hide the bad word or to not send the message at all"})
-    public boolean doNotSendCensoredMessage = false;
-    @Comment({"What to replace the blacklisted words with"})
-    public String blacklistReplacement = "<obf>*****</obf>";
-    @Comment({"Private message notification sound",
-            "You can find the list of sounds here: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Sound.html",
-            "Leave it empty to disable the sound"})
-    public String privateMessageNotificationSound = "BLOCK_NOTE_BLOCK_BELL";
     @Comment({"Title of the ShowInventory GUI"})
     public String inv_title = "Inventory of %player%";
     @Comment({"Title of the ShowItem GUI"})
@@ -222,11 +214,6 @@ public final class Config implements ConfigValidator {
             "You can find the list of sounds here: https://jd.papermc.io/paper/1.20/org/bukkit/Sound.html",
             "Leave it empty \"\" to disable the sound"})
     public String mentionSound = "ENTITY_EXPERIENCE_ORB_PICKUP:1:1";
-    @Comment("Do not send public messages to players that are ignoring the sender")
-    public boolean ignorePublicMessages = true;
-    @Comment({"Send a warning message to the player when ignoring a player on public chat",
-            "\"publicly_ignored_player\" notify will be sent to the player if this is set to true"})
-    public boolean sendWarnWhenIgnoring = true;
     @Comment("Enable or disable the staff chat")
     public boolean enableStaffChat = true;
     @Comment("Enable or disable the chat color GUI")
