@@ -29,21 +29,21 @@ public class IgnorePlayerFilter extends AbstractFilter<IgnorePlayerFilter.Ignore
                 .isPlayerIgnored(chatMessage.getReceiver().getName(), chatMessage.getSender().getName());
         if (chatMessage.getReceiver().isPlayer()) {
             if (isIgnored) {
-                return new FilterResult(chatMessage, true, null);
+                return new FilterResult(chatMessage, true);
             }
-            return new FilterResult(chatMessage, false, null);
+            return new FilterResult(chatMessage, false);
         }
 
         //If not private
         if (filterSettings.ignorePublicMessages && isIgnored) {
-            if (!filterSettings.sendWarnWhenIgnoring) return new FilterResult(chatMessage, true, null);
+            if (!filterSettings.sendWarnWhenIgnoring) return new FilterResult(chatMessage, true);
 
             return new FilterResult(chatMessage, true,
                     Optional.of(MiniMessage.miniMessage().deserialize(RedisChat.getInstance().messages.ignored_player
                             .replace("%player%", chatMessage.getSender().getName()))));
         }
 
-        return new FilterResult(chatMessage, false, null);
+        return new FilterResult(chatMessage, false);
     }
 
     @Configuration

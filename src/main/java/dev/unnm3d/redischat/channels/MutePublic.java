@@ -30,18 +30,30 @@ public class MutePublic extends AbstractItem {
         RedisChat plugin = RedisChat.getInstance();
         if (muted) {
             plugin.getPermissionProvider().setPermission(player, Permissions.CHANNEL_PUBLIC.getPermission());
-            plugin.messages.sendMessage(player, plugin.messages.channelUnmuted
-                    .replace("%channel%", "public")
-                    .replace("%player%", player.getName())
-            );
-            muted = false;
+            System.out.println("Muted");
+            if (player.hasPermission(Permissions.CHANNEL_PUBLIC.getPermission())) {
+                plugin.messages.sendMessage(player, plugin.messages.channelUnmuted
+                        .replace("%channel%", "public")
+                        .replace("%player%", player.getName())
+                );
+                muted = false;
+                System.out.println("Muted2");
+            } else {
+                plugin.messages.sendMessage(player, plugin.messages.cantChangePermission);
+            }
         } else {
             plugin.getPermissionProvider().unsetPermission(player, Permissions.CHANNEL_PUBLIC.getPermission());
-            plugin.messages.sendMessage(player, plugin.messages.channelMuted
-                    .replace("%channel%", "public")
-                    .replace("%player%", player.getName())
-            );
-            muted = true;
+            System.out.println("Unmuted");
+            if (!player.hasPermission(Permissions.CHANNEL_PUBLIC.getPermission())) {
+                plugin.messages.sendMessage(player, plugin.messages.channelMuted
+                        .replace("%channel%", "public")
+                        .replace("%player%", player.getName())
+                );
+                muted = true;
+                System.out.println("UnMuted2");
+            } else {
+                plugin.messages.sendMessage(player, plugin.messages.cantChangePermission);
+            }
         }
         notifyWindows();
     }

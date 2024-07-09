@@ -19,9 +19,9 @@ public class DiscordFilter extends AbstractFilter<FiltersConfig.FilterSettings> 
         if (message.getReceiver().isDiscord()) {
             //TODO: Fix discord integration
             //RedisChat.getInstance().getDiscordHook().sendDiscordMessage(channel, message);
-            return new FilterResult(message, true, null);
+            return new FilterResult(message, true);
         }
 
-        return new FilterResult(message, false, null);
+        return new FilterResult(message, false);
     }
 }

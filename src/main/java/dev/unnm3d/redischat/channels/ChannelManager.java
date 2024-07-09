@@ -12,8 +12,8 @@ import dev.unnm3d.redischat.chat.filters.AbstractFilter;
 import dev.unnm3d.redischat.chat.filters.FilterManager;
 import dev.unnm3d.redischat.chat.filters.FilterResult;
 import dev.unnm3d.redischat.chat.objects.AudienceType;
-import dev.unnm3d.redischat.chat.objects.ChannelAudience;
 import dev.unnm3d.redischat.chat.objects.Channel;
+import dev.unnm3d.redischat.chat.objects.ChannelAudience;
 import dev.unnm3d.redischat.chat.objects.ChatMessage;
 import dev.unnm3d.redischat.mail.MailGUIManager;
 import dev.unnm3d.redischat.moderation.MuteManager;
@@ -98,19 +98,18 @@ public class ChannelManager extends RedisChatAPI {
 
     @Override
     public void openChannelsGUI(Player player) {
-        plugin.getDataManager().getPlayerChannelStatuses(player.getName(), registeredChannels)
-                .thenAccept(playerChannelInfo ->
-                        RedisChat.getScheduler().runTask(() ->
-                                Window.single()
-                                        .setTitle("Channels")
-                                        .setGui(channelGUI.getChannelsGUI(player, playerChannelInfo))
-                                        .setCloseHandlers(List.of(() -> new UniversalRunnable() {
-                                            @Override
-                                            public void run() {
-                                                player.updateInventory();
-                                            }
-                                        }.runTaskLater(plugin, 1)))
-                                        .open(player)));
+        plugin.getDataManager().getActivePlayerChannel(player.getName(), registeredChannels)
+                .thenAccept(channelName -> RedisChat.getScheduler().runTask(() ->
+                        Window.single()
+                                .setTitle("Channels")
+                                .setGui(channelGUI.getChannelsGUI(player, channelName, registeredChannels.values().stream().toList()))
+                                .setCloseHandlers(List.of(() -> new UniversalRunnable() {
+                                    @Override
+                                    public void run() {
+                                        player.updateInventory();
+                                    }
+                                }.runTaskLater(plugin, 1)))
+                                .open(player)));
     }
 
 
@@ -155,10 +154,8 @@ public class ChannelManager extends RedisChatAPI {
         final Component formatComponent = getComponentProvider().parse(player, chatMessage.getFormat(),
                 true, false, false);
 
-        //Parse to MiniMessage component (placeholders, tags and mentions)
-        final Component contentComponent = getComponentProvider().parse(player, chatMessage.getContent(),
-                true, true, true,
-                getComponentProvider().getRedisChatTagResolver(player));
+        //Parse to MiniMessage component (placeholders, tags and mentions), already parsed in Content filter
+        final Component contentComponent = miniMessage.deserialize(result.message().getContent());
 
 
         //Call event and check cancellation
@@ -184,7 +181,7 @@ public class ChannelManager extends RedisChatAPI {
     /**
      * Player chat event, called by the chat listener
      *
-     * @param player  Player
+     * @param player       Player
      * @param finalMessage The message to be sent
      */
     @Override
@@ -203,7 +200,7 @@ public class ChannelManager extends RedisChatAPI {
                         audience = new ChannelAudience(channelName);
                     }
 
-                    if(plugin.config.debug) {
+                    if (plugin.config.debug) {
                         plugin.getLogger().info("Outgoing message channel: " + audience.getName());
                     }
 
@@ -379,15 +376,8 @@ public class ChannelManager extends RedisChatAPI {
     }
 
     public void setActiveChannel(String playerName, String channelName) {
-        java.util.HashMap<String, String> playerChannelsMap = new java.util.HashMap<>();
-        playerChannelsMap.put(channelName, "1");
-        plugin.getDataManager().getActivePlayerChannel(playerName, plugin.getChannelManager().getRegisteredChannels())
-                .thenAcceptAsync(channel -> {
-                    if (channel != null && !channel.equals(KnownChatEntities.PUBLIC_CHAT.toString())) {
-                        playerChannelsMap.put(channel, "0");
-                    }
-                    plugin.getDataManager().setPlayerChannelStatuses(playerName, playerChannelsMap);
-                }, plugin.getExecutorService());
+
+        plugin.getDataManager().setActivePlayerChannel(playerName, channelName);
     }
 
     @Override

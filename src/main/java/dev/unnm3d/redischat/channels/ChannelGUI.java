@@ -2,8 +2,11 @@ package dev.unnm3d.redischat.channels;
 
 import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
+import dev.unnm3d.redischat.chat.objects.Channel;
 import lombok.AllArgsConstructor;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import xyz.xenondevs.invui.gui.Gui;
 import xyz.xenondevs.invui.gui.PagedGui;
 import xyz.xenondevs.invui.gui.structure.Markers;
@@ -19,7 +22,13 @@ public class ChannelGUI {
     private final RedisChat plugin;
 
 
-    public Gui getChannelsGUI(Player player, List<PlayerChannel> list) {
+    public Gui getChannelsGUI(@NotNull Player player, @Nullable String activeChannelName, List<Channel> list) {
+        final List<Item> items = list.stream()
+                .map(channel -> new PlayerChannel(channel, player, channel.getName().equals(activeChannelName)))
+                .filter(playerChannel -> !playerChannel.isHidden())
+                .map(Item.class::cast).toList();
+
+
         return PagedGui.items()
                 .setStructure(
                         plugin.guiSettings.channelGUIStructure.toArray(new String[0]))
@@ -37,7 +46,7 @@ public class ChannelGUI {
                     }
                 })
                 .addIngredient('S', new MutePublic(!player.hasPermission(Permissions.CHANNEL_PUBLIC.getPermission())))
-                .setContent(list.stream().map(playerChannel -> (Item) playerChannel).toList())
+                .setContent(items)
                 .build();
     }
 

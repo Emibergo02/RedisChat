@@ -34,6 +34,7 @@ public enum Permissions {
     CHANNEL_TOGGLE_PLAYER("redischat.playerchannel"),
     CHANNEL_LIST("redischat.listchannel"),
     CHANNEL_MUTE("redischat.mutechannel"),
+    CHANNEL_HIDE_PREFIX("redischat.hidechannel."),
     JOIN_QUIT("redischat.joinquit"),
     CHAT_COLOR("redischat.chatcolorcommand"),
     SET_PLACEHOLDER("redischat.setchatplaceholder"),

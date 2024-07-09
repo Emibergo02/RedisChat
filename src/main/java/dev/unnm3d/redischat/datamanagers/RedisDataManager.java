@@ -484,34 +484,28 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     @Override
     public CompletionStage<@Nullable String> getActivePlayerChannel(@NotNull String playerName, Map<String, Channel> registeredChannels) {
         return getConnectionAsync(conn ->
-                conn.hgetall(DataKey.PLAYER_CHANNELS_PREFIX + playerName)
-                        .thenApply(result -> {
-                            for (Map.Entry<String, String> channelStatus : result.entrySet()) {
-                                if (channelStatus.getValue().equals("1"))
-                                    return channelStatus.getKey();
-                            }
+                conn.hget(DataKey.PLAYER_ACTIVE_CHANNELS.toString(), playerName)
+                        .exceptionally(throwable -> {
+                            throwable.printStackTrace();
+                            plugin.getLogger().warning("Error getting active channel");
                             return null;
                         }));
     }
 
     @Override
     public CompletionStage<List<PlayerChannel>> getPlayerChannelStatuses(@NotNull String playerName, Map<String, Channel> registeredChannels) {
-        return getConnectionAsync(connection ->
-                connection.hgetall(DataKey.PLAYER_CHANNELS_PREFIX + playerName)
+        return null;
+    }
+
+    @Override
+    public void setActivePlayerChannel(String playerName, String channelName) {
+        getConnectionAsync(connection ->
+                connection.hset(DataKey.PLAYER_ACTIVE_CHANNELS.toString(), playerName, channelName)
                         .exceptionally(throwable -> {
                             throwable.printStackTrace();
-                            plugin.getLogger().warning("Error getting player channel");
+                            plugin.getLogger().warning("Error registering custom channel");
                             return null;
-                        }))
-                .thenApply(allPlayerCh -> {//Get all player channels
-                    return allPlayerCh.entrySet().stream()//Get all player channels future
-                            .filter(entry -> registeredChannels.containsKey(entry.getKey()))//Filter only registered channels
-                            .map(entry -> {
-                                Channel channel = registeredChannels.get(entry.getKey());
-                                return new PlayerChannel(channel,
-                                        Integer.parseInt(entry.getValue()));
-                            }).toList();
-                });
+                        }));
     }
 
     @Override

@@ -69,6 +69,7 @@ public interface DataManager {
     CompletionStage<Boolean> setMailRead(@NotNull String playerName, @NotNull Mail mail);
 
     CompletionStage<Boolean> deleteMail(@NotNull Mail mail);
+    void setActivePlayerChannel(String playerName, String channelName);
 
     void setPlayerChannelStatuses(@NotNull String playerName, @NotNull Map<String, String> channelStatuses);
 
@@ -136,5 +137,6 @@ public interface DataManager {
                 .map(s -> s.split("§§§"))
                 .collect(Collectors.toMap(strings -> strings[0], strings -> strings[1]));
     }
+
 
 }

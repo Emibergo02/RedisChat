@@ -7,6 +7,7 @@ import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.chat.objects.Channel;
 import lombok.AllArgsConstructor;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -177,11 +178,15 @@ public class ChannelCommand {
         return new CommandAPICommand("list")
                 .withPermission(Permissions.CHANNEL_LIST.getPermission())
                 .executesPlayer((sender, args) -> {
-                    plugin.getDataManager().getPlayerChannelStatuses(sender.getName(), plugin.getChannelManager().getRegisteredChannels())
-                            .thenAccept(channels -> {
-                                plugin.getComponentProvider().sendMessage(sender, plugin.messages.channelListHeader);
+                    plugin.getComponentProvider().sendMessage(sender, plugin.messages.channelListHeader);
+                    plugin.getDataManager().getActivePlayerChannel(sender.getName(), plugin.getChannelManager().getRegisteredChannels())
+                            .thenAccept(activeChannelName -> {
+                                final List<PlayerChannel> availableChannels = plugin.getChannelManager().getRegisteredChannels().values().stream()
+                                        .map(channel -> new PlayerChannel(channel, sender, channel.getName().equals(activeChannelName)))
+                                        .filter(playerChannel -> !playerChannel.isHidden())
+                                        .toList();
 
-                                for (PlayerChannel channel : channels) {
+                                for (PlayerChannel channel : availableChannels) {
                                     final String channelMsg =
                                             channel.isListening() ?
                                                     plugin.messages.channelListTransmitting :
@@ -192,10 +197,8 @@ public class ChannelCommand {
                                             channelMsg.replace("%channel%", channel.getChannel().getName())
                                     );
                                 }
-                            }).exceptionally(throwable -> {
-                                throwable.printStackTrace();
-                                return null;
                             });
+
                 });
     }
 

@@ -23,11 +23,11 @@ public class PrivateFilter extends AbstractFilter<FiltersConfig.FilterSettings> 
         //If the CommandSender is the receiver
         if (chatMessage.getReceiver().getName().equals(senderOrReceiver.getName())) {
             chatMessage.setFormat(chatFormat.receive_private_format().replace("%sender%", chatMessage.getSender().getName()));
-            return new FilterResult(chatMessage, false, null);
+            return new FilterResult(chatMessage, false);
         }
 
         //If the CommandSender is not the receiver or the sender, block the message
-        return new FilterResult(chatMessage, true, null);
+        return new FilterResult(chatMessage, true);
     }
 
 }

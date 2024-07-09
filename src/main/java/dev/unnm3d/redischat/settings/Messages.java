@@ -75,6 +75,7 @@ public final class Messages {
     public String noConsole = "<yellow>RedisChat</yellow> <gray>»</gray> <red>You cannot execute this command from console</red>";
     public String itemSet = "<yellow>RedisChat</yellow> <gray>»</gray> <green>Item set!</green>";
     public String noPermission = "<yellow>RedisChat</yellow> <gray>»</gray> <red>You do not have permission to execute this command</red>";
+    public String cantChangePermission = "<yellow>RedisChat</yellow> <gray>»</gray> <red>Can't change permission. You are an operator</red>";
     public String channelCreated = "<yellow>RedisChat</yellow> <gray>»</gray> <green>Channel created!</green>";
     public String channelRemoved = "<yellow>RedisChat</yellow> <gray>»</gray> <red>Channel removed!</red>";
     public String channelEnabled = "<yellow>RedisChat</yellow> <gray>»</gray> <green>Channel %channel% enabled for %player%!</green>";

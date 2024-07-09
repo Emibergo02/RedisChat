@@ -45,7 +45,7 @@ public class SpyFilter extends AbstractFilter<SpyFilter.SpyFilterProperties> {
             if (filterSettings.logSpyMessages)
                 plugin.getComponentProvider().logComponent(spyComponent);
         }
-        return new FilterResult(chatMessage, false, null);
+        return new FilterResult(chatMessage, false);
     }
 
 

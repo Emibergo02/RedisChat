@@ -798,13 +798,14 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
 
                     final ResultSet resultSet = statement.executeQuery();
                     final List<PlayerChannel> playerChannels = new ArrayList<>();
-                    while (resultSet.next()) {
-                        Channel channel = registeredChannels.get(resultSet.getString("channel_name"));
-                        if (channel != null)
-                            playerChannels.add(new PlayerChannel(
-                                    channel,
-                                    resultSet.getInt("status")));
-                    }
+                    //TODO: fix player channels for SQL version
+//                    while (resultSet.next()) {
+//                        Channel channel = registeredChannels.get(resultSet.getString("channel_name"));
+//                        if (channel != null)
+//                            playerChannels.add(new PlayerChannel(
+//                                    channel,
+//                                    resultSet.getInt("status")));
+//                    }
                     return playerChannels;
                 }
             } catch (SQLException e) {
@@ -812,6 +813,11 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
             }
             return List.of();
         }, plugin.getExecutorService());
+    }
+
+    @Override
+    public void setActivePlayerChannel(String playerName, String channelName) {
+        //TODO: fix player channels for SQL version
     }
 
 
