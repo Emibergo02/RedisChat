@@ -2,7 +2,10 @@ package dev.unnm3d.redischat.chat.objects;
 
 
 import com.google.common.base.Strings;
-import lombok.*;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -11,6 +14,7 @@ import org.jetbrains.annotations.Nullable;
 @ToString
 public class NewChatMessage implements DataSerializable {
     private final ChannelAudience sender;
+    private final long timestamp;
     @Setter
     private String format;
     @Setter
@@ -24,7 +28,7 @@ public class NewChatMessage implements DataSerializable {
      * @param content The message content
      */
     public NewChatMessage(String content) {
-        this(new ChannelAudience(), "%message%", content, ChannelAudience.publicChannelAudience());
+        this(new ChannelAudience(), System.currentTimeMillis(), "%message%", content, ChannelAudience.publicChannelAudience());
     }
 
     /**
@@ -33,19 +37,20 @@ public class NewChatMessage implements DataSerializable {
      * @param content The message content
      */
     public NewChatMessage(String content, String permissionToSee) {
-        this(new ChannelAudience(), "%message%", content, ChannelAudience.publicChannelAudience(permissionToSee));
+        this(new ChannelAudience(), System.currentTimeMillis(), "%message%", content, ChannelAudience.publicChannelAudience(permissionToSee));
     }
 
     /**
      * Creates a ChatMessageInfo from a sender, formatting, message and receiver
      *
-     * @param sender     The sender of the message
-     * @param format The formatting of the message
-     * @param content    The message content
-     * @param receiver   The receiver of the message
+     * @param sender   The sender of the message
+     * @param format   The formatting of the message
+     * @param content  The message content
+     * @param receiver The receiver of the message
      */
-    public NewChatMessage(@NotNull ChannelAudience sender, @Nullable String format, @Nullable String content, @NotNull ChannelAudience receiver) {
+    public NewChatMessage(@NotNull ChannelAudience sender, long timestamp, @Nullable String format, @Nullable String content, @NotNull ChannelAudience receiver) {
         this.sender = sender;
+        this.timestamp = timestamp;
         this.format = Strings.nullToEmpty(format);
         this.content = Strings.nullToEmpty(content);
         this.receiver = receiver;
@@ -59,14 +64,15 @@ public class NewChatMessage implements DataSerializable {
 
         return new NewChatMessage(
                 ChannelAudience.deserialize(parts[0]),
-                parts[1],
+                Long.parseLong(parts[1]),
                 parts[2],
-                ChannelAudience.deserialize(parts[3])
+                parts[3],
+                ChannelAudience.deserialize(parts[4])
         );
     }
 
     @Override
     public String serialize() {
-        return sender.serialize() + "§§;" + format + "§§;" + content + "§§;" + receiver.serialize();
+        return sender.serialize() + "§§;" + timestamp + "§§;" + format + "§§;" + content + "§§;" + receiver.serialize();
     }
 }

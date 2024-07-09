@@ -5,21 +5,22 @@ import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.api.events.FilterEvent;
 import dev.unnm3d.redischat.chat.filters.incoming.*;
 import dev.unnm3d.redischat.chat.filters.outgoing.*;
+import dev.unnm3d.redischat.chat.objects.ChannelAudience;
 import dev.unnm3d.redischat.chat.objects.NewChatMessage;
 import dev.unnm3d.redischat.settings.FiltersConfig;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 
-import java.util.*;
+import java.util.Optional;
+import java.util.Queue;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class FilterManager {
     private final RedisChat plugin;
     private final SortedSet<AbstractFilter<? extends FiltersConfig.FilterSettings>> registeredFilters;
-    private final ConcurrentHashMap<Player, Queue<NewChatMessage>> lastOutgoingMessages;
-    private final ConcurrentHashMap<Player, Queue<NewChatMessage>> lastIncomingMessages;
-
+    private final ConcurrentHashMap<String, Queue<NewChatMessage>> lastMessagesCache;
 
     public FilterManager(RedisChat plugin) {
         this.plugin = plugin;
@@ -28,8 +29,7 @@ public class FilterManager {
             if (o1.getFilterSettings().getPriority() < o2.getFilterSettings().getPriority()) return -1;
             return o1.hashCode() - o2.hashCode(); //Deny equal priority filters to be removed
         });
-        lastOutgoingMessages = new ConcurrentHashMap<>();
-        lastIncomingMessages = new ConcurrentHashMap<>();
+        lastMessagesCache = new ConcurrentHashMap<>();
 
         initializeDefaultFilters();
     }
@@ -83,7 +83,9 @@ public class FilterManager {
      */
     public FilterResult filterMessage(CommandSender chatEntity, NewChatMessage message, AbstractFilter.Direction filterType) {
         FilterResult result = null;
-        final Queue<NewChatMessage> lastMessages = getLastMessages(chatEntity, filterType);
+        final Queue<NewChatMessage> lastMessages = lastMessagesCache.getOrDefault(
+                genKeyIndex(filterType, message.getReceiver(), chatEntity.getName()),
+                new CircularFifoQueue<>(plugin.config.last_message_count));
 
         if (plugin.config.debug) {
             plugin.getLogger().info("Starting filtering filterType: " + filterType + " for player: " + chatEntity.getName());
@@ -145,7 +147,7 @@ public class FilterManager {
 
         //Save message to last messages
         lastMessages.add(message);
-        updateLastMessages(chatEntity, lastMessages, filterType);
+        lastMessagesCache.put(genKeyIndex(filterType, message.getReceiver(), chatEntity.getName()), lastMessages);
 
         if (result == null) {
             return new FilterResult(message, true, Optional.of(plugin.getComponentProvider().parse(chatEntity,
@@ -159,25 +161,8 @@ public class FilterManager {
         return result;
     }
 
-
-    private Queue<NewChatMessage> getLastMessages(CommandSender commandSender, AbstractFilter.Direction filterType) {
-        if (!(commandSender instanceof Player player)) {
-            return new LinkedList<>();
-        }
-        if (filterType == AbstractFilter.Direction.OUTGOING)
-            return lastOutgoingMessages.computeIfAbsent(player, k -> new CircularFifoQueue<>(5));
-        return lastIncomingMessages.computeIfAbsent(player, k -> new CircularFifoQueue<>(5));
-    }
-
-    private void updateLastMessages(CommandSender commandSender, Queue<NewChatMessage> lastMessages, AbstractFilter.Direction filterType) {
-        if (!(commandSender instanceof Player player)) {
-            return;
-        }
-        if (filterType == AbstractFilter.Direction.INCOMING) {
-            lastIncomingMessages.put(player, lastMessages);
-        } else {
-            lastOutgoingMessages.put(player, lastMessages);
-        }
+    private String genKeyIndex(AbstractFilter.Direction direction, ChannelAudience audience, String playerName) {
+        return direction.toString() + playerName + audience.getType().toString() + audience.getName();
     }
 
 }

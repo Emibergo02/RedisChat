@@ -1,5 +1,6 @@
 package dev.unnm3d.redischat.chat.filters.outgoing;
 
+import de.exlll.configlib.Comment;
 import de.exlll.configlib.Configuration;
 import dev.unnm3d.redischat.chat.filters.AbstractFilter;
 import dev.unnm3d.redischat.chat.filters.FilterResult;
@@ -10,6 +11,8 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Optional;
 import java.util.Set;
 
@@ -22,22 +25,31 @@ public class DuplicateFilter extends AbstractFilter<DuplicateFilter.DuplicateFil
 
     @Override
     public FilterResult applyWithPrevious(CommandSender sender, @NotNull NewChatMessage message, NewChatMessage... previousMessages) {
-        int lastIndex = previousMessages.length - 1;
-        if (lastIndex >= 0) {
-            int similarityPercentage = (int) (levenshteinScore(message.getContent(), previousMessages[lastIndex].getContent()) * 100);
-            if (similarityPercentage > filterSettings.similarityPercentage) {
-                return new FilterResult(message, true,
-                        Optional.of(MiniMessage.miniMessage().deserialize("<red>You can't send the same message twice!")));
+
+        //Reverse the array to check the last messages first
+        int checkedMessages = 0;
+        for (NewChatMessage newChatMessage :
+                Arrays.stream(previousMessages)
+                        .sorted(Comparator.comparingLong(NewChatMessage::getTimestamp).reversed())
+                        .toList()) {
+            float similarityPercentage = levenshteinScore(message.getContent(), newChatMessage.getContent()) * 100;
+
+            //If the similarity is lower than the percentage, skip filter
+            if (similarityPercentage < filterSettings.similarityPercentage) {
+                return new FilterResult(message, false, Optional.empty());
             }
+            if (++checkedMessages == filterSettings.messagesToCheck) break;
         }
-        return new FilterResult(message, false, Optional.empty());
+
+        return new FilterResult(message, true,
+                Optional.of(MiniMessage.miniMessage().deserialize("<red>You can't send the same message twice!")));
     }
 
-    private double levenshteinScore(String first, String second) {
+    private float levenshteinScore(String first, String second) {
         int maxLength = Math.max(first.length(), second.length());
         //Can't divide by 0
-        if (maxLength == 0) return 1.0d;
-        return ((double) (maxLength - computeEditDistance(first, second))) / (double) maxLength;
+        if (maxLength == 0) return 1.0f;
+        return ((float) (maxLength - computeEditDistance(first, second))) / (float) maxLength;
     }
 
     private int computeEditDistance(String first, String second) {
@@ -72,12 +84,13 @@ public class DuplicateFilter extends AbstractFilter<DuplicateFilter.DuplicateFil
     @Getter
     public static class DuplicateFilterProperties extends FiltersConfig.FilterSettings {
         private int similarityPercentage;
-        private int messageToCheck;
+        @Comment("How many messages to check for duplicates (from the last one)")
+        private int messagesToCheck;
 
         public DuplicateFilterProperties() {
             super(true, 8, Set.of(), Set.of());
             this.similarityPercentage = 60;
-            this.messageToCheck = 5;
+            this.messagesToCheck = 5;
         }
     }
 }
