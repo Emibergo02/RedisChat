@@ -24,6 +24,7 @@ public final class FiltersConfig {
 
     //OUTGOING
     public CapsFilter.CapsFilterProperties caps = (CapsFilter.CapsFilterProperties) DefaultSettings.CAPS.getFilterSettings();
+    public FilterSettings spam = DefaultSettings.SPAM.getFilterSettings();
     public DuplicateFilter.DuplicateFilterProperties duplicate = (DuplicateFilter.DuplicateFilterProperties) DefaultSettings.DUPLICATE.getFilterSettings();
     public IgnoreFilter.IgnoreFilterProperties ignore = (IgnoreFilter.IgnoreFilterProperties) DefaultSettings.IGNORE.getFilterSettings();
     public FilterSettings mutedChannel = DefaultSettings.MUTED_CHANNEL.getFilterSettings();

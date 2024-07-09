@@ -17,14 +17,8 @@ import java.util.Set;
 
 public class IgnoreFilter extends AbstractFilter<IgnoreFilter.IgnoreFilterProperties> {
 
-    public static final String FILTER_NAME = "ignore";
-
     public IgnoreFilter(IgnoreFilterProperties filterSettings) {
-        super(FILTER_NAME, Direction.OUTGOING, filterSettings);
-    }
-
-    public IgnoreFilter() {
-        this(new IgnoreFilterProperties());
+        super("ignore", Direction.OUTGOING, filterSettings);
     }
 
 

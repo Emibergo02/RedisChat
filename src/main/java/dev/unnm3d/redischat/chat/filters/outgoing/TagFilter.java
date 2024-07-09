@@ -15,11 +15,11 @@ import java.util.Optional;
 
 
 public class TagFilter extends AbstractFilter<FiltersConfig.FilterSettings> {
-    public static final String FILTER_NAME = "tag";
+
     private final RedisChat plugin;
 
     public TagFilter(RedisChat plugin, FiltersConfig.FilterSettings filterSettings) {
-        super(FILTER_NAME, Direction.OUTGOING, filterSettings);
+        super("tag", Direction.OUTGOING, filterSettings);
         this.plugin = plugin;
     }
 

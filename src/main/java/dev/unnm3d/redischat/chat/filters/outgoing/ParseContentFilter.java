@@ -20,11 +20,11 @@ import java.util.Set;
 
 
 public class ParseContentFilter extends AbstractFilter<ParseContentFilter.ContentProperties> {
-    public static final String FILTER_NAME = "content";
+
     private final RedisChat plugin;
 
     public ParseContentFilter(ContentProperties filterSettings) {
-        super(FILTER_NAME, Direction.OUTGOING, filterSettings);
+        super("content", Direction.OUTGOING, filterSettings);
         this.plugin = RedisChat.getInstance();
     }
 

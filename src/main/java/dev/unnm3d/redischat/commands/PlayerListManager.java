@@ -31,7 +31,14 @@ public class PlayerListManager {
                 playerList.entrySet().removeIf(stringLongEntry -> System.currentTimeMillis() - stringLongEntry.getValue() > 1000 * 4);
 
                 final List<String> tempList = plugin.getServer().getOnlinePlayers().stream()
-                        .filter(player -> !isVanished(player))
+                        .filter(player -> {
+                            if (isVanished(player)) {
+                                if (plugin.config.debug)
+                                    plugin.getLogger().info("Removing  " + player.getName() + " from playerlist: is vanished");
+                                return false;
+                            }
+                            return true;
+                        })
                         .map(HumanEntity::getName)
                         .filter(s -> !s.isEmpty())
                         .toList();
@@ -68,7 +75,16 @@ public class PlayerListManager {
 
         if (sender != null) {
             vanishIntegrations.forEach(vanishIntegration ->
-                    keySet.removeIf(pName -> !vanishIntegration.canSee(sender, pName)));
+                    keySet.removeIf(pName -> {
+                        if (vanishIntegration.canSee(sender, pName)) {
+                            return false;
+                        }
+                        if (RedisChat.getInstance().config.debug) {
+                            RedisChat.getInstance().getLogger().info("Player " + sender.getName() + " can't see " + pName);
+                        }
+                        return true;
+                    })
+            );
         }
         return keySet;
     }

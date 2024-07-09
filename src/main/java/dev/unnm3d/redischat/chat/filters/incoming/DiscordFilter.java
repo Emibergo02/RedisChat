@@ -15,7 +15,6 @@ import java.util.Set;
 
 public class DiscordFilter extends AbstractFilter<FiltersConfig.FilterSettings> {
 
-
     public DiscordFilter(FiltersConfig.FilterSettings filterSettings) {
         super("discord", Direction.INCOMING, filterSettings);
     }
@@ -23,7 +22,7 @@ public class DiscordFilter extends AbstractFilter<FiltersConfig.FilterSettings> 
     @Override
     public FilterResult applyWithPrevious(CommandSender receiver, @NotNull NewChatMessage message, NewChatMessage... previousMessages) {
         if (message.getReceiver().isDiscord()) {
-
+            //TODO: Fix discord integration
             //RedisChat.getInstance().getDiscordHook().sendDiscordMessage(channel, message);
             return new FilterResult(message, true, null);
         }

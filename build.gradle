@@ -27,17 +27,14 @@ dependencies {
     compileOnly 'net.kyori:adventure-platform-bukkit:4.3.3'
 
     implementation 'com.github.Exlll.ConfigLib:configlib-paper:v4.5.0'
-    implementation 'xyz.xenondevs.invui:invui-core:1.32'
-    implementation 'xyz.xenondevs.invui:inventory-access-r7:1.32'
-    implementation 'xyz.xenondevs.invui:inventory-access-r9:1.32'
-    implementation 'xyz.xenondevs.invui:inventory-access-r11:1.32'
-    implementation 'xyz.xenondevs.invui:inventory-access-r14:1.32'
-    implementation 'xyz.xenondevs.invui:inventory-access-r15:1.32'
-    implementation 'xyz.xenondevs.invui:inventory-access-r16:1.32'
-    implementation 'xyz.xenondevs.invui:inventory-access-r17:1.32'
-    implementation 'xyz.xenondevs.invui:inventory-access-r18:1.32'
-    implementation 'xyz.xenondevs.invui:inventory-access-r19:1.32'
-    implementation 'xyz.xenondevs.invui:inventory-access-r20:1.32'
+    implementation 'xyz.xenondevs.invui:invui-core:1.33'
+    implementation 'xyz.xenondevs.invui:inventory-access-r7:1.33'
+    implementation 'xyz.xenondevs.invui:inventory-access-r11:1.33'
+    implementation 'xyz.xenondevs.invui:inventory-access-r15:1.33'
+    implementation 'xyz.xenondevs.invui:inventory-access-r17:1.33'
+    implementation 'xyz.xenondevs.invui:inventory-access-r18:1.33'
+    implementation 'xyz.xenondevs.invui:inventory-access-r19:1.33'
+    implementation 'xyz.xenondevs.invui:inventory-access-r20:1.33'
     implementation 'dev.jorel:commandapi-bukkit-shade:9.5.1'
     implementation 'com.github.Anon8281:UniversalScheduler:0.1.6'
 
@@ -74,18 +71,14 @@ shadowJar {
     destinationDirectory.set(file("$rootDir/target"))
     archiveClassifier.set('')
     dependencies {
-
         include dependency('com.github.Exlll.ConfigLib:configlib-paper')
         include dependency('com.github.Exlll.ConfigLib:configlib-yaml')
         include dependency("com.github.Exlll.ConfigLib:configlib-core")
         include dependency('xyz.xenondevs.invui:invui-core')
         include dependency('xyz.xenondevs.invui:inventory-access')
         include dependency('xyz.xenondevs.invui:inventory-access-r7')
-        include dependency('xyz.xenondevs.invui:inventory-access-r9')
         include dependency('xyz.xenondevs.invui:inventory-access-r11')
-        include dependency('xyz.xenondevs.invui:inventory-access-r14')
         include dependency('xyz.xenondevs.invui:inventory-access-r15')
-        include dependency('xyz.xenondevs.invui:inventory-access-r16')
         include dependency('xyz.xenondevs.invui:inventory-access-r17')
         include dependency('xyz.xenondevs.invui:inventory-access-r18')
         include dependency('xyz.xenondevs.invui:inventory-access-r19')
@@ -96,17 +89,15 @@ shadowJar {
 
     exclude 'colors.bin'
 
-
     relocate 'de.exlll.configlib', 'dev.unnm3d.redischat.libraries.configlib'
     relocate 'xyz.xenondevs.invui', 'dev.unnm3d.redischat.libraries.invui'
     relocate 'xyz.xenondevs.inventoryaccess', 'dev.unnm3d.redischat.libraries.inventoryaccess'
     relocate 'dev.jorel.commandapi', 'dev.unnm3d.redischat.libraries.commandapi'
     relocate 'com.github.Anon8281.universalScheduler', 'dev.unnm3d.redischat.libraries.universalScheduler'
-
 }
 
 def sourceJavaVersion = 21
-def releaseJavaVersion = 21
+def releaseJavaVersion = 17
 
 java {
     toolchain {

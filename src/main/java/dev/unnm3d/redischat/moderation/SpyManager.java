@@ -3,23 +3,25 @@ package dev.unnm3d.redischat.moderation;
 import dev.unnm3d.redischat.RedisChat;
 import org.bukkit.entity.Player;
 
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class SpyManager {
     private final RedisChat plugin;
-    private final ConcurrentMap<String, Optional<Void>> isSpyingNames;
+    private final Set<String> isSpyingNames;
 
     public SpyManager(RedisChat plugin) {
         this.plugin = plugin;
-        this.isSpyingNames = new ConcurrentHashMap<>();
+        this.isSpyingNames = ConcurrentHashMap.newKeySet();
     }
 
     public void onJoin(Player player) {
         plugin.getDataManager().isSpying(player.getName()).thenAccept(isSpying -> {
             if (isSpying) {
-                this.isSpyingNames.put(player.getName(), Optional.empty());
+                this.isSpyingNames.add(player.getName());
             } else {
                 this.isSpyingNames.remove(player.getName());
             }
@@ -27,18 +29,18 @@ public class SpyManager {
     }
 
     public boolean toggleSpying(String playerName) {
-        if (isSpyingNames.containsKey(playerName)) {
+        if (isSpyingNames.contains(playerName)) {
             isSpyingNames.remove(playerName);
             plugin.getDataManager().setSpying(playerName, false);
             return false;
         } else {
-            isSpyingNames.put(playerName, Optional.empty());
+            isSpyingNames.add(playerName);
             plugin.getDataManager().setSpying(playerName, true);
             return true;
         }
     }
 
     public boolean isSpying(String playerName) {
-        return isSpyingNames.containsKey(playerName);
+        return isSpyingNames.contains(playerName);
     }
 }

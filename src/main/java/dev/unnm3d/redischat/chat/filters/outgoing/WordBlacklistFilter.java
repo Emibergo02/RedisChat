@@ -17,11 +17,10 @@ import java.util.Set;
 
 
 public class WordBlacklistFilter extends AbstractFilter<WordBlacklistFilter.WordBlacklistFilterProperties> {
-    public static final String FILTER_NAME = "word_blacklist";
     private final RedisChat plugin;
 
     public WordBlacklistFilter(RedisChat plugin, WordBlacklistFilterProperties filterSettings) {
-        super(FILTER_NAME, Direction.OUTGOING, filterSettings);
+        super("word_blacklist", Direction.OUTGOING, filterSettings);
         this.plugin = plugin;
     }
 

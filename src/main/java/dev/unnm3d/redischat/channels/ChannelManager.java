@@ -116,9 +116,10 @@ public class ChannelManager extends RedisChatAPI {
 
     /**
      * Send a message to a specific ChannelAudience
-     * @param player    The player that is sending the message
-     * @param receiver  The receiver audience of the message
-     * @param message   The message to be sent
+     *
+     * @param player   The player that is sending the message
+     * @param receiver The receiver audience of the message
+     * @param message  The message to be sent
      */
     public void outgoingMessage(CommandSender player, ChannelAudience receiver, @NotNull String message) {
         //Get channel or public channel by default
@@ -184,22 +185,30 @@ public class ChannelManager extends RedisChatAPI {
      * Player chat event, called by the chat listener
      *
      * @param player  Player
-     * @param message The message to be sent
+     * @param finalMessage The message to be sent
      */
     @Override
-    public void outgoingMessage(CommandSender player, @NotNull final String message) {
+    public void outgoingMessage(CommandSender player, @NotNull final String finalMessage) {
         plugin.getDataManager().getActivePlayerChannel(player.getName(), registeredChannels)
                 .thenAcceptAsync(channelName -> {
+                    ChannelAudience audience;
+                    String message = finalMessage;
+
                     if (isStaffChatEnabled(message, player)) {
-                        channelName = KnownChatEntities.STAFFCHAT_CHANNEL_NAME.toString();
-                    } else if (!(channelName != null && registeredChannels.containsKey(channelName))) {
-                        channelName = KnownChatEntities.PUBLIC_CHAT.toString();
-                    }
-                    if (plugin.config.debug) {
-                        plugin.getLogger().info("Outgoing on channel: " + channelName);
+                        audience = new ChannelAudience(KnownChatEntities.STAFFCHAT_CHANNEL_NAME.toString());
+                        message = message.substring(1);
+                    } else if (channelName == null || !registeredChannels.containsKey(channelName)) {
+                        audience = new ChannelAudience(KnownChatEntities.PUBLIC_CHAT.toString());
+                    } else {
+                        audience = new ChannelAudience(channelName);
                     }
 
-                    outgoingMessage(player, new ChannelAudience(channelName), message);
+                    if(plugin.config.debug) {
+                        plugin.getLogger().info("Outgoing message channel: " + audience.getName());
+                    }
+
+                    outgoingMessage(player, audience, message);
+
 
                 }, plugin.getExecutorService())
                 .exceptionally(throwable -> {
@@ -211,9 +220,9 @@ public class ChannelManager extends RedisChatAPI {
     /**
      * Send a private message to a player
      *
-     * @param sender            The sender of the message
-     * @param receiverName      The name of the receiver
-     * @param message           The message to be sent
+     * @param sender       The sender of the message
+     * @param receiverName The name of the receiver
+     * @param message      The message to be sent
      */
     public void outgoingPrivateMessage(@NotNull CommandSender sender, @NotNull String receiverName, @NotNull String message) {
         final NewChatMessage privateChatMessage = new NewChatMessage(
@@ -348,6 +357,7 @@ public class ChannelManager extends RedisChatAPI {
 
     private NewChannel getGenericPublic() {
         return NewChannel.channelBuilder(KnownChatEntities.PUBLIC_CHAT.toString())
+                .format(plugin.config.defaultFormat.format())
                 .rateLimit(plugin.config.rate_limit)
                 .rateLimitPeriod(plugin.config.rate_limit_time_seconds)
                 .discordWebhook(plugin.config.publicDiscordWebhook)
@@ -359,6 +369,7 @@ public class ChannelManager extends RedisChatAPI {
     @Override
     public NewChannel getStaffChatChannel() {
         return NewChannel.channelBuilder(KnownChatEntities.STAFFCHAT_CHANNEL_NAME.toString())
+                .format(plugin.config.staffChatFormat)
                 .rateLimit(5)
                 .rateLimitPeriod(1000)
                 .discordWebhook(plugin.config.staffChatDiscordWebhook)

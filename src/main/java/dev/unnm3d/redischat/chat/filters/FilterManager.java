@@ -9,6 +9,7 @@ import dev.unnm3d.redischat.chat.objects.NewChatMessage;
 import dev.unnm3d.redischat.settings.FiltersConfig;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,17 +17,20 @@ import java.util.concurrent.ConcurrentHashMap;
 public class FilterManager {
     private final RedisChat plugin;
     private final SortedSet<AbstractFilter<? extends FiltersConfig.FilterSettings>> registeredFilters;
-    private final ConcurrentHashMap<CommandSender, Queue<NewChatMessage>> lastMessages;
+    private final ConcurrentHashMap<Player, Queue<NewChatMessage>> lastOutgoingMessages;
+    private final ConcurrentHashMap<Player, Queue<NewChatMessage>> lastIncomingMessages;
 
 
     public FilterManager(RedisChat plugin) {
+        this.plugin = plugin;
         registeredFilters = new TreeSet<>((o1, o2) -> {
             if (o1.getFilterSettings().getPriority() > o2.getFilterSettings().getPriority()) return 1;
             if (o1.getFilterSettings().getPriority() < o2.getFilterSettings().getPriority()) return -1;
             return o1.hashCode() - o2.hashCode(); //Deny equal priority filters to be removed
         });
-        lastMessages = new ConcurrentHashMap<>();
-        this.plugin = plugin;
+        lastOutgoingMessages = new ConcurrentHashMap<>();
+        lastIncomingMessages = new ConcurrentHashMap<>();
+
         initializeDefaultFilters();
     }
 
@@ -45,6 +49,7 @@ public class FilterManager {
 
         //OUTGOING
         addFilter(new CapsFilter(plugin.filterSettings.caps));
+        addFilter(new SpamFilter(plugin, plugin.filterSettings.spam));
         addFilter(new DuplicateFilter(plugin.filterSettings.duplicate));
         addFilter(new IgnoreFilter(plugin.filterSettings.ignore));
         addFilter(new MutedChannelFilter(plugin, plugin.filterSettings.mutedChannel));
@@ -78,51 +83,69 @@ public class FilterManager {
      */
     public FilterResult filterMessage(CommandSender chatEntity, NewChatMessage message, AbstractFilter.Direction filterType) {
         FilterResult result = null;
+        final Queue<NewChatMessage> lastMessages = getLastMessages(chatEntity, filterType);
 
+        if (plugin.config.debug) {
+            plugin.getLogger().info("Starting filtering filterType: " + filterType + " for player: " + chatEntity.getName());
+        }
         for (AbstractFilter<? extends FiltersConfig.FilterSettings> filter : registeredFilters) {
             //Skip filter if it is not the correct type
-            if (!(filter.getDirection() == filterType || filter.getDirection() == AbstractFilter.Direction.BOTH))
+            if (!(filter.getDirection() == filterType || filter.getDirection() == AbstractFilter.Direction.BOTH)) {
+                if (plugin.config.debug) {
+                    plugin.getLogger().info("Skipping filter: " + filter.getName() + " because it is not the correct type");
+                }
                 continue;
+            }
+
 
             if (!filter.getFilterSettings().isEnabled()) continue;
 
-            if (!chatEntity.isOp() && chatEntity.hasPermission(Permissions.BYPASS_FILTER_PREFIX.getPermission() + filter.getName()))
+            if (chatEntity.hasPermission(Permissions.BYPASS_FILTER_PREFIX.getPermission() + filter.getName())) {
+                if (plugin.config.debug) {
+                    plugin.getLogger().info("Skipping filter: " + filter.getName() + " because the player has the bypass permission");
+                }
                 continue;
+            }
 
             //If the filter is cancelled, stop filtering
             if (result != null && result.filtered()) {
+                if (plugin.config.debug) {
+                    plugin.getLogger().info("Filtering stopped because the previous filter has cancelled the message");
+                }
                 break;
             }
 
 
             if (!filter.getFilterSettings().getAudienceWhitelist().isEmpty() && !filter.getFilterSettings().getAudienceWhitelist().contains(message.getReceiver().getType())) {
+                if (plugin.config.debug) {
+                    plugin.getLogger().info("Skip: wrong audience type: " + message.getReceiver().getType());
+                }
                 continue;
             }
 
             if (message.getReceiver().isChannel() && !filter.getFilterSettings().getChannelWhitelist().isEmpty() &&
                     !filter.getFilterSettings().getChannelWhitelist().contains(message.getReceiver().getName())) {
+                if (plugin.config.debug) {
+                    plugin.getLogger().info("Skip: wrong channel: " + message.getReceiver().getName());
+                }
                 continue;
             }
 
-
             result = filter.applyWithPrevious(chatEntity,
                     result != null ? result.message() : message,
-                    lastMessages.getOrDefault(chatEntity, new LinkedList<>()).toArray(new NewChatMessage[0])
+                    lastMessages.toArray(new NewChatMessage[0])
             );
-            RedisChat.getInstance().getServer().getPluginManager().callEvent(new FilterEvent(filter, result));
+
+
+            plugin.getServer().getPluginManager().callEvent(new FilterEvent(filter, result));
             if (plugin.config.debug) {
-                plugin.getLogger().info("Filtered message: " + result.message().serialize() + " with filter: " + filter.getName());
+                plugin.getLogger().info("Filtering complete message: " + result.message().serialize() + " with filter: " + filter.getName());
             }
         }
 
         //Save message to last messages
-        lastMessages.compute(chatEntity, (player, messages) -> {
-            if (messages == null) {
-                messages = new CircularFifoQueue<>(5);
-            }
-            messages.add(message);
-            return messages;
-        });
+        lastMessages.add(message);
+        updateLastMessages(chatEntity, lastMessages, filterType);
 
         if (result == null) {
             return new FilterResult(message, true, Optional.of(plugin.getComponentProvider().parse(chatEntity,
@@ -134,6 +157,27 @@ public class FilterManager {
 
 
         return result;
+    }
+
+
+    private Queue<NewChatMessage> getLastMessages(CommandSender commandSender, AbstractFilter.Direction filterType) {
+        if (!(commandSender instanceof Player player)) {
+            return new LinkedList<>();
+        }
+        if (filterType == AbstractFilter.Direction.OUTGOING)
+            return lastOutgoingMessages.computeIfAbsent(player, k -> new CircularFifoQueue<>(5));
+        return lastIncomingMessages.computeIfAbsent(player, k -> new CircularFifoQueue<>(5));
+    }
+
+    private void updateLastMessages(CommandSender commandSender, Queue<NewChatMessage> lastMessages, AbstractFilter.Direction filterType) {
+        if (!(commandSender instanceof Player player)) {
+            return;
+        }
+        if (filterType == AbstractFilter.Direction.INCOMING) {
+            lastIncomingMessages.put(player, lastMessages);
+        } else {
+            lastOutgoingMessages.put(player, lastMessages);
+        }
     }
 
 }

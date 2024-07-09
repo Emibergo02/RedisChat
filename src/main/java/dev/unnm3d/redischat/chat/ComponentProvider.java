@@ -279,8 +279,6 @@ public class ComponentProvider {
                 String replacing = m.group();
                 replacing = replacing.replace(m.group().trim(), format.mention_format().replace("%player%", playerName));
                 toParse = toParse.replace(m.group(), replacing);
-                if (plugin.config.debug)
-                    Bukkit.getLogger().info("mention parsed for " + playerName + " : " + toParse);
             }
         }
 
@@ -307,8 +305,6 @@ public class ComponentProvider {
             linkComponent = miniMessage.deserialize(format.link_format().replace("%link%", linkString));
         }
 
-        if (plugin.config.debug)
-            Bukkit.getLogger().info("links: " + text);
         return new AbstractMap.SimpleEntry<>(text, linkComponent);
     }
 
@@ -342,9 +338,6 @@ public class ComponentProvider {
         text = miniMessage.serialize(LegacyComponentSerializer.legacySection().deserialize(
                 parseAmpersand ? replaceAmpersandCodesWithSection(text) : text
         ));
-        if (plugin.config.debug) {
-            Bukkit.getLogger().info("Parsed legacy: " + text);
-        }
         return text.replace("\\<", "<");
 
     }

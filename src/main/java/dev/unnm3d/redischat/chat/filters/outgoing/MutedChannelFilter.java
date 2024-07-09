@@ -16,11 +16,11 @@ import java.util.Set;
 
 
 public class MutedChannelFilter extends AbstractFilter<FiltersConfig.FilterSettings> {
-    public static final String FILTER_NAME = "muted_channel";
+
     private final RedisChat plugin;
 
     public MutedChannelFilter(RedisChat plugin, FiltersConfig.FilterSettings filterSettings) {
-        super(FILTER_NAME, Direction.OUTGOING, filterSettings);
+        super("muted_channel", Direction.OUTGOING, filterSettings);
         this.plugin = plugin;
     }
 

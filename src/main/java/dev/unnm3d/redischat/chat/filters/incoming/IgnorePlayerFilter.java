@@ -18,10 +18,10 @@ import java.util.Optional;
 import java.util.Set;
 
 public class IgnorePlayerFilter extends AbstractFilter<IgnorePlayerFilter.IgnorePlayerFilterProperties> {
-    public static final String FILTER_NAME = "ignore_player";
+
 
     public IgnorePlayerFilter(IgnorePlayerFilterProperties filterSettings) {
-        super(FILTER_NAME, Direction.INCOMING, filterSettings);
+        super("ignore_player", Direction.INCOMING, filterSettings);
     }
 
 

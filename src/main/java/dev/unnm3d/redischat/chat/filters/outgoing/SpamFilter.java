@@ -16,11 +16,10 @@ import java.util.Set;
 
 
 public class SpamFilter extends AbstractFilter<FiltersConfig.FilterSettings> {
-    public static final String FILTER_NAME = "spam";
     private final RedisChat plugin;
 
     public SpamFilter(RedisChat plugin, FiltersConfig.FilterSettings filterSettings) {
-        super(FILTER_NAME, Direction.OUTGOING, filterSettings);
+        super("spam", Direction.OUTGOING, filterSettings);
         this.plugin = plugin;
     }
 

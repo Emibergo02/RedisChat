@@ -1,8 +1,6 @@
 package dev.unnm3d.redischat.chat.filters.incoming;
 
-import de.exlll.configlib.Comment;
 import de.exlll.configlib.Configuration;
-import de.exlll.configlib.PolymorphicTypes;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.chat.filters.AbstractFilter;
 import dev.unnm3d.redischat.chat.filters.FilterResult;
@@ -20,11 +18,11 @@ import java.util.Set;
 
 public class SpyFilter extends AbstractFilter<SpyFilter.SpyFilterProperties> {
 
-    public static final String FILTER_NAME = "spy";
+
     private final RedisChat plugin;
 
     public SpyFilter(RedisChat plugin, SpyFilterProperties filterSettings) {
-        super(FILTER_NAME, Direction.INCOMING, filterSettings);
+        super("spy", Direction.INCOMING, filterSettings);
         this.plugin = plugin;
     }
 

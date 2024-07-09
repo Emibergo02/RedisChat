@@ -17,10 +17,10 @@ import java.util.Set;
 
 
 public class CapsFilter extends AbstractFilter<CapsFilter.CapsFilterProperties> {
-    public static final String FILTER_NAME = "caps";
+
 
     public CapsFilter(CapsFilterProperties filterSettings) {
-        super(FILTER_NAME, Direction.OUTGOING, filterSettings);
+        super("caps", Direction.OUTGOING, filterSettings);
     }
 
 

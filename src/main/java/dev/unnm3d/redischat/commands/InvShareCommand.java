@@ -83,15 +83,14 @@ public class InvShareCommand implements CommandExecutor {
     }
 
     private void openInvShareGui(Player player, String title, int size, ItemStack[] items) {
-        Gui gui = Gui.empty(9, size);
-        gui.addItems(
-                Arrays.stream(items)
-                        .map(itemStack -> {
-                            if (itemStack == null) return new ItemBuilder(Material.AIR);
-                            return new ItemBuilder(itemStack);
-                        })
-                        .map(SimpleItem::new)
-                        .toArray(Item[]::new)
+        final Gui gui = Gui.empty(9, size);
+        gui.addItems(Arrays.stream(items)
+                .map(itemStack -> {
+                    if (itemStack == null) return new ItemBuilder(Material.AIR);
+                    return new ItemBuilder(itemStack);
+                })
+                .map(SimpleItem::new)
+                .toArray(Item[]::new)
         );
         Window.single().setTitle(title).setGui(gui).setCloseHandlers(List.of(() -> new UniversalRunnable() {
             @Override
