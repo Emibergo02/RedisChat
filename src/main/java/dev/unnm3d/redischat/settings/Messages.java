@@ -105,7 +105,7 @@ public final class Messages {
     public String color_set= "<yellow>RedisChat</yellow> <gray>»</gray> <green>You successfully set your chat color!</green>";
     public String placeholder_set= "<yellow>RedisChat</yellow> <gray>»</gray> <green>You successfully set %redischat_%placeholder%% to \"%value%\" for player %player%!</green>";
     public String placeholder_deleted= "<yellow>RedisChat</yellow> <gray>»</gray> <red>You successfully deleted %redischat_%placeholder%% for player %player%!</red>";
-
+    public String duplicate_message = "<red>You can't send the same message!</red>";
 
     public void sendMessage(CommandSender sender, String message) {
         RedisChat.getInstance().getComponentProvider().sendMessage(sender, MiniMessage.miniMessage().deserialize(message));

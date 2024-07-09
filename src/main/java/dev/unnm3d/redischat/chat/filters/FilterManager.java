@@ -6,7 +6,7 @@ import dev.unnm3d.redischat.api.events.FilterEvent;
 import dev.unnm3d.redischat.chat.filters.incoming.*;
 import dev.unnm3d.redischat.chat.filters.outgoing.*;
 import dev.unnm3d.redischat.chat.objects.ChannelAudience;
-import dev.unnm3d.redischat.chat.objects.NewChatMessage;
+import dev.unnm3d.redischat.chat.objects.ChatMessage;
 import dev.unnm3d.redischat.settings.FiltersConfig;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.bukkit.command.CommandSender;
@@ -20,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class FilterManager {
     private final RedisChat plugin;
     private final SortedSet<AbstractFilter<? extends FiltersConfig.FilterSettings>> registeredFilters;
-    private final ConcurrentHashMap<String, Queue<NewChatMessage>> lastMessagesCache;
+    private final ConcurrentHashMap<String, Queue<ChatMessage>> lastMessagesCache;
 
     public FilterManager(RedisChat plugin) {
         this.plugin = plugin;
@@ -81,9 +81,9 @@ public class FilterManager {
      * @param filterType The type of filter to apply, incoming or outgoing
      * @return The result of the filter
      */
-    public FilterResult filterMessage(CommandSender chatEntity, NewChatMessage message, AbstractFilter.Direction filterType) {
+    public FilterResult filterMessage(CommandSender chatEntity, ChatMessage message, AbstractFilter.Direction filterType) {
         FilterResult result = null;
-        final Queue<NewChatMessage> lastMessages = lastMessagesCache.getOrDefault(
+        final Queue<ChatMessage> lastMessages = lastMessagesCache.getOrDefault(
                 genKeyIndex(filterType, message.getReceiver(), chatEntity.getName()),
                 new CircularFifoQueue<>(plugin.config.last_message_count));
 
@@ -135,7 +135,7 @@ public class FilterManager {
 
             result = filter.applyWithPrevious(chatEntity,
                     result != null ? result.message() : message,
-                    lastMessages.toArray(new NewChatMessage[0])
+                    lastMessages.toArray(new ChatMessage[0])
             );
 
 

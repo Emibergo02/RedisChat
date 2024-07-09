@@ -5,8 +5,8 @@ import dev.unnm3d.redischat.api.DataManager;
 import dev.unnm3d.redischat.api.RedisChatAPI;
 import dev.unnm3d.redischat.channels.PlayerChannel;
 import dev.unnm3d.redischat.chat.KnownChatEntities;
-import dev.unnm3d.redischat.chat.objects.NewChannel;
-import dev.unnm3d.redischat.chat.objects.NewChatMessage;
+import dev.unnm3d.redischat.chat.objects.Channel;
+import dev.unnm3d.redischat.chat.objects.ChatMessage;
 import dev.unnm3d.redischat.datamanagers.redistools.RedisAbstract;
 import dev.unnm3d.redischat.mail.Mail;
 import io.lettuce.core.RedisClient;
@@ -64,13 +64,13 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
             if (plugin.config.debug) {
                 plugin.getLogger().info("R1) Received message from redis: " + System.currentTimeMillis());
             }
-            plugin.getChannelManager().sendGenericChat(NewChatMessage.deserialize(message));
+            plugin.getChannelManager().sendGenericChat(ChatMessage.deserialize(message));
 
         } else if (channel.equals(DataKey.GLOBAL_CHANNEL.withoutCluster())) {
             if (plugin.config.debug) {
                 plugin.getLogger().info("R1) Received message from redis: " + System.currentTimeMillis());
             }
-            plugin.getChannelManager().sendGenericChat(NewChatMessage.deserialize(message));
+            plugin.getChannelManager().sendGenericChat(ChatMessage.deserialize(message));
 
         } else if (channel.equals(DataKey.PLAYERLIST.toString())) {
             if (plugin.getPlayerListManager() != null)
@@ -84,7 +84,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
             if (message.startsWith("delete§")) {
                 plugin.getChannelManager().updateChannel(message.substring(7), null);
             } else {
-                NewChannel ch = NewChannel.deserialize(message);
+                Channel ch = Channel.deserialize(message);
                 plugin.getChannelManager().updateChannel(ch.getName(), ch);
             }
 
@@ -166,7 +166,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     }
 
     @Override
-    public boolean isRateLimited(@NotNull String playerName, @NotNull NewChannel channel) {
+    public boolean isRateLimited(@NotNull String playerName, @NotNull Channel channel) {
         String result = null;
         try {
             result = getConnectionAsync(conn -> conn.get(DataKey.RATE_LIMIT_PREFIX + playerName + channel.getName()))
@@ -441,7 +441,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     }
 
     @Override
-    public void registerChannel(@NotNull NewChannel channel) {
+    public void registerChannel(@NotNull Channel channel) {
         getConnectionPipeline(connection -> {
             connection.hset(DataKey.CHANNELS.toString(), channel.getName(), channel.serialize()).exceptionally(throwable -> {
                 throwable.printStackTrace();
@@ -468,11 +468,11 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     }
 
     @Override
-    public CompletionStage<List<NewChannel>> getChannels() {
+    public CompletionStage<List<Channel>> getChannels() {
         return getConnectionAsync(connection ->
                 connection.hgetall(DataKey.CHANNELS.toString())
                         .thenApply(channelMap -> channelMap.values().stream()
-                                .map(NewChannel::deserialize)
+                                .map(Channel::deserialize)
                                 .toList())
                         .exceptionally(throwable -> {
                             throwable.printStackTrace();
@@ -482,7 +482,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     }
 
     @Override
-    public CompletionStage<@Nullable String> getActivePlayerChannel(@NotNull String playerName, Map<String, NewChannel> registeredChannels) {
+    public CompletionStage<@Nullable String> getActivePlayerChannel(@NotNull String playerName, Map<String, Channel> registeredChannels) {
         return getConnectionAsync(conn ->
                 conn.hgetall(DataKey.PLAYER_CHANNELS_PREFIX + playerName)
                         .thenApply(result -> {
@@ -495,7 +495,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     }
 
     @Override
-    public CompletionStage<List<PlayerChannel>> getPlayerChannelStatuses(@NotNull String playerName, Map<String, NewChannel> registeredChannels) {
+    public CompletionStage<List<PlayerChannel>> getPlayerChannelStatuses(@NotNull String playerName, Map<String, Channel> registeredChannels) {
         return getConnectionAsync(connection ->
                 connection.hgetall(DataKey.PLAYER_CHANNELS_PREFIX + playerName)
                         .exceptionally(throwable -> {
@@ -507,7 +507,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
                     return allPlayerCh.entrySet().stream()//Get all player channels future
                             .filter(entry -> registeredChannels.containsKey(entry.getKey()))//Filter only registered channels
                             .map(entry -> {
-                                NewChannel channel = registeredChannels.get(entry.getKey());
+                                Channel channel = registeredChannels.get(entry.getKey());
                                 return new PlayerChannel(channel,
                                         Integer.parseInt(entry.getValue()));
                             }).toList();
@@ -612,7 +612,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     }
 
     @Override
-    public void sendChatMessage(@NotNull NewChatMessage packet) {
+    public void sendChatMessage(@NotNull ChatMessage packet) {
         getConnectionPipeline(conn -> {
             String publishChannel = DataKey.CHAT_CHANNEL.toString();
             if (packet.getReceiver().isChannel()) {//If it's a channel message we need to increment the rate limit

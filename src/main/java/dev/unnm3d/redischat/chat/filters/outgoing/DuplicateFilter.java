@@ -2,12 +2,12 @@ package dev.unnm3d.redischat.chat.filters.outgoing;
 
 import de.exlll.configlib.Comment;
 import de.exlll.configlib.Configuration;
+import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.chat.filters.AbstractFilter;
 import dev.unnm3d.redischat.chat.filters.FilterResult;
-import dev.unnm3d.redischat.chat.objects.NewChatMessage;
+import dev.unnm3d.redischat.chat.objects.ChatMessage;
 import dev.unnm3d.redischat.settings.FiltersConfig;
 import lombok.Getter;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
@@ -24,15 +24,17 @@ public class DuplicateFilter extends AbstractFilter<DuplicateFilter.DuplicateFil
     }
 
     @Override
-    public FilterResult applyWithPrevious(CommandSender sender, @NotNull NewChatMessage message, NewChatMessage... previousMessages) {
+    public FilterResult applyWithPrevious(CommandSender sender, @NotNull ChatMessage message, ChatMessage... previousMessages) {
+        //Skip filter if no previous messages
+        if(previousMessages.length == 0) return new FilterResult(message, false, Optional.empty());
 
         //Reverse the array to check the last messages first
         int checkedMessages = 0;
-        for (NewChatMessage newChatMessage :
+        for (ChatMessage chatMessage :
                 Arrays.stream(previousMessages)
-                        .sorted(Comparator.comparingLong(NewChatMessage::getTimestamp).reversed())
+                        .sorted(Comparator.comparingLong(ChatMessage::getTimestamp).reversed())
                         .toList()) {
-            float similarityPercentage = levenshteinScore(message.getContent(), newChatMessage.getContent()) * 100;
+            float similarityPercentage = levenshteinScore(message.getContent(), chatMessage.getContent()) * 100;
 
             //If the similarity is lower than the percentage, skip filter
             if (similarityPercentage < filterSettings.similarityPercentage) {
@@ -42,7 +44,9 @@ public class DuplicateFilter extends AbstractFilter<DuplicateFilter.DuplicateFil
         }
 
         return new FilterResult(message, true,
-                Optional.of(MiniMessage.miniMessage().deserialize("<red>You can't send the same message twice!")));
+                Optional.of(RedisChat.getInstance().getComponentProvider()
+                        .parse(sender, RedisChat.getInstance().messages.duplicate_message, true,
+                                false, false)));
     }
 
     private float levenshteinScore(String first, String second) {
@@ -90,7 +94,7 @@ public class DuplicateFilter extends AbstractFilter<DuplicateFilter.DuplicateFil
         public DuplicateFilterProperties() {
             super(true, 8, Set.of(), Set.of());
             this.similarityPercentage = 60;
-            this.messagesToCheck = 5;
+            this.messagesToCheck = 2;
         }
     }
 }

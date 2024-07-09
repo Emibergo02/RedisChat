@@ -1,7 +1,6 @@
 package dev.unnm3d.redischat.api.events;
 
 import dev.unnm3d.redischat.chat.objects.ChannelAudience;
-import dev.unnm3d.redischat.chat.objects.NewChannel;
 import lombok.Getter;
 import lombok.Setter;
 import net.kyori.adventure.text.Component;

@@ -1,18 +1,16 @@
 package dev.unnm3d.redischat.chat.filters.outgoing;
 
-import de.exlll.configlib.Configuration;
 import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.chat.filters.AbstractFilter;
 import dev.unnm3d.redischat.chat.filters.FilterResult;
-import dev.unnm3d.redischat.chat.objects.NewChannel;
-import dev.unnm3d.redischat.chat.objects.NewChatMessage;
+import dev.unnm3d.redischat.chat.objects.Channel;
+import dev.unnm3d.redischat.chat.objects.ChatMessage;
 import dev.unnm3d.redischat.settings.FiltersConfig;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
-import java.util.Set;
 
 
 public class SpamFilter extends AbstractFilter<FiltersConfig.FilterSettings> {
@@ -24,11 +22,11 @@ public class SpamFilter extends AbstractFilter<FiltersConfig.FilterSettings> {
     }
 
     @Override
-    public FilterResult applyWithPrevious(CommandSender sender, @NotNull NewChatMessage message, NewChatMessage... previousMessages) {
+    public FilterResult applyWithPrevious(CommandSender sender, @NotNull ChatMessage message, ChatMessage... previousMessages) {
         if (!message.getReceiver().isChannel()) return new FilterResult(message, false, Optional.empty());
 
         if (!sender.hasPermission(Permissions.BYPASS_RATE_LIMIT.getPermission())) {
-            Optional<NewChannel> channel = plugin.getChannelManager().getChannel(message.getReceiver().getName());
+            Optional<Channel> channel = plugin.getChannelManager().getChannel(message.getReceiver().getName());
             if (channel.isPresent() && plugin.getDataManager().isRateLimited(sender.getName(), channel.get())) {
                 return new FilterResult(message, true, Optional.of(
                         plugin.getComponentProvider().parse(sender,

@@ -1,12 +1,11 @@
 package dev.unnm3d.redischat;
 
 
-import com.google.gson.Gson;
 import dev.unnm3d.redischat.chat.KnownChatEntities;
 import dev.unnm3d.redischat.chat.objects.AudienceType;
 import dev.unnm3d.redischat.chat.objects.ChannelAudience;
-import dev.unnm3d.redischat.chat.objects.NewChannel;
-import dev.unnm3d.redischat.chat.objects.NewChatMessage;
+import dev.unnm3d.redischat.chat.objects.Channel;
+import dev.unnm3d.redischat.chat.objects.ChatMessage;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -18,7 +17,7 @@ public class JsonTests {
     @Test
     @DisplayName("Channel serialization")
     public void testChannelSerialization() {
-        NewChannel nc = NewChannel.channelBuilder("name")
+        Channel nc = Channel.channelBuilder("name")
                 .format("fabrizio %message%")
                 .rateLimit(10)
                 .rateLimitPeriod(1000)
@@ -28,7 +27,7 @@ public class JsonTests {
                 .permission("perm1")
                 .notificationSound("sound")
                 .build();
-        NewChannel nc2 = NewChannel.deserialize(nc.serialize());
+        Channel nc2 = Channel.deserialize(nc.serialize());
         assertEquals(nc, nc2);
         System.out.println(nc);
         System.out.println(nc2);
@@ -58,13 +57,13 @@ public class JsonTests {
                 .type(AudienceType.PLAYER)
                 .permission("perm2")
                 .build();
-        NewChatMessage ncm = new NewChatMessage(
+        ChatMessage ncm = new ChatMessage(
                 new ChannelAudience(KnownChatEntities.SERVER_SENDER.toString(), AudienceType.PLAYER),
                 "%message%",
                 "Hello World",
                 receiver
         );
-        NewChatMessage ncm2 = NewChatMessage.deserialize(ncm.serialize());
+        ChatMessage ncm2 = ChatMessage.deserialize(ncm.serialize());
         assertEquals(ncm, ncm2);
 
         //Change a superclass field

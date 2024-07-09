@@ -5,8 +5,8 @@ import de.exlll.configlib.Configuration;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.chat.filters.AbstractFilter;
 import dev.unnm3d.redischat.chat.filters.FilterResult;
-import dev.unnm3d.redischat.chat.objects.NewChannel;
-import dev.unnm3d.redischat.chat.objects.NewChatMessage;
+import dev.unnm3d.redischat.chat.objects.Channel;
+import dev.unnm3d.redischat.chat.objects.ChatMessage;
 import dev.unnm3d.redischat.settings.FiltersConfig;
 import lombok.Getter;
 import org.bukkit.command.CommandSender;
@@ -39,15 +39,15 @@ public class CapsFilter extends AbstractFilter<CapsFilter.CapsFilterProperties> 
     }
 
     @Override
-    public FilterResult applyWithPrevious(CommandSender sender, @NotNull NewChatMessage message, NewChatMessage... previousMessages) {
+    public FilterResult applyWithPrevious(CommandSender sender, @NotNull ChatMessage message, ChatMessage... previousMessages) {
         Optional<Boolean> isFiltered = RedisChat.getInstance().getChannelManager().getChannel(message.getReceiver().getName())
-                .map(NewChannel::isFiltered);
+                .map(Channel::isFiltered);
 
         //If the channel is filtered or the receiver is not a channel
         if ((isFiltered.isPresent() && isFiltered.get()) || isFiltered.isEmpty()) {
             if (antiCaps(message.getContent())) {
                 message.setContent(message.getContent().toLowerCase());
-                return new FilterResult(message, filterSettings.shouldFilter, Optional.of(
+                return new FilterResult(message, filterSettings.shouldBlock, Optional.of(
                         RedisChat.getInstance().getComponentProvider().parse(sender,
                                 RedisChat.getInstance().messages.caps,
                                 true,
@@ -64,12 +64,13 @@ public class CapsFilter extends AbstractFilter<CapsFilter.CapsFilterProperties> 
     @Getter
     public static class CapsFilterProperties extends FiltersConfig.FilterSettings {
         private int percentageCaps;
-        private boolean shouldFilter;
+        @Comment("Should the message be blocked")
+        private boolean shouldBlock;
 
         public CapsFilterProperties() {
             super(true, 8, Set.of(), Set.of());
             this.percentageCaps = 50;
-            this.shouldFilter = false;
+            this.shouldBlock = false;
         }
     }
 }

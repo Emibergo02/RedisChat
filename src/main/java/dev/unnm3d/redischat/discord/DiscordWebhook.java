@@ -1,8 +1,8 @@
 package dev.unnm3d.redischat.discord;
 
 import dev.unnm3d.redischat.RedisChat;
-import dev.unnm3d.redischat.chat.objects.NewChannel;
-import dev.unnm3d.redischat.chat.objects.NewChatMessage;
+import dev.unnm3d.redischat.chat.objects.Channel;
+import dev.unnm3d.redischat.chat.objects.ChatMessage;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 
@@ -23,7 +23,7 @@ public class DiscordWebhook implements IDiscordHook {
     }
 
     @Override
-    public void sendDiscordMessage(NewChannel channel, NewChatMessage message) {
+    public void sendDiscordMessage(Channel channel, ChatMessage message) {
         if (channel.getDiscordWebhook() == null || channel.getDiscordWebhook().isEmpty() || message.getSender().isDiscord())
             return;
 

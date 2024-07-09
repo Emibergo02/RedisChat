@@ -1,14 +1,12 @@
 package dev.unnm3d.redischat.chat.filters.incoming;
 
-import de.exlll.configlib.Comment;
 import de.exlll.configlib.Configuration;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.chat.filters.AbstractFilter;
 import dev.unnm3d.redischat.chat.filters.FilterResult;
 import dev.unnm3d.redischat.chat.objects.AudienceType;
-import dev.unnm3d.redischat.chat.objects.NewChatMessage;
+import dev.unnm3d.redischat.chat.objects.ChatMessage;
 import dev.unnm3d.redischat.settings.FiltersConfig;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.command.CommandSender;
@@ -26,7 +24,7 @@ public class IgnorePlayerFilter extends AbstractFilter<IgnorePlayerFilter.Ignore
 
 
     @Override
-    public FilterResult applyWithPrevious(CommandSender receiver, @NotNull NewChatMessage chatMessage, NewChatMessage... previousMessages) {
+    public FilterResult applyWithPrevious(CommandSender receiver, @NotNull ChatMessage chatMessage, ChatMessage... previousMessages) {
         boolean isIgnored = RedisChat.getInstance().getChannelManager().getMuteManager()
                 .isPlayerIgnored(chatMessage.getReceiver().getName(), chatMessage.getSender().getName());
         if (chatMessage.getReceiver().isPlayer()) {

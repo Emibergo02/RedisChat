@@ -1,12 +1,10 @@
 package dev.unnm3d.redischat.chat.filters.outgoing;
 
-import de.exlll.configlib.Comment;
 import de.exlll.configlib.Configuration;
-import de.exlll.configlib.PolymorphicTypes;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.chat.filters.AbstractFilter;
 import dev.unnm3d.redischat.chat.filters.FilterResult;
-import dev.unnm3d.redischat.chat.objects.NewChatMessage;
+import dev.unnm3d.redischat.chat.objects.ChatMessage;
 import dev.unnm3d.redischat.settings.FiltersConfig;
 import lombok.Getter;
 import org.bukkit.command.CommandSender;
@@ -25,7 +23,7 @@ public class WordBlacklistFilter extends AbstractFilter<WordBlacklistFilter.Word
     }
 
     @Override
-    public FilterResult applyWithPrevious(CommandSender sender, @NotNull NewChatMessage message, NewChatMessage... previousMessages) {
+    public FilterResult applyWithPrevious(CommandSender sender, @NotNull ChatMessage message, ChatMessage... previousMessages) {
         String sanitized = message.getContent();
         for (String regex : plugin.config.regex_blacklist) {
             sanitized = sanitized.replaceAll(regex, filterSettings.replacement);
@@ -45,10 +43,6 @@ public class WordBlacklistFilter extends AbstractFilter<WordBlacklistFilter.Word
         return new FilterResult(message, false, Optional.empty());
     }
 
-
-    public static WordBlacklistFilter.WordBlacklistFilterProperties getDefaultFilterSettings() {
-        return new WordBlacklistFilterProperties();
-    }
 
     @Configuration
     @Getter

@@ -1,12 +1,11 @@
 package dev.unnm3d.redischat.chat.filters.outgoing;
 
-import de.exlll.configlib.Comment;
 import de.exlll.configlib.Configuration;
 import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.chat.filters.AbstractFilter;
 import dev.unnm3d.redischat.chat.filters.FilterResult;
-import dev.unnm3d.redischat.chat.objects.NewChatMessage;
+import dev.unnm3d.redischat.chat.objects.ChatMessage;
 import dev.unnm3d.redischat.settings.FiltersConfig;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
@@ -29,7 +28,7 @@ public class ParseContentFilter extends AbstractFilter<ParseContentFilter.Conten
     }
 
     @Override
-    public FilterResult applyWithPrevious(CommandSender sender, @NotNull NewChatMessage chatMessage, NewChatMessage... previousMessages) {
+    public FilterResult applyWithPrevious(CommandSender sender, @NotNull ChatMessage chatMessage, ChatMessage... previousMessages) {
         chatMessage.setContent(plugin.getComponentProvider().invShareFormatting(sender, chatMessage.getContent()));
 
         Component contentComponent = plugin.getComponentProvider().parse(

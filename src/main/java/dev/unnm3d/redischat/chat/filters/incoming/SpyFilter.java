@@ -5,7 +5,7 @@ import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.chat.filters.AbstractFilter;
 import dev.unnm3d.redischat.chat.filters.FilterResult;
 import dev.unnm3d.redischat.chat.objects.AudienceType;
-import dev.unnm3d.redischat.chat.objects.NewChatMessage;
+import dev.unnm3d.redischat.chat.objects.ChatMessage;
 import dev.unnm3d.redischat.settings.FiltersConfig;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
@@ -27,7 +27,7 @@ public class SpyFilter extends AbstractFilter<SpyFilter.SpyFilterProperties> {
     }
 
     @Override
-    public FilterResult applyWithPrevious(CommandSender receiver, @NotNull NewChatMessage chatMessage, NewChatMessage... previousMessages) {
+    public FilterResult applyWithPrevious(CommandSender receiver, @NotNull ChatMessage chatMessage, ChatMessage... previousMessages) {
         if (chatMessage.getReceiver().isPlayer()) {
             final Component spyComponent = MiniMessage.miniMessage().deserialize(plugin.messages.spychat_format
                             .replace("%receiver%", chatMessage.getReceiver().getName())

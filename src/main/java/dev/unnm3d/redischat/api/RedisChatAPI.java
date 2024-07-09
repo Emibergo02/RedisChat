@@ -1,8 +1,8 @@
 package dev.unnm3d.redischat.api;
 
 import dev.unnm3d.redischat.chat.ComponentProvider;
-import dev.unnm3d.redischat.chat.objects.NewChannel;
-import dev.unnm3d.redischat.chat.objects.NewChatMessage;
+import dev.unnm3d.redischat.chat.objects.Channel;
+import dev.unnm3d.redischat.chat.objects.ChatMessage;
 import dev.unnm3d.redischat.mail.MailGUIManager;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -43,7 +43,7 @@ public abstract class RedisChatAPI {
      *
      * @param channel The channel to register
      */
-    public abstract void registerChannel(NewChannel channel);
+    public abstract void registerChannel(Channel channel);
 
     /**
      * Unregister a channel
@@ -76,7 +76,7 @@ public abstract class RedisChatAPI {
      *
      * @param chatMessage The message to send
      */
-    public abstract void sendGenericChat(@NotNull NewChatMessage chatMessage);
+    public abstract void sendGenericChat(@NotNull ChatMessage chatMessage);
 
 
     /**
@@ -101,7 +101,7 @@ public abstract class RedisChatAPI {
      * @param channelName The name of the channel
      * @return The channel
      */
-    public abstract Optional<NewChannel> getChannel(@Nullable String channelName);
+    public abstract Optional<Channel> getChannel(@Nullable String channelName);
 
     /**
      * Get the public channel
@@ -110,14 +110,14 @@ public abstract class RedisChatAPI {
      * @param player The player
      * @return The public channel
      */
-    public abstract NewChannel getPublicChannel(CommandSender player);
+    public abstract Channel getPublicChannel(CommandSender player);
 
     /**
      * Get the staff chat channel
      *
      * @return The staff chat channel
      */
-    public abstract NewChannel getStaffChatChannel();
+    public abstract Channel getStaffChatChannel();
 
     /**
      * Add vanish "canSee" integration

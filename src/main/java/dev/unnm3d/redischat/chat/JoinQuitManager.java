@@ -2,7 +2,7 @@ package dev.unnm3d.redischat.chat;
 
 import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
-import dev.unnm3d.redischat.chat.objects.NewChatMessage;
+import dev.unnm3d.redischat.chat.objects.ChatMessage;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -39,7 +39,7 @@ public class JoinQuitManager implements Listener {
 
 
         if (!joinEvent.getPlayer().hasPlayedBefore() && !redisChat.config.first_join_message.isEmpty()) {
-            redisChat.getDataManager().sendChatMessage(new NewChatMessage(
+            redisChat.getDataManager().sendChatMessage(new ChatMessage(
                     MiniMessage.miniMessage().serialize(redisChat.getComponentProvider().parse(
                             joinEvent.getPlayer(),
                             redisChat.config.first_join_message,
@@ -60,7 +60,7 @@ public class JoinQuitManager implements Listener {
         }
 
         //Send join message to everyone
-        redisChat.getDataManager().sendChatMessage(new NewChatMessage(
+        redisChat.getDataManager().sendChatMessage(new ChatMessage(
                 MiniMessage.miniMessage().serialize(redisChat.getComponentProvider().parse(
                         joinEvent.getPlayer(),
                         chatFormat.join_format(),
@@ -104,7 +104,7 @@ public class JoinQuitManager implements Listener {
                 .orTimeout(redisChat.config.quitSendWaiting, TimeUnit.MILLISECONDS)
                 .exceptionally(onTimeout -> {                               //Timeout, player quit
                     redisChat.getDataManager().sendChatMessage(
-                            new NewChatMessage(parsedQuitMessage, Permissions.JOIN_QUIT.getPermission())
+                            new ChatMessage(parsedQuitMessage, Permissions.JOIN_QUIT.getPermission())
                     );
                     return null;
                 });

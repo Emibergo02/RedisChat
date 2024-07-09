@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
 @Getter
 @EqualsAndHashCode
 @ToString
-public class NewChatMessage implements DataSerializable {
+public class ChatMessage implements DataSerializable {
     private final ChannelAudience sender;
     private final long timestamp;
     @Setter
@@ -27,7 +27,7 @@ public class NewChatMessage implements DataSerializable {
      *
      * @param content The message content
      */
-    public NewChatMessage(String content) {
+    public ChatMessage(String content) {
         this(new ChannelAudience(), System.currentTimeMillis(), "%message%", content, ChannelAudience.publicChannelAudience());
     }
 
@@ -36,9 +36,26 @@ public class NewChatMessage implements DataSerializable {
      *
      * @param content The message content
      */
-    public NewChatMessage(String content, String permissionToSee) {
+    public ChatMessage(String content, String permissionToSee) {
         this(new ChannelAudience(), System.currentTimeMillis(), "%message%", content, ChannelAudience.publicChannelAudience(permissionToSee));
     }
+
+    /**
+     * Used for deserialization
+     *
+     * @param sender   The sender of the message
+     * @param format   The formatting of the message
+     * @param content  The message content
+     * @param receiver The receiver of the message
+     */
+    public ChatMessage(@NotNull ChannelAudience sender, long timestamp, @Nullable String format, @Nullable String content, @NotNull ChannelAudience receiver) {
+        this.sender = sender;
+        this.timestamp = timestamp;
+        this.format = Strings.nullToEmpty(format);
+        this.content = Strings.nullToEmpty(content);
+        this.receiver = receiver;
+    }
+
 
     /**
      * Creates a ChatMessageInfo from a sender, formatting, message and receiver
@@ -48,21 +65,17 @@ public class NewChatMessage implements DataSerializable {
      * @param content  The message content
      * @param receiver The receiver of the message
      */
-    public NewChatMessage(@NotNull ChannelAudience sender, long timestamp, @Nullable String format, @Nullable String content, @NotNull ChannelAudience receiver) {
-        this.sender = sender;
-        this.timestamp = timestamp;
-        this.format = Strings.nullToEmpty(format);
-        this.content = Strings.nullToEmpty(content);
-        this.receiver = receiver;
+    public ChatMessage(@NotNull ChannelAudience sender, @Nullable String format, @Nullable String content, @NotNull ChannelAudience receiver) {
+        this(sender, System.currentTimeMillis(), format, content, receiver);
     }
 
-    public static NewChatMessage deserialize(String serializedMessage) {
+    public static ChatMessage deserialize(String serializedMessage) {
         String[] parts = serializedMessage.split("§§;");
         if (parts.length < 1) {
             throw new IllegalArgumentException("Invalid message serialization");
         }
 
-        return new NewChatMessage(
+        return new ChatMessage(
                 ChannelAudience.deserialize(parts[0]),
                 Long.parseLong(parts[1]),
                 parts[2],

@@ -1,6 +1,6 @@
 package dev.unnm3d.redischat.chat.filters;
 
-import dev.unnm3d.redischat.chat.objects.NewChatMessage;
+import dev.unnm3d.redischat.chat.objects.ChatMessage;
 import dev.unnm3d.redischat.settings.FiltersConfig;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,7 +12,7 @@ import java.util.function.BiFunction;
 
 @Getter
 @AllArgsConstructor
-public abstract class AbstractFilter<T extends FiltersConfig.FilterSettings> implements BiFunction<CommandSender, NewChatMessage, FilterResult> {
+public abstract class AbstractFilter<T extends FiltersConfig.FilterSettings> implements BiFunction<CommandSender, ChatMessage, FilterResult> {
 
     protected final String name;
     protected final Direction direction;
@@ -20,11 +20,11 @@ public abstract class AbstractFilter<T extends FiltersConfig.FilterSettings> imp
     protected T filterSettings;
 
     @Override
-    public FilterResult apply(CommandSender player, NewChatMessage chatMessage) {
+    public FilterResult apply(CommandSender player, ChatMessage chatMessage) {
         return applyWithPrevious(player, chatMessage);
     }
 
-    public abstract FilterResult applyWithPrevious(CommandSender receiver, @NotNull NewChatMessage message, NewChatMessage... previousMessages);
+    public abstract FilterResult applyWithPrevious(CommandSender receiver, @NotNull ChatMessage message, ChatMessage... previousMessages);
 
 
     public enum Direction {

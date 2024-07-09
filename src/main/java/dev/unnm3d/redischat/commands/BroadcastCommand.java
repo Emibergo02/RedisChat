@@ -7,7 +7,7 @@ import dev.jorel.commandapi.arguments.GreedyStringArgument;
 import dev.jorel.commandapi.arguments.StringArgument;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.chat.objects.ChannelAudience;
-import dev.unnm3d.redischat.chat.objects.NewChatMessage;
+import dev.unnm3d.redischat.chat.objects.ChatMessage;
 import lombok.AllArgsConstructor;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -37,7 +37,7 @@ public class BroadcastCommand {
                                     true, false, false);
 
                             plugin.getDataManager().sendChatMessage(
-                                    new NewChatMessage(
+                                    new ChatMessage(
                                             new ChannelAudience(),
                                             "%message%",
                                             MiniMessage.miniMessage().serialize(component),
@@ -68,7 +68,7 @@ public class BroadcastCommand {
                                     true, false, false);
 
                             plugin.getDataManager().sendChatMessage(
-                                    new NewChatMessage(
+                                    new ChatMessage(
                                             new ChannelAudience(),
                                             "%message%",
                                             MiniMessage.miniMessage().serialize(component),

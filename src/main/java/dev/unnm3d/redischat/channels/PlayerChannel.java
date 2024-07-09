@@ -2,7 +2,7 @@ package dev.unnm3d.redischat.channels;
 
 import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
-import dev.unnm3d.redischat.chat.objects.NewChannel;
+import dev.unnm3d.redischat.chat.objects.Channel;
 import lombok.Getter;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
@@ -19,7 +19,7 @@ import java.util.Map;
 
 public class PlayerChannel extends AbstractItem {
     @Getter
-    private final NewChannel channel;
+    private final Channel channel;
     /**
      * 0 = active, not listening
      * 1 = active, listening
@@ -28,7 +28,7 @@ public class PlayerChannel extends AbstractItem {
     private int status;
 
 
-    public PlayerChannel(NewChannel channel, int status) {
+    public PlayerChannel(Channel channel, int status) {
         this.channel = channel;
         this.status = status;
     }

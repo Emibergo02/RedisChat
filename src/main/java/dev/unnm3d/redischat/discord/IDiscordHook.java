@@ -1,8 +1,8 @@
 package dev.unnm3d.redischat.discord;
 
 import dev.unnm3d.redischat.RedisChat;
-import dev.unnm3d.redischat.chat.objects.NewChannel;
-import dev.unnm3d.redischat.chat.objects.NewChatMessage;
+import dev.unnm3d.redischat.chat.objects.Channel;
+import dev.unnm3d.redischat.chat.objects.ChatMessage;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -10,7 +10,7 @@ import java.nio.charset.StandardCharsets;
 
 public interface IDiscordHook {
 
-    default void sendDiscordMessage(NewChannel channel, NewChatMessage message) {
+    default void sendDiscordMessage(Channel channel, ChatMessage message) {
 
     }
 

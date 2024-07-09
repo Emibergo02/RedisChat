@@ -13,8 +13,8 @@ import dev.unnm3d.redischat.chat.filters.FilterManager;
 import dev.unnm3d.redischat.chat.filters.FilterResult;
 import dev.unnm3d.redischat.chat.objects.AudienceType;
 import dev.unnm3d.redischat.chat.objects.ChannelAudience;
-import dev.unnm3d.redischat.chat.objects.NewChannel;
-import dev.unnm3d.redischat.chat.objects.NewChatMessage;
+import dev.unnm3d.redischat.chat.objects.Channel;
+import dev.unnm3d.redischat.chat.objects.ChatMessage;
 import dev.unnm3d.redischat.mail.MailGUIManager;
 import dev.unnm3d.redischat.moderation.MuteManager;
 import lombok.Getter;
@@ -35,7 +35,7 @@ public class ChannelManager extends RedisChatAPI {
 
     private final RedisChat plugin;
     @Getter
-    private final ConcurrentHashMap<String, NewChannel> registeredChannels;
+    private final ConcurrentHashMap<String, Channel> registeredChannels;
     @Getter
     private final MuteManager muteManager;
     @Getter
@@ -77,12 +77,12 @@ public class ChannelManager extends RedisChatAPI {
     }
 
     @Override
-    public void registerChannel(NewChannel channel) {
+    public void registerChannel(Channel channel) {
         registeredChannels.put(channel.getName(), channel);
         plugin.getDataManager().registerChannel(channel);
     }
 
-    public void updateChannel(String channelName, @Nullable NewChannel channel) {
+    public void updateChannel(String channelName, @Nullable Channel channel) {
         if (channel == null) {
             registeredChannels.remove(channelName);
             return;
@@ -123,7 +123,7 @@ public class ChannelManager extends RedisChatAPI {
      */
     public void outgoingMessage(CommandSender player, ChannelAudience receiver, @NotNull String message) {
         //Get channel or public channel by default
-        NewChannel currentChannel = getPublicChannel(player);
+        Channel currentChannel = getPublicChannel(player);
 
         if (receiver.getType() == AudienceType.CHANNEL) {
             if (receiver.getName().equals(KnownChatEntities.STAFFCHAT_CHANNEL_NAME.toString())) {
@@ -135,7 +135,7 @@ public class ChannelManager extends RedisChatAPI {
         }
 
 
-        NewChatMessage chatMessage = new NewChatMessage(
+        ChatMessage chatMessage = new ChatMessage(
                 new ChannelAudience(player.getName(), AudienceType.PLAYER),
                 currentChannel.getFormat(),
                 message,
@@ -225,7 +225,7 @@ public class ChannelManager extends RedisChatAPI {
      * @param message      The message to be sent
      */
     public void outgoingPrivateMessage(@NotNull CommandSender sender, @NotNull String receiverName, @NotNull String message) {
-        final NewChatMessage privateChatMessage = new NewChatMessage(
+        final ChatMessage privateChatMessage = new ChatMessage(
                 new ChannelAudience(sender.getName(), AudienceType.PLAYER),
                 plugin.config.getChatFormat(sender).private_format()
                         .replace("%receiver%", receiverName)
@@ -265,7 +265,7 @@ public class ChannelManager extends RedisChatAPI {
 
 
     @Override
-    public void sendGenericChat(NewChatMessage chatMessage) {
+    public void sendGenericChat(ChatMessage chatMessage) {
         final Set<Player> recipients = chatMessage.getReceiver().isPlayer() ?
                 Collections.singleton(Bukkit.getPlayer(chatMessage.getReceiver().getName())) :
                 new HashSet<>(plugin.getServer().getOnlinePlayers());
@@ -315,7 +315,7 @@ public class ChannelManager extends RedisChatAPI {
 
     }
 
-    private boolean checkProximity(Player recipient, NewChatMessage chatMessage) {
+    private boolean checkProximity(Player recipient, ChatMessage chatMessage) {
         if (chatMessage.getReceiver().getProximityDistance() <= 0) return true;
         final Player sender = Bukkit.getPlayer(chatMessage.getSender().getName());
         if (sender == null) return false;
@@ -339,7 +339,7 @@ public class ChannelManager extends RedisChatAPI {
     }
 
     @Override
-    public Optional<NewChannel> getChannel(@Nullable String channelName) {
+    public Optional<Channel> getChannel(@Nullable String channelName) {
         if (channelName == null) return Optional.empty();
         if (channelName.equals(KnownChatEntities.STAFFCHAT_CHANNEL_NAME.toString()))
             return Optional.of(getStaffChatChannel());
@@ -347,16 +347,16 @@ public class ChannelManager extends RedisChatAPI {
     }
 
     @Override
-    public NewChannel getPublicChannel(@Nullable CommandSender player) {
+    public Channel getPublicChannel(@Nullable CommandSender player) {
 
-        final NewChannel publicChannel = getGenericPublic();
+        final Channel publicChannel = getGenericPublic();
         publicChannel.setFormat(plugin.config.getChatFormat(player).format());
 
         return publicChannel;
     }
 
-    private NewChannel getGenericPublic() {
-        return NewChannel.channelBuilder(KnownChatEntities.PUBLIC_CHAT.toString())
+    private Channel getGenericPublic() {
+        return Channel.channelBuilder(KnownChatEntities.PUBLIC_CHAT.toString())
                 .format(plugin.config.defaultFormat.format())
                 .rateLimit(plugin.config.rate_limit)
                 .rateLimitPeriod(plugin.config.rate_limit_time_seconds)
@@ -367,8 +367,8 @@ public class ChannelManager extends RedisChatAPI {
     }
 
     @Override
-    public NewChannel getStaffChatChannel() {
-        return NewChannel.channelBuilder(KnownChatEntities.STAFFCHAT_CHANNEL_NAME.toString())
+    public Channel getStaffChatChannel() {
+        return Channel.channelBuilder(KnownChatEntities.STAFFCHAT_CHANNEL_NAME.toString())
                 .format(plugin.config.staffChatFormat)
                 .rateLimit(5)
                 .rateLimitPeriod(1000)

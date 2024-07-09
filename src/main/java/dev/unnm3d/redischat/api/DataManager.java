@@ -1,8 +1,8 @@
 package dev.unnm3d.redischat.api;
 
 import dev.unnm3d.redischat.channels.PlayerChannel;
-import dev.unnm3d.redischat.chat.objects.NewChannel;
-import dev.unnm3d.redischat.chat.objects.NewChatMessage;
+import dev.unnm3d.redischat.chat.objects.Channel;
+import dev.unnm3d.redischat.chat.objects.ChatMessage;
 import dev.unnm3d.redischat.mail.Mail;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.io.BukkitObjectInputStream;
@@ -20,15 +20,15 @@ import java.util.stream.Collectors;
 public interface DataManager {
 
 
-    void registerChannel(@NotNull NewChannel channel);
+    void registerChannel(@NotNull Channel channel);
 
     void unregisterChannel(@NotNull String channelName);
 
-    CompletionStage<@Nullable String> getActivePlayerChannel(@NotNull String playerName, Map<String, NewChannel> registeredChannels);
+    CompletionStage<@Nullable String> getActivePlayerChannel(@NotNull String playerName, Map<String, Channel> registeredChannels);
 
-    CompletionStage<List<PlayerChannel>> getPlayerChannelStatuses(@NotNull String playerName, Map<String, NewChannel> registeredChannels);
+    CompletionStage<List<PlayerChannel>> getPlayerChannelStatuses(@NotNull String playerName, Map<String, Channel> registeredChannels);
 
-    CompletionStage<List<NewChannel>> getChannels();
+    CompletionStage<List<Channel>> getChannels();
 
     CompletionStage<Optional<String>> getReplyName(@NotNull String requesterName);
 
@@ -38,7 +38,7 @@ public interface DataManager {
 
     void setPlayerPlaceholders(@NotNull String playerName, @NotNull Map<String, String> placeholders);
 
-    boolean isRateLimited(@NotNull String playerName, @NotNull NewChannel channel);
+    boolean isRateLimited(@NotNull String playerName, @NotNull Channel channel);
 
     CompletionStage<Boolean> isSpying(@NotNull String playerName);
 
@@ -82,7 +82,7 @@ public interface DataManager {
 
     void setWhitelistEnabledPlayer(@NotNull String playerName, boolean enabled);
 
-    void sendChatMessage(@NotNull NewChatMessage chatMessage);
+    void sendChatMessage(@NotNull ChatMessage chatMessage);
 
     void publishPlayerList(@NotNull List<String> playerNames);
 

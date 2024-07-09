@@ -2,8 +2,8 @@ package dev.unnm3d.redischat.discord;
 
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.chat.objects.ChannelAudience;
-import dev.unnm3d.redischat.chat.objects.NewChannel;
-import dev.unnm3d.redischat.chat.objects.NewChatMessage;
+import dev.unnm3d.redischat.chat.objects.Channel;
+import dev.unnm3d.redischat.chat.objects.ChatMessage;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -47,7 +47,7 @@ public class SpicordHook extends SimpleAddon implements IDiscordHook {
     }
 
     @Override
-    public void sendDiscordMessage(NewChannel channel, NewChatMessage chatMessageInfo) {
+    public void sendDiscordMessage(Channel channel, ChatMessage chatMessageInfo) {
         if (chatMessageInfo.getSender().isDiscord()) return;
         if (this.bot == null || this.bot.getJda() == null) {
             plugin.getLogger().warning("Unable to send message to Discord channel " + channel.getName() + ": bot not found");
@@ -96,7 +96,7 @@ public class SpicordHook extends SimpleAddon implements IDiscordHook {
                     highestRole = event.getMember().getRoles().get(0);
                 }
 
-                plugin.getDataManager().sendChatMessage(new NewChatMessage(
+                plugin.getDataManager().sendChatMessage(new ChatMessage(
                         ChannelAudience.newDiscordAudience(event.getAuthor().getName()),
                         plugin.config.spicord.chatFormat()
                                 .replace("%username%", event.getAuthor().getEffectiveName())

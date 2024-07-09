@@ -4,7 +4,7 @@ import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.arguments.*;
 import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
-import dev.unnm3d.redischat.chat.objects.NewChannel;
+import dev.unnm3d.redischat.chat.objects.Channel;
 import lombok.AllArgsConstructor;
 
 import java.util.Map;
@@ -62,7 +62,7 @@ public class ChannelCommand {
                     int rateLimitPeriod = (int) args.get(2);
                     boolean filtered = (boolean) args.get(3);
 
-                    plugin.getChannelManager().registerChannel(NewChannel.channelBuilder((String) args.get(0))
+                    plugin.getChannelManager().registerChannel(Channel.channelBuilder((String) args.get(0))
                             .rateLimit(rateLimit)
                             .rateLimitPeriod(rateLimitPeriod)
                             .proximityDistance(proximityDistance.map(o -> (int) o).orElse(-1))
@@ -111,7 +111,7 @@ public class ChannelCommand {
                         )))
                 .withArguments(new GreedyStringArgument("format"))
                 .executesPlayer((sender, args) -> {
-                    NewChannel channel = plugin.getChannelManager().getRegisteredChannels().get((String) args.get(0));
+                    Channel channel = plugin.getChannelManager().getRegisteredChannels().get((String) args.get(0));
                     channel.setFormat((String) args.get(1));
                     plugin.getChannelManager().registerChannel(channel);
                     plugin.messages.sendMessage(sender, plugin.messages.channelCreated);
