@@ -31,7 +31,7 @@ public class MuteCommand {
                         plugin.messages.sendMessage(sender, plugin.messages.missing_arguments);
                         return;
                     }
-                    final String channelName = (String) args.getOptional("channel").orElse(KnownChatEntities.PUBLIC_CHAT.toString());
+                    final String channelName = (String) args.getOptional("channel").orElse(KnownChatEntities.GENERAL_CHANNEL.toString());
 
                     plugin.getChannelManager().getMuteManager().toggleMuteOnChannel(playerName, channelName, true);
                     plugin.messages.sendMessage(sender, plugin.messages.muted_player
@@ -53,7 +53,7 @@ public class MuteCommand {
                         plugin.messages.sendMessage(sender, plugin.messages.missing_arguments);
                         return;
                     }
-                    String channelName = (String) args.getOptional("channel").orElse(KnownChatEntities.PUBLIC_CHAT.toString());
+                    String channelName = (String) args.getOptional("channel").orElse(KnownChatEntities.GENERAL_CHANNEL.toString());
 
                     plugin.getChannelManager().getMuteManager().toggleMuteOnChannel(playerName, channelName, false);
                     plugin.messages.sendMessage(sender, plugin.messages.unmuted_player
@@ -80,7 +80,7 @@ public class MuteCommand {
                     final List<String> suggestions = plugin.getChannelManager().getRegisteredChannels().keySet()
                             .stream().filter(s -> s.toLowerCase().startsWith(functi1.currentArg().toLowerCase()))
                             .collect(Collectors.toCollection(ArrayList::new));
-                    suggestions.add(KnownChatEntities.PUBLIC_CHAT.toString());
+                    suggestions.add(KnownChatEntities.GENERAL_CHANNEL.toString());
                     return suggestions;
                 }));
     }

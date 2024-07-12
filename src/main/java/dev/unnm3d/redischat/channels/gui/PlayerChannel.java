@@ -1,4 +1,4 @@
-package dev.unnm3d.redischat.channels;
+package dev.unnm3d.redischat.channels.gui;
 
 import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
@@ -12,20 +12,13 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
-import xyz.xenondevs.invui.gui.GuiParent;
 import xyz.xenondevs.invui.item.ItemProvider;
 import xyz.xenondevs.invui.item.builder.ItemBuilder;
 import xyz.xenondevs.invui.item.impl.AbstractItem;
-import xyz.xenondevs.invui.window.Window;
 
 public class PlayerChannel extends AbstractItem {
     @Getter
     private final Channel channel;
-    /**
-     * 0 = active, not listening
-     * 1 = active, listening
-     * -1 = active, muted
-     */
     private Status status;
 
 
@@ -34,7 +27,7 @@ public class PlayerChannel extends AbstractItem {
         final String channelPermission = Permissions.CHANNEL_PREFIX.getPermission() + channel.getName();
         if (isActive) {
             status = Status.LISTENING;
-        } else if (player.hasPermission(Permissions.CHANNEL_HIDE_PREFIX.getPermission() + channel.getName())) {
+        } else if (!player.isOp()&&player.hasPermission(Permissions.CHANNEL_HIDE_PREFIX.getPermission() + channel.getName())) {
             status = Status.HIDDEN;
         } else if (!player.hasPermission(channelPermission) && !player.hasPermission(channelPermission + ".read")) {
             status = Status.MUTED;
@@ -72,7 +65,7 @@ public class PlayerChannel extends AbstractItem {
 
         final ItemMeta im = item.getItemMeta();
         if (im != null)
-            im.setItemName("§r" + channel.getName());
+            im.setDisplayName("§r" + channel.getName());
         item.setItemMeta(im);
         return new ItemBuilder(item);
     }
@@ -83,16 +76,12 @@ public class PlayerChannel extends AbstractItem {
             if (status == Status.IDLE) {
                 status = Status.LISTENING;
                 RedisChat.getInstance().getChannelManager().setActiveChannel(player.getName(), channel.getName());
-                getWindows().stream().findFirst()
-                        .map(w -> (GuiParent) w)
-                        .ifPresent(abstractWindow -> {
-                            for (int i = 0; i < 36; i++) {
-                                abstractWindow.handleSlotElementUpdate(null, i);
-                            }
-                        });
+
+                player.closeInventory();
+                RedisChat.getInstance().getChannelManager().openChannelsGUI(player);
             } else if (status == Status.LISTENING) {
                 status = Status.IDLE;
-                RedisChat.getInstance().getChannelManager().setActiveChannel(player.getName(), KnownChatEntities.PUBLIC_CHAT.toString());
+                RedisChat.getInstance().getChannelManager().setActiveChannel(player.getName(), KnownChatEntities.GENERAL_CHANNEL.toString());
             }
         } else if (clickType.isRightClick()) {
             if (status == Status.IDLE) {

@@ -3,6 +3,7 @@ package dev.unnm3d.redischat.chat;
 import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.api.TagResolverIntegration;
+import dev.unnm3d.redischat.utils.ItemNameProvider;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import me.clip.placeholderapi.PlaceholderAPI;
@@ -41,6 +42,7 @@ public class ComponentProvider {
     private final List<TagResolverIntegration> tagResolverIntegrationList;
     @Getter
     private final BukkitAudiences bukkitAudiences;
+    private final ItemNameProvider itemNameProvider;
 
 
     public ComponentProvider(RedisChat plugin) {
@@ -50,6 +52,7 @@ public class ComponentProvider {
         this.standardTagResolver = StandardTags.defaults();
         this.tagResolverIntegrationList = new ArrayList<>();
         this.bukkitAudiences = BukkitAudiences.create(plugin);
+        this.itemNameProvider = new ItemNameProvider();
     }
 
     /**
@@ -237,10 +240,10 @@ public class ComponentProvider {
                         rTextBuilder.matchLiteral("%item_name%")
                                 .replacement("Nothing")
                 );
-            } else if (itemMeta != null && itemMeta.hasItemName()) {
+            } else if (itemMeta != null && itemNameProvider.hasItemName(itemMeta)) {
                 toParseItemComponent = toParseItemComponent.replaceText(rTextBuilder ->
                         rTextBuilder.matchLiteral("%item_name%")
-                                .replacement(LegacyComponentSerializer.legacySection().deserialize(itemMeta.getItemName())));
+                                .replacement(LegacyComponentSerializer.legacySection().deserialize(itemNameProvider.getItemName(itemMeta))));
             } else {
                 toParseItemComponent = toParseItemComponent.replaceText(rTextBuilder ->
                         rTextBuilder.matchLiteral("%item_name%")

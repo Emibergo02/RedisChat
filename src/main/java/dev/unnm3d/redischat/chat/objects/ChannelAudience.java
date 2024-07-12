@@ -81,7 +81,7 @@ public class ChannelAudience implements DataSerializable {
      * Constructor for building a public channel audience
      */
     public static ChannelAudience publicChannelAudience(String... permissions) {
-        return new ChannelAudience(KnownChatEntities.PUBLIC_CHAT.toString(), AudienceType.CHANNEL, permissions);
+        return new ChannelAudience(KnownChatEntities.GENERAL_CHANNEL.toString(), AudienceType.CHANNEL, permissions);
     }
 
     public static ChannelAudience deserialize(String serialized) {

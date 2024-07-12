@@ -4,11 +4,11 @@ import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.arguments.*;
 import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
+import dev.unnm3d.redischat.channels.gui.PlayerChannel;
 import dev.unnm3d.redischat.chat.objects.Channel;
 import lombok.AllArgsConstructor;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @AllArgsConstructor
@@ -21,9 +21,7 @@ public class ChannelCommand {
                 .withSubcommand(getCreateSubCommand())
                 .withSubcommand(getSetFormatSubCommand())
                 .withSubcommand(getDeleteSubCommand())
-                .withSubcommand(getEnableSubCommand())
                 .withSubcommand(getListenSubCommand())
-                .withSubcommand(getDisableSubCommand())
                 .withSubcommand(getListSubCommand())
                 .withSubcommand(getDiscordLinkSubCommand())
                 .executesPlayer((sender, args) -> {
@@ -119,34 +117,6 @@ public class ChannelCommand {
                 });
     }
 
-    public CommandAPICommand getEnableSubCommand() {
-        return new CommandAPICommand("enable")
-                .withPermission(Permissions.CHANNEL_TOGGLE_PLAYER.getPermission())
-                .withArguments(new StringArgument("playerName")
-                        .replaceSuggestions(ArgumentSuggestions.strings(commandSenderSuggestionInfo ->
-                                plugin.getPlayerListManager().getPlayerList(commandSenderSuggestionInfo.sender()).stream()
-                                        .filter(s -> s.toLowerCase().startsWith(commandSenderSuggestionInfo.currentArg().toLowerCase()))
-                                        .toArray(String[]::new))))
-                .withArguments(new StringArgument("channelName")
-                        .replaceSuggestions(ArgumentSuggestions.strings(commandSenderSuggestionInfo ->
-                                plugin.getChannelManager().getRegisteredChannels().keySet().stream()
-                                        .filter(s -> s.toLowerCase().startsWith(commandSenderSuggestionInfo.currentArg()))
-                                        .toArray(String[]::new)
-                        )))
-                .executesPlayer((sender, args) -> {
-                    if (args.count() < 2) {
-                        plugin.messages.sendMessage(sender, plugin.messages.missing_arguments);
-                        return;
-                    }
-
-                    plugin.getDataManager().setPlayerChannelStatuses((String) args.get(0), Map.of((String) args.get(1), "0"));
-                    plugin.messages.sendMessage(sender, plugin.messages.channelEnabled
-                            .replace("%channel%", (String) args.get(1))
-                            .replace("%player%", (String) args.get(0))
-                    );
-                });
-    }
-
     public CommandAPICommand getListenSubCommand() {
         return new CommandAPICommand("force-listen")
                 .withPermission(Permissions.CHANNEL_TOGGLE_PLAYER.getPermission())
@@ -199,33 +169,6 @@ public class ChannelCommand {
                                 }
                             });
 
-                });
-    }
-
-    public CommandAPICommand getDisableSubCommand() {
-        return new CommandAPICommand("disable")
-                .withPermission(Permissions.CHANNEL_TOGGLE_PLAYER.getPermission())
-                .withArguments(new StringArgument("playerName")
-                        .replaceSuggestions(ArgumentSuggestions.strings(commandSenderSuggestionInfo ->
-                                plugin.getPlayerListManager().getPlayerList(commandSenderSuggestionInfo.sender()).stream()
-                                        .filter(s -> s.toLowerCase().startsWith(commandSenderSuggestionInfo.currentArg().toLowerCase()))
-                                        .toArray(String[]::new))))
-                .withArguments(new StringArgument("channelName")
-                        .replaceSuggestions(ArgumentSuggestions.strings(commandSenderSuggestionInfo ->
-                                plugin.getChannelManager().getRegisteredChannels().keySet().stream()
-                                        .filter(s -> s.toLowerCase().startsWith(commandSenderSuggestionInfo.currentArg()))
-                                        .toArray(String[]::new)
-                        )))
-                .executesPlayer((sender, args) -> {
-                    if (args.count() < 2) {
-                        plugin.messages.sendMessage(sender, plugin.messages.missing_arguments);
-                        return;
-                    }
-                    plugin.getDataManager().removePlayerChannelStatus((String) args.get(0), (String) args.get(1));
-                    plugin.messages.sendMessage(sender, plugin.messages.channelDisabled
-                            .replace("%channel%", (String) args.get(1))
-                            .replace("%player%", (String) args.get(0))
-                    );
                 });
     }
 

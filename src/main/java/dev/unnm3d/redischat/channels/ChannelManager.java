@@ -6,6 +6,7 @@ import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.api.RedisChatAPI;
 import dev.unnm3d.redischat.api.VanishIntegration;
 import dev.unnm3d.redischat.api.events.AsyncRedisChatMessageEvent;
+import dev.unnm3d.redischat.channels.gui.ChannelGUI;
 import dev.unnm3d.redischat.chat.ComponentProvider;
 import dev.unnm3d.redischat.chat.KnownChatEntities;
 import dev.unnm3d.redischat.chat.filters.AbstractFilter;
@@ -102,7 +103,7 @@ public class ChannelManager extends RedisChatAPI {
                 .thenAccept(channelName -> RedisChat.getScheduler().runTask(() ->
                         Window.single()
                                 .setTitle("Channels")
-                                .setGui(channelGUI.getChannelsGUI(player, channelName, registeredChannels.values().stream().toList()))
+                                .setGui(channelGUI.getChannelsGUI(player, channelName))
                                 .setCloseHandlers(List.of(() -> new UniversalRunnable() {
                                     @Override
                                     public void run() {
@@ -194,8 +195,11 @@ public class ChannelManager extends RedisChatAPI {
                     if (isStaffChatEnabled(message, player)) {
                         audience = new ChannelAudience(KnownChatEntities.STAFFCHAT_CHANNEL_NAME.toString());
                         message = message.substring(1);
+                    } else if (channelName != null && channelName.equals(KnownChatEntities.VOID_CHAT.toString())) {
+                        plugin.getComponentProvider().sendMessage(player, plugin.messages.channelNoPermission);
+                        return;
                     } else if (channelName == null || !registeredChannels.containsKey(channelName)) {
-                        audience = new ChannelAudience(KnownChatEntities.PUBLIC_CHAT.toString());
+                        audience = new ChannelAudience(KnownChatEntities.GENERAL_CHANNEL.toString());
                     } else {
                         audience = new ChannelAudience(channelName);
                     }
@@ -353,7 +357,7 @@ public class ChannelManager extends RedisChatAPI {
     }
 
     private Channel getGenericPublic() {
-        return Channel.channelBuilder(KnownChatEntities.PUBLIC_CHAT.toString())
+        return Channel.channelBuilder(KnownChatEntities.GENERAL_CHANNEL.toString())
                 .format(plugin.config.defaultFormat.format())
                 .rateLimit(plugin.config.rate_limit)
                 .rateLimitPeriod(plugin.config.rate_limit_time_seconds)
@@ -376,7 +380,6 @@ public class ChannelManager extends RedisChatAPI {
     }
 
     public void setActiveChannel(String playerName, String channelName) {
-
         plugin.getDataManager().setActivePlayerChannel(playerName, channelName);
     }
 

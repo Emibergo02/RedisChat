@@ -39,7 +39,7 @@ dependencies {
     implementation 'com.github.Anon8281:UniversalScheduler:0.1.6'
 
 
-    compileOnly 'org.spigotmc:spigot-api:1.20.6-R0.1-SNAPSHOT'
+    compileOnly 'org.spigotmc:spigot-api:1.19.4-R0.1-SNAPSHOT'
     compileOnly 'me.clip:placeholderapi:2.11.3'
     compileOnly 'io.lettuce:lettuce-core:6.2.5.RELEASE'
     compileOnly 'org.jetbrains:annotations:24.0.1'
@@ -63,7 +63,6 @@ dependencies {
 }
 
 test {
-
     useJUnitPlatform()
 }
 
@@ -96,7 +95,7 @@ shadowJar {
     relocate 'com.github.Anon8281.universalScheduler', 'dev.unnm3d.redischat.libraries.universalScheduler'
 }
 
-def sourceJavaVersion = 21
+def sourceJavaVersion = 17
 def releaseJavaVersion = 17
 
 java {
@@ -107,7 +106,6 @@ java {
 
     withSourcesJar()
     withJavadocJar()
-
 }
 compileJava.options.release.set releaseJavaVersion
 compileJava.options.encoding 'UTF-8'

@@ -1,6 +1,6 @@
 package dev.unnm3d.redischat.api;
 
-import dev.unnm3d.redischat.channels.PlayerChannel;
+import dev.unnm3d.redischat.channels.gui.PlayerChannel;
 import dev.unnm3d.redischat.chat.objects.Channel;
 import dev.unnm3d.redischat.chat.objects.ChatMessage;
 import dev.unnm3d.redischat.mail.Mail;

@@ -4,7 +4,7 @@ import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.api.DataManager;
-import dev.unnm3d.redischat.channels.PlayerChannel;
+import dev.unnm3d.redischat.channels.gui.PlayerChannel;
 import dev.unnm3d.redischat.chat.KnownChatEntities;
 import dev.unnm3d.redischat.chat.objects.Channel;
 import dev.unnm3d.redischat.chat.objects.ChatMessage;
