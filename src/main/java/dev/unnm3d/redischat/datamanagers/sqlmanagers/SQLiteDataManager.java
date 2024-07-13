@@ -92,6 +92,28 @@ public class SQLiteDataManager extends SQLDataManager {
     }
 
     @Override
+    public void setActivePlayerChannel(String playerName, String channelName) {
+        CompletableFuture.runAsync(() -> {
+            try (Connection connection = getConnection()) {
+                try (PreparedStatement statement = connection.prepareStatement("""
+                        INSERT OR REPLACE INTO player_data
+                            (`player_name`, `active_channel`)
+                        VALUES
+                            (?,?);""")) {
+
+                    statement.setString(1, playerName);
+                    statement.setString(2, channelName);
+                    if (statement.executeUpdate() == 0) {
+                        throw new SQLException("Failed to update active channel to database: " + statement);
+                    }
+                }
+            } catch (SQLException e) {
+                errWarn("Failed to update active channel to database", e);
+            }
+        }, plugin.getExecutorService());
+    }
+
+    @Override
     public void setMutedEntities(@NotNull String entityKey, @NotNull Set<String> entitiesValue) {
         try (Connection connection = getConnection()) {
             try (PreparedStatement statement = connection.prepareStatement(entitiesValue.isEmpty() ? """
@@ -282,33 +304,6 @@ public class SQLiteDataManager extends SQLDataManager {
                     e.printStackTrace();
                 }
             }
-        }, plugin.getExecutorService());
-    }
-
-    @Override
-    public void setPlayerChannelStatuses(@NotNull String playerName, @NotNull Map<String, String> channelStatuses) {
-        CompletableFuture.supplyAsync(() -> {
-            try (Connection connection = getConnection()) {
-                try (PreparedStatement statement = connection.prepareStatement("""
-                        INSERT OR REPLACE INTO player_channels (`player_name`, `channel_name`, `status`) VALUES
-                        """ +
-                        String.join(",", Collections.nCopies(channelStatuses.size(), "(?,?,?)")) + ";"
-                )) {
-                    int i = 0;
-                    for (Map.Entry<String, String> stringStringEntry : channelStatuses.entrySet()) {
-                        statement.setString(i * 3 + 1, playerName);
-                        statement.setString(i * 3 + 2, stringStringEntry.getKey());
-                        statement.setInt(i * 3 + 3, Integer.parseInt(stringStringEntry.getValue()));
-                        i++;
-                    }
-                    if (statement.executeUpdate() == 0) {
-                        throw new SQLException("Failed to update channel status to database: " + statement);
-                    }
-                }
-            } catch (SQLException e) {
-                errWarn("Failed to update channel status to database", e);
-            }
-            return null;
         }, plugin.getExecutorService());
     }
 

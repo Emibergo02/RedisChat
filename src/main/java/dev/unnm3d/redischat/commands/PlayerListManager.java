@@ -33,7 +33,7 @@ public class PlayerListManager {
                 final List<String> tempList = plugin.getServer().getOnlinePlayers().stream()
                         .filter(player -> {
                             if (isVanished(player)) {
-                                if (plugin.config.debug)
+                                if (plugin.config.debugPlayerList)
                                     plugin.getLogger().info("Removing  " + player.getName() + " from playerlist: is vanished");
                                 return false;
                             }
@@ -45,6 +45,8 @@ public class PlayerListManager {
                 if (!tempList.isEmpty())
                     plugin.getDataManager().publishPlayerList(tempList);
                 tempList.forEach(s -> playerList.put(s, System.currentTimeMillis()));
+                if (plugin.config.debugPlayerList)
+                    plugin.getLogger().info("Updated player list: " + playerList.keySet());
 
                 if (plugin.config.completeChatSuggestions) {
                     plugin.getServer().getOnlinePlayers().forEach(player ->
@@ -79,7 +81,7 @@ public class PlayerListManager {
                         if (vanishIntegration.canSee(sender, pName)) {
                             return false;
                         }
-                        if (RedisChat.getInstance().config.debug) {
+                        if (RedisChat.getInstance().config.debugPlayerList) {
                             RedisChat.getInstance().getLogger().info("Player " + sender.getName() + " can't see " + pName);
                         }
                         return true;
@@ -90,6 +92,9 @@ public class PlayerListManager {
     }
 
     public boolean isVanished(Player player) {
+        if (RedisChat.getInstance().config.debugPlayerList && player.getMetadata("vanished").stream().anyMatch(MetadataValue::asBoolean)) {
+            RedisChat.getInstance().getLogger().info("Player " + player.getName() + " has \"vanished\" metadata set to true");
+        }
         return player.getMetadata("vanished").stream().anyMatch(MetadataValue::asBoolean) ||
                 vanishIntegrations.stream().anyMatch(vanishIntegration -> vanishIntegration.isVanished(player));
     }

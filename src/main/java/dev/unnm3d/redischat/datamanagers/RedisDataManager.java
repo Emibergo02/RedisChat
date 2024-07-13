@@ -493,36 +493,9 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     }
 
     @Override
-    public CompletionStage<List<PlayerChannel>> getPlayerChannelStatuses(@NotNull String playerName, Map<String, Channel> registeredChannels) {
-        return null;
-    }
-
-    @Override
     public void setActivePlayerChannel(String playerName, String channelName) {
         getConnectionAsync(connection ->
                 connection.hset(DataKey.PLAYER_ACTIVE_CHANNELS.toString(), playerName, channelName)
-                        .exceptionally(throwable -> {
-                            throwable.printStackTrace();
-                            plugin.getLogger().warning("Error registering custom channel");
-                            return null;
-                        }));
-    }
-
-    @Override
-    public void setPlayerChannelStatuses(@NotNull String playerName, @NotNull Map<String, String> channelStatuses) {
-        getConnectionAsync(connection ->
-                connection.hmset(DataKey.PLAYER_CHANNELS_PREFIX + playerName, channelStatuses)
-                        .exceptionally(throwable -> {
-                            throwable.printStackTrace();
-                            plugin.getLogger().warning("Error registering custom channel");
-                            return null;
-                        }));
-    }
-
-    @Override
-    public void removePlayerChannelStatus(@NotNull String playerName, @NotNull String channelName) {
-        getConnectionAsync(connection ->
-                connection.hdel(DataKey.PLAYER_CHANNELS_PREFIX + playerName, channelName)
                         .exceptionally(throwable -> {
                             throwable.printStackTrace();
                             plugin.getLogger().warning("Error registering custom channel");

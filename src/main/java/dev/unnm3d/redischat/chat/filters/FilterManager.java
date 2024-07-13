@@ -111,9 +111,6 @@ public class FilterManager {
 
             //If the filter is cancelled, stop filtering
             if (result != null && result.filtered()) {
-                if (plugin.config.debug) {
-                    plugin.getLogger().info("Filtering stopped because the previous filter has cancelled the message");
-                }
                 break;
             }
 
@@ -138,6 +135,10 @@ public class FilterManager {
                     lastMessages.toArray(new ChatMessage[0])
             );
 
+            if (plugin.config.debug && result.filtered()) {
+                plugin.getLogger().info("Filter" + filter.getName() + " filtered the message");
+            }
+
 
             plugin.getServer().getPluginManager().callEvent(new FilterEvent(filter, result));
             if (plugin.config.debug) {
@@ -146,8 +147,10 @@ public class FilterManager {
         }
 
         //Save message to last messages
-        lastMessages.add(message);
-        lastMessagesCache.put(genKeyIndex(filterType, message.getReceiver(), chatEntity.getName()), lastMessages);
+        if (result != null && !result.filtered()) {
+            lastMessages.add(message);
+            lastMessagesCache.put(genKeyIndex(filterType, message.getReceiver(), chatEntity.getName()), lastMessages);
+        }
 
         if (result == null) {
             return new FilterResult(message, true, Optional.of(plugin.getComponentProvider().parse(chatEntity,

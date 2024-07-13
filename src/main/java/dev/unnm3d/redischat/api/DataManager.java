@@ -26,8 +26,6 @@ public interface DataManager {
 
     CompletionStage<@Nullable String> getActivePlayerChannel(@NotNull String playerName, Map<String, Channel> registeredChannels);
 
-    CompletionStage<List<PlayerChannel>> getPlayerChannelStatuses(@NotNull String playerName, Map<String, Channel> registeredChannels);
-
     CompletionStage<List<Channel>> getChannels();
 
     CompletionStage<Optional<String>> getReplyName(@NotNull String requesterName);
@@ -70,10 +68,6 @@ public interface DataManager {
 
     CompletionStage<Boolean> deleteMail(@NotNull Mail mail);
     void setActivePlayerChannel(String playerName, String channelName);
-
-    void setPlayerChannelStatuses(@NotNull String playerName, @NotNull Map<String, String> channelStatuses);
-
-    void removePlayerChannelStatus(@NotNull String playerName, @NotNull String channelName);
 
     void setMutedEntities(@NotNull String playerName, @NotNull Set<String> mutedChannels);
 

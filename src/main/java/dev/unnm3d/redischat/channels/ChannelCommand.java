@@ -57,13 +57,20 @@ public class ChannelCommand {
                         return;
                     }
 
+                    final String channelName = (String) args.get(0);
                     int rateLimit = (int) args.get(1);
                     int rateLimitPeriod = (int) args.get(2);
                     boolean filtered = (boolean) args.get(3);
 
-                    plugin.getChannelManager().registerChannel(Channel.channelBuilder((String) args.get(0))
+                    if (channelName == null) {
+                        plugin.messages.sendMessage(sender, plugin.messages.missing_arguments);
+                        return;
+                    }
+
+                    plugin.getChannelManager().registerChannel(Channel.channelBuilder(channelName)
                             .rateLimit(rateLimit)
                             .rateLimitPeriod(rateLimitPeriod)
+                            .format(plugin.messages.channelNoFormat.replace("%channel%", channelName))
                             .proximityDistance(proximityDistance.map(o -> (int) o).orElse(-1))
                             .discordWebhook(discordWebhook.map(o -> (String) o).orElse(""))
                             .filtered(filtered)

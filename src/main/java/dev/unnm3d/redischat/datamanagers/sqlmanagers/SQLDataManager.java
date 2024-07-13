@@ -56,6 +56,7 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
                 player_name     varchar(16)     not null primary key,
                 ignore_list     TEXT            default NULL,
                 reply_player    varchar(16)     default NULL,
+                active_channel  varchar(16)     default 'public',
                 chat_color      varchar(12)     default NULL,
                 is_spying       BOOLEAN         default FALSE,
                 inv_serialized  MEDIUMTEXT      default NULL,
@@ -73,16 +74,6 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
                 discordWebhook      varchar(128)    default '',
                 filtered            BOOLEAN         default 1,
                 notificationSound   varchar(32)     default NULL
-            );
-            """, """
-            create table if not exists player_channels
-            (
-                player_name  varchar(16)   not null,
-                channel_name varchar(16)   not null,
-                status       int default 0 not null,
-                primary key (player_name, channel_name),
-                constraint player_channels_channels_name_fk
-                    foreign key (channel_name) references channels (name)
             );
             """, """
             create table if not exists muted_entities
@@ -722,22 +713,21 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
         return CompletableFuture.supplyAsync(() -> {
             try (Connection connection = getConnection()) {
                 try (PreparedStatement statement = connection.prepareStatement("""
-                        select channel_name, status from player_channels
+                        select active_channel from player_data
                         where player_name = ?;""")) {
 
                     statement.setString(1, playerName);
 
                     final ResultSet resultSet = statement.executeQuery();
 
-                    while (resultSet.next()) {
-                        if (resultSet.getInt("status") == 1)
-                            return resultSet.getString("channel_name");
+                    if (resultSet.next()) {
+                        return resultSet.getString("active_channel");
                     }
                 }
             } catch (SQLException e) {
                 errWarn("Failed to fetch active channel from database", e);
             }
-            return "public";
+            return KnownChatEntities.GENERAL_CHANNEL.toString();
         }, plugin.getExecutorService());
     }
 
@@ -785,39 +775,27 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
         });
     }
 
-
-    @Override
-    public CompletionStage<List<PlayerChannel>> getPlayerChannelStatuses(@NotNull String playerName, Map<String, Channel> registeredChannels) {
-        return CompletableFuture.supplyAsync(() -> {
-            try (Connection connection = getConnection()) {
-                try (PreparedStatement statement = connection.prepareStatement("""
-                        select channel_name, status from player_channels
-                        where player_name = ?;""")) {
-
-                    statement.setString(1, playerName);
-
-                    final ResultSet resultSet = statement.executeQuery();
-                    final List<PlayerChannel> playerChannels = new ArrayList<>();
-                    //TODO: fix player channels for SQL version
-//                    while (resultSet.next()) {
-//                        Channel channel = registeredChannels.get(resultSet.getString("channel_name"));
-//                        if (channel != null)
-//                            playerChannels.add(new PlayerChannel(
-//                                    channel,
-//                                    resultSet.getInt("status")));
-//                    }
-                    return playerChannels;
-                }
-            } catch (SQLException e) {
-                errWarn("Failed to fetch channel statuses from database", e);
-            }
-            return List.of();
-        }, plugin.getExecutorService());
-    }
-
     @Override
     public void setActivePlayerChannel(String playerName, String channelName) {
-        //TODO: fix player channels for SQL version
+        CompletableFuture.runAsync(() -> {
+            try (Connection connection = getConnection()) {
+                try (PreparedStatement statement = connection.prepareStatement("""
+                        INSERT INTO player_data
+                            (`player_name`, `active_channel`)
+                        VALUES
+                            (?,?)
+                        ON DUPLICATE KEY UPDATE `active_channel` = VALUES(`active_channel`);""")) {
+
+                    statement.setString(1, playerName);
+                    statement.setString(2, channelName);
+                    if (statement.executeUpdate() == 0) {
+                        throw new SQLException("Failed to update active channel to database: " + statement);
+                    }
+                }
+            } catch (SQLException e) {
+                errWarn("Failed to update active channel to database", e);
+            }
+        }, plugin.getExecutorService());
     }
 
 
@@ -848,59 +826,6 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
         }, plugin.getExecutorService());
     }
 
-    @Override
-    public void setPlayerChannelStatuses(@NotNull String playerName, @NotNull Map<String, String> channelStatuses) {
-        CompletableFuture.supplyAsync(() -> {
-            try (Connection connection = getConnection()) {
-                try (PreparedStatement statement = connection.prepareStatement("""
-                        INSERT INTO player_channels (`player_name`, `channel_name`, `status`) VALUES
-                                                
-                        """ +
-                        String.join(",", Collections.nCopies(channelStatuses.size(), "(?,?,?)")) +
-                        """
-                                                                
-                                ON DUPLICATE KEY UPDATE status = VALUES(`status`);
-                                """)) {
-
-                    int i = 0;
-                    for (Map.Entry<String, String> stringStringEntry : channelStatuses.entrySet()) {
-                        statement.setString(i * 3 + 1, playerName);
-                        statement.setString(i * 3 + 2, stringStringEntry.getKey());
-                        statement.setInt(i * 3 + 3, Integer.parseInt(stringStringEntry.getValue()));
-                        i++;
-                    }
-                    if (statement.executeUpdate() == 0) {
-                        throw new SQLException("Failed to update channel status to database: " + statement);
-                    }
-                }
-            } catch (SQLException e) {
-                errWarn("Failed to update channel status to database", e);
-            }
-            return null;
-        }, plugin.getExecutorService());
-    }
-
-    @Override
-    public void removePlayerChannelStatus(@NotNull String playerName, @NotNull String channelName) {
-        CompletableFuture.supplyAsync(() -> {
-            try (Connection connection = getConnection()) {
-                try (PreparedStatement statement = connection.prepareStatement("""
-                        DELETE FROM player_channels
-                        WHERE player_name = ? and channel_name = ?;""")) {
-
-                    statement.setString(1, playerName);
-                    statement.setString(2, channelName);
-
-                    if (statement.executeUpdate() == 0) {
-                        throw new SQLException("Failed to delete channel from database: " + statement);
-                    }
-                }
-            } catch (SQLException e) {
-                errWarn("Failed to register channel to database", e);
-            }
-            return null;
-        }, plugin.getExecutorService());
-    }
 
     @Override
     public void sendChatMessage(@NotNull ChatMessage packet) {
