@@ -81,7 +81,9 @@ public class PlayerChannel extends AbstractItem {
                 RedisChat.getInstance().getChannelManager().openChannelsGUI(player);
             } else if (status == Status.LISTENING) {
                 status = Status.IDLE;
-                RedisChat.getInstance().getChannelManager().setActiveChannel(player.getName(), KnownChatEntities.GENERAL_CHANNEL.toString());
+                final String nextChannel = this.channel.getName().equals(KnownChatEntities.GENERAL_CHANNEL.toString()) ?
+                        KnownChatEntities.VOID_CHAT.toString() : KnownChatEntities.GENERAL_CHANNEL.toString();
+                RedisChat.getInstance().getChannelManager().setActiveChannel(player.getName(), nextChannel);
             }
         } else if (clickType.isRightClick()) {
             if (status == Status.IDLE) {

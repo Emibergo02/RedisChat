@@ -66,12 +66,10 @@ public final class GuiSettings implements ConfigValidator {
             "x x x x x x x x x",
             "x x x x x x x x x",
             "x x x x x x x x x",
-            "# < # # S # # > #");
+            "# < # # # # # > #");
     public ItemStack activeChannelButton = getActiveChannelButton();
     public ItemStack idleChannel = getIdleChannelButton();
     public ItemStack mutedChannel = getMutedChannelButton();
-    public ItemStack silencePublicButton = getSilencePublicButton();
-    public ItemStack unSilencePublicButton = getUnSilencePublicButton();
 
     private ItemStack getMutedChannelButton() {
         ItemStack item = new ItemStack(Material.CYAN_DYE);
@@ -99,26 +97,6 @@ public final class GuiSettings implements ConfigValidator {
         if (im == null) return item;
         im.setLore(List.of("§2You're writing on this channel",
                 "§bLeft click to \"unlisten\" the channel"));
-        item.setItemMeta(im);
-        return item;
-    }
-
-    private ItemStack getSilencePublicButton() {
-        ItemStack item = new ItemStack(Material.WHITE_WOOL);
-        ItemMeta im = item.getItemMeta();
-        if (im == null) return item;
-        im.setDisplayName("§cSilence Public");
-        im.setLore(List.of("§7Click to silence",
-                "§7public messages"));
-        item.setItemMeta(im);
-        return item;
-    }
-
-    private ItemStack getUnSilencePublicButton() {
-        ItemStack item = new ItemStack(Material.GRAY_WOOL);
-        ItemMeta im = item.getItemMeta();
-        if (im == null) return item;
-        im.setDisplayName("§cActivate public chat");
         item.setItemMeta(im);
         return item;
     }

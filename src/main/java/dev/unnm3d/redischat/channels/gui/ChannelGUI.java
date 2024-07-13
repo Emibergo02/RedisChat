@@ -1,6 +1,5 @@
 package dev.unnm3d.redischat.channels.gui;
 
-import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
 import lombok.AllArgsConstructor;
 import org.bukkit.entity.Player;
@@ -22,7 +21,8 @@ public class ChannelGUI {
 
 
     public Gui getChannelsGUI(@NotNull Player player, @Nullable String activeChannelName) {
-        final List<Item> items = plugin.getChannelManager().getRegisteredChannels().values().stream()
+
+        final List<Item> items = plugin.getChannelManager().getAllChannels().stream()
                 .map(channel -> new PlayerChannel(channel, player, channel.getName().equals(activeChannelName)))
                 .filter(playerChannel -> !playerChannel.isHidden())
                 .map(Item.class::cast).toList();
@@ -43,7 +43,6 @@ public class ChannelGUI {
                         return new ItemBuilder(plugin.guiSettings.forwardButton);
                     }
                 })
-                .addIngredient('S', new MutePublic(!player.hasPermission(Permissions.CHANNEL_PUBLIC.getPermission())))
                 .setContent(items)
                 .build();
     }

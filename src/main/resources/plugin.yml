@@ -153,9 +153,6 @@ permissions:
   redischat.bypassfilter.permission:
     description: Allows to bypass the permission filter
     default: false
-  redischat.hidechannel.*:
-    description: Allows to hide a channel
-    default: false
   redischat.admin:
     description: Allows to use the /redischat command
     default: op
@@ -194,3 +191,4 @@ permissions:
       - redischat.mail.read
       - redischat.mail.delete
       - redischat.mail.unread
+      - redischat.hidechannel.staffchat

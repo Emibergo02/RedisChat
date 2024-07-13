@@ -103,7 +103,7 @@ public class ChannelManager extends RedisChatAPI {
                 .thenAccept(channelName -> RedisChat.getScheduler().runTask(() ->
                         Window.single()
                                 .setTitle("Channels")
-                                .setGui(channelGUI.getChannelsGUI(player, channelName))
+                                .setGui(channelGUI.getChannelsGUI(player, channelName == null ? KnownChatEntities.GENERAL_CHANNEL.toString() : channelName))
                                 .setCloseHandlers(List.of(() -> new UniversalRunnable() {
                                     @Override
                                     public void run() {
@@ -123,16 +123,7 @@ public class ChannelManager extends RedisChatAPI {
      */
     public void outgoingMessage(CommandSender player, ChannelAudience receiver, @NotNull String message) {
         //Get channel or public channel by default
-        Channel currentChannel = getPublicChannel(player);
-
-        if (receiver.getType() == AudienceType.CHANNEL) {
-            if (receiver.getName().equals(KnownChatEntities.STAFFCHAT_CHANNEL_NAME.toString())) {
-                message = message.substring(1);
-                currentChannel = getStaffChatChannel();
-            } else {
-                currentChannel = plugin.getChannelManager().getChannel(receiver.getName()).orElse(currentChannel);
-            }
-        }
+        final Channel currentChannel = plugin.getChannelManager().getChannel(receiver.getName()).orElse(getPublicChannel(player));
 
 
         ChatMessage chatMessage = new ChatMessage(
@@ -192,14 +183,19 @@ public class ChannelManager extends RedisChatAPI {
                     ChannelAudience audience;
                     String message = finalMessage;
 
-                    if (isStaffChatEnabled(message, player)) {
-                        audience = new ChannelAudience(KnownChatEntities.STAFFCHAT_CHANNEL_NAME.toString());
+                    if (plugin.config.enableStaffChat &&
+                            player.hasPermission(Permissions.ADMIN_STAFF_CHAT.getPermission()) &&
+                            message.startsWith(plugin.config.staffChatPrefix) &&
+                            !KnownChatEntities.STAFFCHAT_CHANNEL_NAME.toString().equals(channelName)) {
                         message = message.substring(1);
-                    } else if (channelName != null && channelName.equals(KnownChatEntities.VOID_CHAT.toString())) {
+                        channelName = KnownChatEntities.STAFFCHAT_CHANNEL_NAME.toString();
+                    }
+
+                    if (channelName == null) {
+                        audience = new ChannelAudience(KnownChatEntities.GENERAL_CHANNEL.toString());
+                    } else if (channelName.equals(KnownChatEntities.VOID_CHAT.toString())) {
                         plugin.getComponentProvider().sendMessage(player, plugin.messages.channelNoPermission);
                         return;
-                    } else if (channelName == null || !registeredChannels.containsKey(channelName)) {
-                        audience = new ChannelAudience(KnownChatEntities.GENERAL_CHANNEL.toString());
                     } else {
                         audience = new ChannelAudience(channelName);
                     }
@@ -391,6 +387,14 @@ public class ChannelManager extends RedisChatAPI {
     @Override
     public void removeVanishIntegration(VanishIntegration vanishIntegration) {
         plugin.getPlayerListManager().removeVanishIntegration(vanishIntegration);
+    }
+
+    public List<Channel> getAllChannels() {
+        List<Channel> channels = new ArrayList<>();
+        channels.add(getPublicChannel(null));
+        channels.add(getStaffChatChannel());
+        channels.addAll(registeredChannels.values());
+        return channels;
     }
 
 }
