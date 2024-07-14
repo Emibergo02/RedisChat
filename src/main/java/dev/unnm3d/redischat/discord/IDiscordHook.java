@@ -10,7 +10,7 @@ import java.nio.charset.StandardCharsets;
 
 public interface IDiscordHook {
 
-    default void sendDiscordMessage(Channel channel, ChatMessage message) {
+    default void sendDiscordMessage(String channelName, ChatMessage message) {
 
     }
 

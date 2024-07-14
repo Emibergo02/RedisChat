@@ -1,7 +1,11 @@
 package dev.unnm3d.redischat.chat.filters;
 
-import dev.unnm3d.redischat.chat.filters.incoming.*;
-import dev.unnm3d.redischat.chat.filters.outgoing.*;
+import dev.unnm3d.redischat.chat.filters.incoming.IgnorePlayerFilter;
+import dev.unnm3d.redischat.chat.filters.incoming.SpyFilter;
+import dev.unnm3d.redischat.chat.filters.outgoing.CapsFilter;
+import dev.unnm3d.redischat.chat.filters.outgoing.DuplicateFilter;
+import dev.unnm3d.redischat.chat.filters.outgoing.ParseContentFilter;
+import dev.unnm3d.redischat.chat.filters.outgoing.WordBlacklistFilter;
 import dev.unnm3d.redischat.chat.objects.AudienceType;
 import dev.unnm3d.redischat.settings.FiltersConfig;
 import lombok.Getter;
@@ -19,7 +23,7 @@ public enum DefaultSettings {
     SPY(new SpyFilter.SpyFilterProperties()),
     CAPS(new CapsFilter.CapsFilterProperties()),
     DUPLICATE(new DuplicateFilter.DuplicateFilterProperties()),
-    IGNORE(new IgnoreFilter.IgnoreFilterProperties()),
+    IGNORE(new FiltersConfig.FilterSettings(true, 4, Set.of(AudienceType.CHANNEL, AudienceType.PLAYER), Set.of())),
     MUTED_CHANNEL(new FiltersConfig.FilterSettings(true, 5, Set.of(AudienceType.CHANNEL), Set.of())),
     CONTENT(new ParseContentFilter.ContentProperties()),
     TAGS(new FiltersConfig.FilterSettings(true, 9, Set.of(), Set.of())),

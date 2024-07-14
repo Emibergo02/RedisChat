@@ -1,5 +1,6 @@
 package dev.unnm3d.redischat.chat.filters.incoming;
 
+import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.chat.filters.AbstractFilter;
 import dev.unnm3d.redischat.chat.filters.FilterResult;
 import dev.unnm3d.redischat.chat.objects.ChatMessage;
@@ -17,8 +18,7 @@ public class DiscordFilter extends AbstractFilter<FiltersConfig.FilterSettings> 
     @Override
     public FilterResult applyWithPrevious(CommandSender receiver, @NotNull ChatMessage message, ChatMessage... previousMessages) {
         if (message.getReceiver().isDiscord()) {
-            //TODO: Fix discord integration
-            //RedisChat.getInstance().getDiscordHook().sendDiscordMessage(channel, message);
+            RedisChat.getInstance().getDiscordHook().sendDiscordMessage(message.getReceiver().getName(), message);
             return new FilterResult(message, true);
         }
 

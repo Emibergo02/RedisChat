@@ -47,16 +47,16 @@ public class SpicordHook extends SimpleAddon implements IDiscordHook {
     }
 
     @Override
-    public void sendDiscordMessage(Channel channel, ChatMessage chatMessageInfo) {
+    public void sendDiscordMessage(String channelName, ChatMessage chatMessageInfo) {
         if (chatMessageInfo.getSender().isDiscord()) return;
         if (this.bot == null || this.bot.getJda() == null) {
-            plugin.getLogger().warning("Unable to send message to Discord channel " + channel.getName() + ": bot not found");
+            plugin.getLogger().warning("Unable to send message to Discord channel " + channelName + ": bot not found");
             return;
         }
         final TextChannel textChannel = this.bot.getJda().getTextChannelById(
-                plugin.config.spicord.spicordChannelLink().getOrDefault(channel.getName(), "0000000000000000000"));
+                plugin.config.spicord.spicordChannelLink().getOrDefault(channelName, "0000000000000000000"));
         if (textChannel == null) {
-            plugin.getLogger().warning("Unable to send message to Discord channel " + channel.getName() + ": channel not found");
+            plugin.getLogger().warning("Unable to send message to Discord channel " + channelName + ": channel not found");
             return;
         }
         if (plugin.config.spicord.discordFormat() == null) {
@@ -70,7 +70,7 @@ public class SpicordHook extends SimpleAddon implements IDiscordHook {
                 plugin.getComponentProvider()
                         .parsePlaceholders(null, //Parse placeholder for format
                                 plugin.config.spicord.discordFormat()
-                                        .replace("%channel%", channel.getName()) //Specific placeholders for Discord format
+                                        .replace("%channel%", channelName) //Specific placeholders for Discord format
                                         .replace("%sender%", chatMessageInfo.getSender().getName()))
                         .replaceText(rBuilder -> //Replace %message% with the actual message component
                                 rBuilder.matchLiteral("%message%")

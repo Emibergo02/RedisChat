@@ -51,7 +51,7 @@ public class FilterManager {
         addFilter(new CapsFilter(plugin.filterSettings.caps));
         addFilter(new SpamFilter(plugin, plugin.filterSettings.spam));
         addFilter(new DuplicateFilter(plugin.filterSettings.duplicate));
-        addFilter(new IgnoreFilter(plugin.filterSettings.ignore));
+        addFilter(new IgnoreFilter(plugin,plugin.filterSettings.ignore));
         addFilter(new MutedChannelFilter(plugin, plugin.filterSettings.mutedChannel));
         addFilter(new ParseContentFilter(plugin.filterSettings.content));
         addFilter(new TagFilter(plugin, plugin.filterSettings.tags));

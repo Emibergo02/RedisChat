@@ -95,7 +95,7 @@ public class PlayerListManager {
         if (RedisChat.getInstance().config.debugPlayerList && player.getMetadata("vanished").stream().anyMatch(MetadataValue::asBoolean)) {
             RedisChat.getInstance().getLogger().info("Player " + player.getName() + " has \"vanished\" metadata set to true");
         }
-        return player.getMetadata("vanished").stream().anyMatch(MetadataValue::asBoolean) ||
+        return //player.getMetadata("vanished").stream().anyMatch(MetadataValue::asBoolean) ||
                 vanishIntegrations.stream().anyMatch(vanishIntegration -> vanishIntegration.isVanished(player));
     }
 

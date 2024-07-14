@@ -4,7 +4,6 @@ import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.api.DataManager;
-import dev.unnm3d.redischat.channels.gui.PlayerChannel;
 import dev.unnm3d.redischat.chat.KnownChatEntities;
 import dev.unnm3d.redischat.chat.objects.Channel;
 import dev.unnm3d.redischat.chat.objects.ChatMessage;
@@ -327,6 +326,9 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
         } catch (SQLException e) {
             errWarn("Failed to insert serialized inventory into database", e);
         }
+        if (plugin.config.debugItemShare) {
+            plugin.getLogger().info("05 Added inventory for " + name);
+        }
     }
 
 
@@ -349,6 +351,9 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
         } catch (SQLException e) {
             errWarn("Failed to insert serialized item into database", e);
         }
+        if (plugin.config.debugItemShare) {
+            plugin.getLogger().info("08 Added item for " + name);
+        }
     }
 
     @Override
@@ -370,6 +375,9 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
         } catch (SQLException e) {
             errWarn("Failed to insert serialized enderchest into database", e);
         }
+        if (plugin.config.debugItemShare) {
+            plugin.getLogger().info("10 Added enderchest for " + name);
+        }
     }
 
     @Override
@@ -389,7 +397,7 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
     }
 
     @Override
-    public CompletionStage<ItemStack> getPlayerItem(@NotNull String playerName) {
+    public CompletionStage<@Nullable ItemStack> getPlayerItem(@NotNull String playerName) {
         return CompletableFuture.supplyAsync(() -> {
             try (Connection connection = getConnection()) {
                 try (PreparedStatement statement = connection.prepareStatement("""
@@ -408,7 +416,7 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
             } catch (SQLException e) {
                 errWarn("Failed to fetch serialized item from the database", e);
             }
-            return null;
+            return new ItemStack(Material.AIR);
         }, plugin.getExecutorService());
     }
 
@@ -432,7 +440,7 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
             } catch (SQLException e) {
                 errWarn("Failed to fetch serialized inventory from the database", e);
             }
-            return null;
+            return new ItemStack[0];
         }, plugin.getExecutorService());
     }
 
@@ -456,7 +464,7 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
             } catch (SQLException e) {
                 errWarn("Failed to fetch serialized enderchest from the database", e);
             }
-            return null;
+            return new ItemStack[0];
         }, plugin.getExecutorService());
     }
 

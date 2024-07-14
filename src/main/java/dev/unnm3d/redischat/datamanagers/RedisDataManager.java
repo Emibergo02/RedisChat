@@ -237,7 +237,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
         getConnectionAsync(connection ->
                 connection.hset(DataKey.INVSHARE_INVENTORY.toString(), name, serialize(inv))
                         .thenApply(response -> {
-                            if (plugin.config.debug) {
+                            if (plugin.config.debugItemShare) {
                                 plugin.getLogger().info("05 Added inventory for " + name);
                             }
                             return response;
@@ -255,7 +255,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
         getConnectionAsync(connection ->
                 connection.hset(DataKey.INVSHARE_ITEM.toString(), name, serialize(item))
                         .thenApply(response -> {
-                            if (plugin.config.debug) {
+                            if (plugin.config.debugItemShare) {
                                 plugin.getLogger().info("08 Added item for " + name);
                             }
                             return response;
@@ -272,7 +272,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
         getConnectionAsync(connection ->
                 connection.hset(DataKey.INVSHARE_ENDERCHEST.toString(), name, serialize(inv))
                         .thenApply(response -> {
-                            if (plugin.config.debug) {
+                            if (plugin.config.debugItemShare) {
                                 plugin.getLogger().info("10 Added enderchest for " + name);
                             }
                             return response;
@@ -305,12 +305,12 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
                             ItemStack[] itemStacks = serializedInv == null || serializedInv.isEmpty() ? new ItemStack[0] : deserialize(serializedInv);
                             if (itemStacks.length == 0) return new ItemStack(Material.AIR);
                             return itemStacks[0];
-                        }).exceptionally(throwable -> {
-                            throwable.printStackTrace();
-                            plugin.getLogger().warning("Error getting item");
-                            return new ItemStack(Material.AIR);
                         })
-        );
+        ).exceptionally(throwable -> {
+            throwable.printStackTrace();
+            plugin.getLogger().warning("Error getting item");
+            return new ItemStack(Material.AIR);
+        });
     }
 
     @Override

@@ -261,6 +261,8 @@ public final class Config implements ConfigValidator {
     public boolean debug = false;
     @Comment("Toggle debug mode for playerlist (by default is false)")
     public boolean debugPlayerList = false;
+    @Comment("Toggle debug mode for itemshare (by default is false)")
+    public boolean debugItemShare = false;
     @Comment("The number of threads for chat tasks")
     public int chatThreads = 2;
     @Comment({"botName is the botId associated to the bot inside the spicord configuration",

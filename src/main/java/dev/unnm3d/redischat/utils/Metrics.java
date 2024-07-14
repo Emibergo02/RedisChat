@@ -101,7 +101,7 @@ public class Metrics {
                         logErrors,
                         logSentData,
                         logResponseStatusText);
-        metricsBase.addCustomChart(new SimplePie("plugin_source", () -> "SpigotMC"));
+        metricsBase.addCustomChart(new SimplePie("plugin_source", () -> "compiled"));
     }
 
     /**

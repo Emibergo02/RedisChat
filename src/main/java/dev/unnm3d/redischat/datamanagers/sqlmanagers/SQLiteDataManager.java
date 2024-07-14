@@ -183,6 +183,9 @@ public class SQLiteDataManager extends SQLDataManager {
         } catch (SQLException e) {
             errWarn("Failed to insert serialized inventory into database", e);
         }
+        if (plugin.config.debugItemShare) {
+            plugin.getLogger().info("05 Added inventory for " + name);
+        }
     }
 
     @Override
@@ -193,7 +196,6 @@ public class SQLiteDataManager extends SQLDataManager {
                         (`player_name`, `item_serialized`)
                     VALUES
                         (?,?);""")) {
-
                 statement.setString(1, name);
                 statement.setString(2, serialize(item));
 
@@ -203,6 +205,9 @@ public class SQLiteDataManager extends SQLDataManager {
             }
         } catch (SQLException e) {
             errWarn("Failed to insert serialized item into database", e);
+        }
+        if (plugin.config.debugItemShare) {
+            plugin.getLogger().info("08 Added item for " + name);
         }
     }
 
@@ -223,6 +228,9 @@ public class SQLiteDataManager extends SQLDataManager {
             }
         } catch (SQLException e) {
             errWarn("Failed to insert serialized enderchest into database", e);
+        }
+        if (plugin.config.debugItemShare) {
+            plugin.getLogger().info("10 Added enderchest for " + name);
         }
     }
 

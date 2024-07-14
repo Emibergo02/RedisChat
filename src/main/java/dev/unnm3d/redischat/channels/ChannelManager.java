@@ -267,6 +267,12 @@ public class ChannelManager extends RedisChatAPI {
                 Collections.singleton(Bukkit.getPlayer(chatMessage.getReceiver().getName())) :
                 new HashSet<>(plugin.getServer().getOnlinePlayers());
 
+        final Component formattedComponent = miniMessage.deserialize(chatMessage.getFormat());
+
+        if (chatMessage.getReceiver().isChannel()) {
+            getComponentProvider().logComponent(formattedComponent.replaceText(builder -> builder.matchLiteral("%message%")
+                    .replacement(miniMessage.deserialize(chatMessage.getContent()))));
+        }
 
         for (Player recipient : recipients) {
             final FilterResult result = filterManager.filterMessage(recipient, chatMessage, AbstractFilter.Direction.INCOMING);
@@ -294,21 +300,19 @@ public class ChannelManager extends RedisChatAPI {
                             Float.parseFloat(split[2]));
                 }
             }
-            final Component formattedComponent = miniMessage.deserialize(result.message().getFormat())
-                    .replaceText(builder -> builder.matchLiteral("%message%").replacement(
-                            miniMessage.deserialize(result.message().getContent())
-                    ));
-            if (chatMessage.getReceiver().isChannel()) {
-                getComponentProvider().logComponent(formattedComponent);
-            }
+
 
             //If proximity is enabled, check if player is in range
             if (!checkProximity(recipient, chatMessage)) {
                 continue;
             }
 
-            getComponentProvider().sendComponentOrCache(recipient, formattedComponent);
+            getComponentProvider().sendComponentOrCache(recipient, formattedComponent
+                    .replaceText(builder -> builder.matchLiteral("%message%")
+                            .replacement(miniMessage.deserialize(result.message().getContent())))
+            );
         }
+
 
     }
 
