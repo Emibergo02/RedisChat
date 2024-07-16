@@ -32,7 +32,7 @@ public final class Messages {
             "<yellow>RedisChat</yellow> <gray>»</gray> <red>Use <click:run_command:'/allowmsg list'><color:#33c5ff>[/allowmsg list]</color></click> to see the list of players that can send you private messages</red>";
     public String ignore_whitelist_disabled = "<yellow>RedisChat</yellow> <gray>»</gray> <green>You are now ignoring only players INSIDE your ignore list</green><br>" +
             "<yellow>RedisChat</yellow> <gray>»</gray> <green>Use <click:run_command:'/ignore list'><color:#ff8c00>[/ignore list]</color></click> to see the list of players that you are ignoring</green>";
-    public String spychat_format = "<yellow>RedisChat</yellow> <gray>»</gray> <red>%sender% said to %receiver% : %message%</red>";
+    public String spychat_format = "<yellow>RedisChat</yellow> <gray>»</gray> <red>%sender% said to %receiver% : {message}</red>";
     public String spychat_enabled = "<yellow>RedisChat</yellow> <gray>»</gray> <green>Spychat enabled for %player%</green>";
     public String spychat_disabled = "<yellow>RedisChat</yellow> <gray>»</gray> <red>Spychat disabled for %player%</red>";
     public String edit_message_error = "<yellow>RedisChat</yellow> <gray>»</gray> <red>This config entry is not a String or doesn't exist!";

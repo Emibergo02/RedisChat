@@ -44,7 +44,6 @@ public class FilterManager {
         addFilter(new DiscordFilter(plugin.filterSettings.discord));
         addFilter(new IgnorePlayerFilter(plugin.filterSettings.ignorePlayer));
         addFilter(new PermissionFilter(plugin.filterSettings.permission));
-        addFilter(new PrivateFilter(plugin.filterSettings.privateFilter));
         addFilter(new SpyFilter(plugin, plugin.filterSettings.spy));
 
         //OUTGOING
@@ -53,7 +52,6 @@ public class FilterManager {
         addFilter(new DuplicateFilter(plugin.filterSettings.duplicate));
         addFilter(new IgnoreFilter(plugin,plugin.filterSettings.ignore));
         addFilter(new MutedChannelFilter(plugin, plugin.filterSettings.mutedChannel));
-        addFilter(new ParseContentFilter(plugin.filterSettings.content));
         addFilter(new TagFilter(plugin, plugin.filterSettings.tags));
         addFilter(new WordBlacklistFilter(plugin, plugin.filterSettings.words));
         for (AbstractFilter<? extends FiltersConfig.FilterSettings> registeredFilter : registeredFilters) {

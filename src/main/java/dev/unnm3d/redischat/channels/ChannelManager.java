@@ -7,6 +7,7 @@ import dev.unnm3d.redischat.api.RedisChatAPI;
 import dev.unnm3d.redischat.api.VanishIntegration;
 import dev.unnm3d.redischat.api.events.AsyncRedisChatMessageEvent;
 import dev.unnm3d.redischat.channels.gui.ChannelGUI;
+import dev.unnm3d.redischat.chat.ChatFormat;
 import dev.unnm3d.redischat.chat.ComponentProvider;
 import dev.unnm3d.redischat.chat.KnownChatEntities;
 import dev.unnm3d.redischat.chat.filters.AbstractFilter;
@@ -21,6 +22,7 @@ import dev.unnm3d.redischat.moderation.MuteManager;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
@@ -123,7 +125,7 @@ public class ChannelManager extends RedisChatAPI {
      */
     public void outgoingMessage(CommandSender player, ChannelAudience receiver, @NotNull String message) {
         //Get channel or public channel by default
-        final Channel currentChannel = plugin.getChannelManager().getChannel(receiver.getName()).orElse(getPublicChannel(player));
+        final Channel currentChannel = getChannel(receiver.getName()).orElse(getPublicChannel(player));
 
 
         ChatMessage chatMessage = new ChatMessage(
@@ -143,16 +145,23 @@ public class ChannelManager extends RedisChatAPI {
             return;
         }
 
-        final Component formatComponent = getComponentProvider().parse(player, chatMessage.getFormat(),
-                true, false, false);
+        final Component formatComponent = getComponentProvider().parseChatMessageFormat(player, chatMessage.getFormat());
 
         //Parse to MiniMessage component (placeholders, tags and mentions), already parsed in Content filter
-        final Component contentComponent = miniMessage.deserialize(result.message().getContent());
+        final Component contentComponent = getComponentProvider().parseChatMessageContent(player, chatMessage.getContent());
+
+        //Check if message is empty
+        if (PlainTextComponentSerializer.plainText().serialize(contentComponent).trim().isEmpty()) {
+            getComponentProvider().sendComponentOrCache(player,
+                    getComponentProvider().parse(player,
+                            plugin.messages.empty_message, true, false, false));
+            return;
+        }
 
 
         //Call event and check cancellation
         final AsyncRedisChatMessageEvent event = new AsyncRedisChatMessageEvent(player,
-                result.message().getReceiver(),
+                chatMessage.getReceiver(),
                 formatComponent,
                 contentComponent);
         plugin.getServer().getPluginManager().callEvent(event);
@@ -194,7 +203,7 @@ public class ChannelManager extends RedisChatAPI {
                     if (channelName == null) {
                         audience = new ChannelAudience(KnownChatEntities.GENERAL_CHANNEL.toString());
                     } else if (channelName.equals(KnownChatEntities.VOID_CHAT.toString())) {
-                        plugin.getComponentProvider().sendMessage(player, plugin.messages.channelNoPermission);
+                        getComponentProvider().sendMessage(player, plugin.messages.channelNoPermission);
                         return;
                     } else {
                         audience = new ChannelAudience(channelName);
@@ -222,9 +231,11 @@ public class ChannelManager extends RedisChatAPI {
      * @param message      The message to be sent
      */
     public void outgoingPrivateMessage(@NotNull CommandSender sender, @NotNull String receiverName, @NotNull String message) {
-        final ChatMessage privateChatMessage = new ChatMessage(
+        final ChatFormat chatFormat = plugin.config.getChatFormat(sender);
+
+        ChatMessage privateChatMessage = new ChatMessage(
                 new ChannelAudience(sender.getName(), AudienceType.PLAYER),
-                plugin.config.getChatFormat(sender).private_format()
+                chatFormat.private_format()
                         .replace("%receiver%", receiverName)
                         .replace("%sender%", sender.getName()),
                 message,
@@ -238,28 +249,38 @@ public class ChannelManager extends RedisChatAPI {
                     getComponentProvider().sendComponentOrCache(sender, component));
             return;
         }
+        privateChatMessage = result.message();
+
+        //Parse to MiniMessage component (placeholders, tags and mentions), already parsed in Content filter
+        final Component contentComponent = getComponentProvider().parseChatMessageContent(sender, privateChatMessage.getContent());
+
+        //Check if message is empty
+        if (PlainTextComponentSerializer.plainText().serialize(contentComponent).trim().isEmpty()) {
+            getComponentProvider().sendComponentOrCache(sender,
+                    getComponentProvider().parse(sender,
+                            plugin.messages.empty_message, true, false, false));
+            return;
+        }
 
         final Component formatComponent = getComponentProvider()
                 //Parse format with placeholders
-                .parse(sender, result.message().getFormat(), true, false, false)
-                //Replace %message% with the content component
-                .replaceText(builder -> builder.matchLiteral("%message%")
-                        .replacement(miniMessage.deserialize(result.message().getContent())));
+                .parseChatMessageFormat(sender, privateChatMessage.getFormat())
+                //Replace {message} with the content component
+                .replaceText(builder -> builder.matchLiteral("{message}")
+                        .replacement(contentComponent));
 
         //Send the message to the sender
         plugin.getComponentProvider().sendMessage(sender, formatComponent);
 
-        //Send the message to the receiver
+        privateChatMessage.setFormat(MiniMessage.miniMessage().serialize(
+                getComponentProvider().parseChatMessageFormat(sender, chatFormat.receive_private_format()
+                        .replace("%receiver%", sender.getName())
+                        .replace("%sender%", sender.getName()))
+        ));
+
+        //Send the message to the receiver, the receiver format will be modified on the incoming filter
         plugin.getDataManager().sendChatMessage(privateChatMessage);
     }
-
-
-    private boolean isStaffChatEnabled(String message, CommandSender player) {
-        return plugin.config.enableStaffChat &&
-                message.startsWith(plugin.config.staffChatPrefix) &&
-                player.hasPermission(Permissions.ADMIN_STAFF_CHAT.getPermission());
-    }
-
 
     @Override
     public void sendGenericChat(ChatMessage chatMessage) {
@@ -267,11 +288,9 @@ public class ChannelManager extends RedisChatAPI {
                 Collections.singleton(Bukkit.getPlayer(chatMessage.getReceiver().getName())) :
                 new HashSet<>(plugin.getServer().getOnlinePlayers());
 
-        final Component formattedComponent = miniMessage.deserialize(chatMessage.getFormat());
-
         if (chatMessage.getReceiver().isChannel()) {
-            getComponentProvider().logComponent(formattedComponent.replaceText(builder -> builder.matchLiteral("%message%")
-                    .replacement(miniMessage.deserialize(chatMessage.getContent()))));
+            getComponentProvider().logComponent(miniMessage.deserialize(
+                    chatMessage.getFormat().replace("{message}", chatMessage.getContent())));
         }
 
         for (Player recipient : recipients) {
@@ -283,7 +302,7 @@ public class ChannelManager extends RedisChatAPI {
             }
 
             //Channel sound
-            plugin.getChannelManager().getChannel(chatMessage.getReceiver().getName()).ifPresent(channel1 -> {
+            getChannel(chatMessage.getReceiver().getName()).ifPresent(channel1 -> {
                 if (channel1.getNotificationSound() != null) {
                     recipient.playSound(recipient.getLocation(), channel1.getNotificationSound(), 1, 1);
                 }
@@ -307,9 +326,8 @@ public class ChannelManager extends RedisChatAPI {
                 continue;
             }
 
-            getComponentProvider().sendComponentOrCache(recipient, formattedComponent
-                    .replaceText(builder -> builder.matchLiteral("%message%")
-                            .replacement(miniMessage.deserialize(result.message().getContent())))
+            getComponentProvider().sendComponentOrCache(recipient,
+                    miniMessage.deserialize(result.message().getFormat().replace("{message}", chatMessage.getContent()))
             );
         }
 

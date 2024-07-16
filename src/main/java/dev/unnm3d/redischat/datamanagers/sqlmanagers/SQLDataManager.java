@@ -66,7 +66,7 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
             create table if not exists channels
             (
                 name                varchar(16)     not null primary key,
-                format              TEXT            default 'No format -> %message%',
+                format              TEXT            default 'No format -> {message}',
                 rate_limit          int             default 5,
                 rate_limit_period   int             default 3,
                 proximity_distance  int             default -1,
@@ -664,12 +664,11 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
                             """)) {
 
                     statement.setString(1, channel.getName());
-                    //TODO: format ai canali
-                    statement.setString(2, "%message%");
+                    statement.setString(2, channel.getFormat());
                     statement.setInt(3, channel.getRateLimit());
                     statement.setInt(4, channel.getRateLimitPeriod());
-                    //TODO: Proximity distance
-                    statement.setInt(5, -1);
+
+                    statement.setInt(5, channel.getProximityDistance());
                     statement.setString(6, channel.getDiscordWebhook());
                     statement.setBoolean(7, channel.isFiltered());
                     final String soundString = channel.getNotificationSound() == null ? null : channel.getNotificationSound().toString();

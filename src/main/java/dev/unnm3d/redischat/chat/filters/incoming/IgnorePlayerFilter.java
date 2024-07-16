@@ -2,6 +2,7 @@ package dev.unnm3d.redischat.chat.filters.incoming;
 
 import de.exlll.configlib.Configuration;
 import dev.unnm3d.redischat.RedisChat;
+import dev.unnm3d.redischat.chat.KnownChatEntities;
 import dev.unnm3d.redischat.chat.filters.AbstractFilter;
 import dev.unnm3d.redischat.chat.filters.FilterResult;
 import dev.unnm3d.redischat.chat.objects.AudienceType;
@@ -26,21 +27,16 @@ public class IgnorePlayerFilter extends AbstractFilter<IgnorePlayerFilter.Ignore
     @Override
     public FilterResult applyWithPrevious(CommandSender receiver, @NotNull ChatMessage chatMessage, ChatMessage... previousMessages) {
         boolean isIgnored = RedisChat.getInstance().getChannelManager().getMuteManager()
-                .isPlayerIgnored(chatMessage.getReceiver().getName(), chatMessage.getSender().getName());
-        if (chatMessage.getReceiver().isPlayer()) {
-            if (isIgnored) {
-                return new FilterResult(chatMessage, true);
+                .isPlayerIgnored(receiver.getName(), chatMessage.getSender().getName());
+
+
+        if (isIgnored && (chatMessage.getReceiver().isPlayer() || filterSettings.ignorePublicMessages)) {
+            if(filterSettings.sendWarnWhenIgnoring) {
+                return new FilterResult(chatMessage, true,
+                        Optional.of(MiniMessage.miniMessage().deserialize(RedisChat.getInstance().messages.ignored_player
+                                .replace("%player%", chatMessage.getSender().getName()))));
             }
-            return new FilterResult(chatMessage, false);
-        }
-
-        //If not private
-        if (filterSettings.ignorePublicMessages && isIgnored) {
-            if (!filterSettings.sendWarnWhenIgnoring) return new FilterResult(chatMessage, true);
-
-            return new FilterResult(chatMessage, true,
-                    Optional.of(MiniMessage.miniMessage().deserialize(RedisChat.getInstance().messages.ignored_player
-                            .replace("%player%", chatMessage.getSender().getName()))));
+            return new FilterResult(chatMessage, true);
         }
 
         return new FilterResult(chatMessage, false);
@@ -53,7 +49,7 @@ public class IgnorePlayerFilter extends AbstractFilter<IgnorePlayerFilter.Ignore
         private boolean sendWarnWhenIgnoring;
 
         public IgnorePlayerFilterProperties() {
-            super(true, 4, Set.of(AudienceType.PLAYER), Set.of());
+            super(true, 4, Set.of(AudienceType.PLAYER,AudienceType.CHANNEL), Set.of(KnownChatEntities.GENERAL_CHANNEL.toString()));
             this.ignorePublicMessages = true;
             this.sendWarnWhenIgnoring = true;
         }

@@ -19,7 +19,6 @@ public final class FiltersConfig {
     public FilterSettings discord = DefaultSettings.DISCORD.getFilterSettings();
     public IgnorePlayerFilter.IgnorePlayerFilterProperties ignorePlayer = (IgnorePlayerFilter.IgnorePlayerFilterProperties) DefaultSettings.IGNORE_PLAYER.getFilterSettings();
     public FilterSettings permission = DefaultSettings.PERMISSION.getFilterSettings();
-    public FilterSettings privateFilter = DefaultSettings.PRIVATE_IN.getFilterSettings();
     public SpyFilter.SpyFilterProperties spy = (SpyFilter.SpyFilterProperties) DefaultSettings.SPY.getFilterSettings();
 
     //OUTGOING
@@ -28,7 +27,6 @@ public final class FiltersConfig {
     public DuplicateFilter.DuplicateFilterProperties duplicate = (DuplicateFilter.DuplicateFilterProperties) DefaultSettings.DUPLICATE.getFilterSettings();
     public FilterSettings ignore = DefaultSettings.IGNORE.getFilterSettings();
     public FilterSettings mutedChannel = DefaultSettings.MUTED_CHANNEL.getFilterSettings();
-    public ParseContentFilter.ContentProperties content = (ParseContentFilter.ContentProperties) DefaultSettings.CONTENT.getFilterSettings();
     public FilterSettings tags = DefaultSettings.TAGS.getFilterSettings();
     public WordBlacklistFilter.WordBlacklistFilterProperties words = (WordBlacklistFilter.WordBlacklistFilterProperties) DefaultSettings.WORDS.getFilterSettings();
 

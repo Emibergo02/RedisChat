@@ -33,13 +33,13 @@ public class BroadcastCommand {
                         @Override
                         public void run() {
                             final Component component = plugin.getComponentProvider().parse(null,
-                                    plugin.config.broadcast_format.replace("%message%", message),
+                                    plugin.config.broadcast_format.replace("{message}", message),
                                     true, false, false);
 
                             plugin.getDataManager().sendChatMessage(
                                     new ChatMessage(
                                             new ChannelAudience(),
-                                            "%message%",
+                                            "{message}",
                                             MiniMessage.miniMessage().serialize(component),
                                             new ChannelAudience(channel))
                             );
@@ -70,7 +70,7 @@ public class BroadcastCommand {
                             plugin.getDataManager().sendChatMessage(
                                     new ChatMessage(
                                             new ChannelAudience(),
-                                            "%message%",
+                                            "{message}",
                                             MiniMessage.miniMessage().serialize(component),
                                             new ChannelAudience(channel))
                             );

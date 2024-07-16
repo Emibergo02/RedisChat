@@ -28,7 +28,7 @@ public class ChatMessage implements DataSerializable {
      * @param content The message content
      */
     public ChatMessage(String content) {
-        this(new ChannelAudience(), System.currentTimeMillis(), "%message%", content, ChannelAudience.publicChannelAudience());
+        this(new ChannelAudience(), System.currentTimeMillis(), "{message}", content, ChannelAudience.publicChannelAudience());
     }
 
     /**
@@ -37,7 +37,7 @@ public class ChatMessage implements DataSerializable {
      * @param content The message content
      */
     public ChatMessage(String content, String permissionToSee) {
-        this(new ChannelAudience(), System.currentTimeMillis(), "%message%", content, ChannelAudience.publicChannelAudience(permissionToSee));
+        this(new ChannelAudience(), System.currentTimeMillis(), "{message}", content, ChannelAudience.publicChannelAudience(permissionToSee));
     }
 
     /**

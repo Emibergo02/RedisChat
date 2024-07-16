@@ -17,7 +17,7 @@ public class MutedChannelFilter extends AbstractFilter<FiltersConfig.FilterSetti
     private final RedisChat plugin;
 
     public MutedChannelFilter(RedisChat plugin, FiltersConfig.FilterSettings filterSettings) {
-        super("muted_channel_out", Direction.OUTGOING, filterSettings);
+        super("muted_channel", Direction.OUTGOING, filterSettings);
         this.plugin = plugin;
     }
 

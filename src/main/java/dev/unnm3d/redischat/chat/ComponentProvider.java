@@ -187,15 +187,36 @@ public class ComponentProvider {
         return answer;
     }
 
-    public Component parseCustomPlaceholders(@NotNull CommandSender cmdSender, @NotNull Component messageComp) {
-        if (!cmdSender.hasPermission(Permissions.USE_CUSTOM_PLACEHOLDERS.getPermission())) return messageComp;
+    public Component parseChatMessageFormat(@NotNull CommandSender cmdSender, @NotNull String text) {
+        Component component = parsePlaceholders(cmdSender,
+                parseResolverIntegrations(
+                        parseLegacy(text, true)), this.standardTagResolver);
+
+        for (Map.Entry<String, String> replacementEntry : plugin.config.components.entrySet()) {
+            component = component.replaceText(rBuilder -> rBuilder
+                    .matchLiteral("{" + replacementEntry.getKey() + "}")
+                    .replacement(parsePlaceholders(cmdSender,
+                            parseResolverIntegrations(
+                                    parseLegacy(replacementEntry.getValue(), true)), this.standardTagResolver)));
+        }
+        return component;
+    }
+
+    public Component parseChatMessageContent(@NotNull CommandSender cmdSender, @NotNull String text) {
+        Component component = parse(cmdSender,
+                invShareFormatting(cmdSender, text),
+                cmdSender.hasPermission(Permissions.USE_FORMATTING.getPermission()),
+                true, true, getRedisChatTagResolver(cmdSender));
+
+        if (!cmdSender.hasPermission(Permissions.USE_CUSTOM_PLACEHOLDERS.getPermission())) return component;
 
         for (Map.Entry<String, String> replacementEntry : plugin.config.placeholders.entrySet()) {
-            messageComp = messageComp.replaceText(rBuilder ->
+            component = component.replaceText(rBuilder ->
                     rBuilder.matchLiteral(replacementEntry.getKey())
-                            .replacement(parsePlaceholders(cmdSender, parseLegacy(replacementEntry.getValue(), true), this.standardTagResolver)));
+                            .replacement(parsePlaceholders(cmdSender,
+                                    parseLegacy(replacementEntry.getValue(), true), this.standardTagResolver)));
         }
-        return messageComp;
+        return component;
     }
 
     /**

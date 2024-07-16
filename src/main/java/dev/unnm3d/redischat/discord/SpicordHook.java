@@ -2,7 +2,6 @@ package dev.unnm3d.redischat.discord;
 
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.chat.objects.ChannelAudience;
-import dev.unnm3d.redischat.chat.objects.Channel;
 import dev.unnm3d.redischat.chat.objects.ChatMessage;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
@@ -72,8 +71,8 @@ public class SpicordHook extends SimpleAddon implements IDiscordHook {
                                 plugin.config.spicord.discordFormat()
                                         .replace("%channel%", channelName) //Specific placeholders for Discord format
                                         .replace("%sender%", chatMessageInfo.getSender().getName()))
-                        .replaceText(rBuilder -> //Replace %message% with the actual message component
-                                rBuilder.matchLiteral("%message%")
+                        .replaceText(rBuilder -> //Replace {message} with the actual message component
+                                rBuilder.matchLiteral("{message}")
                                         .replacement(MiniMessage.miniMessage().deserialize(chatMessageInfo.getContent())));
 
         textChannel.sendMessage(new MessageCreateBuilder()

@@ -42,7 +42,7 @@ public class AnnouncerTask extends UniversalRunnable {
         plugin.getDataManager().sendChatMessage(
                 new ChatMessage(
                         new ChannelAudience(),
-                        "%message%",
+                        "{message}",
                         getMessage(),
                         new ChannelAudience(channelName)
                 ));

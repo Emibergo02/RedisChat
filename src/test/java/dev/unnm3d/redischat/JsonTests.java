@@ -18,7 +18,7 @@ public class JsonTests {
     @DisplayName("Channel serialization")
     public void testChannelSerialization() {
         Channel nc = Channel.channelBuilder("name")
-                .format("fabrizio %message%")
+                .format("fabrizio {message}")
                 .rateLimit(10)
                 .rateLimitPeriod(1000)
                 .discordWebhook("webhook")
@@ -59,7 +59,7 @@ public class JsonTests {
                 .build();
         ChatMessage ncm = new ChatMessage(
                 new ChannelAudience(KnownChatEntities.SERVER_SENDER.toString(), AudienceType.PLAYER),
-                "%message%",
+                "{message}",
                 "Hello World",
                 receiver
         );

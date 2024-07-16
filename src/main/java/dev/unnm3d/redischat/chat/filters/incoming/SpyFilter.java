@@ -32,7 +32,7 @@ public class SpyFilter extends AbstractFilter<SpyFilter.SpyFilterProperties> {
             final Component spyComponent = MiniMessage.miniMessage().deserialize(plugin.messages.spychat_format
                             .replace("%receiver%", chatMessage.getReceiver().getName())
                             .replace("%sender%", chatMessage.getSender().getName()))
-                    .replaceText(builder -> builder.matchLiteral("%message%")
+                    .replaceText(builder -> builder.matchLiteral("{message}")
                             .replacement(MiniMessage.miniMessage().deserialize(chatMessage.getContent())
                             ));
 
