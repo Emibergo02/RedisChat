@@ -66,19 +66,19 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
             create table if not exists channels
             (
                 name                varchar(16)     not null primary key,
-                format              TEXT            default 'No format -> {message}',
+                format              TEXT            ,
                 rate_limit          int             default 5,
                 rate_limit_period   int             default 3,
                 proximity_distance  int             default -1,
-                discordWebhook      varchar(128)    default '',
+                discord_webhook      varchar(128)    default '',
                 filtered            BOOLEAN         default 1,
-                notificationSound   varchar(32)     default NULL
+                notification_sound   varchar(32)     default NULL
             );
             """, """
             create table if not exists muted_entities
             (
-                entity_key      varchar(24) not null,
-                entities_value  TEXT        not null,
+                entity_key      varchar(24)         not null,
+                entities_value  TEXT       not null,
                 primary key (entity_key)
             );
             """, """
@@ -285,8 +285,7 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
         CompletableFuture.runAsync(() -> {
             try (Connection connection = getConnection()) {
                 try (PreparedStatement statement = connection.prepareStatement("""
-                                            
-                            INSERT INTO player_placeholders
+                        INSERT INTO player_placeholders
                             (`player_name`, `placeholders`)
                         VALUES
                             (?,?)
@@ -565,7 +564,7 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
             try (Connection connection = getConnection()) {
                 try (PreparedStatement statement = connection.prepareStatement("""
                         select id, serializedMail, player_name
-                        from mails 
+                        from mails
                         left join read_mails on mails.id = read_mails.mail_id and read_mails.player_name = ?
                         where recipient = '-Public';""")) {
 
@@ -650,7 +649,7 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
             try (Connection connection = getConnection()) {
                 try (PreparedStatement statement = connection.prepareStatement("""
                         INSERT INTO channels
-                            (`name`,`format`,`rate_limit`,`rate_limit_period`,`proximity_distance`,`discordWebhook`,`filtered`,`notificationSound`)
+                            (`name`,`format`,`rate_limit`,`rate_limit_period`,`proximity_distance`,`discord_webhook`,`filtered`,`notification_sound`)
                         VALUES
                             (?,?,?,?,?,?,?,?)
                         ON DUPLICATE KEY UPDATE
@@ -658,10 +657,10 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
                             `rate_limit` = VALUES(`rate_limit`),
                             `rate_limit_period` = VALUES(`rate_limit_period`),
                             `proximity_distance` = VALUES(`proximity_distance`),
-                            `discordWebhook` = VALUES(`discordWebhook`),
+                            `discord_webhook` = VALUES(`discord_webhook`),
                             `filtered` = VALUES(`filtered`),
-                            `notificationSound` = VALUES(`notificationSound`);
-                            """)) {
+                            `notification_sound` = VALUES(`notification_sound`);
+                        """)) {
 
                     statement.setString(1, channel.getName());
                     statement.setString(2, channel.getFormat());
@@ -671,8 +670,7 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
                     statement.setInt(5, channel.getProximityDistance());
                     statement.setString(6, channel.getDiscordWebhook());
                     statement.setBoolean(7, channel.isFiltered());
-                    final String soundString = channel.getNotificationSound() == null ? null : channel.getNotificationSound().toString();
-                    statement.setString(8, soundString);
+                    statement.setString(8, channel.getNotificationSound());
                     if (statement.executeUpdate() == 0) {
                         throw new SQLException("Failed to register channel to database: " + statement);
                     }
@@ -819,9 +817,9 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
                         channels.add(Channel.channelBuilder(resultSet.getString("name"))
                                 .rateLimit(resultSet.getInt("rate_limit"))
                                 .rateLimitPeriod(resultSet.getInt("rate_limit_period"))
-                                .discordWebhook(resultSet.getString("discordWebhook"))
+                                .discordWebhook(resultSet.getString("discord_webhook"))
                                 .filtered(resultSet.getBoolean("filtered"))
-                                .notificationSound(resultSet.getString("notificationSound"))
+                                .notificationSound(resultSet.getString("notification_sound"))
                                 .build());
                     }
                     return channels;

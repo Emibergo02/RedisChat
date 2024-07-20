@@ -63,7 +63,7 @@ public final class Config implements ConfigValidator {
     @Comment({"Here you can decide your chat format", "Permission format is overridden on descending order", "(if a player has default and vip, if default is the first element, vip will be ignored)"})
     public List<ChatFormat> formats = List.of(
             new ChatFormat("redischat.default",
-                    "{time} {ignorebtn} {mailbtn} {player} <dark_gray>» %redischat_chat_color% {message}",
+                    "{time} {ignorebtn} {mailbtn} {player} <dark_gray>» %redischat_chat_color%{message}",
                     "<white>✉<green>⬆</green></white> <dark_aqua>MSG <grey>(Me ➺ <green>%receiver%<grey>): <white>{message}",
                     "<white>✉<green>⬇</green></white> <dark_aqua>MSG <grey>(<green>%sender%<grey> ➺ Me): <white>{message}",
                     "<aqua>@%player%</aqua>",
