@@ -92,7 +92,7 @@ public final class Config implements ConfigValidator {
             "No format: %player_name% is no longer online"
     );
 
-    @Comment({"Here you can create your own placeholders", "You can give them an identifier, which will go under the format <>", "You can give them actions, like click url"})
+    @Comment({"Here you can create your Minimessage Components for chat formats", "You can give them an identifier, which will go under the format {}"})
     public Map<String, String> components = new TreeMap<>(Map.ofEntries(
             Map.entry("ignorebtn", "<click:run_command:/ignore %player_name%><hover:show_text:'<red>Ignore %player_name%</red>'>[<red>✖</red>]</click>"),
             Map.entry("mailbtn", "<click:suggest_command:/mail send %player_name%><hover:show_text:'<green>Send a mail to %player_name%</green>'>[<green>✉</green>]</click>"),

@@ -126,9 +126,6 @@ permissions:
   redischat.bypassfilter.discord:
     description: Allows to bypass the discord filter
     default: false
-  redischat.bypassfilter.content:
-    description: Allows to bypass the content filter
-    default: false
   redischat.bypassfilter.ignore_player:
     description: Allows to bypass the ignore player filter
     default: false
@@ -140,9 +137,6 @@ permissions:
     default: false
   redischat.bypassfilter.ignore:
     description: Allows to bypass the ignore filter
-    default: false
-  redischat.bypassfilter.spy:
-    description: Allows to bypass the spy filter
     default: false
   redischat.bypassfilter.tag:
     description: Allows to bypass the tag filter

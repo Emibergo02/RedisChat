@@ -1,7 +1,6 @@
 package dev.unnm3d.redischat.chat.filters;
 
 import dev.unnm3d.redischat.chat.filters.incoming.IgnorePlayerFilter;
-import dev.unnm3d.redischat.chat.filters.incoming.SpyFilter;
 import dev.unnm3d.redischat.chat.filters.outgoing.CapsFilter;
 import dev.unnm3d.redischat.chat.filters.outgoing.DuplicateFilter;
 import dev.unnm3d.redischat.chat.filters.outgoing.WordBlacklistFilter;
@@ -18,7 +17,6 @@ public enum DefaultSettings {
     PERMISSION(new FiltersConfig.FilterSettings(true, 2, Set.of(AudienceType.CHANNEL), Set.of())),
     DISCORD(new FiltersConfig.FilterSettings(true, 1, Set.of(AudienceType.DISCORD), Set.of())),
     PRIVATE_OUT(new FiltersConfig.FilterSettings(true, 3, Set.of(AudienceType.PLAYER), Set.of())),
-    SPY(new SpyFilter.SpyFilterProperties()),
     CAPS(new CapsFilter.CapsFilterProperties()),
     DUPLICATE(new DuplicateFilter.DuplicateFilterProperties()),
     IGNORE(new FiltersConfig.FilterSettings(true, 4, Set.of(AudienceType.CHANNEL, AudienceType.PLAYER), Set.of())),

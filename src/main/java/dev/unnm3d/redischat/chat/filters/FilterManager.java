@@ -44,7 +44,6 @@ public class FilterManager {
         addFilter(new DiscordFilter(plugin.filterSettings.discord));
         addFilter(new IgnorePlayerFilter(plugin.filterSettings.ignorePlayer));
         addFilter(new PermissionFilter(plugin.filterSettings.permission));
-        addFilter(new SpyFilter(plugin, plugin.filterSettings.spy));
 
         //OUTGOING
         addFilter(new CapsFilter(plugin.filterSettings.caps));
@@ -80,7 +79,7 @@ public class FilterManager {
      * @return The result of the filter
      */
     public FilterResult filterMessage(CommandSender chatEntity, ChatMessage message, AbstractFilter.Direction filterType) {
-        FilterResult result = null;
+        FilterResult result = new FilterResult(message, false);
         final Queue<ChatMessage> lastMessages = lastMessagesCache.getOrDefault(
                 genKeyIndex(filterType, message.getReceiver(), chatEntity.getName()),
                 new CircularFifoQueue<>(plugin.config.last_message_count));
@@ -148,14 +147,6 @@ public class FilterManager {
         if (result != null && !result.filtered()) {
             lastMessages.add(message);
             lastMessagesCache.put(genKeyIndex(filterType, message.getReceiver(), chatEntity.getName()), lastMessages);
-        }
-
-        if (result == null) {
-            return new FilterResult(message, true, Optional.of(plugin.getComponentProvider().parse(chatEntity,
-                    plugin.messages.not_filtered,
-                    true,
-                    false,
-                    false)));
         }
 
 

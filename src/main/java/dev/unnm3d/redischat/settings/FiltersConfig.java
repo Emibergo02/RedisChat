@@ -3,7 +3,6 @@ package dev.unnm3d.redischat.settings;
 import de.exlll.configlib.*;
 import dev.unnm3d.redischat.chat.filters.DefaultSettings;
 import dev.unnm3d.redischat.chat.filters.incoming.IgnorePlayerFilter;
-import dev.unnm3d.redischat.chat.filters.incoming.SpyFilter;
 import dev.unnm3d.redischat.chat.filters.outgoing.*;
 import dev.unnm3d.redischat.chat.objects.AudienceType;
 import lombok.AllArgsConstructor;
@@ -19,7 +18,6 @@ public final class FiltersConfig {
     public FilterSettings discord = DefaultSettings.DISCORD.getFilterSettings();
     public IgnorePlayerFilter.IgnorePlayerFilterProperties ignorePlayer = (IgnorePlayerFilter.IgnorePlayerFilterProperties) DefaultSettings.IGNORE_PLAYER.getFilterSettings();
     public FilterSettings permission = DefaultSettings.PERMISSION.getFilterSettings();
-    public SpyFilter.SpyFilterProperties spy = (SpyFilter.SpyFilterProperties) DefaultSettings.SPY.getFilterSettings();
 
     //OUTGOING
     public CapsFilter.CapsFilterProperties caps = (CapsFilter.CapsFilterProperties) DefaultSettings.CAPS.getFilterSettings();

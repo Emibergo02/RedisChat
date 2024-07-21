@@ -17,7 +17,6 @@ public final class Messages {
     public String cannot_message_yourself = "<yellow>RedisChat</yellow> <gray>»</gray> <red>You cannot message yourself</red>";
     public String missing_arguments = "<yellow>RedisChat</yellow> <gray>»</gray> <red>Missing arguments</red>";
     public String empty_message = "<yellow>RedisChat</yellow> <gray>»</gray> <red>Message cannot be empty</red>";
-    public String not_filtered = "<yellow>RedisChat</yellow> <gray>»</gray> <red>You skipped every filter. Check your permissions for filter bypass</red>";
     public String action_completed_successfully = "<yellow>RedisChat</yellow> <gray>»</gray> <green>Action completed successfully</green>";
     public String announce_not_found = "<yellow>RedisChat</yellow> <gray>»</gray> <red>The announce %name% does not exist</red>";
     public String no_reply_found = "<yellow>RedisChat</yellow> <gray>»</gray> <red>You do not have any message to reply</red>";

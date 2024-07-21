@@ -413,7 +413,7 @@ public class ComponentProvider {
     @SuppressWarnings("ResultOfMethodCallIgnored")
     public void logComponent(Component component) {
         if (!plugin.config.chatLogging) {
-            sendMessage(plugin.getServer().getConsoleSender(), component);
+            bukkitAudiences.console().sendMessage(component);
             return;
         }
 

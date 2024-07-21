@@ -288,10 +288,9 @@ public class ChannelManager extends RedisChatAPI {
                 Collections.singleton(Bukkit.getPlayer(chatMessage.getReceiver().getName())) :
                 new HashSet<>(plugin.getServer().getOnlinePlayers());
 
-        if (chatMessage.getReceiver().isChannel()) {
-            getComponentProvider().logComponent(miniMessage.deserialize(
-                    chatMessage.getFormat().replace("{message}", chatMessage.getContent())));
-        }
+        getComponentProvider().logComponent(miniMessage.deserialize(
+                chatMessage.getFormat().replace("{message}", chatMessage.getContent())));
+
 
         for (Player recipient : recipients) {
             final FilterResult result = filterManager.filterMessage(recipient, chatMessage, AbstractFilter.Direction.INCOMING);
@@ -330,7 +329,19 @@ public class ChannelManager extends RedisChatAPI {
                     miniMessage.deserialize(result.message().getFormat().replace("{message}", chatMessage.getContent()))
             );
         }
+        if (chatMessage.getReceiver().isPlayer()) {
+            final Component spyComponent = MiniMessage.miniMessage().deserialize(plugin.messages.spychat_format
+                            .replace("%receiver%", chatMessage.getReceiver().getName())
+                            .replace("%sender%", chatMessage.getSender().getName()))
+                    .replaceText(builder -> builder.matchLiteral("{message}")
+                            .replacement(MiniMessage.miniMessage().deserialize(chatMessage.getContent())
+                            ));
 
+            //Send to spies
+            plugin.getServer().getOnlinePlayers().stream()
+                    .filter(player -> plugin.getSpyManager().isSpying(player.getName()))
+                    .forEach(player -> plugin.getComponentProvider().sendComponentOrCache(player, spyComponent));
+        }
 
     }
 
