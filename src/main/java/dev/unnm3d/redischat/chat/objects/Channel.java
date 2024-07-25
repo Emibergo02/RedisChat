@@ -24,7 +24,7 @@ public class Channel extends ChannelAudience {
             builderMethodName = "channelBuilder"
     )
     public Channel(String name, String format, int proximityDistance, int rateLimit, int rateLimitPeriod, String discordWebhook, boolean filtered, String notificationSound, @Singular Set<String> permissions) {
-        super(name, AudienceType.CHANNEL, proximityDistance, permissions);
+        super(AudienceType.CHANNEL, name, proximityDistance, permissions);
         this.format = format;
         this.rateLimit = rateLimit;
         this.rateLimitPeriod = rateLimitPeriod;

@@ -71,7 +71,7 @@ public class ChatMessage implements DataSerializable {
 
     public static ChatMessage deserialize(String serializedMessage) {
         String[] parts = serializedMessage.split("§§;");
-        if (parts.length < 1) {
+        if (parts.length < 5) {
             throw new IllegalArgumentException("Invalid message serialization");
         }
 

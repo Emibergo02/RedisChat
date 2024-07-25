@@ -11,22 +11,19 @@ public class ItemNameProvider {
     private Method getItemNameField;
     private Method setItemNameField;
     private Method hasItemNameField;
-    private boolean is1_25;
 
     public ItemNameProvider() {
-        this.is1_25 = false;
         try {
             this.getItemNameField = ItemMeta.class.getDeclaredMethod("getItemName");
             this.setItemNameField = ItemMeta.class.getDeclaredMethod("setItemName", String.class);
             this.hasItemNameField = ItemMeta.class.getDeclaredMethod("hasItemName");
-        } catch (NoSuchMethodException e) {
-            this.is1_25 = true;
+        } catch (NoSuchMethodException ignored) {
         }
     }
 
 
     public String getItemName(ItemMeta itemMeta) {
-        if (!is1_25)
+        if (getItemNameField == null)
             return itemMeta.getDisplayName();
         try {
             return (String) getItemNameField.invoke(itemMeta);
@@ -36,7 +33,7 @@ public class ItemNameProvider {
     }
 
     public ItemMeta setItemName(ItemMeta itemMeta, String name) {
-        if (!is1_25) {
+        if (setItemNameField == null) {
             itemMeta.setDisplayName(name);
             return itemMeta;
         }
@@ -49,7 +46,7 @@ public class ItemNameProvider {
     }
 
     public boolean hasItemName(ItemMeta itemMeta) {
-        if (!is1_25)
+        if (hasItemNameField == null)
             return itemMeta.hasDisplayName();
         try {
             return (boolean) hasItemNameField.invoke(itemMeta);

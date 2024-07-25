@@ -18,9 +18,9 @@ import java.util.Set;
 @Getter
 public class ChannelAudience implements DataSerializable {
 
-    protected final String name;
     @Builder.Default
     protected AudienceType type = AudienceType.PLAYER;
+    protected final String name;
     @Setter
     @Builder.Default
     protected int proximityDistance = -1;
@@ -32,12 +32,12 @@ public class ChannelAudience implements DataSerializable {
     /**
      * Constructor without 'local' field
      *
-     * @param name        The name of the audience
      * @param type        The type of the audience, represented by the AudienceType enum
+     * @param name        The name of the audience
      * @param permissions A varargs parameter representing the permissions of the audience
      */
-    public ChannelAudience(String name, AudienceType type, String... permissions) {
-        this(name, type, -1, new HashSet<>(Set.of(permissions)));
+    public ChannelAudience(AudienceType type, String name, String... permissions) {
+        this(type, name, -1, new HashSet<>(Set.of(permissions)));
     }
 
     /**
@@ -47,7 +47,7 @@ public class ChannelAudience implements DataSerializable {
      * @param permissions A varargs parameter representing the permissions of the audience
      */
     public ChannelAudience(String channelName, String... permissions) {
-        this(channelName, AudienceType.CHANNEL, permissions);
+        this(AudienceType.CHANNEL, channelName, permissions);
     }
 
     /**
@@ -56,7 +56,7 @@ public class ChannelAudience implements DataSerializable {
      * This constructor initializes the audience with the SERVER_SENDER name, SYSTEM type, and no permissions.
      */
     public ChannelAudience() {
-        this(KnownChatEntities.SERVER_SENDER.toString(), AudienceType.PLAYER, -1, new HashSet<>());
+        this(AudienceType.PLAYER, KnownChatEntities.SERVER_SENDER.toString(), -1, new HashSet<>());
     }
 
     /**
@@ -65,7 +65,7 @@ public class ChannelAudience implements DataSerializable {
      * @param playerName The name of the player
      */
     public static ChannelAudience newPlayerAudience(String playerName) {
-        return new ChannelAudience(playerName, AudienceType.PLAYER);
+        return new ChannelAudience(AudienceType.PLAYER, playerName);
     }
 
     /**
@@ -74,24 +74,24 @@ public class ChannelAudience implements DataSerializable {
      * @param authorUsername The discord username of the audience
      */
     public static ChannelAudience newDiscordAudience(String authorUsername) {
-        return new ChannelAudience(authorUsername, AudienceType.DISCORD);
+        return new ChannelAudience(AudienceType.DISCORD, authorUsername);
     }
 
     /**
      * Constructor for building a public channel audience
      */
     public static ChannelAudience publicChannelAudience(String... permissions) {
-        return new ChannelAudience(KnownChatEntities.GENERAL_CHANNEL.toString(), AudienceType.CHANNEL, permissions);
+        return new ChannelAudience(AudienceType.CHANNEL, KnownChatEntities.GENERAL_CHANNEL.toString(), permissions);
     }
 
     public static ChannelAudience deserialize(String serialized) {
         String[] parts = serialized.split("§;");
-        if (parts.length < 1) {
+        if (parts.length < 3) {
             throw new IllegalArgumentException("Invalid audience serialization");
         }
         return new ChannelAudience(
-                parts[1],
                 AudienceType.valueOf(parts[0]),
+                parts[1],
                 Integer.parseInt(parts[2]),
                 parts.length < 4 ? new HashSet<>() : new HashSet<>(Set.of(parts[3].split(","))));
     }

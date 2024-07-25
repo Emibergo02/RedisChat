@@ -129,7 +129,7 @@ public class ChannelManager extends RedisChatAPI {
 
 
         ChatMessage chatMessage = new ChatMessage(
-                new ChannelAudience(player.getName(), AudienceType.PLAYER),
+                new ChannelAudience(AudienceType.PLAYER, player.getName()),
                 currentChannel.getFormat(),
                 message,
                 receiver
@@ -234,12 +234,12 @@ public class ChannelManager extends RedisChatAPI {
         final ChatFormat chatFormat = plugin.config.getChatFormat(sender);
 
         ChatMessage privateChatMessage = new ChatMessage(
-                new ChannelAudience(sender.getName(), AudienceType.PLAYER),
+                new ChannelAudience(AudienceType.PLAYER, sender.getName()),
                 chatFormat.private_format()
                         .replace("%receiver%", receiverName)
                         .replace("%sender%", sender.getName()),
                 message,
-                new ChannelAudience(receiverName, AudienceType.PLAYER)
+                new ChannelAudience(AudienceType.PLAYER, receiverName)
         );
 
         final FilterResult result = filterManager.filterMessage(sender, privateChatMessage, AbstractFilter.Direction.OUTGOING);
@@ -274,7 +274,7 @@ public class ChannelManager extends RedisChatAPI {
 
         privateChatMessage.setFormat(MiniMessage.miniMessage().serialize(
                 getComponentProvider().parseChatMessageFormat(sender, chatFormat.receive_private_format()
-                        .replace("%receiver%", sender.getName())
+                        .replace("%receiver%", receiverName)
                         .replace("%sender%", sender.getName()))
         ));
 

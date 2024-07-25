@@ -58,7 +58,7 @@ public class JsonTests {
                 .permission("perm2")
                 .build();
         ChatMessage ncm = new ChatMessage(
-                new ChannelAudience(KnownChatEntities.SERVER_SENDER.toString(), AudienceType.PLAYER),
+                new ChannelAudience(AudienceType.PLAYER, KnownChatEntities.SERVER_SENDER.toString()),
                 "{message}",
                 "Hello World",
                 receiver
