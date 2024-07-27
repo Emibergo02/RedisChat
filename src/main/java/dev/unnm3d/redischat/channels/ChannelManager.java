@@ -284,9 +284,14 @@ public class ChannelManager extends RedisChatAPI {
 
     @Override
     public void sendGenericChat(ChatMessage chatMessage) {
-        final Set<Player> recipients = chatMessage.getReceiver().isPlayer() ?
-                Collections.singleton(Bukkit.getPlayer(chatMessage.getReceiver().getName())) :
-                new HashSet<>(plugin.getServer().getOnlinePlayers());
+
+        Set<Player> recipients;
+        if (chatMessage.getReceiver().isPlayer()) {
+            final Player pmReceiver = plugin.getServer().getPlayerExact(chatMessage.getReceiver().getName());
+            recipients = pmReceiver == null ? Collections.emptySet() : Collections.singleton(pmReceiver);
+        } else {
+            recipients = new HashSet<>(plugin.getServer().getOnlinePlayers());
+        }
 
         getComponentProvider().logComponent(miniMessage.deserialize(
                 chatMessage.getFormat().replace("{message}", chatMessage.getContent())));
