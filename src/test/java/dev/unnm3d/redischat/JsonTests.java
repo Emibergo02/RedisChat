@@ -1,6 +1,7 @@
 package dev.unnm3d.redischat;
 
 
+import com.google.gson.Gson;
 import dev.unnm3d.redischat.chat.KnownChatEntities;
 import dev.unnm3d.redischat.chat.objects.AudienceType;
 import dev.unnm3d.redischat.chat.objects.ChannelAudience;
@@ -13,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 public class JsonTests {
+    private static Gson gson = new Gson();
 
     @Test
     @DisplayName("Channel serialization")
@@ -27,7 +29,7 @@ public class JsonTests {
                 .permission("perm1")
                 .notificationSound("sound")
                 .build();
-        Channel nc2 = Channel.deserialize(nc.serialize());
+        Channel nc2 = gson.fromJson(gson.toJson(nc), Channel.class);
         assertEquals(nc, nc2);
         System.out.println(nc);
         System.out.println(nc2);
@@ -42,7 +44,7 @@ public class JsonTests {
                 .type(AudienceType.PLAYER)
                 .permission("perm2")
                 .build();
-        ChannelAudience nc2 = ChannelAudience.deserialize(nc.serialize());
+        ChannelAudience nc2 = gson.fromJson(gson.toJson(nc), ChannelAudience.class);
         assertEquals(nc, nc2);
         System.out.println(nc);
         System.out.println(nc2);
@@ -63,7 +65,7 @@ public class JsonTests {
                 "Hello World",
                 receiver
         );
-        ChatMessage ncm2 = ChatMessage.deserialize(ncm.serialize());
+        ChatMessage ncm2 = gson.fromJson(gson.toJson(ncm), ChatMessage.class);
         assertEquals(ncm, ncm2);
 
         //Change a superclass field

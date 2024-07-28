@@ -1,9 +1,9 @@
 package dev.unnm3d.redischat.datamanagers;
 
+import com.google.gson.Gson;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.api.DataManager;
 import dev.unnm3d.redischat.api.RedisChatAPI;
-import dev.unnm3d.redischat.channels.gui.PlayerChannel;
 import dev.unnm3d.redischat.chat.KnownChatEntities;
 import dev.unnm3d.redischat.chat.objects.Channel;
 import dev.unnm3d.redischat.chat.objects.ChatMessage;
@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 
 
 public class RedisDataManager extends RedisAbstract implements DataManager {
+    private static final Gson gson = new Gson();
     private final RedisChat plugin;
     public static int pubSubIndex = 0;
 
@@ -64,13 +65,13 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
             if (plugin.config.debug) {
                 plugin.getLogger().info("R1) Received message from redis: " + System.currentTimeMillis());
             }
-            plugin.getChannelManager().sendGenericChat(ChatMessage.deserialize(message));
+            plugin.getChannelManager().sendGenericChat(gson.fromJson(message, ChatMessage.class));
 
         } else if (channel.equals(DataKey.GLOBAL_CHANNEL.withoutCluster())) {
             if (plugin.config.debug) {
                 plugin.getLogger().info("R1) Received message from redis: " + System.currentTimeMillis());
             }
-            plugin.getChannelManager().sendGenericChat(ChatMessage.deserialize(message));
+            plugin.getChannelManager().sendGenericChat(gson.fromJson(message, ChatMessage.class));
 
         } else if (channel.equals(DataKey.PLAYERLIST.toString())) {
             if (plugin.getPlayerListManager() != null)
@@ -84,7 +85,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
             if (message.startsWith("delete§")) {
                 plugin.getChannelManager().updateChannel(message.substring(7), null);
             } else {
-                Channel ch = Channel.deserialize(message);
+                Channel ch = gson.fromJson(message, Channel.class);
                 plugin.getChannelManager().updateChannel(ch.getName(), ch);
             }
 
@@ -443,12 +444,13 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     @Override
     public void registerChannel(@NotNull Channel channel) {
         getConnectionPipeline(connection -> {
-            connection.hset(DataKey.CHANNELS.toString(), channel.getName(), channel.serialize()).exceptionally(throwable -> {
+            final String serializedChannel = gson.toJson(channel);
+            connection.hset(DataKey.CHANNELS.toString(), channel.getName(), serializedChannel).exceptionally(throwable -> {
                 throwable.printStackTrace();
                 plugin.getLogger().warning("Error registering custom channel");
                 return null;
             });
-            connection.publish(DataKey.CHANNEL_UPDATE.toString(), channel.serialize());
+            connection.publish(DataKey.CHANNEL_UPDATE.toString(), serializedChannel);
             return null;
         });
     }
@@ -472,7 +474,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
         return getConnectionAsync(connection ->
                 connection.hgetall(DataKey.CHANNELS.toString())
                         .thenApply(channelMap -> channelMap.values().stream()
-                                .map(Channel::deserialize)
+                                .map(channel -> gson.fromJson(channel, Channel.class))
                                 .toList())
                         .exceptionally(throwable -> {
                             throwable.printStackTrace();
@@ -601,7 +603,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
                                 .getRateLimitPeriod());
             }
 
-            conn.publish(publishChannel, packet.serialize())
+            conn.publish(publishChannel, gson.toJson(packet))
                     .thenApply(integer -> {
                         if (plugin.config.debug) {
                             plugin.getLogger().warning("#" + (++pubSubIndex) + "received by " + integer + " servers");

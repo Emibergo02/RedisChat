@@ -18,11 +18,9 @@ import java.util.Set;
 
 public class IgnorePlayerFilter extends AbstractFilter<IgnorePlayerFilter.IgnorePlayerFilterProperties> {
 
-
     public IgnorePlayerFilter(IgnorePlayerFilterProperties filterSettings) {
         super("ignore_player", Direction.INCOMING, filterSettings);
     }
-
 
     @Override
     public FilterResult applyWithPrevious(CommandSender receiver, @NotNull ChatMessage chatMessage, ChatMessage... previousMessages) {

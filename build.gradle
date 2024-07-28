@@ -25,6 +25,7 @@ dependencies {
     compileOnly 'net.kyori:adventure-text-serializer-plain:4.17.0'
     compileOnly 'net.kyori:adventure-text-serializer-legacy:4.17.0'
     compileOnly 'net.kyori:adventure-platform-bukkit:4.3.3'
+    compileOnly 'com.alibaba:fastjson:2.0.52'
 
     implementation 'com.github.Exlll.ConfigLib:configlib-paper:v4.5.0'
     implementation 'xyz.xenondevs.invui:invui-core:1.33'

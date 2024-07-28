@@ -139,7 +139,7 @@ public class FilterManager {
 
             plugin.getServer().getPluginManager().callEvent(new FilterEvent(filter, result));
             if (plugin.config.debug) {
-                plugin.getLogger().info("Filtering complete message: " + result.message().serialize() + " with filter: " + filter.getName());
+                plugin.getLogger().info("Filtering complete message: " + result.message() + " with filter: " + filter.getName());
             }
         }
 

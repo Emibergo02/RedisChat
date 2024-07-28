@@ -3,8 +3,8 @@ package dev.unnm3d.redischat.chat.objects;
 import dev.unnm3d.redischat.chat.KnownChatEntities;
 import lombok.*;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Builder(
@@ -16,8 +16,7 @@ import java.util.Set;
 @ToString
 @EqualsAndHashCode
 @Getter
-public class ChannelAudience implements DataSerializable {
-
+public class ChannelAudience {
     @Builder.Default
     protected AudienceType type = AudienceType.PLAYER;
     protected final String name;
@@ -26,7 +25,7 @@ public class ChannelAudience implements DataSerializable {
     protected int proximityDistance = -1;
     @Setter
     @Singular
-    protected Set<String> permissions;
+    protected List<String> permissions;
 
 
     /**
@@ -37,7 +36,7 @@ public class ChannelAudience implements DataSerializable {
      * @param permissions A varargs parameter representing the permissions of the audience
      */
     public ChannelAudience(AudienceType type, String name, String... permissions) {
-        this(type, name, -1, new HashSet<>(Set.of(permissions)));
+        this(type, name, -1, new ArrayList<>(List.of(permissions)));
     }
 
     /**
@@ -56,7 +55,7 @@ public class ChannelAudience implements DataSerializable {
      * This constructor initializes the audience with the SERVER_SENDER name, SYSTEM type, and no permissions.
      */
     public ChannelAudience() {
-        this(AudienceType.PLAYER, KnownChatEntities.SERVER_SENDER.toString(), -1, new HashSet<>());
+        this(AudienceType.PLAYER, KnownChatEntities.SERVER_SENDER.toString(), -1, new ArrayList<>());
     }
 
     /**
@@ -82,18 +81,6 @@ public class ChannelAudience implements DataSerializable {
      */
     public static ChannelAudience publicChannelAudience(String... permissions) {
         return new ChannelAudience(AudienceType.CHANNEL, KnownChatEntities.GENERAL_CHANNEL.toString(), permissions);
-    }
-
-    public static ChannelAudience deserialize(String serialized) {
-        String[] parts = serialized.split("§;");
-        if (parts.length < 3) {
-            throw new IllegalArgumentException("Invalid audience serialization");
-        }
-        return new ChannelAudience(
-                AudienceType.valueOf(parts[0]),
-                parts[1],
-                Integer.parseInt(parts[2]),
-                parts.length < 4 ? new HashSet<>() : new HashSet<>(Set.of(parts[3].split(","))));
     }
 
     /**
@@ -132,10 +119,6 @@ public class ChannelAudience implements DataSerializable {
         return type == AudienceType.DISCORD;
     }
 
-    @Override
-    public String serialize() {
-        return type.name() + "§;" + name + "§;" + proximityDistance + "§;" + String.join(",", permissions);
-    }
 
     public static ChannelAudienceBuilder audienceBuilder(String name) {
         return new ChannelAudienceBuilder().name(name);

@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
 @Getter
 @EqualsAndHashCode
 @ToString
-public class ChatMessage implements DataSerializable {
+public class ChatMessage {
     private final ChannelAudience sender;
     private final long timestamp;
     @Setter
@@ -67,25 +67,5 @@ public class ChatMessage implements DataSerializable {
      */
     public ChatMessage(@NotNull ChannelAudience sender, @Nullable String format, @Nullable String content, @NotNull ChannelAudience receiver) {
         this(sender, System.currentTimeMillis(), format, content, receiver);
-    }
-
-    public static ChatMessage deserialize(String serializedMessage) {
-        String[] parts = serializedMessage.split("§§;");
-        if (parts.length < 5) {
-            throw new IllegalArgumentException("Invalid message serialization");
-        }
-
-        return new ChatMessage(
-                ChannelAudience.deserialize(parts[0]),
-                Long.parseLong(parts[1]),
-                parts[2],
-                parts[3],
-                ChannelAudience.deserialize(parts[4])
-        );
-    }
-
-    @Override
-    public String serialize() {
-        return sender.serialize() + "§§;" + timestamp + "§§;" + format + "§§;" + content + "§§;" + receiver.serialize();
     }
 }
