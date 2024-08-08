@@ -25,6 +25,11 @@ public class RedisChatPAPI extends PlaceholderExpansion {
         return "1.1.0";
     }
 
+    @Override
+    public boolean persist() {
+        return true;
+    }
+
 
     @Override
     public String onRequest(OfflinePlayer player, @NotNull String params) {
