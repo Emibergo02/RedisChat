@@ -282,21 +282,23 @@ public class SQLiteDataManager extends SQLDataManager {
             try (Connection connection = getConnection()) {
                 try (PreparedStatement statement = connection.prepareStatement("""
                         INSERT OR REPLACE INTO channels
-                            (`name`,`format`,`rate_limit`,`rate_limit_period`,`proximity_distance`,`discordWebhook`,`filtered`,`shown_by_default`,`notificationSound`)
+                            (`name`,`display_name`,`format`,`rate_limit`,`rate_limit_period`,`proximity_distance`,`discord_webhook`,`filtered`,`shown_by_default`,`needs_permission`,`notification_sound`)
                         VALUES
-                            (?,?,?,?,?,?,?,?);
-                            """)) {
+                            (?,?,?,?,?,?,?,?,?,?,?);
+                        """)) {
 
                     statement.setString(1, channel.getName());
-                    statement.setString(2, channel.getFormat());
-                    statement.setInt(3, channel.getRateLimit());
-                    statement.setInt(4, channel.getRateLimitPeriod());
-                    statement.setInt(5, channel.getProximityDistance());
-                    statement.setString(6, channel.getDiscordWebhook());
-                    statement.setBoolean(7, channel.isFiltered());
-                    statement.setBoolean(8, channel.isShownByDefault());
+                    statement.setString(2, channel.getDisplayName());
+                    statement.setString(3, channel.getFormat());
+                    statement.setInt(4, channel.getRateLimit());
+                    statement.setInt(5, channel.getRateLimitPeriod());
+                    statement.setInt(6, channel.getProximityDistance());
+                    statement.setString(7, channel.getDiscordWebhook());
+                    statement.setBoolean(8, channel.isFiltered());
+                    statement.setBoolean(9, channel.isShownByDefault());
+                    statement.setBoolean(10, channel.isPermissionEnabled());
                     final String soundString = channel.getNotificationSound() == null ? null : channel.getNotificationSound().toString();
-                    statement.setString(9, soundString);
+                    statement.setString(11, soundString);
                     if (statement.executeUpdate() == 0) {
                         throw new SQLException("Failed to register channel to database: " + statement);
                     }

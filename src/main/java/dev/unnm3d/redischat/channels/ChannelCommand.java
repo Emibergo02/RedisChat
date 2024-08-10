@@ -52,6 +52,7 @@ public class ChannelCommand {
                         .replaceSuggestions(ArgumentSuggestions.strings("\"https://discord.com/api/webhooks/...\"")))
                 .executesPlayer((sender, args) -> {
                     Optional<Object> shownByDefault = args.getOptional("shown-by-default");
+                    Optional<Object> needsPermission = args.getOptional("needs-permission");
                     Optional<Object> discordWebhook = args.getOptional("discord-webhook");
                     Optional<Object> proximityDistance = args.getOptional("proximity-distance");
                     if (args.count() < 4) {
@@ -77,6 +78,7 @@ public class ChannelCommand {
                             .discordWebhook(discordWebhook.map(o -> (String) o).orElse(""))
                             .filtered(filtered)
                             .shownByDefault(shownByDefault.map(o -> (boolean) o).orElse(true))
+                            .permissionEnabled(needsPermission.map(o -> (boolean) o).orElse(true))
                             .build()
                     );
 
@@ -162,6 +164,7 @@ public class ChannelCommand {
                     plugin.getDataManager().getActivePlayerChannel(sender.getName(), plugin.getChannelManager().getRegisteredChannels())
                             .thenAccept(activeChannelName -> {
                                 final List<PlayerChannel> availableChannels = plugin.getChannelManager().getRegisteredChannels().values().stream()
+                                        .filter(channel -> channel.isShownByDefault() || sender.hasPermission(Permissions.CHANNEL_SHOW_PREFIX.getPermission() + channel.getName()))
                                         .map(channel -> new PlayerChannel(channel, sender, channel.getName().equals(activeChannelName)))
                                         .filter(playerChannel -> !playerChannel.isHidden())
                                         .toList();

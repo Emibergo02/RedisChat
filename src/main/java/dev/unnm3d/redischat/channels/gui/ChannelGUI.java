@@ -30,7 +30,7 @@ public class ChannelGUI {
                 .filter(playerChannel -> !playerChannel.isHidden())
                 .toList();
 
-        ChannelGuiPopulateEvent populateEvent = new ChannelGuiPopulateEvent(player,items);
+        final ChannelGuiPopulateEvent populateEvent = new ChannelGuiPopulateEvent(player, items);
         plugin.getServer().getPluginManager().callEvent(populateEvent);
 
         return PagedGui.items()

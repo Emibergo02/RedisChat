@@ -31,7 +31,7 @@ public class PlayerChannel extends AbstractItem {
             status = Status.LISTENING;
         } else if (!player.isOp()&&player.hasPermission(Permissions.CHANNEL_HIDE_PREFIX.getPermission() + channel.getName())) {
             status = Status.HIDDEN;
-        } else if (!player.hasPermission(channelPermission) && !player.hasPermission(channelPermission + ".read")) {
+        } else if (channel.isPermissionEnabled() && !player.hasPermission(channelPermission) && !player.hasPermission(channelPermission + ".read")) {
             status = Status.MUTED;
         } else {
             status = Status.IDLE;
@@ -67,7 +67,7 @@ public class PlayerChannel extends AbstractItem {
 
         final ItemMeta im = item.getItemMeta();
         if (im != null)
-            im.setDisplayName("§r" + channel.getName());
+            im.setDisplayName("§r" + channel.getDisplayName());
         item.setItemMeta(im);
         return new ItemBuilder(item);
     }

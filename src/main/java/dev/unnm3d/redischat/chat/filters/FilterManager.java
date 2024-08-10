@@ -42,7 +42,7 @@ public class FilterManager {
     public void initializeDefaultFilters() {
         //INCOMING
         addFilter(new IgnorePlayerFilter(plugin.filterSettings.ignorePlayer));
-        addFilter(new PermissionFilter(plugin.filterSettings.permission));
+        addFilter(new PermissionFilter(plugin, plugin.filterSettings.permission));
 
         //OUTGOING
         addFilter(new CapsFilter(plugin.filterSettings.caps));
@@ -58,8 +58,13 @@ public class FilterManager {
     }
 
     public void addFilter(AbstractFilter<? extends FiltersConfig.FilterSettings> filter) {
-        registeredFilters.removeIf(value -> value.getName().equals(filter.getName()));
+        removeFilter(filter);
         registeredFilters.add(filter);
+    }
+
+    public void removeFilter(AbstractFilter<? extends FiltersConfig.FilterSettings> filter) {
+        registeredFilters.remove(filter);
+        registeredFilters.removeIf(value -> value.getName().equals(filter.getName()));
     }
 
     public Optional<AbstractFilter<? extends FiltersConfig.FilterSettings>> getFilterByName(String name) {
