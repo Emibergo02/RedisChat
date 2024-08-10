@@ -16,14 +16,16 @@ import xyz.xenondevs.invui.item.ItemProvider;
 import xyz.xenondevs.invui.item.builder.ItemBuilder;
 import xyz.xenondevs.invui.item.impl.AbstractItem;
 
+@Getter
 public class PlayerChannel extends AbstractItem {
-    @Getter
     private final Channel channel;
+    private final Player player;
     private Status status;
 
 
     public PlayerChannel(Channel channel, Player player, boolean isActive) {
         this.channel = channel;
+        this.player = player;
         final String channelPermission = Permissions.CHANNEL_PREFIX.getPermission() + channel.getName();
         if (isActive) {
             status = Status.LISTENING;
