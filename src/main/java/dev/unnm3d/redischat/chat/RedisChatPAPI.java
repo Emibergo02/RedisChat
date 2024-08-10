@@ -47,6 +47,22 @@ public class RedisChatPAPI extends PlaceholderExpansion {
                     ).toCompletableFuture().join();
         }
 
+        if (params.equalsIgnoreCase("notify_status")) {
+            try {
+                if (plugin.getMailGUIManager().getPublicMails(player.getName()).get()
+                        .stream().anyMatch(mail -> !mail.isRead())) {
+                    return "2";
+                }
+                if (plugin.getMailGUIManager().getPrivateMails(player.getName()).get()
+                        .stream().anyMatch(mail -> !mail.isRead())) {
+                    return "2";
+                }
+            } catch (Exception e) {
+                plugin.getLogger().severe("Error getting mail status: " + e);
+            }
+            return "0";
+        }
+
         if (params.equalsIgnoreCase("ignoring_all")) {
             if (player.getName() == null) return "false";
             return plugin.getChannelManager().getMuteManager().getIgnoreList(player.getName()).contains("all") ? "true" : "false";

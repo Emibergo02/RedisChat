@@ -45,11 +45,13 @@ public class ChannelCommand {
                 .withArguments(new IntegerArgument("rate-limit"))
                 .withArguments(new IntegerArgument("rate-limit-period"))
                 .withArguments(new BooleanArgument("filtered"))
+                .withOptionalArguments(new BooleanArgument("allowed-by-default"))
                 .withOptionalArguments(new IntegerArgument("proximity-distance")
                         .replaceSuggestions(ArgumentSuggestions.strings("-1", "100")))
                 .withOptionalArguments(new TextArgument("discord-webhook")
                         .replaceSuggestions(ArgumentSuggestions.strings("\"https://discord.com/api/webhooks/...\"")))
                 .executesPlayer((sender, args) -> {
+                    Optional<Object> shownByDefault = args.getOptional("shown-by-default");
                     Optional<Object> discordWebhook = args.getOptional("discord-webhook");
                     Optional<Object> proximityDistance = args.getOptional("proximity-distance");
                     if (args.count() < 4) {
@@ -74,6 +76,7 @@ public class ChannelCommand {
                             .proximityDistance(proximityDistance.map(o -> (int) o).orElse(-1))
                             .discordWebhook(discordWebhook.map(o -> (String) o).orElse(""))
                             .filtered(filtered)
+                            .shownByDefault(shownByDefault.map(o -> (boolean) o).orElse(true))
                             .build()
                     );
 

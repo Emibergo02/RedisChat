@@ -18,7 +18,6 @@ public class PermissionFilter extends AbstractFilter<FiltersConfig.FilterSetting
     @Override
     public FilterResult applyWithPrevious(CommandSender receiver, @NotNull ChatMessage chatMessage, ChatMessage... previousMessages) {
         for (String permission : chatMessage.getReceiver().getPermissions()) {
-            RedisChat.getInstance().getLogger().info(receiver.getName()+" has permission "+permission+" 1? "+receiver.hasPermission(permission));
             if (!receiver.hasPermission(permission)) {
                 return new FilterResult(chatMessage, true);
             }
@@ -26,8 +25,6 @@ public class PermissionFilter extends AbstractFilter<FiltersConfig.FilterSetting
 
         //Default read permission check
         final String permission = Permissions.CHANNEL_PREFIX.getPermission() + chatMessage.getReceiver().getName();
-        RedisChat.getInstance().getLogger().info(receiver.getName()+" has permission "+permission+" 2? "+receiver.hasPermission(permission));
-        RedisChat.getInstance().getLogger().info(receiver.getName()+" has permission "+permission+".read? "+receiver.hasPermission(permission+".read"));
         if (!(receiver.hasPermission(permission) || receiver.hasPermission(permission + ".read"))) {
             return new FilterResult(chatMessage, true);
         }

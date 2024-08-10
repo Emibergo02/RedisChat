@@ -41,7 +41,6 @@ public class FilterManager {
      */
     public void initializeDefaultFilters() {
         //INCOMING
-        addFilter(new DiscordFilter(plugin.filterSettings.discord));
         addFilter(new IgnorePlayerFilter(plugin.filterSettings.ignorePlayer));
         addFilter(new PermissionFilter(plugin.filterSettings.permission));
 

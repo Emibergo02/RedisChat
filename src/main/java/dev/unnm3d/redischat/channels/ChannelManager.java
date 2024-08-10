@@ -296,6 +296,8 @@ public class ChannelManager extends RedisChatAPI {
         getComponentProvider().logComponent(miniMessage.deserialize(
                 chatMessage.getFormat().replace("{message}", chatMessage.getContent())));
 
+        if(!chatMessage.getSender().isDiscord())
+            plugin.getDiscordHook().sendDiscordMessage(chatMessage);
 
         for (Player recipient : recipients) {
             final FilterResult result = filterManager.filterMessage(recipient, chatMessage, AbstractFilter.Direction.INCOMING);

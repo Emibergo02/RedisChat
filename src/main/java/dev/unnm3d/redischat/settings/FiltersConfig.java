@@ -15,7 +15,6 @@ import java.util.*;
 public final class FiltersConfig {
 
     //INCOMING
-    public FilterSettings discord = DefaultSettings.DISCORD.getFilterSettings();
     public IgnorePlayerFilter.IgnorePlayerFilterProperties ignorePlayer = (IgnorePlayerFilter.IgnorePlayerFilterProperties) DefaultSettings.IGNORE_PLAYER.getFilterSettings();
     public FilterSettings permission = DefaultSettings.PERMISSION.getFilterSettings();
 

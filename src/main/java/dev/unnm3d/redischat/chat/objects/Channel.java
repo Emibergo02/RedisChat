@@ -15,19 +15,21 @@ public class Channel extends ChannelAudience {
     @Setter
     private String discordWebhook;
     private final boolean filtered;
+    private final boolean shownByDefault;
     private final String notificationSound;
 
     @Builder(
             builderClassName = "NewChannelBuilder",
             builderMethodName = "channelBuilder"
     )
-    public Channel(String name, String format, int proximityDistance, int rateLimit, int rateLimitPeriod, String discordWebhook, boolean filtered, String notificationSound, @Singular List<String> permissions) {
+    public Channel(String name, String format, int proximityDistance, int rateLimit, int rateLimitPeriod, String discordWebhook, boolean filtered, boolean shownByDefault, String notificationSound, @Singular List<String> permissions) {
         super(AudienceType.CHANNEL, name, proximityDistance, permissions);
         this.format = format;
         this.rateLimit = rateLimit;
         this.rateLimitPeriod = rateLimitPeriod;
         this.discordWebhook = discordWebhook;
         this.filtered = filtered;
+        this.shownByDefault = shownByDefault;
         this.notificationSound = notificationSound;
     }
 
@@ -38,6 +40,7 @@ public class Channel extends ChannelAudience {
                 .rateLimitPeriod(3)
                 .discordWebhook("")
                 .filtered(true)
+                .shownByDefault(true)
                 .notificationSound(null);
     }
 }

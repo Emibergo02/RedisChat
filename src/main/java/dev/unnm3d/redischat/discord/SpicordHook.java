@@ -15,7 +15,6 @@ import org.spicord.api.addon.SimpleAddon;
 import org.spicord.bot.DiscordBot;
 
 import java.util.List;
-import java.util.Map;
 
 public class SpicordHook extends SimpleAddon implements IDiscordHook {
 
@@ -46,16 +45,16 @@ public class SpicordHook extends SimpleAddon implements IDiscordHook {
     }
 
     @Override
-    public void sendDiscordMessage(String channelName, ChatMessage chatMessageInfo) {
-        if (chatMessageInfo.getSender().isDiscord()) return;
+    public void sendDiscordMessage(ChatMessage chatMessageInfo) {
         if (this.bot == null || this.bot.getJda() == null) {
-            plugin.getLogger().warning("Unable to send message to Discord channel " + channelName + ": bot not found");
+            plugin.getLogger().warning("Unable to send message to Discord channel " + chatMessageInfo.getReceiver().getName() + ": bot not found");
             return;
         }
         final TextChannel textChannel = this.bot.getJda().getTextChannelById(
-                plugin.config.spicord.spicordChannelLink().getOrDefault(channelName, "0000000000000000000"));
+                plugin.config.spicord.spicordChannelLink().getOrDefault(chatMessageInfo.getReceiver().getName(), "0000000000000000000"));
         if (textChannel == null) {
-            plugin.getLogger().warning("Unable to send message to Discord channel " + channelName + ": channel not found");
+            if (chatMessageInfo.getReceiver().isChannel())
+                plugin.getLogger().warning("Unable to send message to Discord channel " + chatMessageInfo.getReceiver().getName() + ": channel not found");
             return;
         }
         if (plugin.config.spicord.discordFormat() == null) {
@@ -69,7 +68,7 @@ public class SpicordHook extends SimpleAddon implements IDiscordHook {
                 plugin.getComponentProvider()
                         .parsePlaceholders(null, //Parse placeholder for format
                                 plugin.config.spicord.discordFormat()
-                                        .replace("%channel%", channelName) //Specific placeholders for Discord format
+                                        .replace("%channel%", chatMessageInfo.getReceiver().getName()) //Specific placeholders for Discord format
                                         .replace("%sender%", chatMessageInfo.getSender().getName()))
                         .replaceText(rBuilder -> //Replace {message} with the actual message component
                                 rBuilder.matchLiteral("{message}")
@@ -85,26 +84,22 @@ public class SpicordHook extends SimpleAddon implements IDiscordHook {
     @Override
     public void onMessageReceived(DiscordBot bot, MessageReceivedEvent event) {
         if (event.getAuthor().isBot()) return;
-        for (Map.Entry<String, String> channelLink : plugin.config.spicord.spicordChannelLink().entrySet()) {
-            if (channelLink.getValue().equals(event.getGuildChannel().getId())) {
+        plugin.config.spicord.spicordChannelLink().entrySet().stream()
+                .filter(channelLink -> channelLink.getValue().equals(event.getGuildChannel().getId()))
+                .forEach(channelLink -> {
+                    Role highestRole = (event.getMember() == null || event.getMember().getRoles().isEmpty())
+                            ? event.getGuild().getPublicRole()
+                            : event.getMember().getRoles().get(0);
 
-                final Role highestRole;
-                if (event.getMember() == null || event.getMember().getRoles().isEmpty()) {
-                    highestRole = event.getGuild().getPublicRole();
-                } else {
-                    highestRole = event.getMember().getRoles().get(0);
-                }
-
-                plugin.getDataManager().sendChatMessage(new ChatMessage(
-                        ChannelAudience.newDiscordAudience(event.getAuthor().getName()),
-                        plugin.config.spicord.chatFormat()
-                                .replace("%username%", event.getAuthor().getEffectiveName())
-                                .replace("%role%", highestRole.getName()),
-                        event.getMessage().getContentStripped(),
-                        new ChannelAudience(channelLink.getKey())
-                ));
-            }
-        }
+                    plugin.getDataManager().sendChatMessage(new ChatMessage(
+                            ChannelAudience.newDiscordAudience(event.getAuthor().getName()),
+                            plugin.config.spicord.chatFormat()
+                                    .replace("%username%", event.getAuthor().getEffectiveName())
+                                    .replace("%role%", highestRole.getName()),
+                            event.getMessage().getContentStripped(),
+                            new ChannelAudience(channelLink.getKey())
+                    ));
+                });
     }
 
 }

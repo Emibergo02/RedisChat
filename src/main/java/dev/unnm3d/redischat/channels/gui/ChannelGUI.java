@@ -1,5 +1,6 @@
 package dev.unnm3d.redischat.channels.gui;
 
+import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
 import lombok.AllArgsConstructor;
 import org.bukkit.entity.Player;
@@ -23,6 +24,7 @@ public class ChannelGUI {
     public Gui getChannelsGUI(@NotNull Player player, @Nullable String activeChannelName) {
 
         final List<Item> items = plugin.getChannelManager().getAllChannels().stream()
+                .filter(channel -> player.hasPermission(Permissions.CHANNEL_SHOW_PREFIX.getPermission() + channel.getName()))
                 .map(channel -> new PlayerChannel(channel, player, channel.getName().equals(activeChannelName)))
                 .filter(playerChannel -> !playerChannel.isHidden())
                 .map(Item.class::cast).toList();
