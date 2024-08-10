@@ -1,15 +1,18 @@
 package dev.unnm3d.redischat.api;
 
 import dev.unnm3d.redischat.chat.ComponentProvider;
+import dev.unnm3d.redischat.chat.filters.FilterManager;
 import dev.unnm3d.redischat.chat.objects.Channel;
 import dev.unnm3d.redischat.chat.objects.ChatMessage;
 import dev.unnm3d.redischat.mail.MailGUIManager;
+import dev.unnm3d.redischat.moderation.MuteManager;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
+import java.util.concurrent.CompletionStage;
 
 @SuppressWarnings("unused")
 public abstract class RedisChatAPI {
@@ -37,6 +40,27 @@ public abstract class RedisChatAPI {
      * @return Optional, the mail feature may be disabled
      */
     public abstract Optional<MailGUIManager> getMailManager();
+
+    /**
+     * Get the filter manager
+     *
+     * @return The filter manager
+     */
+    public abstract FilterManager getFilterManager();
+
+    /**
+     * Get the Mute Manager
+     *
+     * @return The mute manager
+     */
+    public abstract MuteManager getMuteManager();
+
+    /**
+     * Get the Data Manager
+     *
+     * @return The data manager
+     */
+    public abstract DataManager getDataManager();
 
     /**
      * Register a channel
@@ -118,6 +142,20 @@ public abstract class RedisChatAPI {
      * @return The staff chat channel
      */
     public abstract Channel getStaffChatChannel();
+
+    /**
+     * Set the active channel for a player
+     * @param playerName The player name
+     * @param channelName The channel name
+     */
+    public abstract void setActiveChannel(String playerName, String channelName);
+
+    /**
+     * Get the active channel for a player
+     * @param playerName The player name
+     * @return The currently enabled channel
+     */
+    public abstract CompletionStage<String> getActiveChannel(String playerName);
 
     /**
      * Add vanish "canSee" integration

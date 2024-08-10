@@ -3,6 +3,7 @@ package dev.unnm3d.redischat.channels;
 import com.github.Anon8281.universalScheduler.UniversalRunnable;
 import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
+import dev.unnm3d.redischat.api.DataManager;
 import dev.unnm3d.redischat.api.RedisChatAPI;
 import dev.unnm3d.redischat.api.VanishIntegration;
 import dev.unnm3d.redischat.api.events.AsyncRedisChatMessageEvent;
@@ -32,6 +33,7 @@ import org.jetbrains.annotations.Nullable;
 import xyz.xenondevs.invui.window.Window;
 
 import java.util.*;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ChannelManager extends RedisChatAPI {
@@ -80,6 +82,11 @@ public class ChannelManager extends RedisChatAPI {
     }
 
     @Override
+    public DataManager getDataManager() {
+        return plugin.getDataManager();
+    }
+
+    @Override
     public void registerChannel(Channel channel) {
         registeredChannels.put(channel.getName(), channel);
         plugin.getDataManager().registerChannel(channel);
@@ -102,17 +109,19 @@ public class ChannelManager extends RedisChatAPI {
     @Override
     public void openChannelsGUI(Player player) {
         plugin.getDataManager().getActivePlayerChannel(player.getName(), registeredChannels)
-                .thenAccept(channelName -> RedisChat.getScheduler().runTask(() ->
-                        Window.single()
-                                .setTitle("Channels")
-                                .setGui(channelGUI.getChannelsGUI(player, channelName == null ? KnownChatEntities.GENERAL_CHANNEL.toString() : channelName))
-                                .setCloseHandlers(List.of(() -> new UniversalRunnable() {
-                                    @Override
-                                    public void run() {
-                                        player.updateInventory();
-                                    }
-                                }.runTaskLater(plugin, 1)))
-                                .open(player)));
+                .thenAccept(channelName -> {
+                    Window.Builder.Normal.Single window = Window.single()
+                            .setTitle("Channels")
+                            .setGui(channelGUI.getChannelsGUI(player, channelName == null ? KnownChatEntities.GENERAL_CHANNEL.toString() : channelName))
+                            .setCloseHandlers(List.of(() -> new UniversalRunnable() {
+                                @Override
+                                public void run() {
+                                    player.updateInventory();
+                                }
+                            }.runTaskLater(plugin, 1)));
+
+                    RedisChat.getScheduler().runTask(() -> window.open(player));
+                });
     }
 
 
@@ -283,7 +292,7 @@ public class ChannelManager extends RedisChatAPI {
     }
 
     @Override
-    public void sendGenericChat(ChatMessage chatMessage) {
+    public void sendGenericChat(@NotNull ChatMessage chatMessage) {
 
         Set<Player> recipients;
         if (chatMessage.getReceiver().isPlayer()) {
@@ -296,7 +305,7 @@ public class ChannelManager extends RedisChatAPI {
         getComponentProvider().logComponent(miniMessage.deserialize(
                 chatMessage.getFormat().replace("{message}", chatMessage.getContent())));
 
-        if(!chatMessage.getSender().isDiscord())
+        if (!chatMessage.getSender().isDiscord())
             plugin.getDiscordHook().sendDiscordMessage(chatMessage);
 
         for (Player recipient : recipients) {
@@ -399,6 +408,7 @@ public class ChannelManager extends RedisChatAPI {
                 .rateLimitPeriod(plugin.config.rate_limit_time_seconds)
                 .discordWebhook(plugin.config.publicDiscordWebhook)
                 .filtered(true)
+                .shownByDefault(true)
                 .notificationSound(null)
                 .build();
     }
@@ -411,12 +421,17 @@ public class ChannelManager extends RedisChatAPI {
                 .rateLimitPeriod(1000)
                 .discordWebhook(plugin.config.staffChatDiscordWebhook)
                 .filtered(false)
+                .shownByDefault(false)
                 .notificationSound(null)
                 .build();
     }
 
     public void setActiveChannel(String playerName, String channelName) {
         plugin.getDataManager().setActivePlayerChannel(playerName, channelName);
+    }
+
+    public CompletionStage<String> getActiveChannel(String playerName) {
+        return plugin.getDataManager().getActivePlayerChannel(playerName, registeredChannels);
     }
 
     @Override

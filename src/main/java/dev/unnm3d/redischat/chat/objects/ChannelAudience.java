@@ -119,7 +119,6 @@ public class ChannelAudience {
         return type == AudienceType.DISCORD;
     }
 
-
     public static ChannelAudienceBuilder audienceBuilder(String name) {
         return new ChannelAudienceBuilder().name(name);
     }

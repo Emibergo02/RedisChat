@@ -2,6 +2,7 @@ package dev.unnm3d.redischat.channels.gui;
 
 import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
+import dev.unnm3d.redischat.api.events.ChannelGuiPopulateEvent;
 import lombok.AllArgsConstructor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -23,11 +24,14 @@ public class ChannelGUI {
 
     public Gui getChannelsGUI(@NotNull Player player, @Nullable String activeChannelName) {
 
-        final List<Item> items = plugin.getChannelManager().getAllChannels().stream()
-                .filter(channel -> player.hasPermission(Permissions.CHANNEL_SHOW_PREFIX.getPermission() + channel.getName()))
+        final List<PlayerChannel> items = plugin.getChannelManager().getAllChannels().stream()
+                .filter(channel -> channel.isShownByDefault() || player.hasPermission(Permissions.CHANNEL_SHOW_PREFIX.getPermission() + channel.getName()))
                 .map(channel -> new PlayerChannel(channel, player, channel.getName().equals(activeChannelName)))
                 .filter(playerChannel -> !playerChannel.isHidden())
-                .map(Item.class::cast).toList();
+                .toList();
+
+        ChannelGuiPopulateEvent populateEvent = new ChannelGuiPopulateEvent(items);
+        plugin.getServer().getPluginManager().callEvent(populateEvent);
 
         return PagedGui.items()
                 .setStructure(
@@ -45,7 +49,7 @@ public class ChannelGUI {
                         return new ItemBuilder(plugin.guiSettings.forwardButton);
                     }
                 })
-                .setContent(items)
+                .setContent(populateEvent.getChannelItems().stream().map(Item.class::cast).toList())
                 .build();
     }
 

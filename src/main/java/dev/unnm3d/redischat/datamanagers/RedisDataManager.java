@@ -14,7 +14,6 @@ import io.lettuce.core.RedisURI;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.time.Duration;
 import java.util.*;
@@ -484,14 +483,15 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     }
 
     @Override
-    public CompletionStage<@Nullable String> getActivePlayerChannel(@NotNull String playerName, Map<String, Channel> registeredChannels) {
+    public CompletionStage<String> getActivePlayerChannel(@NotNull String playerName, Map<String, Channel> registeredChannels) {
         return getConnectionAsync(conn ->
                 conn.hget(DataKey.PLAYER_ACTIVE_CHANNELS.toString(), playerName)
                         .exceptionally(throwable -> {
                             throwable.printStackTrace();
                             plugin.getLogger().warning("Error getting active channel");
                             return null;
-                        }));
+                        }))
+                .thenApply(channelName -> channelName == null ? KnownChatEntities.GENERAL_CHANNEL.toString() : channelName);
     }
 
     @Override

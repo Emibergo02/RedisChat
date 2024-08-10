@@ -6,7 +6,7 @@ plugins {
 
 
 group = 'dev.unnm3d'
-version = '5.2.3'
+version = '5.3'
 
 
 repositories {
@@ -108,7 +108,6 @@ java {
     }
 
     withSourcesJar()
-    withJavadocJar()
 }
 compileJava.options.release.set releaseJavaVersion
 compileJava.options.encoding 'UTF-8'
@@ -137,12 +136,10 @@ publishing {
             artifactId = 'redischat'
             version = "$version"
             artifact shadowJar
-            artifact javadocJar
             artifact sourcesJar
         }
     }
 }
-
 
 jar.dependsOn shadowJar
 clean.delete "$rootDir/target"

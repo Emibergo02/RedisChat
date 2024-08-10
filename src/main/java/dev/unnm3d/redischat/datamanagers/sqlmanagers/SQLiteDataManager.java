@@ -12,7 +12,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -283,7 +282,7 @@ public class SQLiteDataManager extends SQLDataManager {
             try (Connection connection = getConnection()) {
                 try (PreparedStatement statement = connection.prepareStatement("""
                         INSERT OR REPLACE INTO channels
-                            (`name`,`format`,`rate_limit`,`rate_limit_period`,`proximity_distance`,`discordWebhook`,`filtered`,`notificationSound`)
+                            (`name`,`format`,`rate_limit`,`rate_limit_period`,`proximity_distance`,`discordWebhook`,`filtered`,`shown_by_default`,`notificationSound`)
                         VALUES
                             (?,?,?,?,?,?,?,?);
                             """)) {
@@ -295,8 +294,9 @@ public class SQLiteDataManager extends SQLDataManager {
                     statement.setInt(5, channel.getProximityDistance());
                     statement.setString(6, channel.getDiscordWebhook());
                     statement.setBoolean(7, channel.isFiltered());
+                    statement.setBoolean(8, channel.isShownByDefault());
                     final String soundString = channel.getNotificationSound() == null ? null : channel.getNotificationSound().toString();
-                    statement.setString(8, soundString);
+                    statement.setString(9, soundString);
                     if (statement.executeUpdate() == 0) {
                         throw new SQLException("Failed to register channel to database: " + statement);
                     }

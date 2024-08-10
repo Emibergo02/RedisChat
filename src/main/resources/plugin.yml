@@ -184,4 +184,3 @@ permissions:
       - redischat.mail.read
       - redischat.mail.delete
       - redischat.mail.unread
-      - redischat.hidechannel.staffchat

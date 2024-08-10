@@ -72,6 +72,7 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
                 proximity_distance  int             default -1,
                 discord_webhook      varchar(128)    default '',
                 filtered            BOOLEAN         default 1,
+                shown_by_default    BOOLEAN         default 1,
                 notification_sound   varchar(32)     default NULL
             );
             """, """
@@ -649,9 +650,9 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
             try (Connection connection = getConnection()) {
                 try (PreparedStatement statement = connection.prepareStatement("""
                         INSERT INTO channels
-                            (`name`,`format`,`rate_limit`,`rate_limit_period`,`proximity_distance`,`discord_webhook`,`filtered`,`notification_sound`)
+                            (`name`,`format`,`rate_limit`,`rate_limit_period`,`proximity_distance`,`discord_webhook`,`filtered`,`shown_by_default`,`notification_sound`)
                         VALUES
-                            (?,?,?,?,?,?,?,?)
+                            (?,?,?,?,?,?,?,?,?)
                         ON DUPLICATE KEY UPDATE
                             `format` = VALUES(`format`),
                             `rate_limit` = VALUES(`rate_limit`),
@@ -659,6 +660,7 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
                             `proximity_distance` = VALUES(`proximity_distance`),
                             `discord_webhook` = VALUES(`discord_webhook`),
                             `filtered` = VALUES(`filtered`),
+                            `shown_by_default` = VALUES(`shown_by_default`),
                             `notification_sound` = VALUES(`notification_sound`);
                         """)) {
 
@@ -670,7 +672,8 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
                     statement.setInt(5, channel.getProximityDistance());
                     statement.setString(6, channel.getDiscordWebhook());
                     statement.setBoolean(7, channel.isFiltered());
-                    statement.setString(8, channel.getNotificationSound());
+                    statement.setBoolean(8, channel.isShownByDefault());
+                    statement.setString(9, channel.getNotificationSound());
                     if (statement.executeUpdate() == 0) {
                         throw new SQLException("Failed to register channel to database: " + statement);
                     }
@@ -714,7 +717,7 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
     }
 
     @Override
-    public CompletionStage<@Nullable String> getActivePlayerChannel(@NotNull String playerName, Map<String, Channel> registeredChannels) {
+    public CompletionStage<String> getActivePlayerChannel(@NotNull String playerName, Map<String, Channel> registeredChannels) {
         return CompletableFuture.supplyAsync(() -> {
             try (Connection connection = getConnection()) {
                 try (PreparedStatement statement = connection.prepareStatement("""
@@ -819,6 +822,7 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
                                 .rateLimitPeriod(resultSet.getInt("rate_limit_period"))
                                 .discordWebhook(resultSet.getString("discord_webhook"))
                                 .filtered(resultSet.getBoolean("filtered"))
+                                .shownByDefault(resultSet.getBoolean("shown_by_default"))
                                 .notificationSound(resultSet.getString("notification_sound"))
                                 .build());
                     }
