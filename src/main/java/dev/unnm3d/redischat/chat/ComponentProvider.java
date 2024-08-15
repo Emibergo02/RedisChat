@@ -145,11 +145,17 @@ public class ComponentProvider {
         for (int i = 0; i < stringPlaceholders.length; i++) {
             if (i % 2 == placeholderStep) {
                 final String placeholderStringToBeReplaced = "%" + stringPlaceholders[i] + "%";
-                final String parsedPlaceH = replaceAmpersandCodesWithSection(
-                        cmdSender instanceof OfflinePlayer offlinePlayer
-                                ? PlaceholderAPI.setPlaceholders(offlinePlayer, placeholderStringToBeReplaced)
-                                : PlaceholderAPI.setPlaceholders(null, placeholderStringToBeReplaced)
-                );
+                String parsedPlaceH;
+                try {
+                    parsedPlaceH = replaceAmpersandCodesWithSection(
+                            cmdSender instanceof OfflinePlayer offlinePlayer
+                                    ? PlaceholderAPI.setPlaceholders(offlinePlayer, placeholderStringToBeReplaced)
+                                    : PlaceholderAPI.setPlaceholders(null, placeholderStringToBeReplaced)
+                    );
+                } catch (Exception e) {
+                    plugin.getLogger().warning("Error while parsing placeholder " + placeholderStringToBeReplaced + ": " + e.getMessage());
+                    parsedPlaceH = placeholderStringToBeReplaced;
+                }
 
                 //If the placeholder is not a valid placeholder skip to the next "%"
                 if (parsedPlaceH.equals(placeholderStringToBeReplaced)) {

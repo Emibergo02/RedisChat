@@ -5,13 +5,13 @@ author: Unnm3d
 api-version: 1.19
 folia-supported: true
 libraries:
-  - io.lettuce:lettuce-core:6.2.5.RELEASE
+  - io.lettuce:lettuce-core:6.2.7.RELEASE
   - org.yaml:snakeyaml:1.27
   - org.snakeyaml:snakeyaml-engine:2.3
-  - org.jetbrains:annotations:24.0.1
-  - com.zaxxer:HikariCP:5.0.1
+  - org.jetbrains:annotations:24.1.0
+  - com.zaxxer:HikariCP:5.1.0
   - org.xerial:sqlite-jdbc:3.45.3.0
-  - org.projectlombok:lombok:1.18.26
+  - org.projectlombok:lombok:1.18.34
   - org.apache.commons:commons-collections4:4.4
   - net.kyori:adventure-text-minimessage:4.17.0
   - net.kyori:adventure-text-serializer-plain:4.17.0

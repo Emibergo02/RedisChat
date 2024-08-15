@@ -17,7 +17,6 @@ repositories {
     maven { url 'https://repo.extendedclip.com/content/repositories/placeholderapi/' }
     maven { url 'https://repo.xenondevs.xyz/releases' }
     maven { url 'https://repo.maven.apache.org/maven2/' }
-
 }
 
 dependencies {
@@ -28,30 +27,30 @@ dependencies {
     compileOnly 'com.alibaba:fastjson:2.0.52'
 
     implementation 'com.github.Exlll.ConfigLib:configlib-paper:v4.5.0'
-    implementation 'xyz.xenondevs.invui:invui-core:1.33'
-    implementation 'xyz.xenondevs.invui:inventory-access-r7:1.33'
-    implementation 'xyz.xenondevs.invui:inventory-access-r11:1.33'
-    implementation 'xyz.xenondevs.invui:inventory-access-r15:1.33'
-    implementation 'xyz.xenondevs.invui:inventory-access-r16:1.33'
-    implementation 'xyz.xenondevs.invui:inventory-access-r17:1.33'
-    implementation 'xyz.xenondevs.invui:inventory-access-r18:1.33'
-    implementation 'xyz.xenondevs.invui:inventory-access-r19:1.33'
-    implementation 'xyz.xenondevs.invui:inventory-access-r20:1.33'
-    implementation 'dev.jorel:commandapi-bukkit-shade:9.5.1'
+    implementation 'xyz.xenondevs.invui:invui-core:1.35'
+    implementation 'xyz.xenondevs.invui:inventory-access-r7:1.35'
+    implementation 'xyz.xenondevs.invui:inventory-access-r11:1.35'
+    implementation 'xyz.xenondevs.invui:inventory-access-r15:1.35'
+    implementation 'xyz.xenondevs.invui:inventory-access-r16:1.35'
+    implementation 'xyz.xenondevs.invui:inventory-access-r17:1.35'
+    implementation 'xyz.xenondevs.invui:inventory-access-r18:1.35'
+    implementation 'xyz.xenondevs.invui:inventory-access-r19:1.35'
+    implementation 'xyz.xenondevs.invui:inventory-access-r20:1.35'
+    implementation 'xyz.xenondevs.invui:inventory-access-r21:1.35'
+    implementation 'dev.jorel:commandapi-bukkit-shade:9.5.3'
     implementation 'com.github.Anon8281:UniversalScheduler:0.1.6'
 
 
     compileOnly 'org.spigotmc:spigot-api:1.19.4-R0.1-SNAPSHOT'
     compileOnly 'me.clip:placeholderapi:2.11.3'
-    compileOnly 'io.lettuce:lettuce-core:6.2.5.RELEASE'
-    compileOnly 'org.jetbrains:annotations:24.0.1'
-    compileOnly 'com.zaxxer:HikariCP:5.0.1'
-    compileOnly 'org.mariadb.jdbc:mariadb-java-client:3.1.4'
+    compileOnly 'io.lettuce:lettuce-core:6.2.7.RELEASE'
+    compileOnly 'org.jetbrains:annotations:24.1.0'
+    compileOnly 'com.zaxxer:HikariCP:5.1.0'
     compileOnly 'net.luckperms:api:5.4'
     compileOnly 'com.github.MilkBowl:VaultAPI:1.7'
     compileOnly 'com.github.oraxen:oraxen:1.162.0'
     compileOnly 'com.github.LeonMangler:PremiumVanishAPI:2.8.8'
-    compileOnly 'org.projectlombok:lombok:1.18.32'
+    compileOnly 'org.projectlombok:lombok:1.18.34'
     compileOnly 'com.github.Spicord.Spicord:spicord-common:v5-SNAPSHOT'
     compileOnly 'net.dv8tion:JDA:5.0.0-beta.16'
     compileOnly 'org.apache.commons:commons-collections4:4.4'
@@ -61,7 +60,7 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.10.2'
     testImplementation 'io.papermc.paper:paper-api:1.20.1-R0.1-SNAPSHOT'
 
-    annotationProcessor 'org.projectlombok:lombok:1.18.32'
+    annotationProcessor 'org.projectlombok:lombok:1.18.34'
 }
 
 test {
@@ -85,6 +84,7 @@ shadowJar {
         include dependency('xyz.xenondevs.invui:inventory-access-r18')
         include dependency('xyz.xenondevs.invui:inventory-access-r19')
         include dependency('xyz.xenondevs.invui:inventory-access-r20')
+        include dependency('xyz.xenondevs.invui:inventory-access-r21')
         include dependency('dev.jorel:commandapi-bukkit-shade')
         include dependency('com.github.Anon8281:UniversalScheduler:0.1.6')
     }

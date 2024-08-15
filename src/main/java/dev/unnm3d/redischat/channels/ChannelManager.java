@@ -260,7 +260,6 @@ public class ChannelManager extends RedisChatAPI {
         }
         privateChatMessage = result.message();
 
-        //Parse to MiniMessage component (placeholders, tags and mentions), already parsed in Content filter
         final Component contentComponent = getComponentProvider().parseChatMessageContent(sender, privateChatMessage.getContent());
 
         //Check if message is empty
@@ -271,7 +270,8 @@ public class ChannelManager extends RedisChatAPI {
             return;
         }
 
-        final Component formatComponent = getComponentProvider()
+        //MESSAGE FOR SENDER
+        final Component senderFormatComponent = getComponentProvider()
                 //Parse format with placeholders
                 .parseChatMessageFormat(sender, privateChatMessage.getFormat())
                 //Replace {message} with the content component
@@ -279,13 +279,17 @@ public class ChannelManager extends RedisChatAPI {
                         .replacement(contentComponent));
 
         //Send the message to the sender
-        plugin.getComponentProvider().sendMessage(sender, formatComponent);
+        plugin.getComponentProvider().sendMessage(sender, senderFormatComponent);
 
-        privateChatMessage.setFormat(MiniMessage.miniMessage().serialize(
-                getComponentProvider().parseChatMessageFormat(sender, chatFormat.receive_private_format()
+        //MESSAGE FOR RECEIVER
+        final Component receiverFormatComponent = getComponentProvider()
+                //Parse format with placeholders
+                .parseChatMessageFormat(sender, chatFormat.receive_private_format()
                         .replace("%receiver%", receiverName)
-                        .replace("%sender%", sender.getName()))
-        ));
+                        .replace("%sender%", sender.getName()));
+
+        privateChatMessage.setFormat(MiniMessage.miniMessage().serialize(receiverFormatComponent));
+        privateChatMessage.setContent(MiniMessage.miniMessage().serialize(contentComponent));
 
         //Send the message to the receiver, the receiver format will be modified on the incoming filter
         plugin.getDataManager().sendChatMessage(privateChatMessage);

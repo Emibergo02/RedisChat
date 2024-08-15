@@ -60,7 +60,7 @@ public final class RedisChat extends JavaPlugin {
     private static RedisChat instance;
     @Getter
     private static TaskScheduler scheduler;
-    private List<String> registeredCommands;
+    private List<CommandAPICommand> registeredCommands;
     public GuiSettings guiSettings;
     @Getter
     private DataManager dataManager;
@@ -260,7 +260,7 @@ public final class RedisChat extends JavaPlugin {
                         .charset(StandardCharsets.UTF_8)
                         .build()
         );
-        if(this.config.validateConfig())
+        if (this.config.validateConfig())
             YamlConfigurations.save(configFile, Config.class, this.config);
 
         Path filtersFile = new File(getDataFolder(), "filters.yml").toPath();
@@ -277,7 +277,7 @@ public final class RedisChat extends JavaPlugin {
                                       - PLAYER   #Private messages
                                       - CHANNEL  #Channel messages
                                     channelWhitelist: []  # Which channels are affected by the filter, leave empty for all channels
-                                    
+                                
                                 """)
                         .charset(StandardCharsets.UTF_8)
                         .build()
@@ -304,7 +304,7 @@ public final class RedisChat extends JavaPlugin {
                         .charset(StandardCharsets.UTF_8)
                         .build()
         );
-        if(this.guiSettings.validateConfig())
+        if (this.guiSettings.validateConfig())
             YamlConfigurations.save(guiSettingsFile, GuiSettings.class, this.guiSettings);
     }
 
@@ -347,7 +347,7 @@ public final class RedisChat extends JavaPlugin {
         if (this.dataManager != null)
             this.dataManager.clearInvShareCache();
 
-        registeredCommands.forEach(command -> CommandAPI.unregister(command, true));
+        registeredCommands.forEach(command -> CommandAPI.unregister(command.getName(), true));
         CommandAPI.onDisable();
 
         if (this.playerListManager != null)
@@ -381,7 +381,7 @@ public final class RedisChat extends JavaPlugin {
 
         CommandAPI.unregister(commandAPICommand.getName(), true);
         commandAPICommand.register();
-        registeredCommands.add(commandAPICommand.getName());
+        registeredCommands.add(commandAPICommand);
         getLogger().info("Command " + commandAPICommand.getName() + " registered on CommandAPI!");
     }
 
