@@ -75,6 +75,7 @@ public final class Messages {
     public String itemSet = "<yellow>RedisChat</yellow> <gray>»</gray> <green>Item set!</green>";
     public String noPermission = "<yellow>RedisChat</yellow> <gray>»</gray> <red>You do not have permission to execute this command</red>";
     public String channelCreated = "<yellow>RedisChat</yellow> <gray>»</gray> <green>Channel created!</green>";
+    public String channelChangedDisplayName = "<yellow>RedisChat</yellow> <gray>»</gray> <green>Channel changed name to %displayname%!</green>";
     public String channelRemoved = "<yellow>RedisChat</yellow> <gray>»</gray> <red>Channel removed!</red>";
     public String channelListHeader = "<yellow>Channel list</yellow>:";
     public String channelListTransmitting = "<yellow>%channel% <gray>Status: <green>Transmitting</green>";

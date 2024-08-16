@@ -19,6 +19,7 @@ public class ChannelCommand {
         return new CommandAPICommand("channel")
                 .withAliases(plugin.config.getCommandAliases("channel"))
                 .withSubcommand(getCreateSubCommand())
+                .withSubcommand(getSetDisplayNameCommand())
                 .withSubcommand(getSetFormatSubCommand())
                 .withSubcommand(getDeleteSubCommand())
                 .withSubcommand(getListenSubCommand())
@@ -126,6 +127,24 @@ public class ChannelCommand {
                     channel.setFormat((String) args.get(1));
                     plugin.getChannelManager().registerChannel(channel);
                     plugin.messages.sendMessage(sender, plugin.messages.channelCreated);
+                });
+    }
+
+    public CommandAPICommand getSetDisplayNameCommand() {
+        return new CommandAPICommand("setdisplayname")
+                .withPermission(Permissions.CHANNEL_CHANGE_DISPLAYNAME.getPermission())
+                .withArguments(new StringArgument("name")
+                        .replaceSuggestions(ArgumentSuggestions.strings(commandSenderSuggestionInfo ->
+                                plugin.getChannelManager().getRegisteredChannels().keySet().stream()
+                                        .filter(s -> s.toLowerCase().startsWith(commandSenderSuggestionInfo.currentArg()))
+                                        .toArray(String[]::new)
+                        )))
+                .withArguments(new GreedyStringArgument("displayname"))
+                .executesPlayer((sender, args) -> {
+                    Channel channel = plugin.getChannelManager().getRegisteredChannels().get((String) args.get(0));
+                    channel.setDisplayName((String) args.get(1));
+                    plugin.getChannelManager().registerChannel(channel);
+                    plugin.messages.sendMessage(sender, plugin.messages.channelChangedDisplayName.replace("%displayname%", (String) args.get(1)));
                 });
     }
 
