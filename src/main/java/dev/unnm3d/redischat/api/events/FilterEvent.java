@@ -17,6 +17,11 @@ public class FilterEvent extends Event {
     @Setter
     private FilterResult result;
 
+    /**
+     * Event that is called when a filter is applied to a message
+     * @param filter The filter that is being applied
+     * @param result The result of the filter
+     */
     public FilterEvent(AbstractFilter<? extends FiltersConfig.FilterSettings> filter, FilterResult result) {
         super(!Bukkit.isPrimaryThread());
         this.filter = filter;

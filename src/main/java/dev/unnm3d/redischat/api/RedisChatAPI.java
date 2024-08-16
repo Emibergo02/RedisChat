@@ -83,7 +83,6 @@ public abstract class RedisChatAPI {
      */
     public abstract void openChannelsGUI(Player player);
 
-
     /**
      * Sends a message into the RedisChat system (cross-server)
      *
@@ -91,7 +90,6 @@ public abstract class RedisChatAPI {
      * @param message The message content
      */
     public abstract void outgoingMessage(CommandSender player, @NotNull String message);
-
 
     /**
      * Send a generic (non-private) ChatMessageInfo to all local players
@@ -101,7 +99,6 @@ public abstract class RedisChatAPI {
      * @param chatMessage The message to send
      */
     public abstract void sendGenericChat(@NotNull ChatMessage chatMessage);
-
 
     /**
      * Pauses the chat for a player and caches all messages sent to them

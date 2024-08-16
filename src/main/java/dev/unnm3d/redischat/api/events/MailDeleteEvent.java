@@ -11,6 +11,11 @@ public class MailDeleteEvent extends MailEvent implements Cancellable {
     private final Player deleter;
     private boolean cancelled = false;
 
+    /**
+     * Event that is called when a mail is deleted
+     * @param mail The mail that is being deleted
+     * @param deleter The player that is deleting the mail
+     */
     public MailDeleteEvent(Mail mail, Player deleter) {
         super(mail);
         this.deleter = deleter;

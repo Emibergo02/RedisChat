@@ -17,6 +17,11 @@ public class ChannelGuiPopulateEvent extends Event {
     @Setter
     private List<PlayerChannel> channelItems;
 
+    /**
+     * Event that is called before the channel GUI is populated
+     * @param player The player that is opening the GUI
+     * @param channelItems The list of channels that will be displayed in the GUI
+     */
     public ChannelGuiPopulateEvent(Player player, List<PlayerChannel> channelItems) {
         super(true);
         this.player = player;
