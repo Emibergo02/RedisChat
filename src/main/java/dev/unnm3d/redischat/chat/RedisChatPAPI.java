@@ -55,7 +55,7 @@ public class RedisChatPAPI extends PlaceholderExpansion {
                 }
                 if (plugin.getMailGUIManager().getPrivateMails(player.getName()).get()
                         .stream().anyMatch(mail -> !mail.isRead())) {
-                    return "2";
+                    return "1";
                 }
             } catch (Exception e) {
                 plugin.getLogger().severe("Error getting mail status: " + e);

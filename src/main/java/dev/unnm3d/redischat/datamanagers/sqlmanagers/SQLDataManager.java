@@ -823,7 +823,7 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
                     final ResultSet resultSet = statement.executeQuery();
                     final List<Channel> channels = new ArrayList<>();
                     while (resultSet.next()) {
-                        channels.add(Channel.channelBuilder(resultSet.getString("name"))
+                        channels.add(Channel.builder(resultSet.getString("name"))
                                 .displayName(resultSet.getString("display_name"))
                                 .rateLimit(resultSet.getInt("rate_limit"))
                                 .rateLimitPeriod(resultSet.getInt("rate_limit_period"))

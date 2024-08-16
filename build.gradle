@@ -108,6 +108,7 @@ java {
     }
 
     withSourcesJar()
+    withJavadocJar()
 }
 compileJava.options.release.set releaseJavaVersion
 compileJava.options.encoding 'UTF-8'
@@ -136,6 +137,7 @@ publishing {
             artifactId = 'redischat'
             version = "$version"
             artifact shadowJar
+            artifact javadocJar
             artifact sourcesJar
         }
     }
