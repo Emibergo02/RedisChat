@@ -10,6 +10,7 @@ import dev.unnm3d.redischat.chat.objects.ChatMessage;
 import dev.unnm3d.redischat.settings.FiltersConfig;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.bukkit.command.CommandSender;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
 import java.util.Queue;
@@ -82,7 +83,7 @@ public class FilterManager {
      * @param filterType The type of filter to apply, incoming or outgoing
      * @return The result of the filter
      */
-    public FilterResult filterMessage(CommandSender chatEntity, ChatMessage message, AbstractFilter.Direction filterType) {
+    public FilterResult filterMessage(@NotNull CommandSender chatEntity, @NotNull ChatMessage message, AbstractFilter.Direction filterType) {
         FilterResult result = new FilterResult(message, false);
         final Queue<ChatMessage> lastMessages = lastMessagesCache.getOrDefault(
                 genKeyIndex(filterType, message.getReceiver(), chatEntity.getName()),
