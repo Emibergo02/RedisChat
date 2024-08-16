@@ -25,6 +25,11 @@ public class RedisChatPAPI extends PlaceholderExpansion {
         return "1.1.0";
     }
 
+    @Override
+    public boolean persist() {
+        return true;
+    }
+
 
     @Override
     public String onRequest(OfflinePlayer player, @NotNull String params) {
@@ -40,6 +45,22 @@ public class RedisChatPAPI extends PlaceholderExpansion {
                             plugin.getChannelManager().getPublicChannel(null).getName() :
                             channel
                     ).toCompletableFuture().join();
+        }
+
+        if (params.equalsIgnoreCase("notify_status")) {
+            try {
+                if (plugin.getMailGUIManager().getPublicMails(player.getName()).get()
+                        .stream().anyMatch(mail -> !mail.isRead())) {
+                    return "2";
+                }
+                if (plugin.getMailGUIManager().getPrivateMails(player.getName()).get()
+                        .stream().anyMatch(mail -> !mail.isRead())) {
+                    return "2";
+                }
+            } catch (Exception e) {
+                plugin.getLogger().severe("Error getting mail status: " + e);
+            }
+            return "0";
         }
 
         if (params.equalsIgnoreCase("ignoring_all")) {

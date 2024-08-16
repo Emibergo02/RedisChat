@@ -2,7 +2,7 @@ package dev.unnm3d.redischat.datamanagers.sqlmanagers;
 
 import com.zaxxer.hikari.HikariDataSource;
 import dev.unnm3d.redischat.RedisChat;
-import dev.unnm3d.redischat.channels.Channel;
+import dev.unnm3d.redischat.chat.objects.Channel;
 import dev.unnm3d.redischat.mail.Mail;
 import org.bukkit.Bukkit;
 import org.bukkit.inventory.ItemStack;
@@ -12,7 +12,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -92,6 +91,28 @@ public class SQLiteDataManager extends SQLDataManager {
     }
 
     @Override
+    public void setActivePlayerChannel(String playerName, String channelName) {
+        CompletableFuture.runAsync(() -> {
+            try (Connection connection = getConnection()) {
+                try (PreparedStatement statement = connection.prepareStatement("""
+                        INSERT OR REPLACE INTO player_data
+                            (`player_name`, `active_channel`)
+                        VALUES
+                            (?,?);""")) {
+
+                    statement.setString(1, playerName);
+                    statement.setString(2, channelName);
+                    if (statement.executeUpdate() == 0) {
+                        throw new SQLException("Failed to update active channel to database: " + statement);
+                    }
+                }
+            } catch (SQLException e) {
+                errWarn("Failed to update active channel to database", e);
+            }
+        }, plugin.getExecutorService());
+    }
+
+    @Override
     public void setMutedEntities(@NotNull String entityKey, @NotNull Set<String> entitiesValue) {
         try (Connection connection = getConnection()) {
             try (PreparedStatement statement = connection.prepareStatement(entitiesValue.isEmpty() ? """
@@ -161,6 +182,9 @@ public class SQLiteDataManager extends SQLDataManager {
         } catch (SQLException e) {
             errWarn("Failed to insert serialized inventory into database", e);
         }
+        if (plugin.config.debugItemShare) {
+            plugin.getLogger().info("05 Added inventory for " + name);
+        }
     }
 
     @Override
@@ -171,7 +195,6 @@ public class SQLiteDataManager extends SQLDataManager {
                         (`player_name`, `item_serialized`)
                     VALUES
                         (?,?);""")) {
-
                 statement.setString(1, name);
                 statement.setString(2, serialize(item));
 
@@ -181,6 +204,9 @@ public class SQLiteDataManager extends SQLDataManager {
             }
         } catch (SQLException e) {
             errWarn("Failed to insert serialized item into database", e);
+        }
+        if (plugin.config.debugItemShare) {
+            plugin.getLogger().info("08 Added item for " + name);
         }
     }
 
@@ -201,6 +227,9 @@ public class SQLiteDataManager extends SQLDataManager {
             }
         } catch (SQLException e) {
             errWarn("Failed to insert serialized enderchest into database", e);
+        }
+        if (plugin.config.debugItemShare) {
+            plugin.getLogger().info("10 Added enderchest for " + name);
         }
     }
 
@@ -253,20 +282,23 @@ public class SQLiteDataManager extends SQLDataManager {
             try (Connection connection = getConnection()) {
                 try (PreparedStatement statement = connection.prepareStatement("""
                         INSERT OR REPLACE INTO channels
-                            (`name`,`format`,`rate_limit`,`rate_limit_period`,`proximity_distance`,`discordWebhook`,`filtered`,`notificationSound`)
+                            (`name`,`display_name`,`format`,`rate_limit`,`rate_limit_period`,`proximity_distance`,`discord_webhook`,`filtered`,`shown_by_default`,`needs_permission`,`notification_sound`)
                         VALUES
-                            (?,?,?,?,?,?,?,?);
-                            """)) {
+                            (?,?,?,?,?,?,?,?,?,?,?);
+                        """)) {
 
                     statement.setString(1, channel.getName());
-                    statement.setString(2, channel.getFormat());
-                    statement.setInt(3, channel.getRateLimit());
-                    statement.setInt(4, channel.getRateLimitPeriod());
-                    statement.setInt(5, channel.getProximityDistance());
-                    statement.setString(6, channel.getDiscordWebhook());
-                    statement.setBoolean(7, channel.isFiltered());
+                    statement.setString(2, channel.getDisplayName());
+                    statement.setString(3, channel.getFormat());
+                    statement.setInt(4, channel.getRateLimit());
+                    statement.setInt(5, channel.getRateLimitPeriod());
+                    statement.setInt(6, channel.getProximityDistance());
+                    statement.setString(7, channel.getDiscordWebhook());
+                    statement.setBoolean(8, channel.isFiltered());
+                    statement.setBoolean(9, channel.isShownByDefault());
+                    statement.setBoolean(10, channel.isPermissionEnabled());
                     final String soundString = channel.getNotificationSound() == null ? null : channel.getNotificationSound().toString();
-                    statement.setString(8, soundString);
+                    statement.setString(11, soundString);
                     if (statement.executeUpdate() == 0) {
                         throw new SQLException("Failed to register channel to database: " + statement);
                     }
@@ -275,40 +307,13 @@ public class SQLiteDataManager extends SQLDataManager {
 
                 }
             } catch (SQLException e) {
-                if(e.getMessage().contains("Duplicate entry")) {
+                if (e.getMessage().contains("Duplicate entry")) {
                     Bukkit.getLogger().warning("Channel " + channel.getName() + "already exists in database");
                 }
                 if (plugin.config.debug) {
                     e.printStackTrace();
                 }
             }
-        }, plugin.getExecutorService());
-    }
-
-    @Override
-    public void setPlayerChannelStatuses(@NotNull String playerName, @NotNull Map<String, String> channelStatuses) {
-        CompletableFuture.supplyAsync(() -> {
-            try (Connection connection = getConnection()) {
-                try (PreparedStatement statement = connection.prepareStatement("""
-                        INSERT OR REPLACE INTO player_channels (`player_name`, `channel_name`, `status`) VALUES
-                        """ +
-                        String.join(",", Collections.nCopies(channelStatuses.size(), "(?,?,?)")) + ";"
-                )) {
-                    int i = 0;
-                    for (Map.Entry<String, String> stringStringEntry : channelStatuses.entrySet()) {
-                        statement.setString(i * 3 + 1, playerName);
-                        statement.setString(i * 3 + 2, stringStringEntry.getKey());
-                        statement.setInt(i * 3 + 3, Integer.parseInt(stringStringEntry.getValue()));
-                        i++;
-                    }
-                    if (statement.executeUpdate() == 0) {
-                        throw new SQLException("Failed to update channel status to database: " + statement);
-                    }
-                }
-            } catch (SQLException e) {
-                errWarn("Failed to update channel status to database", e);
-            }
-            return null;
         }, plugin.getExecutorService());
     }
 

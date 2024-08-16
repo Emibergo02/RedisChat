@@ -11,7 +11,7 @@ import java.lang.reflect.Field;
 import java.util.List;
 
 @Configuration
-public final class Messages implements ConfigValidator {
+public final class Messages {
 
     public String player_not_online = "<yellow>RedisChat</yellow> <gray>»</gray> <red>The player %player% is not online</red>";
     public String cannot_message_yourself = "<yellow>RedisChat</yellow> <gray>»</gray> <red>You cannot message yourself</red>";
@@ -31,7 +31,7 @@ public final class Messages implements ConfigValidator {
             "<yellow>RedisChat</yellow> <gray>»</gray> <red>Use <click:run_command:'/allowmsg list'><color:#33c5ff>[/allowmsg list]</color></click> to see the list of players that can send you private messages</red>";
     public String ignore_whitelist_disabled = "<yellow>RedisChat</yellow> <gray>»</gray> <green>You are now ignoring only players INSIDE your ignore list</green><br>" +
             "<yellow>RedisChat</yellow> <gray>»</gray> <green>Use <click:run_command:'/ignore list'><color:#ff8c00>[/ignore list]</color></click> to see the list of players that you are ignoring</green>";
-    public String spychat_format = "<yellow>RedisChat</yellow> <gray>»</gray> <red>%sender% said to %receiver% : %message%</red>";
+    public String spychat_format = "<yellow>RedisChat</yellow> <gray>»</gray> <red>%sender% said to %receiver% : {message}</red>";
     public String spychat_enabled = "<yellow>RedisChat</yellow> <gray>»</gray> <green>Spychat enabled for %player%</green>";
     public String spychat_disabled = "<yellow>RedisChat</yellow> <gray>»</gray> <red>Spychat disabled for %player%</red>";
     public String edit_message_error = "<yellow>RedisChat</yellow> <gray>»</gray> <red>This config entry is not a String or doesn't exist!";
@@ -75,19 +75,17 @@ public final class Messages implements ConfigValidator {
     public String itemSet = "<yellow>RedisChat</yellow> <gray>»</gray> <green>Item set!</green>";
     public String noPermission = "<yellow>RedisChat</yellow> <gray>»</gray> <red>You do not have permission to execute this command</red>";
     public String channelCreated = "<yellow>RedisChat</yellow> <gray>»</gray> <green>Channel created!</green>";
+    public String channelChangedDisplayName = "<yellow>RedisChat</yellow> <gray>»</gray> <green>Channel changed name to %displayname%!</green>";
     public String channelRemoved = "<yellow>RedisChat</yellow> <gray>»</gray> <red>Channel removed!</red>";
-    public String channelEnabled = "<yellow>RedisChat</yellow> <gray>»</gray> <green>Channel %channel% enabled for %player%!</green>";
     public String channelListHeader = "<yellow>Channel list</yellow>:";
     public String channelListTransmitting = "<yellow>%channel% <gray>Status: <green>Transmitting</green>";
     public String channelListMuted = "<yellow>%channel% <gray>Status: <blue>Muted</blue>";
     public String channelListReceiving = "<yellow>%channel% <gray>Status: Receiving";
     public String channelForceListen = "<yellow>RedisChat</yellow> <gray>»</gray> <green>You forced %player% to talk inside %channel%!</green>";
-    public String channelDisabled = "<yellow>RedisChat</yellow> <gray>»</gray> <red>Channel %channel% disabled for %player%!</red>";
     public String messageContainsBadWords = "<yellow>RedisChat</yellow> <gray>»</gray> <red>Your message contains bad words!</red>";
     public String channelNotFound = "<red>Channel not found!</red>";
     public String channelNoPermission = "<red>You muted this channel or you don't have permission to talk! Check your /channels GUI</red>";
-    public String channelMuted = "<yellow>RedisChat</yellow> <gray>»</gray> <aqua>You silenced the %channel% channel!</aqua>";
-    public String channelUnmuted = "<yellow>RedisChat</yellow> <gray>»</gray> <aqua>You unmuted the %channel% channel!</aqua>";
+    public String channelNoFormat = "<red>Channel format not found! Use <click:suggest_command:'/channel setformat %channel%'><color:#33c5ff>[/channel setformat %channel%]</color></click> to set a format</red>";
     @Comment("The text after the /msg command (example: /msg <player> <message> will be -> /msg <user> <message>")
     public String msgPlayerSuggestion = "player";
     @Comment("The text after the /msg command (example: /msg <player> <message> will be -> /msg <player> <text>")
@@ -99,12 +97,12 @@ public final class Messages implements ConfigValidator {
     public String muted_player = "<yellow>RedisChat</yellow> <gray>»</gray> <aqua>You muted %player% on channel %channel%!</aqua>";
     public String unmuted_player = "<yellow>RedisChat</yellow> <gray>»</gray> <aqua>You unmuted %player% on channel %channel%!</aqua>";
     public String muted_on_channel = "<yellow>RedisChat</yellow> <gray>»</gray> <aqua>You've been muted in this channel (%channel%)!</aqua>";
-    public String publicly_ignored_player = "<click:run_command:'/ignore list'><hover:show_text:'Click to see ignored players'><color:#545454>Ignored message</color></hover></click>";
+    public String ignored_player = "<click:run_command:'/ignore list'><hover:show_text:'Click to see ignored players'><color:#545454>Ignored message</color></hover></click>";
     public String invalid_color = "<yellow>RedisChat</yellow> <gray>»</gray> <red>Invalid color!</red>";
     public String color_set= "<yellow>RedisChat</yellow> <gray>»</gray> <green>You successfully set your chat color!</green>";
     public String placeholder_set= "<yellow>RedisChat</yellow> <gray>»</gray> <green>You successfully set %redischat_%placeholder%% to \"%value%\" for player %player%!</green>";
     public String placeholder_deleted= "<yellow>RedisChat</yellow> <gray>»</gray> <red>You successfully deleted %redischat_%placeholder%% for player %player%!</red>";
-
+    public String duplicate_message = "<red>You can't send the same message!</red>";
 
     public void sendMessage(CommandSender sender, String message) {
         RedisChat.getInstance().getComponentProvider().sendMessage(sender, MiniMessage.miniMessage().deserialize(message));
@@ -125,10 +123,5 @@ public final class Messages implements ConfigValidator {
         if (field == null) return false;
         field.set(this, text);
         return true;
-    }
-
-    @Override
-    public void validateConfig() {
-
     }
 }

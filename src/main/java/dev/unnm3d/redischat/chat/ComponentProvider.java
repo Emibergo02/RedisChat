@@ -3,9 +3,11 @@ package dev.unnm3d.redischat.chat;
 import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.api.TagResolverIntegration;
+import dev.unnm3d.redischat.utils.ItemNameProvider;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import me.clip.placeholderapi.PlaceholderAPI;
+import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
@@ -17,6 +19,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -35,8 +38,11 @@ public class ComponentProvider {
     private final MiniMessage miniMessage;
     @Getter
     private final TagResolver standardTagResolver;
-    private final Map<Player, List<Component>> cacheBlocked;
+    private final Map<CommandSender, List<Component>> cacheBlocked;
     private final List<TagResolverIntegration> tagResolverIntegrationList;
+    @Getter
+    private final BukkitAudiences bukkitAudiences;
+    private final ItemNameProvider itemNameProvider;
 
 
     public ComponentProvider(RedisChat plugin) {
@@ -45,6 +51,8 @@ public class ComponentProvider {
         this.cacheBlocked = Collections.synchronizedMap(new WeakHashMap<>());
         this.standardTagResolver = StandardTags.defaults();
         this.tagResolverIntegrationList = new ArrayList<>();
+        this.bukkitAudiences = BukkitAudiences.create(plugin);
+        this.itemNameProvider = new ItemNameProvider();
     }
 
     /**
@@ -137,11 +145,17 @@ public class ComponentProvider {
         for (int i = 0; i < stringPlaceholders.length; i++) {
             if (i % 2 == placeholderStep) {
                 final String placeholderStringToBeReplaced = "%" + stringPlaceholders[i] + "%";
-                final String parsedPlaceH = replaceAmpersandCodesWithSection(
-                        cmdSender instanceof OfflinePlayer offlinePlayer
-                                ? PlaceholderAPI.setPlaceholders(offlinePlayer, placeholderStringToBeReplaced)
-                                : PlaceholderAPI.setPlaceholders(null, placeholderStringToBeReplaced)
-                );
+                String parsedPlaceH;
+                try {
+                    parsedPlaceH = replaceAmpersandCodesWithSection(
+                            cmdSender instanceof OfflinePlayer offlinePlayer
+                                    ? PlaceholderAPI.setPlaceholders(offlinePlayer, placeholderStringToBeReplaced)
+                                    : PlaceholderAPI.setPlaceholders(null, placeholderStringToBeReplaced)
+                    );
+                } catch (Exception e) {
+                    plugin.getLogger().warning("Error while parsing placeholder " + placeholderStringToBeReplaced + ": " + e.getMessage());
+                    parsedPlaceH = placeholderStringToBeReplaced;
+                }
 
                 //If the placeholder is not a valid placeholder skip to the next "%"
                 if (parsedPlaceH.equals(placeholderStringToBeReplaced)) {
@@ -179,15 +193,36 @@ public class ComponentProvider {
         return answer;
     }
 
-    public Component parseCustomPlaceholders(@NotNull CommandSender cmdSender, @NotNull Component messageComp) {
-        if (!cmdSender.hasPermission(Permissions.USE_CUSTOM_PLACEHOLDERS.getPermission())) return messageComp;
+    public Component parseChatMessageFormat(@NotNull CommandSender cmdSender, @NotNull String text) {
+        Component component = parsePlaceholders(cmdSender,
+                parseResolverIntegrations(
+                        parseLegacy(text, true)), this.standardTagResolver);
+
+        for (Map.Entry<String, String> replacementEntry : plugin.config.components.entrySet()) {
+            component = component.replaceText(rBuilder -> rBuilder
+                    .matchLiteral("{" + replacementEntry.getKey() + "}")
+                    .replacement(parsePlaceholders(cmdSender,
+                            parseResolverIntegrations(
+                                    parseLegacy(replacementEntry.getValue(), true)), this.standardTagResolver)));
+        }
+        return component;
+    }
+
+    public Component parseChatMessageContent(@NotNull CommandSender cmdSender, @NotNull String text) {
+        Component component = parse(cmdSender,
+                invShareFormatting(cmdSender, text),
+                cmdSender.hasPermission(Permissions.USE_FORMATTING.getPermission()),
+                true, true, getRedisChatTagResolver(cmdSender));
+
+        if (!cmdSender.hasPermission(Permissions.USE_CUSTOM_PLACEHOLDERS.getPermission())) return component;
 
         for (Map.Entry<String, String> replacementEntry : plugin.config.placeholders.entrySet()) {
-            messageComp = messageComp.replaceText(rBuilder ->
+            component = component.replaceText(rBuilder ->
                     rBuilder.matchLiteral(replacementEntry.getKey())
-                            .replacement(parsePlaceholders(cmdSender, parseLegacy(replacementEntry.getValue(), true), this.standardTagResolver)));
+                            .replacement(parsePlaceholders(cmdSender,
+                                    parseLegacy(replacementEntry.getValue(), true), this.standardTagResolver)));
         }
-        return messageComp;
+        return component;
     }
 
     /**
@@ -219,31 +254,28 @@ public class ComponentProvider {
             builder.resolver(inv);
         }
 
-        if (player.hasPermission(Permissions.USE_ITEM.getPermission())) {
+        if (player.hasPermission(Permissions.USE_ITEM.getPermission()) && player instanceof Player p) {
             String toParseItem = plugin.config.itemFormat;
             toParseItem = toParseItem.replace("%player%", player.getName());
             toParseItem = toParseItem.replace("%command%", "/invshare " + player.getName() + "-item");
             Component toParseItemComponent = parse(player, toParseItem, true, false, false, this.standardTagResolver);
-            if (player instanceof Player p) {
-                if (!p.getInventory().getItemInMainHand().getType().isAir()) {
-                    if (p.getInventory().getItemInMainHand().getItemMeta() != null)
-                        if (p.getInventory().getItemInMainHand().getItemMeta().hasDisplayName()) {
-                            toParseItemComponent = toParseItemComponent.replaceText(rTextBuilder ->
-                                    rTextBuilder.matchLiteral("%item_name%")
-                                            .replacement(p.getInventory().getItemInMainHand().getItemMeta().displayName())
-                            );
-                        } else {
-                            toParseItemComponent = toParseItemComponent.replaceText(rTextBuilder ->
-                                    rTextBuilder.matchLiteral("%item_name%")
-                                            .replacement(Component.translatable(
-                                                    p.getInventory().getItemInMainHand().getType().translationKey())));
-                        }
-                } else {
-                    toParseItemComponent = toParseItemComponent.replaceText(rTextBuilder ->
-                            rTextBuilder.matchLiteral("%item_name%")
-                                    .replacement("Nothing")
-                    );
-                }
+
+            final ItemMeta itemMeta = p.getInventory().getItemInMainHand().getItemMeta();
+
+            if (p.getInventory().getItemInMainHand().getType().isAir()) {
+                toParseItemComponent = toParseItemComponent.replaceText(rTextBuilder ->
+                        rTextBuilder.matchLiteral("%item_name%")
+                                .replacement("Nothing")
+                );
+            } else if (itemMeta != null && itemNameProvider.hasItemName(itemMeta)) {
+                toParseItemComponent = toParseItemComponent.replaceText(rTextBuilder ->
+                        rTextBuilder.matchLiteral("%item_name%")
+                                .replacement(LegacyComponentSerializer.legacySection().deserialize(itemNameProvider.getItemName(itemMeta))));
+            } else {
+                toParseItemComponent = toParseItemComponent.replaceText(rTextBuilder ->
+                        rTextBuilder.matchLiteral("%item_name%")
+                                .replacement(Component.translatable(
+                                        p.getInventory().getItemInMainHand().getType().getTranslationKey())));
             }
             TagResolver item = Placeholder.component("item", toParseItemComponent);
             builder.resolver(item);
@@ -277,8 +309,6 @@ public class ComponentProvider {
                 String replacing = m.group();
                 replacing = replacing.replace(m.group().trim(), format.mention_format().replace("%player%", playerName));
                 toParse = toParse.replace(m.group(), replacing);
-                if (plugin.config.debug)
-                    Bukkit.getLogger().info("mention parsed for " + playerName + " : " + toParse);
             }
         }
 
@@ -305,8 +335,6 @@ public class ComponentProvider {
             linkComponent = miniMessage.deserialize(format.link_format().replace("%link%", linkString));
         }
 
-        if (plugin.config.debug)
-            Bukkit.getLogger().info("links: " + text);
         return new AbstractMap.SimpleEntry<>(text, linkComponent);
     }
 
@@ -330,33 +358,6 @@ public class ComponentProvider {
     }
 
     /**
-     * Sanitize a message from blacklisted regexes
-     *
-     * @param message The message to sanitize
-     * @return The sanitized message
-     */
-    public @NotNull String sanitize(@NotNull String message) {
-        for (String regex : plugin.config.regex_blacklist) {
-            message = message.replaceAll(regex, plugin.config.blacklistReplacement);
-        }
-        return message;
-    }
-
-    /**
-     * Transform uppercase messages into lowercase
-     *
-     * @param message The message to transform
-     * @return The transformed message
-     */
-    public boolean antiCaps(@NotNull String message) {
-        int capsCount = 0;
-        for (char c : message.toCharArray())
-            if (Character.isUpperCase(c))
-                capsCount++;
-        return capsCount > message.length() / 2 && message.length() > 20;//50% of the message is caps and the message is longer than 20 chars
-    }
-
-    /**
      * Parse legacy color codes (§ and ampersand)
      *
      * @param text The text to parse
@@ -367,9 +368,6 @@ public class ComponentProvider {
         text = miniMessage.serialize(LegacyComponentSerializer.legacySection().deserialize(
                 parseAmpersand ? replaceAmpersandCodesWithSection(text) : text
         ));
-        if (plugin.config.debug) {
-            Bukkit.getLogger().info("Parsed legacy: " + text);
-        }
         return text.replace("\\<", "<");
 
     }
@@ -380,7 +378,7 @@ public class ComponentProvider {
      * @param player    The player to send the component to
      * @param component The component to send
      */
-    public void sendComponentOrCache(@NotNull Player player, @NotNull Component component) {
+    public void sendComponentOrCache(@NotNull CommandSender player, @NotNull Component component) {
         if (cacheBlocked.computeIfPresent(player,
                 (player1, components) -> {
                     components.add(component);
@@ -421,7 +419,7 @@ public class ComponentProvider {
     @SuppressWarnings("ResultOfMethodCallIgnored")
     public void logComponent(Component component) {
         if (!plugin.config.chatLogging) {
-            plugin.getServer().getConsoleSender().sendMessage(component);
+            bukkitAudiences.console().sendMessage(component);
             return;
         }
 
@@ -472,7 +470,7 @@ public class ComponentProvider {
     }
 
     public void sendMessage(CommandSender sender, Component component) {
-        sender.sendMessage(component);
+        bukkitAudiences.sender(sender).sendMessage(component);
     }
 
 }

@@ -2,7 +2,7 @@ package dev.unnm3d.redischat.commands;
 
 import com.github.Anon8281.universalScheduler.UniversalRunnable;
 import dev.unnm3d.redischat.RedisChat;
-import dev.unnm3d.redischat.chat.ChatMessageInfo;
+import dev.unnm3d.redischat.chat.objects.ChatMessage;
 import lombok.AllArgsConstructor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -19,7 +19,7 @@ public class ClearChatCommand implements CommandExecutor {
             @Override
             public void run() {
                 plugin.getDataManager().sendChatMessage(
-                        new ChatMessageInfo(RedisChat.getInstance().config.clear_chat_message));
+                        new ChatMessage(RedisChat.getInstance().config.clear_chat_message));
             }
         }.runTaskAsynchronously(plugin);
         return true;

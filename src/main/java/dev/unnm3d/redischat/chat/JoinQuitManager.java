@@ -2,6 +2,7 @@ package dev.unnm3d.redischat.chat;
 
 import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
+import dev.unnm3d.redischat.chat.objects.ChatMessage;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -38,13 +39,14 @@ public class JoinQuitManager implements Listener {
 
 
         if (!joinEvent.getPlayer().hasPlayedBefore() && !redisChat.config.first_join_message.isEmpty()) {
-            redisChat.getDataManager().sendChatMessage(new ChatMessageInfo(
+            redisChat.getDataManager().sendChatMessage(new ChatMessage(
                     MiniMessage.miniMessage().serialize(redisChat.getComponentProvider().parse(
                             joinEvent.getPlayer(),
                             redisChat.config.first_join_message,
                             true,
                             false,
-                            false))));
+                            false))
+            ));
             return;
         }
 
@@ -52,19 +54,20 @@ public class JoinQuitManager implements Listener {
 
         try {
             if (chatFormat.join_format().isEmpty()) return;
-        }catch (NullPointerException e){
-            redisChat.getLogger().severe("You didn't set a join format for the player " + joinEvent.getPlayer().getName()+". Check formats section inside config.yml file!");
+        } catch (NullPointerException e) {
+            redisChat.getLogger().severe("You didn't set a join format for the player " + joinEvent.getPlayer().getName() + ". Check formats section inside config.yml file!");
             return;
         }
 
         //Send join message to everyone
-        redisChat.getDataManager().sendChatMessage(new ChatMessageInfo(
+        redisChat.getDataManager().sendChatMessage(new ChatMessage(
                 MiniMessage.miniMessage().serialize(redisChat.getComponentProvider().parse(
                         joinEvent.getPlayer(),
                         chatFormat.join_format(),
                         true,
                         false,
-                        false)), Permissions.JOIN_QUIT.getPermission()));
+                        false)), Permissions.JOIN_QUIT.getPermission()
+        ));
 
     }
 
@@ -78,8 +81,8 @@ public class JoinQuitManager implements Listener {
         final ChatFormat chatFormat = redisChat.config.getChatFormat(quitEvent.getPlayer());
         try {
             if (chatFormat.quit_format().isEmpty()) return;
-        }catch (NullPointerException e){
-            redisChat.getLogger().severe("You didn't set a quit format for the player " + quitEvent.getPlayer().getName()+". Check formats section inside config.yml file!");
+        } catch (NullPointerException e) {
+            redisChat.getLogger().severe("You didn't set a quit format for the player " + quitEvent.getPlayer().getName() + ". Check formats section inside config.yml file!");
             return;
         }
 
@@ -100,7 +103,9 @@ public class JoinQuitManager implements Listener {
                 .thenAccept(aVoid -> findPlayerRequests.remove(playerName)) //Remove from map, player rejoined
                 .orTimeout(redisChat.config.quitSendWaiting, TimeUnit.MILLISECONDS)
                 .exceptionally(onTimeout -> {                               //Timeout, player quit
-                    redisChat.getDataManager().sendChatMessage(new ChatMessageInfo(parsedQuitMessage, Permissions.JOIN_QUIT.getPermission()));
+                    redisChat.getDataManager().sendChatMessage(
+                            new ChatMessage(parsedQuitMessage, Permissions.JOIN_QUIT.getPermission())
+                    );
                     return null;
                 });
     }

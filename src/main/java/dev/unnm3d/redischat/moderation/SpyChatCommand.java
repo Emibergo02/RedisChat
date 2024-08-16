@@ -31,7 +31,6 @@ public class SpyChatCommand implements CommandExecutor {
             plugin.getComponentProvider().sendMessage(sender, plugin.getComponentProvider().parse(null, plugin.messages.spychat_disabled.replace("%player%", playerName), true, false, false));
         }
 
-
         return true;
     }
 }

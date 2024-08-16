@@ -4,15 +4,13 @@ import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.api.DataManager;
-import dev.unnm3d.redischat.channels.Channel;
-import dev.unnm3d.redischat.channels.PlayerChannel;
-import dev.unnm3d.redischat.chat.ChatMessageInfo;
 import dev.unnm3d.redischat.chat.KnownChatEntities;
+import dev.unnm3d.redischat.chat.objects.Channel;
+import dev.unnm3d.redischat.chat.objects.ChatMessage;
 import dev.unnm3d.redischat.datamanagers.DataKey;
 import dev.unnm3d.redischat.mail.Mail;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -57,6 +55,7 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
                 player_name     varchar(16)     not null primary key,
                 ignore_list     TEXT            default NULL,
                 reply_player    varchar(16)     default NULL,
+                active_channel  varchar(16)     default 'public',
                 chat_color      varchar(12)     default NULL,
                 is_spying       BOOLEAN         default FALSE,
                 inv_serialized  MEDIUMTEXT      default NULL,
@@ -67,29 +66,22 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
             create table if not exists channels
             (
                 name                varchar(16)     not null primary key,
-                format              TEXT            default 'No format -> %message%',
+                display_name        varchar(16)     not null,
+                format              TEXT            ,
                 rate_limit          int             default 5,
                 rate_limit_period   int             default 3,
                 proximity_distance  int             default -1,
-                discordWebhook      varchar(128)    default '',
+                discord_webhook      varchar(128)    default '',
                 filtered            BOOLEAN         default 1,
-                notificationSound   varchar(32)     default NULL
-            );
-            """, """
-            create table if not exists player_channels
-            (
-                player_name  varchar(16)   not null,
-                channel_name varchar(16)   not null,
-                status       int default 0 not null,
-                primary key (player_name, channel_name),
-                constraint player_channels_channels_name_fk
-                    foreign key (channel_name) references channels (name)
+                shown_by_default    BOOLEAN         default 1,
+                needs_permission    BOOLEAN         default 1,
+                notification_sound   varchar(32)     default NULL
             );
             """, """
             create table if not exists muted_entities
             (
-                entity_key      varchar(24) not null,
-                entities_value  TEXT        not null,
+                entity_key      varchar(24)         not null,
+                entities_value  TEXT       not null,
                 primary key (entity_key)
             );
             """, """
@@ -296,8 +288,7 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
         CompletableFuture.runAsync(() -> {
             try (Connection connection = getConnection()) {
                 try (PreparedStatement statement = connection.prepareStatement("""
-                                            
-                            INSERT INTO player_placeholders
+                        INSERT INTO player_placeholders
                             (`player_name`, `placeholders`)
                         VALUES
                             (?,?)
@@ -337,6 +328,9 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
         } catch (SQLException e) {
             errWarn("Failed to insert serialized inventory into database", e);
         }
+        if (plugin.config.debugItemShare) {
+            plugin.getLogger().info("05 Added inventory for " + name);
+        }
     }
 
 
@@ -359,6 +353,9 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
         } catch (SQLException e) {
             errWarn("Failed to insert serialized item into database", e);
         }
+        if (plugin.config.debugItemShare) {
+            plugin.getLogger().info("08 Added item for " + name);
+        }
     }
 
     @Override
@@ -380,6 +377,9 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
         } catch (SQLException e) {
             errWarn("Failed to insert serialized enderchest into database", e);
         }
+        if (plugin.config.debugItemShare) {
+            plugin.getLogger().info("10 Added enderchest for " + name);
+        }
     }
 
     @Override
@@ -399,7 +399,7 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
     }
 
     @Override
-    public CompletionStage<ItemStack> getPlayerItem(@NotNull String playerName) {
+    public CompletionStage<@Nullable ItemStack> getPlayerItem(@NotNull String playerName) {
         return CompletableFuture.supplyAsync(() -> {
             try (Connection connection = getConnection()) {
                 try (PreparedStatement statement = connection.prepareStatement("""
@@ -418,7 +418,7 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
             } catch (SQLException e) {
                 errWarn("Failed to fetch serialized item from the database", e);
             }
-            return null;
+            return new ItemStack(Material.AIR);
         }, plugin.getExecutorService());
     }
 
@@ -442,7 +442,7 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
             } catch (SQLException e) {
                 errWarn("Failed to fetch serialized inventory from the database", e);
             }
-            return null;
+            return new ItemStack[0];
         }, plugin.getExecutorService());
     }
 
@@ -466,7 +466,7 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
             } catch (SQLException e) {
                 errWarn("Failed to fetch serialized enderchest from the database", e);
             }
-            return null;
+            return new ItemStack[0];
         }, plugin.getExecutorService());
     }
 
@@ -567,7 +567,7 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
             try (Connection connection = getConnection()) {
                 try (PreparedStatement statement = connection.prepareStatement("""
                         select id, serializedMail, player_name
-                        from mails 
+                        from mails
                         left join read_mails on mails.id = read_mails.mail_id and read_mails.player_name = ?
                         where recipient = '-Public';""")) {
 
@@ -652,28 +652,34 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
             try (Connection connection = getConnection()) {
                 try (PreparedStatement statement = connection.prepareStatement("""
                         INSERT INTO channels
-                            (`name`,`format`,`rate_limit`,`rate_limit_period`,`proximity_distance`,`discordWebhook`,`filtered`,`notificationSound`)
+                            (`name`,`display_name`,`format`,`rate_limit`,`rate_limit_period`,`proximity_distance`,`discord_webhook`,`filtered`,`shown_by_default`,`needs_permission`,`notification_sound`)
                         VALUES
-                            (?,?,?,?,?,?,?,?)
+                            (?,?,?,?,?,?,?,?,?,?,?)
                         ON DUPLICATE KEY UPDATE
+                            `display_name` = VALUES(`display_name`),
                             `format` = VALUES(`format`),
                             `rate_limit` = VALUES(`rate_limit`),
                             `rate_limit_period` = VALUES(`rate_limit_period`),
                             `proximity_distance` = VALUES(`proximity_distance`),
-                            `discordWebhook` = VALUES(`discordWebhook`),
+                            `discord_webhook` = VALUES(`discord_webhook`),
                             `filtered` = VALUES(`filtered`),
-                            `notificationSound` = VALUES(`notificationSound`);
-                            """)) {
+                            `shown_by_default` = VALUES(`shown_by_default`),
+                            `needs_permission` = VALUES(`needs_permission`),
+                            `notification_sound` = VALUES(`notification_sound`);
+                        """)) {
 
                     statement.setString(1, channel.getName());
-                    statement.setString(2, channel.getFormat());
-                    statement.setInt(3, channel.getRateLimit());
-                    statement.setInt(4, channel.getRateLimitPeriod());
-                    statement.setInt(5, channel.getProximityDistance());
-                    statement.setString(6, channel.getDiscordWebhook());
-                    statement.setBoolean(7, channel.isFiltered());
-                    final String soundString = channel.getNotificationSound() == null ? null : channel.getNotificationSound().toString();
-                    statement.setString(8, soundString);
+                    statement.setString(2, channel.getDisplayName());
+                    statement.setString(3, channel.getFormat());
+                    statement.setInt(4, channel.getRateLimit());
+                    statement.setInt(5, channel.getRateLimitPeriod());
+
+                    statement.setInt(6, channel.getProximityDistance());
+                    statement.setString(7, channel.getDiscordWebhook());
+                    statement.setBoolean(8, channel.isFiltered());
+                    statement.setBoolean(9, channel.isShownByDefault());
+                    statement.setBoolean(10, channel.isPermissionEnabled());
+                    statement.setString(11, channel.getNotificationSound());
                     if (statement.executeUpdate() == 0) {
                         throw new SQLException("Failed to register channel to database: " + statement);
                     }
@@ -682,7 +688,7 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
 
                 }
             } catch (SQLException e) {
-                if(e.getMessage().contains("Duplicate entry")) {
+                if (e.getMessage().contains("Duplicate entry")) {
                     Bukkit.getLogger().warning("Channel " + channel.getName() + "already exists in database");
                 }
                 if (plugin.config.debug) {
@@ -717,26 +723,25 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
     }
 
     @Override
-    public CompletionStage<@Nullable String> getActivePlayerChannel(@NotNull String playerName, Map<String, Channel> registeredChannels) {
+    public CompletionStage<String> getActivePlayerChannel(@NotNull String playerName, Map<String, Channel> registeredChannels) {
         return CompletableFuture.supplyAsync(() -> {
             try (Connection connection = getConnection()) {
                 try (PreparedStatement statement = connection.prepareStatement("""
-                        select channel_name, status from player_channels
+                        select active_channel from player_data
                         where player_name = ?;""")) {
 
                     statement.setString(1, playerName);
 
                     final ResultSet resultSet = statement.executeQuery();
 
-                    while (resultSet.next()) {
-                        if (resultSet.getInt("status") == 1)
-                            return resultSet.getString("channel_name");
+                    if (resultSet.next()) {
+                        return resultSet.getString("active_channel");
                     }
                 }
             } catch (SQLException e) {
                 errWarn("Failed to fetch active channel from database", e);
             }
-            return "public";
+            return KnownChatEntities.GENERAL_CHANNEL.toString();
         }, plugin.getExecutorService());
     }
 
@@ -784,32 +789,26 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
         });
     }
 
-
     @Override
-    public CompletionStage<List<PlayerChannel>> getPlayerChannelStatuses(@NotNull String playerName, Map<String, Channel> registeredChannels) {
-        return CompletableFuture.supplyAsync(() -> {
+    public void setActivePlayerChannel(String playerName, String channelName) {
+        CompletableFuture.runAsync(() -> {
             try (Connection connection = getConnection()) {
                 try (PreparedStatement statement = connection.prepareStatement("""
-                        select channel_name, status from player_channels
-                        where player_name = ?;""")) {
+                        INSERT INTO player_data
+                            (`player_name`, `active_channel`)
+                        VALUES
+                            (?,?)
+                        ON DUPLICATE KEY UPDATE `active_channel` = VALUES(`active_channel`);""")) {
 
                     statement.setString(1, playerName);
-
-                    final ResultSet resultSet = statement.executeQuery();
-                    final List<PlayerChannel> playerChannels = new ArrayList<>();
-                    while (resultSet.next()) {
-                        Channel channel = registeredChannels.get(resultSet.getString("channel_name"));
-                        if (channel != null)
-                            playerChannels.add(new PlayerChannel(
-                                    channel,
-                                    resultSet.getInt("status")));
+                    statement.setString(2, channelName);
+                    if (statement.executeUpdate() == 0) {
+                        throw new SQLException("Failed to update active channel to database: " + statement);
                     }
-                    return playerChannels;
                 }
             } catch (SQLException e) {
-                errWarn("Failed to fetch channel statuses from database", e);
+                errWarn("Failed to update active channel to database", e);
             }
-            return List.of();
         }, plugin.getExecutorService());
     }
 
@@ -824,16 +823,16 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
                     final ResultSet resultSet = statement.executeQuery();
                     final List<Channel> channels = new ArrayList<>();
                     while (resultSet.next()) {
-                        String notificationSoundString = resultSet.getString("notificationSound");
-                        channels.add(new Channel(
-                                resultSet.getString("name"),
-                                resultSet.getString("format"),
-                                resultSet.getInt("rate_limit"),
-                                resultSet.getInt("rate_limit_period"),
-                                resultSet.getInt("proximity_distance"),
-                                resultSet.getString("discordWebhook"),
-                                resultSet.getBoolean("filtered"),
-                                notificationSoundString == null ? null : Sound.valueOf(notificationSoundString)));
+                        channels.add(Channel.channelBuilder(resultSet.getString("name"))
+                                .displayName(resultSet.getString("display_name"))
+                                .rateLimit(resultSet.getInt("rate_limit"))
+                                .rateLimitPeriod(resultSet.getInt("rate_limit_period"))
+                                .discordWebhook(resultSet.getString("discord_webhook"))
+                                .filtered(resultSet.getBoolean("filtered"))
+                                .shownByDefault(resultSet.getBoolean("shown_by_default"))
+                                .permissionEnabled(resultSet.getBoolean("needs_permission"))
+                                .notificationSound(resultSet.getString("notification_sound"))
+                                .build());
                     }
                     return channels;
                 }
@@ -844,62 +843,9 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
         }, plugin.getExecutorService());
     }
 
-    @Override
-    public void setPlayerChannelStatuses(@NotNull String playerName, @NotNull Map<String, String> channelStatuses) {
-        CompletableFuture.supplyAsync(() -> {
-            try (Connection connection = getConnection()) {
-                try (PreparedStatement statement = connection.prepareStatement("""
-                        INSERT INTO player_channels (`player_name`, `channel_name`, `status`) VALUES
-                                                
-                        """ +
-                        String.join(",", Collections.nCopies(channelStatuses.size(), "(?,?,?)")) +
-                        """
-                                                                
-                                ON DUPLICATE KEY UPDATE status = VALUES(`status`);
-                                """)) {
-
-                    int i = 0;
-                    for (Map.Entry<String, String> stringStringEntry : channelStatuses.entrySet()) {
-                        statement.setString(i * 3 + 1, playerName);
-                        statement.setString(i * 3 + 2, stringStringEntry.getKey());
-                        statement.setInt(i * 3 + 3, Integer.parseInt(stringStringEntry.getValue()));
-                        i++;
-                    }
-                    if (statement.executeUpdate() == 0) {
-                        throw new SQLException("Failed to update channel status to database: " + statement);
-                    }
-                }
-            } catch (SQLException e) {
-                errWarn("Failed to update channel status to database", e);
-            }
-            return null;
-        }, plugin.getExecutorService());
-    }
 
     @Override
-    public void removePlayerChannelStatus(@NotNull String playerName, @NotNull String channelName) {
-        CompletableFuture.supplyAsync(() -> {
-            try (Connection connection = getConnection()) {
-                try (PreparedStatement statement = connection.prepareStatement("""
-                        DELETE FROM player_channels
-                        WHERE player_name = ? and channel_name = ?;""")) {
-
-                    statement.setString(1, playerName);
-                    statement.setString(2, channelName);
-
-                    if (statement.executeUpdate() == 0) {
-                        throw new SQLException("Failed to delete channel from database: " + statement);
-                    }
-                }
-            } catch (SQLException e) {
-                errWarn("Failed to register channel to database", e);
-            }
-            return null;
-        }, plugin.getExecutorService());
-    }
-
-    @Override
-    public void sendChatMessage(@NotNull ChatMessageInfo packet) {
+    public void sendChatMessage(@NotNull ChatMessage packet) {
         String publishChannel = DataKey.CHAT_CHANNEL.toString();
         if (packet.getReceiver().isChannel()) {//If it's a channel message we need to increment the rate limit
             final String chName = packet.getReceiver().getName();
@@ -915,7 +861,7 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
         }
 
         sendChatPluginMessage(publishChannel, packet);
-        plugin.getChannelManager().sendAndKeepLocal(packet);
+        plugin.getChannelManager().sendGenericChat(packet);
     }
 
     @SuppressWarnings("UnstableApiUsage")

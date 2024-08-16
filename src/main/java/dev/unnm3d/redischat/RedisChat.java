@@ -32,6 +32,7 @@ import dev.unnm3d.redischat.permission.LuckPermsProvider;
 import dev.unnm3d.redischat.permission.PermissionProvider;
 import dev.unnm3d.redischat.permission.VaultPermissionProvider;
 import dev.unnm3d.redischat.settings.Config;
+import dev.unnm3d.redischat.settings.FiltersConfig;
 import dev.unnm3d.redischat.settings.GuiSettings;
 import dev.unnm3d.redischat.settings.Messages;
 import dev.unnm3d.redischat.task.AnnouncerManager;
@@ -59,9 +60,7 @@ public final class RedisChat extends JavaPlugin {
     private static RedisChat instance;
     @Getter
     private static TaskScheduler scheduler;
-    public Config config;
-    private List<String> registeredCommands;
-    public Messages messages;
+    private List<CommandAPICommand> registeredCommands;
     public GuiSettings guiSettings;
     @Getter
     private DataManager dataManager;
@@ -89,6 +88,11 @@ public final class RedisChat extends JavaPlugin {
     private ExecutorService executorService;
     @Getter
     private MailGUIManager mailGUIManager;
+
+    public Config config;
+    public FiltersConfig filterSettings;
+    public Messages messages;
+
 
     @Override
     public void onLoad() {
@@ -148,6 +152,7 @@ public final class RedisChat extends JavaPlugin {
 
         if (config.enableStaffChat)
             loadCommandAPICommand(new StaffChatCommand(this).getCommand());
+
 
         this.channelManager = new ChannelManager(this);
         loadCommandAPICommand(new ChannelCommand(this).getCommand());
@@ -255,7 +260,28 @@ public final class RedisChat extends JavaPlugin {
                         .charset(StandardCharsets.UTF_8)
                         .build()
         );
-        this.config.validateConfig();
+        if (this.config.validateConfig())
+            YamlConfigurations.save(configFile, Config.class, this.config);
+
+        Path filtersFile = new File(getDataFolder(), "filters.yml").toPath();
+        this.filterSettings = YamlConfigurations.update(
+                filtersFile,
+                FiltersConfig.class,
+                YamlConfigurationProperties.newBuilder()
+                        .header("""
+                                How to configure filters:
+                                    enabled: true/false  # If the filter is enabled at all
+                                    priority: 1  # The priority of the filter
+                                    audienceWhitelist:  # The audience type of the filter (who is the target of the filter)
+                                      - DISCORD
+                                      - PLAYER   #Private messages
+                                      - CHANNEL  #Channel messages
+                                    channelWhitelist: []  # Which channels are affected by the filter, leave empty for all channels
+                                
+                                """)
+                        .charset(StandardCharsets.UTF_8)
+                        .build()
+        );
 
         Path messagesFile = new File(getDataFolder(), "messages.yml").toPath();
         this.messages = YamlConfigurations.update(
@@ -267,7 +293,6 @@ public final class RedisChat extends JavaPlugin {
                         .charset(StandardCharsets.UTF_8)
                         .build()
         );
-        this.messages.validateConfig();
 
         Path guiSettingsFile = new File(getDataFolder(), "guis.yml").toPath();
         this.guiSettings = YamlConfigurations.update(
@@ -279,11 +304,19 @@ public final class RedisChat extends JavaPlugin {
                         .charset(StandardCharsets.UTF_8)
                         .build()
         );
-        this.guiSettings.validateConfig();
+        if (this.guiSettings.validateConfig())
+            YamlConfigurations.save(guiSettingsFile, GuiSettings.class, this.guiSettings);
     }
 
     public void saveMessages() {
-        YamlConfigurations.save(new File(this.getDataFolder(), "messages.yml").toPath(), Messages.class, messages);
+        YamlConfigurations.save(
+                new File(this.getDataFolder(), "messages.yml").toPath(),
+                Messages.class,
+                messages,
+                YamlConfigurationProperties.newBuilder()
+                        .header("RedisChat messages")
+                        .footer("Authors: Unnm3d")
+                        .build());
     }
 
     public void saveGuiSettings() {
@@ -297,13 +330,24 @@ public final class RedisChat extends JavaPlugin {
                         .build());
     }
 
+    public void saveFilters() {
+        YamlConfigurations.save(
+                new File(this.getDataFolder(), "filters.yml").toPath(),
+                FiltersConfig.class,
+                filterSettings,
+                YamlConfigurationProperties.newBuilder()
+                        .header("RedisChat filters")
+                        .footer("Authors: Unnm3d")
+                        .build());
+    }
+
     @Override
     public void onDisable() {
         getLogger().warning("RedisChat is disabling...");
         if (this.dataManager != null)
             this.dataManager.clearInvShareCache();
 
-        registeredCommands.forEach(command -> CommandAPI.unregister(command, true));
+        registeredCommands.forEach(command -> CommandAPI.unregister(command.getName(), true));
         CommandAPI.onDisable();
 
         if (this.playerListManager != null)
@@ -337,7 +381,7 @@ public final class RedisChat extends JavaPlugin {
 
         CommandAPI.unregister(commandAPICommand.getName(), true);
         commandAPICommand.register();
-        registeredCommands.add(commandAPICommand.getName());
+        registeredCommands.add(commandAPICommand);
         getLogger().info("Command " + commandAPICommand.getName() + " registered on CommandAPI!");
     }
 

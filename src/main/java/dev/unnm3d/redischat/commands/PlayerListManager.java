@@ -31,13 +31,22 @@ public class PlayerListManager {
                 playerList.entrySet().removeIf(stringLongEntry -> System.currentTimeMillis() - stringLongEntry.getValue() > 1000 * 4);
 
                 final List<String> tempList = plugin.getServer().getOnlinePlayers().stream()
-                        .filter(player -> !isVanished(player))
+                        .filter(player -> {
+                            if (isVanished(player)) {
+                                if (plugin.config.debugPlayerList)
+                                    plugin.getLogger().info("Removing  " + player.getName() + " from playerlist: is vanished");
+                                return false;
+                            }
+                            return true;
+                        })
                         .map(HumanEntity::getName)
                         .filter(s -> !s.isEmpty())
                         .toList();
                 if (!tempList.isEmpty())
                     plugin.getDataManager().publishPlayerList(tempList);
                 tempList.forEach(s -> playerList.put(s, System.currentTimeMillis()));
+                if (plugin.config.debugPlayerList)
+                    plugin.getLogger().info("Updated player list: " + playerList.keySet());
 
                 if (plugin.config.completeChatSuggestions) {
                     plugin.getServer().getOnlinePlayers().forEach(player ->
@@ -68,13 +77,25 @@ public class PlayerListManager {
 
         if (sender != null) {
             vanishIntegrations.forEach(vanishIntegration ->
-                    keySet.removeIf(pName -> !vanishIntegration.canSee(sender, pName)));
+                    keySet.removeIf(pName -> {
+                        if (vanishIntegration.canSee(sender, pName)) {
+                            return false;
+                        }
+                        if (RedisChat.getInstance().config.debugPlayerList) {
+                            RedisChat.getInstance().getLogger().info("Player " + sender.getName() + " can't see " + pName);
+                        }
+                        return true;
+                    })
+            );
         }
         return keySet;
     }
 
     public boolean isVanished(Player player) {
-        return player.getMetadata("vanished").stream().anyMatch(MetadataValue::asBoolean) ||
+        if (RedisChat.getInstance().config.debugPlayerList && player.getMetadata("vanished").stream().anyMatch(MetadataValue::asBoolean)) {
+            RedisChat.getInstance().getLogger().info("Player " + player.getName() + " has \"vanished\" metadata set to true");
+        }
+        return //player.getMetadata("vanished").stream().anyMatch(MetadataValue::asBoolean) ||
                 vanishIntegrations.stream().anyMatch(vanishIntegration -> vanishIntegration.isVanished(player));
     }
 

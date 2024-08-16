@@ -31,28 +31,31 @@ public class InvShareCommand implements CommandExecutor {
         if (!(commandSender instanceof Player p)) return true;
 
         if (strings.length == 0) return true;
-        String[] splitted = strings[0].split("-");
-        if (splitted.length == 1) return true;
+        final String[] split = strings[0].split("-");
+        if (split.length == 1) return true;
 
 
-        String playername = splitted[0];
-        InventoryType type = InventoryType.valueOf(splitted[1].toUpperCase());
+        final String playerName = split[0];
+        InventoryType type = InventoryType.valueOf(split[1].toUpperCase());
         switch (type) {
-            case ITEM -> plugin.getDataManager().getPlayerItem(playername)
+            case ITEM -> plugin.getDataManager().getPlayerItem(playerName)
                     .thenAccept(item ->
                             RedisChat.getScheduler().runTask(() -> {
+                                        if (plugin.config.debugItemShare) {
+                                            plugin.getLogger().info("Itemshare openGUI for player " + p.getName() + ": " + item.getType());
+                                        }
                                         if (item.getType().toString().endsWith("SHULKER_BOX")) {
                                             if (item.getItemMeta() instanceof BlockStateMeta bsm)
                                                 if (bsm.getBlockState() instanceof Container shulkerBox) {
                                                     openInvShareGui(p,
-                                                            plugin.config.shulker_title.replace("%player%", playername),
+                                                            plugin.config.shulker_title.replace("%player%", playerName),
                                                             3,
                                                             shulkerBox.getSnapshotInventory().getContents()
                                                     );
                                                 }
                                         } else {
                                             openInvShareGuiItem(p,
-                                                    plugin.config.item_title.replace("%player%", playername),
+                                                    plugin.config.item_title.replace("%player%", playerName),
                                                     item
                                             );
                                         }
@@ -60,38 +63,43 @@ public class InvShareCommand implements CommandExecutor {
                             ));
 
 
-            case INVENTORY -> plugin.getDataManager().getPlayerInventory(playername)
+            case INVENTORY -> plugin.getDataManager().getPlayerInventory(playerName)
                     .thenAccept(inventoryContents ->
-                            RedisChat.getScheduler().runTask(() ->
-                                    openInvShareGui(p,
-                                            plugin.config.inv_title.replace("%player%", playername),
-                                            5,
-                                            inventoryContents
-                                    )
-                            ));
-            case ENDERCHEST -> plugin.getDataManager().getPlayerEnderchest(playername)
+                            RedisChat.getScheduler().runTask(() -> {
+                                if (plugin.config.debugItemShare) {
+                                    plugin.getLogger().info("Invshare openGUI for player " + p.getName() + ": " + Arrays.toString(inventoryContents));
+                                }
+                                openInvShareGui(p,
+                                        plugin.config.inv_title.replace("%player%", playerName),
+                                        5,
+                                        inventoryContents
+                                );
+                            }));
+            case ENDERCHEST -> plugin.getDataManager().getPlayerEnderchest(playerName)
                     .thenAccept(ecContents ->
-                            RedisChat.getScheduler().runTask(() ->
-                                    openInvShareGui(p,
-                                            plugin.config.ec_title.replace("%player%", playername),
-                                            3,
-                                            ecContents
-                                    )
-                            ));
+                            RedisChat.getScheduler().runTask(() -> {
+                                if (plugin.config.debugItemShare) {
+                                    plugin.getLogger().info("ECshare openGUI for player " + p.getName() + ": " + Arrays.toString(ecContents));
+                                }
+                                openInvShareGui(p,
+                                        plugin.config.ec_title.replace("%player%", playerName),
+                                        3,
+                                        ecContents
+                                );
+                            }));
         }
         return true;
     }
 
     private void openInvShareGui(Player player, String title, int size, ItemStack[] items) {
-        Gui gui = Gui.empty(9, size);
-        gui.addItems(
-                Arrays.stream(items)
-                        .map(itemStack -> {
-                            if (itemStack == null) return new ItemBuilder(Material.AIR);
-                            return new ItemBuilder(itemStack);
-                        })
-                        .map(SimpleItem::new)
-                        .toArray(Item[]::new)
+        final Gui gui = Gui.empty(9, size);
+        gui.addItems(Arrays.stream(items)
+                .map(itemStack -> {
+                    if (itemStack == null) return new ItemBuilder(Material.AIR);
+                    return new ItemBuilder(itemStack);
+                })
+                .map(SimpleItem::new)
+                .toArray(Item[]::new)
         );
         Window.single().setTitle(title).setGui(gui).setCloseHandlers(List.of(() -> new UniversalRunnable() {
             @Override

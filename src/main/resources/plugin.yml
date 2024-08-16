@@ -2,20 +2,21 @@ name: RedisChat
 version: '${version}'
 main: dev.unnm3d.redischat.RedisChat
 author: Unnm3d
-api-version: 1.16
+api-version: 1.19
 folia-supported: true
 libraries:
-  - io.lettuce:lettuce-core:6.2.5.RELEASE
+  - io.lettuce:lettuce-core:6.2.7.RELEASE
   - org.yaml:snakeyaml:1.27
   - org.snakeyaml:snakeyaml-engine:2.3
-  - org.jetbrains:annotations:24.0.1
-  - com.zaxxer:HikariCP:5.0.1
+  - org.jetbrains:annotations:24.1.0
+  - com.zaxxer:HikariCP:5.1.0
   - org.xerial:sqlite-jdbc:3.45.3.0
-  - org.projectlombok:lombok:1.18.26
+  - org.projectlombok:lombok:1.18.34
   - org.apache.commons:commons-collections4:4.4
   - net.kyori:adventure-text-minimessage:4.17.0
   - net.kyori:adventure-text-serializer-plain:4.17.0
-  - net.kyori:adventure-platform-bukkit:4.3.2
+  - net.kyori:adventure-text-serializer-legacy:4.17.0
+  - net.kyori:adventure-platform-bukkit:4.3.3
 depend:
   - PlaceholderAPI
 softdepend:
@@ -112,6 +113,39 @@ permissions:
   redischat.setitem:
     description: Allows to use the /setitem command
     default: op
+  redischat.bypassfilter.caps:
+    description: Allows to bypass the caps filter
+    default: false
+  redischat.bypassfilter.duplicate:
+    description: Allows to bypass the caps filter
+    default: false
+  redischat.bypassfilter.spam:
+    description: Allows to bypass the spam filter
+    default: false
+  redischat.bypassfilter.discord:
+    description: Allows to bypass the discord filter
+    default: false
+  redischat.bypassfilter.ignore_player:
+    description: Allows to bypass the ignore player filter
+    default: false
+  redischat.bypassfilter.muted_channel:
+    description: Allows to bypass the muted channel filter
+    default: false
+  redischat.bypassfilter.private:
+    description: Allows to bypass the private filter
+    default: false
+  redischat.bypassfilter.ignore:
+    description: Allows to bypass the ignore filter
+    default: false
+  redischat.bypassfilter.tag:
+    description: Allows to bypass the tag filter
+    default: false
+  redischat.bypassfilter.word_blacklist:
+    description: Allows to bypass the word blacklist filter
+    default: false
+  redischat.bypassfilter.permission:
+    description: Allows to bypass the permission filter
+    default: false
   redischat.admin:
     description: Allows to use the /redischat command
     default: op
@@ -146,3 +180,7 @@ permissions:
       - redischat.showenderchest
       - redischat.channel.public
       - redischat.listchannel
+      - redischat.mail.write
+      - redischat.mail.read
+      - redischat.mail.delete
+      - redischat.mail.unread

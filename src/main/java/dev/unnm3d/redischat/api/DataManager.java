@@ -1,14 +1,12 @@
 package dev.unnm3d.redischat.api;
 
-import dev.unnm3d.redischat.channels.Channel;
-import dev.unnm3d.redischat.channels.PlayerChannel;
-import dev.unnm3d.redischat.chat.ChatMessageInfo;
+import dev.unnm3d.redischat.chat.objects.Channel;
+import dev.unnm3d.redischat.chat.objects.ChatMessage;
 import dev.unnm3d.redischat.mail.Mail;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.io.BukkitObjectInputStream;
 import org.bukkit.util.io.BukkitObjectOutputStream;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -24,9 +22,7 @@ public interface DataManager {
 
     void unregisterChannel(@NotNull String channelName);
 
-    CompletionStage<@Nullable String> getActivePlayerChannel(@NotNull String playerName, Map<String, Channel> registeredChannels);
-
-    CompletionStage<List<PlayerChannel>> getPlayerChannelStatuses(@NotNull String playerName, Map<String, Channel> registeredChannels);
+    CompletionStage<String> getActivePlayerChannel(@NotNull String playerName, Map<String, Channel> registeredChannels);
 
     CompletionStage<List<Channel>> getChannels();
 
@@ -70,9 +66,7 @@ public interface DataManager {
 
     CompletionStage<Boolean> deleteMail(@NotNull Mail mail);
 
-    void setPlayerChannelStatuses(@NotNull String playerName, @NotNull Map<String, String> channelStatuses);
-
-    void removePlayerChannelStatus(@NotNull String playerName, @NotNull String channelName);
+    void setActivePlayerChannel(String playerName, String channelName);
 
     void setMutedEntities(@NotNull String playerName, @NotNull Set<String> mutedChannels);
 
@@ -82,7 +76,7 @@ public interface DataManager {
 
     void setWhitelistEnabledPlayer(@NotNull String playerName, boolean enabled);
 
-    void sendChatMessage(@NotNull ChatMessageInfo chatMessage);
+    void sendChatMessage(@NotNull ChatMessage chatMessage);
 
     void publishPlayerList(@NotNull List<String> playerNames);
 
@@ -136,5 +130,6 @@ public interface DataManager {
                 .map(s -> s.split("§§§"))
                 .collect(Collectors.toMap(strings -> strings[0], strings -> strings[1]));
     }
+
 
 }

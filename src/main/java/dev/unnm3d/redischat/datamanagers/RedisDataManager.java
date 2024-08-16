@@ -1,12 +1,12 @@
 package dev.unnm3d.redischat.datamanagers;
 
+import com.google.gson.Gson;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.api.DataManager;
 import dev.unnm3d.redischat.api.RedisChatAPI;
-import dev.unnm3d.redischat.channels.Channel;
-import dev.unnm3d.redischat.channels.PlayerChannel;
-import dev.unnm3d.redischat.chat.ChatMessageInfo;
 import dev.unnm3d.redischat.chat.KnownChatEntities;
+import dev.unnm3d.redischat.chat.objects.Channel;
+import dev.unnm3d.redischat.chat.objects.ChatMessage;
 import dev.unnm3d.redischat.datamanagers.redistools.RedisAbstract;
 import dev.unnm3d.redischat.mail.Mail;
 import io.lettuce.core.RedisClient;
@@ -14,7 +14,6 @@ import io.lettuce.core.RedisURI;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.time.Duration;
 import java.util.*;
@@ -23,6 +22,7 @@ import java.util.stream.Collectors;
 
 
 public class RedisDataManager extends RedisAbstract implements DataManager {
+    private static final Gson gson = new Gson();
     private final RedisChat plugin;
     public static int pubSubIndex = 0;
 
@@ -64,13 +64,13 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
             if (plugin.config.debug) {
                 plugin.getLogger().info("R1) Received message from redis: " + System.currentTimeMillis());
             }
-            plugin.getChannelManager().sendAndKeepLocal(ChatMessageInfo.deserialize(message));
+            plugin.getChannelManager().sendGenericChat(gson.fromJson(message, ChatMessage.class));
 
         } else if (channel.equals(DataKey.GLOBAL_CHANNEL.withoutCluster())) {
             if (plugin.config.debug) {
                 plugin.getLogger().info("R1) Received message from redis: " + System.currentTimeMillis());
             }
-            plugin.getChannelManager().sendAndKeepLocal(ChatMessageInfo.deserialize(message));
+            plugin.getChannelManager().sendGenericChat(gson.fromJson(message, ChatMessage.class));
 
         } else if (channel.equals(DataKey.PLAYERLIST.toString())) {
             if (plugin.getPlayerListManager() != null)
@@ -84,7 +84,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
             if (message.startsWith("delete§")) {
                 plugin.getChannelManager().updateChannel(message.substring(7), null);
             } else {
-                Channel ch = Channel.deserialize(message);
+                Channel ch = gson.fromJson(message, Channel.class);
                 plugin.getChannelManager().updateChannel(ch.getName(), ch);
             }
 
@@ -237,7 +237,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
         getConnectionAsync(connection ->
                 connection.hset(DataKey.INVSHARE_INVENTORY.toString(), name, serialize(inv))
                         .thenApply(response -> {
-                            if (plugin.config.debug) {
+                            if (plugin.config.debugItemShare) {
                                 plugin.getLogger().info("05 Added inventory for " + name);
                             }
                             return response;
@@ -255,7 +255,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
         getConnectionAsync(connection ->
                 connection.hset(DataKey.INVSHARE_ITEM.toString(), name, serialize(item))
                         .thenApply(response -> {
-                            if (plugin.config.debug) {
+                            if (plugin.config.debugItemShare) {
                                 plugin.getLogger().info("08 Added item for " + name);
                             }
                             return response;
@@ -272,7 +272,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
         getConnectionAsync(connection ->
                 connection.hset(DataKey.INVSHARE_ENDERCHEST.toString(), name, serialize(inv))
                         .thenApply(response -> {
-                            if (plugin.config.debug) {
+                            if (plugin.config.debugItemShare) {
                                 plugin.getLogger().info("10 Added enderchest for " + name);
                             }
                             return response;
@@ -305,12 +305,12 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
                             ItemStack[] itemStacks = serializedInv == null || serializedInv.isEmpty() ? new ItemStack[0] : deserialize(serializedInv);
                             if (itemStacks.length == 0) return new ItemStack(Material.AIR);
                             return itemStacks[0];
-                        }).exceptionally(throwable -> {
-                            throwable.printStackTrace();
-                            plugin.getLogger().warning("Error getting item");
-                            return new ItemStack(Material.AIR);
                         })
-        );
+        ).exceptionally(throwable -> {
+            throwable.printStackTrace();
+            plugin.getLogger().warning("Error getting item");
+            return new ItemStack(Material.AIR);
+        });
     }
 
     @Override
@@ -443,12 +443,13 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     @Override
     public void registerChannel(@NotNull Channel channel) {
         getConnectionPipeline(connection -> {
-            connection.hset(DataKey.CHANNELS.toString(), channel.getName(), channel.serialize()).exceptionally(throwable -> {
+            final String serializedChannel = gson.toJson(channel);
+            connection.hset(DataKey.CHANNELS.toString(), channel.getName(), serializedChannel).exceptionally(throwable -> {
                 throwable.printStackTrace();
                 plugin.getLogger().warning("Error registering custom channel");
                 return null;
             });
-            connection.publish(DataKey.CHANNEL_UPDATE.toString(), channel.serialize());
+            connection.publish(DataKey.CHANNEL_UPDATE.toString(), serializedChannel);
             return null;
         });
     }
@@ -472,7 +473,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
         return getConnectionAsync(connection ->
                 connection.hgetall(DataKey.CHANNELS.toString())
                         .thenApply(channelMap -> channelMap.values().stream()
-                                .map(Channel::deserialize)
+                                .map(channel -> gson.fromJson(channel, Channel.class))
                                 .toList())
                         .exceptionally(throwable -> {
                             throwable.printStackTrace();
@@ -482,53 +483,21 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     }
 
     @Override
-    public CompletionStage<@Nullable String> getActivePlayerChannel(@NotNull String playerName, Map<String, Channel> registeredChannels) {
+    public CompletionStage<String> getActivePlayerChannel(@NotNull String playerName, Map<String, Channel> registeredChannels) {
         return getConnectionAsync(conn ->
-                conn.hgetall(DataKey.PLAYER_CHANNELS_PREFIX + playerName)
-                        .thenApply(result -> {
-                            for (Map.Entry<String, String> channelStatus : result.entrySet()) {
-                                if (channelStatus.getValue().equals("1"))
-                                    return channelStatus.getKey();
-                            }
-                            return null;
-                        }));
-    }
-
-    @Override
-    public CompletionStage<List<PlayerChannel>> getPlayerChannelStatuses(@NotNull String playerName, Map<String, Channel> registeredChannels) {
-        return getConnectionAsync(connection ->
-                connection.hgetall(DataKey.PLAYER_CHANNELS_PREFIX + playerName)
+                conn.hget(DataKey.PLAYER_ACTIVE_CHANNELS.toString(), playerName)
                         .exceptionally(throwable -> {
                             throwable.printStackTrace();
-                            plugin.getLogger().warning("Error getting player channel");
+                            plugin.getLogger().warning("Error getting active channel");
                             return null;
                         }))
-                .thenApply(allPlayerCh -> {//Get all player channels
-                    return allPlayerCh.entrySet().stream()//Get all player channels future
-                            .filter(entry -> registeredChannels.containsKey(entry.getKey()))//Filter only registered channels
-                            .map(entry -> {
-                                Channel channel = registeredChannels.get(entry.getKey());
-                                return new PlayerChannel(channel,
-                                        Integer.parseInt(entry.getValue()));
-                            }).toList();
-                });
+                .thenApply(channelName -> channelName == null ? KnownChatEntities.GENERAL_CHANNEL.toString() : channelName);
     }
 
     @Override
-    public void setPlayerChannelStatuses(@NotNull String playerName, @NotNull Map<String, String> channelStatuses) {
+    public void setActivePlayerChannel(String playerName, String channelName) {
         getConnectionAsync(connection ->
-                connection.hmset(DataKey.PLAYER_CHANNELS_PREFIX + playerName, channelStatuses)
-                        .exceptionally(throwable -> {
-                            throwable.printStackTrace();
-                            plugin.getLogger().warning("Error registering custom channel");
-                            return null;
-                        }));
-    }
-
-    @Override
-    public void removePlayerChannelStatus(@NotNull String playerName, @NotNull String channelName) {
-        getConnectionAsync(connection ->
-                connection.hdel(DataKey.PLAYER_CHANNELS_PREFIX + playerName, channelName)
+                connection.hset(DataKey.PLAYER_ACTIVE_CHANNELS.toString(), playerName, channelName)
                         .exceptionally(throwable -> {
                             throwable.printStackTrace();
                             plugin.getLogger().warning("Error registering custom channel");
@@ -612,7 +581,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     }
 
     @Override
-    public void sendChatMessage(@NotNull ChatMessageInfo packet) {
+    public void sendChatMessage(@NotNull ChatMessage packet) {
         getConnectionPipeline(conn -> {
             String publishChannel = DataKey.CHAT_CHANNEL.toString();
             if (packet.getReceiver().isChannel()) {//If it's a channel message we need to increment the rate limit
@@ -634,7 +603,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
                                 .getRateLimitPeriod());
             }
 
-            conn.publish(publishChannel, packet.serialize())
+            conn.publish(publishChannel, gson.toJson(packet))
                     .thenApply(integer -> {
                         if (plugin.config.debug) {
                             plugin.getLogger().warning("#" + (++pubSubIndex) + "received by " + integer + " servers");
@@ -704,7 +673,6 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
                         .map(entry -> new Mail(mailGUIManager, entry.getKey(), entry.getValue()))
                         .toList())
                 .orElse(new ArrayList<>());
-
     }
 
 }

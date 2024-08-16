@@ -69,7 +69,6 @@ public class MuteManager {
     public void toggleMuteOnChannel(@NotNull String playerName, @NotNull String channel, boolean muted) {
         localChannelMute(playerName, channel, muted);
         this.plugin.getDataManager().setMutedEntities(playerName, channelMutedForPlayers.getOrDefault(playerName, new HashSet<>()));
-
     }
 
     /**

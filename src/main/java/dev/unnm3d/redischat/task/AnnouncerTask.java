@@ -3,8 +3,8 @@ package dev.unnm3d.redischat.task;
 import com.github.Anon8281.universalScheduler.UniversalRunnable;
 import com.google.common.base.Strings;
 import dev.unnm3d.redischat.RedisChat;
-import dev.unnm3d.redischat.chat.ChatActor;
-import dev.unnm3d.redischat.chat.ChatMessageInfo;
+import dev.unnm3d.redischat.chat.objects.ChannelAudience;
+import dev.unnm3d.redischat.chat.objects.ChatMessage;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
@@ -40,11 +40,11 @@ public class AnnouncerTask extends UniversalRunnable {
     @Override
     public void run() {
         plugin.getDataManager().sendChatMessage(
-                new ChatMessageInfo(
-                        new ChatActor(),
-                        "%message%",
+                new ChatMessage(
+                        new ChannelAudience(),
+                        "{message}",
                         getMessage(),
-                        new ChatActor(channelName, ChatActor.ActorType.CHANNEL)
+                        new ChannelAudience(channelName)
                 ));
     }
 

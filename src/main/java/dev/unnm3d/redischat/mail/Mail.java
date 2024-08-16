@@ -3,6 +3,8 @@ package dev.unnm3d.redischat.mail;
 import lombok.Getter;
 import lombok.Setter;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
@@ -19,6 +21,7 @@ import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Getter
 public class Mail extends AbstractItem {
@@ -184,13 +187,15 @@ public class Mail extends AbstractItem {
         }
 
         //Craft written book with mail contents (easy part)
-        final ItemStack writtenBook = new ItemStack(Material.WRITTEN_BOOK);
-        writtenBook.setItemMeta(((BookMeta) writtenBook.getItemMeta())
-                .toBuilder()
-                .author(manager.getPlugin().getComponentProvider().parse(sender))
-                .title(manager.getPlugin().getComponentProvider().parse(title))
-                .pages(bookPages)
-                .build());
+        ItemStack writtenBook = new ItemStack(Material.WRITTEN_BOOK);
+        BookMeta bookMeta = (BookMeta) writtenBook.getItemMeta();
+        bookMeta.setAuthor(sender);
+        bookMeta.setTitle(LegacyComponentSerializer.legacySection().serialize(manager.getPlugin().getComponentProvider().parse(title)));
+        bookMeta.spigot().setPages(bookPages.stream()
+                .map(page -> BungeeComponentSerializer.get().serialize(page))
+                .collect(Collectors.toList()));
+        writtenBook.setItemMeta(bookMeta);
+
         player.openBook(writtenBook);
         manager.readMail(this, player, readStatus);
     }

@@ -3,9 +3,10 @@ package dev.unnm3d.redischat.datamanagers.sqlmanagers;
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
+import com.google.gson.Gson;
 import dev.unnm3d.redischat.RedisChat;
-import dev.unnm3d.redischat.channels.Channel;
-import dev.unnm3d.redischat.chat.ChatMessageInfo;
+import dev.unnm3d.redischat.chat.objects.Channel;
+import dev.unnm3d.redischat.chat.objects.ChatMessage;
 import dev.unnm3d.redischat.datamanagers.DataKey;
 import dev.unnm3d.redischat.mail.Mail;
 import org.bukkit.entity.Player;
@@ -18,6 +19,7 @@ import java.util.Set;
 
 @SuppressWarnings("UnstableApiUsage")
 public abstract class PluginMessageManager {
+    private static final Gson gson = new Gson();
     protected final RedisChat plugin;
 
     protected PluginMessageManager(RedisChat plugin) {
@@ -38,12 +40,12 @@ public abstract class PluginMessageManager {
             if (plugin.config.debug) {
                 plugin.getLogger().info("R1) Received message from redis: " + System.currentTimeMillis());
             }
-            plugin.getChannelManager().sendAndKeepLocal(ChatMessageInfo.deserialize(messageString));
+            plugin.getChannelManager().sendGenericChat(gson.fromJson(messageString, ChatMessage.class));
         } else if (subchannel.equals(DataKey.GLOBAL_CHANNEL.withoutCluster())) {
             if (plugin.config.debug) {
                 plugin.getLogger().info("R1) Received message from redis: " + System.currentTimeMillis());
             }
-            plugin.getChannelManager().sendAndKeepLocal(ChatMessageInfo.deserialize(messageString));
+            plugin.getChannelManager().sendGenericChat(gson.fromJson(messageString, ChatMessage.class));
         } else if (subchannel.equals(DataKey.PLAYERLIST.toString())) {
             if (plugin.getPlayerListManager() != null)
                 plugin.getPlayerListManager().updatePlayerList(Arrays.asList(messageString.split("§")));
@@ -51,7 +53,7 @@ public abstract class PluginMessageManager {
             if (messageString.startsWith("delete§")) {
                 plugin.getChannelManager().updateChannel(messageString.substring(7), null);
             } else {
-                final Channel ch = Channel.deserialize(messageString);
+                final Channel ch = gson.fromJson(messageString, Channel.class);
                 plugin.getChannelManager().updateChannel(ch.getName(), ch);
             }
         } else if (subchannel.equals(DataKey.MAIL_UPDATE_CHANNEL.toString())) {
@@ -78,7 +80,7 @@ public abstract class PluginMessageManager {
         if (channel == null) {
             out.writeUTF("delete§" + channelName);
         } else {
-            out.writeUTF(channel.serialize());
+            out.writeUTF(gson.toJson(channel));
         }
 
         sendPluginMessage(out.toByteArray());
@@ -123,12 +125,12 @@ public abstract class PluginMessageManager {
         sendPluginMessage(out.toByteArray());
     }
 
-    protected void sendChatPluginMessage(String publishChannel, ChatMessageInfo chatMessageInfo) {
+    protected void sendChatPluginMessage(String publishChannel, ChatMessage chatMessageInfo) {
         final ByteArrayDataOutput out = ByteStreams.newDataOutput();
         out.writeUTF("Forward");
         out.writeUTF("ALL");
         out.writeUTF(publishChannel);
-        out.writeUTF(chatMessageInfo.serialize());
+        out.writeUTF(gson.toJson(chatMessageInfo));
         sendPluginMessage(out.toByteArray());
     }
 
