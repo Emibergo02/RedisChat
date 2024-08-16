@@ -406,7 +406,7 @@ public class ChannelManager extends RedisChatAPI {
     }
 
     private Channel getGenericPublic() {
-        return Channel.channelBuilder(KnownChatEntities.GENERAL_CHANNEL.toString())
+        return Channel.builder(KnownChatEntities.GENERAL_CHANNEL.toString())
                 .format(plugin.config.defaultFormat.format())
                 .rateLimit(plugin.config.rate_limit)
                 .rateLimitPeriod(plugin.config.rate_limit_time_seconds)
@@ -419,7 +419,7 @@ public class ChannelManager extends RedisChatAPI {
 
     @Override
     public Channel getStaffChatChannel() {
-        return Channel.channelBuilder(KnownChatEntities.STAFFCHAT_CHANNEL_NAME.toString())
+        return Channel.builder(KnownChatEntities.STAFFCHAT_CHANNEL_NAME.toString())
                 .format(plugin.config.staffChatFormat)
                 .rateLimit(5)
                 .rateLimitPeriod(1000)

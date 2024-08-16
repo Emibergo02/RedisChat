@@ -7,24 +7,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-@Builder(
-        toBuilder = true,
-        builderClassName = "ChannelAudienceBuilder",
-        builderMethodName = "audienceBuilder"
-)
 @AllArgsConstructor
 @ToString
 @EqualsAndHashCode
 @Getter
 public class ChannelAudience {
-    @Builder.Default
-    protected AudienceType type = AudienceType.PLAYER;
+    protected AudienceType type;
     protected final String name;
     @Setter
-    @Builder.Default
-    protected int proximityDistance = -1;
+    protected int proximityDistance;
     @Setter
-    @Singular
     protected List<String> permissions;
 
 
@@ -119,7 +111,76 @@ public class ChannelAudience {
         return type == AudienceType.DISCORD;
     }
 
-    public static ChannelAudienceBuilder audienceBuilder(String name) {
-        return new ChannelAudienceBuilder().name(name);
+    public static ChannelAudienceBuilder builder(String name) {
+        return new ChannelAudienceBuilder(name);
+    }
+
+
+    public static class ChannelAudienceBuilder {
+        protected AudienceType type = AudienceType.PLAYER;
+        protected final String name;
+        protected int proximityDistance = -1;
+        protected List<String> permissions = new ArrayList<>();
+
+        /**
+         * Constructor for ChannelAudienceBuilder.
+         *
+         * @param name The name of the audience.
+         */
+        public ChannelAudienceBuilder(String name) {
+            this.name = name;
+        }
+
+        /**
+         * Sets the type of the audience.
+         *
+         * @param type The type of the audience.
+         * @return The current instance of ChannelAudienceBuilder.
+         */
+        public ChannelAudienceBuilder type(AudienceType type) {
+            this.type = type;
+            return this;
+        }
+
+        /**
+         * Sets the proximity distance for the audience.
+         *
+         * @param proximityDistance The proximity distance.
+         * @return The current instance of ChannelAudienceBuilder.
+         */
+        public ChannelAudienceBuilder proximityDistance(int proximityDistance) {
+            this.proximityDistance = proximityDistance;
+            return this;
+        }
+
+        /**
+         * Adds permissions to the audience.
+         *
+         * @param permissions Varargs parameter representing the permissions.
+         * @return The current instance of ChannelAudienceBuilder.
+         */
+        public ChannelAudienceBuilder permission(String... permissions) {
+            this.permissions.addAll(List.of(permissions));
+            return this;
+        }
+
+        /**
+         * Sets the permissions for the audience.
+         *
+         * @param permissions A list of permissions.
+         * @return The current instance of ChannelAudienceBuilder.
+         */
+        public ChannelAudienceBuilder permissions(List<String> permissions) {
+            this.permissions = permissions;
+            return this;
+        }
+
+        public ChannelAudience build() {
+            return new ChannelAudience(type, name, proximityDistance, permissions);
+        }
+
+        public String toString() {
+            return "ChannelAudience.ChannelAudienceBuilder(type=" + this.type + ", name=" + this.name + ", proximityDistance=" + this.proximityDistance + ", permissions=" + this.permissions + ")";
+        }
     }
 }

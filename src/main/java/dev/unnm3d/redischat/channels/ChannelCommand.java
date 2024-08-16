@@ -71,7 +71,7 @@ public class ChannelCommand {
                         return;
                     }
 
-                    plugin.getChannelManager().registerChannel(Channel.channelBuilder(channelName)
+                    plugin.getChannelManager().registerChannel(Channel.builder(channelName)
                             .rateLimit(rateLimit)
                             .rateLimitPeriod(rateLimitPeriod)
                             .format(plugin.messages.channelNoFormat.replace("%channel%", channelName))

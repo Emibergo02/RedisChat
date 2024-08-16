@@ -14,12 +14,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 public class JsonTests {
-    private static Gson gson = new Gson();
+    private static final Gson gson = new Gson();
 
     @Test
     @DisplayName("Channel serialization")
     public void testChannelSerialization() {
-        Channel nc = Channel.channelBuilder("name")
+        Channel nc = Channel.builder("name")
                 .format("fabrizio {message}")
                 .rateLimit(10)
                 .rateLimitPeriod(1000)
@@ -38,7 +38,7 @@ public class JsonTests {
     @Test
     @DisplayName("Channel serialization")
     public void testChannelAudienceSerialization() {
-        ChannelAudience nc = ChannelAudience.audienceBuilder("name")
+        ChannelAudience nc = ChannelAudience.builder("name")
                 .proximityDistance(-1)
                 .permission("perm1")
                 .type(AudienceType.PLAYER)
@@ -53,7 +53,7 @@ public class JsonTests {
     @Test
     @DisplayName("ChatMessage serialization")
     public void testChatMessageSerialization() {
-        ChannelAudience receiver = ChannelAudience.audienceBuilder("name")
+        ChannelAudience receiver = ChannelAudience.builder("name")
                 .proximityDistance(-1)
                 .permission("perm1")
                 .type(AudienceType.PLAYER)
