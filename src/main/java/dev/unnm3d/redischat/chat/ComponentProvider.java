@@ -52,7 +52,7 @@ public class ComponentProvider {
         this.standardTagResolver = StandardTags.defaults();
         this.tagResolverIntegrationList = new ArrayList<>();
         this.bukkitAudiences = BukkitAudiences.create(plugin);
-        this.itemNameProvider = new ItemNameProvider();
+        this.itemNameProvider = new ItemNameProvider(plugin.config.useItemName);
     }
 
     /**

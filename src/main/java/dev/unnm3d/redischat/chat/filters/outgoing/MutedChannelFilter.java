@@ -4,6 +4,7 @@ import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.chat.filters.AbstractFilter;
 import dev.unnm3d.redischat.chat.filters.FilterResult;
+import dev.unnm3d.redischat.chat.objects.Channel;
 import dev.unnm3d.redischat.chat.objects.ChatMessage;
 import dev.unnm3d.redischat.settings.FiltersConfig;
 import org.bukkit.command.CommandSender;
@@ -32,6 +33,11 @@ public class MutedChannelFilter extends AbstractFilter<FiltersConfig.FilterSetti
                             false,
                             false)
             ));
+        }
+
+        if (!plugin.getChannelManager().getChannel(message.getReceiver().getName())
+                .map(Channel::isPermissionEnabled).orElse(true)) {
+            return new FilterResult(message, false);
         }
 
         final String permission = Permissions.CHANNEL_PREFIX.getPermission() + message.getReceiver().getName();

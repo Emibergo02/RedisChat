@@ -66,10 +66,46 @@ public final class GuiSettings implements ConfigValidator {
             "x x x x x x x x x",
             "x x x x x x x x x",
             "x x x x x x x x x",
-            "# < # # # # # > #");
+            "# < # # G # # > #");
+    public String channelGUITitle = "Channels";
+    public String publicChannelDisplayName = "&aPublic";
+    public String staffchatChannelDisplayName = "&cStaff Chat";
     public ItemStack activeChannelButton = getActiveChannelButton();
     public ItemStack idleChannel = getIdleChannelButton();
     public ItemStack mutedChannel = getMutedChannelButton();
+    public ItemStack activeGlobal = getActivePublicButton();
+    public ItemStack idleGlobal = getIdlePublicButton();
+    public ItemStack mutedGlobal = getMutedPublicButton();
+
+    private ItemStack getMutedPublicButton() {
+        ItemStack item = new ItemStack(Material.CYAN_DYE);
+        ItemMeta im = item.getItemMeta();
+        if (im == null) return item;
+        im.setLore(List.of("§9The channel is currently muted",
+                "§bRight click to unmute the channel"));
+        item.setItemMeta(im);
+        return item;
+    }
+
+    private ItemStack getIdlePublicButton() {
+        ItemStack item = new ItemStack(Material.GRAY_DYE);
+        ItemMeta im = item.getItemMeta();
+        if (im == null) return item;
+        im.setLore(List.of("§9Right click to mute the channel",
+                "§bLeft click to write on this channel"));
+        item.setItemMeta(im);
+        return item;
+    }
+
+    private ItemStack getActivePublicButton() {
+        ItemStack item = new ItemStack(Material.LIME_DYE);
+        ItemMeta im = item.getItemMeta();
+        if (im == null) return item;
+        im.setLore(List.of("§2You're writing on this channel",
+                "§bLeft click to \"unlisten\" the channel"));
+        item.setItemMeta(im);
+        return item;
+    }
 
     private ItemStack getMutedChannelButton() {
         ItemStack item = new ItemStack(Material.CYAN_DYE);

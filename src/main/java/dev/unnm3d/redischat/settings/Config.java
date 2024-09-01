@@ -235,6 +235,8 @@ public final class Config implements ConfigValidator {
     public String staffChatDiscordWebhook = "";
     public String inventoryFormat = "<click:run_command:%command%><gold>[%player%'s Inventory]</gold></click>";
     public String itemFormat = "<click:run_command:%command%>[%item_name%]</click>";
+    @Comment({"Only 1.20.6+","Whether to use the item name or the display name when parsing the <item> tag"})
+    public boolean useItemName = true;
     public String enderChestFormat = "<click:run_command:%command%><light_purple>[%player%'s EnderChest]</light_purple></click>";
     @Comment("The discord webhook of the public chat")
     public String publicDiscordWebhook = "";

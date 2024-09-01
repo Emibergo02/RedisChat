@@ -46,16 +46,18 @@ public class ChannelCommand {
                 .withArguments(new IntegerArgument("rate-limit"))
                 .withArguments(new IntegerArgument("rate-limit-period"))
                 .withArguments(new BooleanArgument("filtered"))
-                .withOptionalArguments(new BooleanArgument("allowed-by-default"))
                 .withOptionalArguments(new IntegerArgument("proximity-distance")
                         .replaceSuggestions(ArgumentSuggestions.strings("-1", "100")))
                 .withOptionalArguments(new TextArgument("discord-webhook")
                         .replaceSuggestions(ArgumentSuggestions.strings("\"https://discord.com/api/webhooks/...\"")))
+                .withOptionalArguments(new BooleanArgument("shown-by-default"))
+                .withOptionalArguments(new BooleanArgument("permission-required"))
                 .executesPlayer((sender, args) -> {
-                    Optional<Object> shownByDefault = args.getOptional("shown-by-default");
-                    Optional<Object> needsPermission = args.getOptional("needs-permission");
-                    Optional<Object> discordWebhook = args.getOptional("discord-webhook");
                     Optional<Object> proximityDistance = args.getOptional("proximity-distance");
+                    Optional<Object> discordWebhook = args.getOptional("discord-webhook");
+                    Optional<Object> shownByDefault = args.getOptional("shown-by-default");
+                    Optional<Object> needsPermission = args.getOptional("permission-required");
+
                     if (args.count() < 4) {
                         plugin.messages.sendMessage(sender, plugin.messages.missing_arguments);
                         return;

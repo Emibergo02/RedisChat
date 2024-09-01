@@ -111,7 +111,7 @@ public class ChannelManager extends RedisChatAPI {
         plugin.getDataManager().getActivePlayerChannel(player.getName(), registeredChannels)
                 .thenAccept(channelName -> {
                     Window.Builder.Normal.Single window = Window.single()
-                            .setTitle("Channels")
+                            .setTitle(plugin.guiSettings.channelGUITitle)
                             .setGui(channelGUI.getChannelsGUI(player, channelName == null ? KnownChatEntities.GENERAL_CHANNEL.toString() : channelName))
                             .setCloseHandlers(List.of(() -> new UniversalRunnable() {
                                 @Override
@@ -407,6 +407,7 @@ public class ChannelManager extends RedisChatAPI {
 
     private Channel getGenericPublic() {
         return Channel.builder(KnownChatEntities.GENERAL_CHANNEL.toString())
+                .displayName(plugin.guiSettings.publicChannelDisplayName)
                 .format(plugin.config.defaultFormat.format())
                 .rateLimit(plugin.config.rate_limit)
                 .rateLimitPeriod(plugin.config.rate_limit_time_seconds)
@@ -420,6 +421,7 @@ public class ChannelManager extends RedisChatAPI {
     @Override
     public Channel getStaffChatChannel() {
         return Channel.builder(KnownChatEntities.STAFFCHAT_CHANNEL_NAME.toString())
+                .displayName(plugin.guiSettings.staffchatChannelDisplayName)
                 .format(plugin.config.staffChatFormat)
                 .rateLimit(5)
                 .rateLimitPeriod(1000)
@@ -450,7 +452,6 @@ public class ChannelManager extends RedisChatAPI {
 
     public List<Channel> getAllChannels() {
         List<Channel> channels = new ArrayList<>();
-        channels.add(getPublicChannel(null));
         channels.add(getStaffChatChannel());
         channels.addAll(registeredChannels.values());
         return channels;

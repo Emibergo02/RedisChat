@@ -3,6 +3,7 @@ package dev.unnm3d.redischat.channels.gui;
 import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.api.events.ChannelGuiPopulateEvent;
+import dev.unnm3d.redischat.chat.KnownChatEntities;
 import lombok.AllArgsConstructor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -16,6 +17,7 @@ import xyz.xenondevs.invui.item.builder.ItemBuilder;
 import xyz.xenondevs.invui.item.impl.controlitem.PageItem;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @AllArgsConstructor
 public class ChannelGUI {
@@ -28,7 +30,7 @@ public class ChannelGUI {
                 .filter(channel -> channel.isShownByDefault() || player.hasPermission(Permissions.CHANNEL_SHOW_PREFIX.getPermission() + channel.getName()))
                 .map(channel -> new PlayerChannel(channel, player, channel.getName().equals(activeChannelName)))
                 .filter(playerChannel -> !playerChannel.isHidden())
-                .toList();
+                .collect(Collectors.toList());
 
         final ChannelGuiPopulateEvent populateEvent = new ChannelGuiPopulateEvent(player, items);
         plugin.getServer().getPluginManager().callEvent(populateEvent);
@@ -49,6 +51,10 @@ public class ChannelGUI {
                         return new ItemBuilder(plugin.guiSettings.forwardButton);
                     }
                 })
+                .addIngredient('G', new GlobalChannel(
+                        plugin.getChannelManager().getPublicChannel(null),
+                        player,
+                        KnownChatEntities.GENERAL_CHANNEL.toString().equals(activeChannelName)))
                 .setContent(populateEvent.getChannelItems().stream().map(Item.class::cast).toList())
                 .build();
     }

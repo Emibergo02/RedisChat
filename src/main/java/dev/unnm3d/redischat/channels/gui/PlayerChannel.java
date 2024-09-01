@@ -18,9 +18,9 @@ import xyz.xenondevs.invui.item.impl.AbstractItem;
 
 @Getter
 public class PlayerChannel extends AbstractItem {
-    private final Channel channel;
-    private final Player player;
-    private Status status;
+    protected final Channel channel;
+    protected final Player player;
+    protected Status status;
 
 
     public PlayerChannel(Channel channel, Player player, boolean isActive) {
