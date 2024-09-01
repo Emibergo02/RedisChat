@@ -43,7 +43,7 @@ dependencies {
 
     compileOnly 'org.spigotmc:spigot-api:1.19.4-R0.1-SNAPSHOT'
     compileOnly 'me.clip:placeholderapi:2.11.3'
-    compileOnly 'io.lettuce:lettuce-core:6.2.7.RELEASE'
+    compileOnly 'io.lettuce:lettuce-core:6.3.2.RELEASE'
     compileOnly 'org.jetbrains:annotations:24.1.0'
     compileOnly 'com.zaxxer:HikariCP:5.1.0'
     compileOnly 'net.luckperms:api:5.4'

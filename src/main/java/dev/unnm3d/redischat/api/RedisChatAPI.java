@@ -84,6 +84,13 @@ public abstract class RedisChatAPI {
     public abstract void openChannelsGUI(Player player);
 
     /**
+     * Broadcast a message to a channel
+     * @param channel The channel to broadcast to
+     * @param message The message to broadcast, formatted strings will be parsed accordingly
+     */
+    public abstract void broadcastMessage(Channel channel, String message);
+
+    /**
      * Sends a message into the RedisChat system (cross-server)
      *
      * @param player  The player who sent the message

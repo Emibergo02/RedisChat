@@ -124,6 +124,16 @@ public class ChannelManager extends RedisChatAPI {
                 });
     }
 
+    @Override
+    public void broadcastMessage(Channel channel, String message) {
+        plugin.getDataManager().sendChatMessage(
+                new ChatMessage(
+                        new ChannelAudience(),
+                        "{message}",
+                        message,
+                        channel)
+        );
+    }
 
     /**
      * Send a message to a specific ChannelAudience

@@ -6,11 +6,12 @@ import dev.jorel.commandapi.arguments.ArgumentSuggestions;
 import dev.jorel.commandapi.arguments.GreedyStringArgument;
 import dev.jorel.commandapi.arguments.StringArgument;
 import dev.unnm3d.redischat.RedisChat;
-import dev.unnm3d.redischat.chat.objects.ChannelAudience;
-import dev.unnm3d.redischat.chat.objects.ChatMessage;
+import dev.unnm3d.redischat.chat.objects.Channel;
 import lombok.AllArgsConstructor;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+
+import java.util.Optional;
 
 @AllArgsConstructor
 public class BroadcastCommand {
@@ -25,24 +26,21 @@ public class BroadcastCommand {
                         .replaceSuggestions(ArgumentSuggestions.strings(getChannelsWithPublic())))
                 .withArguments(new GreedyStringArgument("message"))
                 .executes((sender, args) -> {
-                    final String channel = (String) args.get(0);
+                    final Optional<Channel> channel = plugin.getChannelManager().getChannel((String) args.get(0));
                     final String message = (String) args.get(1);
                     if (message == null) return;
                     if (message.isEmpty()) return;
+                    if (channel.isEmpty()) {
+                        plugin.messages.sendMessage(sender, plugin.messages.channelNotFound);
+                        return;
+                    }
                     new UniversalRunnable() {
                         @Override
                         public void run() {
                             final Component component = plugin.getComponentProvider().parse(null,
                                     plugin.config.broadcast_format.replace("{message}", message),
                                     true, false, false);
-
-                            plugin.getDataManager().sendChatMessage(
-                                    new ChatMessage(
-                                            new ChannelAudience(),
-                                            "{message}",
-                                            MiniMessage.miniMessage().serialize(component),
-                                            new ChannelAudience(channel))
-                            );
+                            plugin.getChannelManager().broadcastMessage(channel.get(), MiniMessage.miniMessage().serialize(component));
                         }
                     }.runTaskAsynchronously(plugin);
                 });
@@ -56,10 +54,14 @@ public class BroadcastCommand {
                         .replaceSuggestions(ArgumentSuggestions.strings(getChannelsWithPublic())))
                 .withArguments(new GreedyStringArgument("message"))
                 .executes((sender, args) -> {
-                    final String channel = (String) args.get(0);
+                    final Optional<Channel> channel = plugin.getChannelManager().getChannel((String) args.get(0));
                     final String message = (String) args.get(1);
                     if (message == null) return;
                     if (message.isEmpty()) return;
+                    if (channel.isEmpty()) {
+                        plugin.messages.sendMessage(sender, plugin.messages.channelNotFound);
+                        return;
+                    }
                     new UniversalRunnable() {
                         @Override
                         public void run() {
@@ -67,13 +69,7 @@ public class BroadcastCommand {
                                     message,
                                     true, false, false);
 
-                            plugin.getDataManager().sendChatMessage(
-                                    new ChatMessage(
-                                            new ChannelAudience(),
-                                            "{message}",
-                                            MiniMessage.miniMessage().serialize(component),
-                                            new ChannelAudience(channel))
-                            );
+                            plugin.getChannelManager().broadcastMessage(channel.get(), MiniMessage.miniMessage().serialize(component));
                         }
                     }.runTaskAsynchronously(plugin);
                 });

@@ -5,7 +5,7 @@ author: Unnm3d
 api-version: 1.19
 folia-supported: true
 libraries:
-  - io.lettuce:lettuce-core:6.2.7.RELEASE
+  - io.lettuce:lettuce-core:6.3.2.RELEASE
   - org.yaml:snakeyaml:1.27
   - org.snakeyaml:snakeyaml-engine:2.3
   - org.jetbrains:annotations:24.1.0
