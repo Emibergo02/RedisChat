@@ -2,7 +2,12 @@ dev.unnm3d.redischat
 dev.unnm3d.redischat.api
 dev.unnm3d.redischat.api.events
 dev.unnm3d.redischat.channels
+dev.unnm3d.redischat.channels.gui
 dev.unnm3d.redischat.chat
+dev.unnm3d.redischat.chat.filters
+dev.unnm3d.redischat.chat.filters.incoming
+dev.unnm3d.redischat.chat.filters.outgoing
+dev.unnm3d.redischat.chat.objects
 dev.unnm3d.redischat.commands
 dev.unnm3d.redischat.datamanagers
 dev.unnm3d.redischat.datamanagers.redistools
