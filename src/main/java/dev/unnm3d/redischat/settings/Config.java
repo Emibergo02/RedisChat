@@ -190,7 +190,7 @@ public final class Config implements ConfigValidator {
             "If you want to disable an announce, just remove it from the list, remember that in yaml [] is an empty list",
             "If you specify a permission, only players with that permission will see the announce. Keep it empty to make it public",
     })
-    public List<Announcement> announcer = List.of(new Announcement("default", "<yellow>RedisChat</yellow> <gray>»</gray><red>To EssentialsX and CMI users: <aqua><br>disable <gold>/msg, /reply, /broadcast, /ignore, etc</gold> commands inside CMI and EssentialsX<br>Or RedisChat commands <red>will <u>not</u> work</red>!!!</aqua>", "public", 5, 300));
+    public List<Announcement> announcer = List.of(new Announcement("default", "<yellow>RedisChat</yellow> <gray>»</gray> <red>To EssentialsX and CMI users: <aqua><br>disable <gold>/msg, /reply, /broadcast, /ignore, etc</gold> commands inside CMI and EssentialsX<br>Or RedisChat commands <red>will <u>not</u> work</red>!!!</aqua>", "public", 5, 300));
 
     @Comment({"Title of the ShowInventory GUI"})
     public String inv_title = "Inventory of %player%";
