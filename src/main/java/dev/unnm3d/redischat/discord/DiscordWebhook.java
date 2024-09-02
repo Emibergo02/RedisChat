@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public class DiscordWebhook implements IDiscordHook {
@@ -23,14 +24,18 @@ public class DiscordWebhook implements IDiscordHook {
     @Override
     public void sendDiscordMessage(ChatMessage message) {
         if (message.getReceiver().isChannel()) {
-            final Channel channel = plugin.getChannelManager().getChannel(message.getReceiver().getName())
-                    .orElse(plugin.getChannelManager().getPublicChannel(null));
-            if (channel.getDiscordWebhook() == null || channel.getDiscordWebhook().isEmpty() || message.getSender().isDiscord())
+            final Optional<Channel> channel = plugin.getChannelManager().getChannel(message.getReceiver().getName());
+            if(channel.isEmpty()) {
+                plugin.getLogger().warning("Channel not found: " + message.getReceiver().getName());
+                return;
+            }
+
+            if (channel.get().getDiscordWebhook() == null || channel.get().getDiscordWebhook().isEmpty() || message.getSender().isDiscord())
                 return;
 
             CompletableFuture.runAsync(() -> {
                 try {
-                    final HttpsURLConnection connection = (HttpsURLConnection) new URL(channel.getDiscordWebhook()).openConnection();
+                    final HttpsURLConnection connection = (HttpsURLConnection) new URL(channel.get().getDiscordWebhook()).openConnection();
                     connection.setRequestMethod("POST");
                     connection.setRequestProperty("Content-Type", "application/json");
                     connection.setRequestProperty("User-Agent", "Mozilla/5.0 (X11; U; Linux i686) Gecko/20071127 Firefox/2.0.0.11");
@@ -61,7 +66,7 @@ public class DiscordWebhook implements IDiscordHook {
                     throw new RuntimeException(e);
                 }
             }, plugin.getExecutorService()).exceptionally((e) -> {
-                plugin.getLogger().warning("Unable to send message to Discord channel " + channel.getName() + ": " + e.getMessage());
+                plugin.getLogger().warning("Unable to send message to Discord channel " + channel.get().getName() + ": " + e.getMessage());
                 return null;
             });
         }

@@ -5,6 +5,7 @@ import dev.jorel.commandapi.arguments.*;
 import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.channels.gui.PlayerChannel;
+import dev.unnm3d.redischat.chat.KnownChatEntities;
 import dev.unnm3d.redischat.chat.objects.Channel;
 import lombok.AllArgsConstructor;
 
@@ -103,6 +104,15 @@ public class ChannelCommand {
                 .executes((sender, args) -> {
                     if (args.count() < 2) {
                         plugin.messages.sendMessage(sender, plugin.messages.missing_arguments);
+                        return;
+                    }
+                    final String channelName = (String) args.get(0);
+                    if (channelName == null) {
+                        plugin.messages.sendMessage(sender, plugin.messages.missing_arguments);
+                        return;
+                    }
+                    if (channelName.equals(KnownChatEntities.GENERAL_CHANNEL.toString())) {
+                        plugin.messages.sendMessage(sender, plugin.messages.configuration_parameter.replace("%parameter%", "discord-webhook"));
                         return;
                     }
 

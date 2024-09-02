@@ -26,7 +26,8 @@ public class GlobalChannel extends PlayerChannel {
 
         final ItemMeta im = item.getItemMeta();
         if (im != null)
-            im.setDisplayName("§r" + channel.getDisplayName());
+            im.setDisplayName("§r" + RedisChat.getInstance().getComponentProvider()
+                    .replaceAmpersandCodesWithSection(channel.getDisplayName()));
         item.setItemMeta(im);
         return new ItemBuilder(item);
     }

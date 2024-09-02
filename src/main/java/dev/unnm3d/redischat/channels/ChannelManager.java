@@ -146,7 +146,6 @@ public class ChannelManager extends RedisChatAPI {
         //Get channel or public channel by default
         final Channel currentChannel = getChannel(receiver.getName()).orElse(getPublicChannel(player));
 
-
         ChatMessage chatMessage = new ChatMessage(
                 new ChannelAudience(AudienceType.PLAYER, player.getName()),
                 currentChannel.getFormat(),
@@ -401,8 +400,11 @@ public class ChannelManager extends RedisChatAPI {
     @Override
     public Optional<Channel> getChannel(@Nullable String channelName) {
         if (channelName == null) return Optional.empty();
-        if (channelName.equals(KnownChatEntities.STAFFCHAT_CHANNEL_NAME.toString()))
+        if (channelName.equals(KnownChatEntities.STAFFCHAT_CHANNEL_NAME.toString())) {
             return Optional.of(getStaffChatChannel());
+        }else if(channelName.equals(KnownChatEntities.GENERAL_CHANNEL.toString())) {
+            return Optional.of(getPublicChannel(null));
+        }
         else return Optional.ofNullable(registeredChannels.get(channelName));
     }
 

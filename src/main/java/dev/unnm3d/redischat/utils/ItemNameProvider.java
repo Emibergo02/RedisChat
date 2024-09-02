@@ -22,25 +22,11 @@ public class ItemNameProvider {
         }
     }
 
-
     public String getItemName(ItemMeta itemMeta) {
         if (getItemNameField == null || !useItemName)
             return itemMeta.getDisplayName();
         try {
             return (String) getItemNameField.invoke(itemMeta);
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public ItemMeta setItemName(ItemMeta itemMeta, String name) {
-        if (setItemNameField == null || !useItemName) {
-            itemMeta.setDisplayName(name);
-            return itemMeta;
-        }
-        try {
-            setItemNameField.invoke(itemMeta, name);
-            return itemMeta;
         } catch (IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException(e);
         }
