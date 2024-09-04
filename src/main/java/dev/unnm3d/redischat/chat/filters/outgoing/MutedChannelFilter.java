@@ -35,7 +35,7 @@ public class MutedChannelFilter extends AbstractFilter<FiltersConfig.FilterSetti
             ));
         }
 
-        if (!plugin.getChannelManager().getChannel(message.getReceiver().getName())
+        if (!plugin.getChannelManager().getRegisteredChannel(message.getReceiver().getName())
                 .map(Channel::isPermissionEnabled).orElse(true)) {
             return new FilterResult(message, false);
         }

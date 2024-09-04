@@ -20,7 +20,7 @@ public class PermissionFilter extends AbstractFilter<FiltersConfig.FilterSetting
 
     @Override
     public FilterResult applyWithPrevious(CommandSender receiver, @NotNull ChatMessage chatMessage, ChatMessage... previousMessages) {
-        if (!plugin.getChannelManager().getChannel(chatMessage.getReceiver().getName())
+        if (!plugin.getChannelManager().getRegisteredChannel(chatMessage.getReceiver().getName())
                 .map(Channel::isPermissionEnabled).orElse(true)) {
             return new FilterResult(chatMessage, false);
         }

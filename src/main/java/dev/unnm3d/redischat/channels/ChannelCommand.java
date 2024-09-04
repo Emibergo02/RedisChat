@@ -116,7 +116,7 @@ public class ChannelCommand {
                         return;
                     }
 
-                    plugin.getChannelManager().getChannel((String) args.get(0)).ifPresentOrElse(channel -> {
+                    plugin.getChannelManager().getRegisteredChannel((String) args.get(0)).ifPresentOrElse(channel -> {
                         channel.setDiscordWebhook((String) args.get(1));
                         plugin.getChannelManager().registerChannel(channel);
                         plugin.messages.sendMessage(sender, plugin.messages.channelCreated);

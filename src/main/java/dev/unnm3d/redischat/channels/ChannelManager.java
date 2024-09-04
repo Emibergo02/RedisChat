@@ -144,11 +144,15 @@ public class ChannelManager extends RedisChatAPI {
      */
     public void outgoingMessage(CommandSender player, ChannelAudience receiver, @NotNull String message) {
         //Get channel or public channel by default
-        final Channel currentChannel = getChannel(receiver.getName()).orElse(getPublicChannel(player));
+        final Optional<Channel> currentChannel = getChannel(receiver.getName(), player);
+        if (currentChannel.isEmpty()) {
+            plugin.getLogger().warning("Channel not found for: " + receiver.getName());
+            return;
+        }
 
         ChatMessage chatMessage = new ChatMessage(
                 new ChannelAudience(AudienceType.PLAYER, player.getName()),
-                currentChannel.getFormat(),
+                currentChannel.get().getFormat(),
                 message,
                 receiver
         );
@@ -189,7 +193,7 @@ public class ChannelManager extends RedisChatAPI {
         chatMessage.setFormat(MiniMessage.miniMessage().serialize(event.getFormat()));
         chatMessage.setContent(MiniMessage.miniMessage().serialize(event.getContent()));
 
-        if (currentChannel.getProximityDistance() > 0) {// Send to local server
+        if (currentChannel.get().getProximityDistance() > 0) {// Send to local server
             sendGenericChat(chatMessage);
             return;
         }
@@ -330,14 +334,13 @@ public class ChannelManager extends RedisChatAPI {
             }
 
             //Channel sound
-            getChannel(chatMessage.getReceiver().getName()).ifPresent(channel1 -> {
-                if (channel1.getNotificationSound() != null) {
-                    recipient.playSound(recipient.getLocation(), channel1.getNotificationSound(), 1, 1);
-                }
-            });
+            final Channel soundChannel = getRegisteredChannel(chatMessage.getReceiver().getName()).orElse(getPublicChannel(null));
+            if (soundChannel.getNotificationSound() != null) {
+                recipient.playSound(recipient.getLocation(), soundChannel.getNotificationSound(), 1, 1);
+            }
 
             //Mention sound
-            if (chatMessage.getContent().contains(recipient.getName())) {
+            if (getComponentProvider().purgeTags(chatMessage.getContent()).contains(recipient.getName())) {
                 if (!plugin.config.mentionSound.isEmpty()) {
                     final String[] split = plugin.config.mentionSound.split(":");
                     recipient.playSound(
@@ -398,14 +401,19 @@ public class ChannelManager extends RedisChatAPI {
     }
 
     @Override
-    public Optional<Channel> getChannel(@Nullable String channelName) {
-        if (channelName == null) return Optional.empty();
-        if (channelName.equals(KnownChatEntities.STAFFCHAT_CHANNEL_NAME.toString())) {
+    public Optional<Channel> getChannel(@Nullable String channelName, @Nullable CommandSender player) {
+        if (KnownChatEntities.GENERAL_CHANNEL.toString().equals(channelName)) {
+            return Optional.of(getPublicChannel(player));
+        }else if (KnownChatEntities.STAFFCHAT_CHANNEL_NAME.toString().equals(channelName)) {
             return Optional.of(getStaffChatChannel());
-        }else if(channelName.equals(KnownChatEntities.GENERAL_CHANNEL.toString())) {
-            return Optional.of(getPublicChannel(null));
         }
-        else return Optional.ofNullable(registeredChannels.get(channelName));
+        return getRegisteredChannel(channelName);
+    }
+
+    @Override
+    public Optional<Channel> getRegisteredChannel(@Nullable String channelName) {
+        if (channelName == null) return Optional.empty();
+        return Optional.ofNullable(registeredChannels.get(channelName));
     }
 
     @Override
@@ -424,7 +432,7 @@ public class ChannelManager extends RedisChatAPI {
                 .rateLimit(plugin.config.rate_limit)
                 .rateLimitPeriod(plugin.config.rate_limit_time_seconds)
                 .discordWebhook(plugin.config.publicDiscordWebhook)
-                .filtered(true)
+                .filtered(plugin.config.isPublicFiltered)
                 .shownByDefault(true)
                 .notificationSound(null)
                 .build();

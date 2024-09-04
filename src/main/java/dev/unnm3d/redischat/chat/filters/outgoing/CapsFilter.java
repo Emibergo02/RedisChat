@@ -40,7 +40,7 @@ public class CapsFilter extends AbstractFilter<CapsFilter.CapsFilterProperties> 
 
     @Override
     public FilterResult applyWithPrevious(CommandSender sender, @NotNull ChatMessage message, ChatMessage... previousMessages) {
-        Optional<Boolean> isFiltered = RedisChat.getInstance().getChannelManager().getChannel(message.getReceiver().getName())
+        Optional<Boolean> isFiltered = RedisChat.getInstance().getChannelManager().getChannel(message.getReceiver().getName(), null)
                 .map(Channel::isFiltered);
 
         //If the channel is filtered or the receiver is not a channel

@@ -125,11 +125,21 @@ public abstract class RedisChatAPI {
 
     /**
      * Get a channel by name null if not found
+     * Can be staffchat or public channel too
+     *
+     * @param channelName The name of the channel
+     * @param player The player for parsing channel formats, can be null
+     * @return The channel
+     */
+    public abstract Optional<Channel> getChannel(@Nullable String channelName, @Nullable CommandSender player);
+
+    /**
+     * Get a registered channel by name
      *
      * @param channelName The name of the channel
      * @return The channel
      */
-    public abstract Optional<Channel> getChannel(@Nullable String channelName);
+    public abstract Optional<Channel> getRegisteredChannel(@Nullable String channelName);
 
     /**
      * Get the public channel

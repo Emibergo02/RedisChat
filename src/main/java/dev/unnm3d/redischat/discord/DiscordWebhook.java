@@ -24,7 +24,7 @@ public class DiscordWebhook implements IDiscordHook {
     @Override
     public void sendDiscordMessage(ChatMessage message) {
         if (message.getReceiver().isChannel()) {
-            final Optional<Channel> channel = plugin.getChannelManager().getChannel(message.getReceiver().getName());
+            final Optional<Channel> channel = plugin.getChannelManager().getChannel(message.getReceiver().getName(), null);
             if(channel.isEmpty()) {
                 plugin.getLogger().warning("Channel not found: " + message.getReceiver().getName());
                 return;

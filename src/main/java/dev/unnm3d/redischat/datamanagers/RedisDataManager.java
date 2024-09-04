@@ -598,7 +598,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
                             return 0L;
                         });
                 conn.expire(DataKey.RATE_LIMIT_PREFIX + packet.getSender().getName() + chName,
-                        plugin.getChannelManager().getChannel(chName)
+                        plugin.getChannelManager().getChannel(chName, null)
                                 .orElse(plugin.getChannelManager().getPublicChannel(null))
                                 .getRateLimitPeriod());
             }

@@ -209,10 +209,14 @@ public final class Config implements ConfigValidator {
     public String clear_chat_message = "<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared";
     @Comment("How many messages to keep in the chat history for each player and for each audience")
     public int last_message_count = 5;
-    @Comment("Here you can set the number of messages that a player can send without being rate limited")
+    @Comment("Here you can set the number of messages that a player can send without being rate limited inside public chat")
     public int rate_limit = 3;
-    @Comment("Here you can set the time in seconds that a player can send the number of messages specified in rate_limit")
+    @Comment("Here you can set the time in seconds that a player can send the number of messages specified in rate_limit inside public chat")
     public int rate_limit_time_seconds = 5;
+    @Comment("The discord webhook of the public chat")
+    public String publicDiscordWebhook = "";
+    @Comment("Whether to filter the public chat")
+    public boolean isPublicFiltered = true;
     @Comment("Rejoin delay in milliseconds")
     public int rejoinSendDelay = 500;
     @Comment("Quit delay in milliseconds")
@@ -238,8 +242,7 @@ public final class Config implements ConfigValidator {
     @Comment({"Only 1.20.6+","Whether to use the item name or the display name when parsing the <item> tag"})
     public boolean useItemName = true;
     public String enderChestFormat = "<click:run_command:%command%><light_purple>[%player%'s EnderChest]</light_purple></click>";
-    @Comment("The discord webhook of the public chat")
-    public String publicDiscordWebhook = "";
+
     @Comment("The format of the timestamp in mails (by default is like 31/07/2023 15:24)")
     public String mailTimestampFormat = "dd/MM/yyyy HH:mm";
     @Comment("The timezone of the timestamp in mails (by default is Central European Time)")

@@ -26,7 +26,7 @@ public class BroadcastCommand {
                         .replaceSuggestions(ArgumentSuggestions.strings(getChannelsWithPublic())))
                 .withArguments(new GreedyStringArgument("message"))
                 .executes((sender, args) -> {
-                    final Optional<Channel> channel = plugin.getChannelManager().getChannel((String) args.get(0));
+                    final Optional<Channel> channel = plugin.getChannelManager().getChannel((String) args.get(0), sender);
                     final String message = (String) args.get(1);
                     if (message == null) return;
                     if (message.isEmpty()) return;
@@ -54,7 +54,7 @@ public class BroadcastCommand {
                         .replaceSuggestions(ArgumentSuggestions.strings(getChannelsWithPublic())))
                 .withArguments(new GreedyStringArgument("message"))
                 .executes((sender, args) -> {
-                    final Optional<Channel> channel = plugin.getChannelManager().getChannel((String) args.get(0));
+                    final Optional<Channel> channel = plugin.getChannelManager().getChannel((String) args.get(0), sender);
                     final String message = (String) args.get(1);
                     if (message == null) return;
                     if (message.isEmpty()) return;

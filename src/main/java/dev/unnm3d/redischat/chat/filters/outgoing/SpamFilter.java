@@ -26,7 +26,7 @@ public class SpamFilter extends AbstractFilter<FiltersConfig.FilterSettings> {
         if (!message.getReceiver().isChannel()) return new FilterResult(message, false, Optional.empty());
 
         if (!sender.hasPermission(Permissions.BYPASS_RATE_LIMIT.getPermission())) {
-            Optional<Channel> channel = plugin.getChannelManager().getChannel(message.getReceiver().getName());
+            Optional<Channel> channel = plugin.getChannelManager().getChannel(message.getReceiver().getName(), null);
             if (channel.isPresent() && plugin.getDataManager().isRateLimited(sender.getName(), channel.get())) {
                 return new FilterResult(message, true, Optional.of(
                         plugin.getComponentProvider().parse(sender,
