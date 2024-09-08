@@ -205,7 +205,7 @@ implements <a href="../../api/DataManager.html" title="interface in dev.unnm3d.r
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#initialize()" class="member-name-link">initialize</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isRateLimited(java.lang.String,dev.unnm3d.redischat.chat.objects.Channel)" class="member-name-link">isRateLimited</a><wbr>(@NotNull <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;playerName,
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isRateLimited(java.lang.String,dev.unnm3d.redischat.api.objects.Channel)" class="member-name-link">isRateLimited</a><wbr>(@NotNull <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;playerName,
  @NotNull <a href="../../chat/objects/Channel.html" title="class in dev.unnm3d.redischat.chat.objects">Channel</a>&nbsp;channel)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/CompletionStage.html" title="class or interface in java.util.concurrent" class="external-link">CompletionStage</a><wbr>&lt;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Boolean.html" title="class or interface in java.lang" class="external-link">Boolean</a>&gt;</code></div>
@@ -215,10 +215,10 @@ implements <a href="../../api/DataManager.html" title="interface in dev.unnm3d.r
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#publishPlayerList(java.util.List)" class="member-name-link">publishPlayerList</a><wbr>(@NotNull <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;&nbsp;playerNames)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#registerChannel(dev.unnm3d.redischat.chat.objects.Channel)" class="member-name-link">registerChannel</a><wbr>(@NotNull <a href="../../chat/objects/Channel.html" title="class in dev.unnm3d.redischat.chat.objects">Channel</a>&nbsp;channel)</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#registerChannel(dev.unnm3d.redischat.api.objects.Channel)" class="member-name-link">registerChannel</a><wbr>(@NotNull <a href="../../chat/objects/Channel.html" title="class in dev.unnm3d.redischat.chat.objects">Channel</a>&nbsp;channel)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#sendChatMessage(dev.unnm3d.redischat.chat.objects.ChatMessage)" class="member-name-link">sendChatMessage</a><wbr>(@NotNull <a href="../../chat/objects/ChatMessage.html" title="class in dev.unnm3d.redischat.chat.objects">ChatMessage</a>&nbsp;packet)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#sendChatMessage(dev.unnm3d.redischat.api.objects.ChatMessage)" class="member-name-link">sendChatMessage</a><wbr>(@NotNull <a href="../../chat/objects/ChatMessage.html" title="class in dev.unnm3d.redischat.chat.objects">ChatMessage</a>&nbsp;packet)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#sendRejoin(java.lang.String)" class="member-name-link">sendRejoin</a><wbr>(@NotNull <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;playerName)</code></div>
@@ -265,7 +265,7 @@ implements <a href="../../api/DataManager.html" title="interface in dev.unnm3d.r
 </div>
 <div class="inherited-list">
 <h3 id="methods-inherited-from-class-dev.unnm3d.redischat.datamanagers.sqlmanagers.PluginMessageManager">Methods inherited from class&nbsp;dev.unnm3d.redischat.datamanagers.sqlmanagers.<a href="PluginMessageManager.html" title="class in dev.unnm3d.redischat.datamanagers.sqlmanagers">PluginMessageManager</a></h3>
-<code><a href="PluginMessageManager.html#receivePluginMessage(byte%5B%5D)">receivePluginMessage</a>, <a href="PluginMessageManager.html#sendChannelUpdate(java.lang.String,dev.unnm3d.redischat.chat.objects.Channel)">sendChannelUpdate</a>, <a href="PluginMessageManager.html#sendChatPluginMessage(java.lang.String,dev.unnm3d.redischat.chat.objects.ChatMessage)">sendChatPluginMessage</a>, <a href="PluginMessageManager.html#sendMailUpdate(dev.unnm3d.redischat.mail.Mail)">sendMailUpdate</a>, <a href="PluginMessageManager.html#sendMutedEntityUpdate(java.lang.String,java.util.Set)">sendMutedEntityUpdate</a>, <a href="PluginMessageManager.html#sendPlayerPlaceholdersUpdate(java.lang.String)">sendPlayerPlaceholdersUpdate</a>, <a href="PluginMessageManager.html#sendPluginMessage(byte%5B%5D)">sendPluginMessage</a>, <a href="PluginMessageManager.html#sendWhitelistEnabledUpdate(java.lang.String,boolean)">sendWhitelistEnabledUpdate</a></code></div>
+<code><a href="PluginMessageManager.html#receivePluginMessage(byte%5B%5D)">receivePluginMessage</a>, <a href="PluginMessageManager.html#sendChannelUpdate(java.lang.String,dev.unnm3d.redischat.api.objects.Channel)">sendChannelUpdate</a>, <a href="PluginMessageManager.html#sendChatPluginMessage(java.lang.String,dev.unnm3d.redischat.api.objects.ChatMessage)">sendChatPluginMessage</a>, <a href="PluginMessageManager.html#sendMailUpdate(dev.unnm3d.redischat.mail.Mail)">sendMailUpdate</a>, <a href="PluginMessageManager.html#sendMutedEntityUpdate(java.lang.String,java.util.Set)">sendMutedEntityUpdate</a>, <a href="PluginMessageManager.html#sendPlayerPlaceholdersUpdate(java.lang.String)">sendPlayerPlaceholdersUpdate</a>, <a href="PluginMessageManager.html#sendPluginMessage(byte%5B%5D)">sendPluginMessage</a>, <a href="PluginMessageManager.html#sendWhitelistEnabledUpdate(java.lang.String,boolean)">sendWhitelistEnabledUpdate</a></code></div>
 <div class="inherited-list">
 <h3 id="methods-inherited-from-class-java.lang.Object">Methods inherited from class&nbsp;java.lang.<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a></h3>
 <code><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#clone()" title="class or interface in java.lang" class="external-link">clone</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#equals(java.lang.Object)" title="class or interface in java.lang" class="external-link">equals</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#finalize()" title="class or interface in java.lang" class="external-link">finalize</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#getClass()" title="class or interface in java.lang" class="external-link">getClass</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#hashCode()" title="class or interface in java.lang" class="external-link">hashCode</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#notify()" title="class or interface in java.lang" class="external-link">notify</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#notifyAll()" title="class or interface in java.lang" class="external-link">notifyAll</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#toString()" title="class or interface in java.lang" class="external-link">toString</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#wait()" title="class or interface in java.lang" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#wait(long)" title="class or interface in java.lang" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#wait(long,int)" title="class or interface in java.lang" class="external-link">wait</a></code></div>
@@ -350,7 +350,7 @@ implements <a href="../../api/DataManager.html" title="interface in dev.unnm3d.r
 </section>
 </li>
 <li>
-<section class="detail" id="isRateLimited(java.lang.String,dev.unnm3d.redischat.chat.objects.Channel)">
+<section class="detail" id="isRateLimited(java.lang.String,dev.unnm3d.redischat.api.objects.Channel)">
 <h3>isRateLimited</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">isRateLimited</span><wbr><span class="parameters">(@NotNull
  @NotNull <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;playerName,
@@ -358,7 +358,7 @@ implements <a href="../../api/DataManager.html" title="interface in dev.unnm3d.r
  @NotNull <a href="../../chat/objects/Channel.html" title="class in dev.unnm3d.redischat.chat.objects">Channel</a>&nbsp;channel)</span></div>
 <dl class="notes">
 <dt>Specified by:</dt>
-<dd><code><a href="../../api/DataManager.html#isRateLimited(java.lang.String,dev.unnm3d.redischat.chat.objects.Channel)">isRateLimited</a></code>&nbsp;in interface&nbsp;<code><a href="../../api/DataManager.html" title="interface in dev.unnm3d.redischat.api">DataManager</a></code></dd>
+<dd><code><a href="../../api/DataManager.html#isRateLimited(java.lang.String,dev.unnm3d.redischat.api.objects.Channel)">isRateLimited</a></code>&nbsp;in interface&nbsp;<code><a href="../../api/DataManager.html" title="interface in dev.unnm3d.redischat.api">DataManager</a></code></dd>
 </dl>
 </section>
 </li>
@@ -580,13 +580,13 @@ implements <a href="../../api/DataManager.html" title="interface in dev.unnm3d.r
 </section>
 </li>
 <li>
-<section class="detail" id="registerChannel(dev.unnm3d.redischat.chat.objects.Channel)">
+<section class="detail" id="registerChannel(dev.unnm3d.redischat.api.objects.Channel)">
 <h3>registerChannel</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">registerChannel</span><wbr><span class="parameters">(@NotNull
  @NotNull <a href="../../chat/objects/Channel.html" title="class in dev.unnm3d.redischat.chat.objects">Channel</a>&nbsp;channel)</span></div>
 <dl class="notes">
 <dt>Specified by:</dt>
-<dd><code><a href="../../api/DataManager.html#registerChannel(dev.unnm3d.redischat.chat.objects.Channel)">registerChannel</a></code>&nbsp;in interface&nbsp;<code><a href="../../api/DataManager.html" title="interface in dev.unnm3d.redischat.api">DataManager</a></code></dd>
+<dd><code><a href="../../api/DataManager.html#registerChannel(dev.unnm3d.redischat.api.objects.Channel)">registerChannel</a></code>&nbsp;in interface&nbsp;<code><a href="../../api/DataManager.html" title="interface in dev.unnm3d.redischat.api">DataManager</a></code></dd>
 </dl>
 </section>
 </li>
@@ -657,13 +657,13 @@ implements <a href="../../api/DataManager.html" title="interface in dev.unnm3d.r
 </section>
 </li>
 <li>
-<section class="detail" id="sendChatMessage(dev.unnm3d.redischat.chat.objects.ChatMessage)">
+<section class="detail" id="sendChatMessage(dev.unnm3d.redischat.api.objects.ChatMessage)">
 <h3>sendChatMessage</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">sendChatMessage</span><wbr><span class="parameters">(@NotNull
  @NotNull <a href="../../chat/objects/ChatMessage.html" title="class in dev.unnm3d.redischat.chat.objects">ChatMessage</a>&nbsp;packet)</span></div>
 <dl class="notes">
 <dt>Specified by:</dt>
-<dd><code><a href="../../api/DataManager.html#sendChatMessage(dev.unnm3d.redischat.chat.objects.ChatMessage)">sendChatMessage</a></code>&nbsp;in interface&nbsp;<code><a href="../../api/DataManager.html" title="interface in dev.unnm3d.redischat.api">DataManager</a></code></dd>
+<dd><code><a href="../../api/DataManager.html#sendChatMessage(dev.unnm3d.redischat.api.objects.ChatMessage)">sendChatMessage</a></code>&nbsp;in interface&nbsp;<code><a href="../../api/DataManager.html" title="interface in dev.unnm3d.redischat.api">DataManager</a></code></dd>
 </dl>
 </section>
 </li>

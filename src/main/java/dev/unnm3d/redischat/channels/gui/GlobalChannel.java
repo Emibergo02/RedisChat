@@ -1,7 +1,7 @@
 package dev.unnm3d.redischat.channels.gui;
 
 import dev.unnm3d.redischat.RedisChat;
-import dev.unnm3d.redischat.chat.objects.Channel;
+import dev.unnm3d.redischat.api.objects.Channel;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;

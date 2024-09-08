@@ -4,7 +4,7 @@ import dev.unnm3d.redischat.chat.filters.incoming.IgnorePlayerFilter;
 import dev.unnm3d.redischat.chat.filters.outgoing.CapsFilter;
 import dev.unnm3d.redischat.chat.filters.outgoing.DuplicateFilter;
 import dev.unnm3d.redischat.chat.filters.outgoing.WordBlacklistFilter;
-import dev.unnm3d.redischat.chat.objects.AudienceType;
+import dev.unnm3d.redischat.api.objects.AudienceType;
 import dev.unnm3d.redischat.settings.FiltersConfig;
 import lombok.Getter;
 

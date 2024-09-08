@@ -1,8 +1,8 @@
 package dev.unnm3d.redischat.discord;
 
 import dev.unnm3d.redischat.RedisChat;
-import dev.unnm3d.redischat.chat.objects.Channel;
-import dev.unnm3d.redischat.chat.objects.ChatMessage;
+import dev.unnm3d.redischat.api.objects.Channel;
+import dev.unnm3d.redischat.api.objects.ChatMessage;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 
 import javax.net.ssl.HttpsURLConnection;

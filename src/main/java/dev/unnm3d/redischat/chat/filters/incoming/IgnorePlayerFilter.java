@@ -2,11 +2,11 @@ package dev.unnm3d.redischat.chat.filters.incoming;
 
 import de.exlll.configlib.Configuration;
 import dev.unnm3d.redischat.RedisChat;
-import dev.unnm3d.redischat.chat.KnownChatEntities;
+import dev.unnm3d.redischat.api.objects.KnownChatEntities;
 import dev.unnm3d.redischat.chat.filters.AbstractFilter;
 import dev.unnm3d.redischat.chat.filters.FilterResult;
-import dev.unnm3d.redischat.chat.objects.AudienceType;
-import dev.unnm3d.redischat.chat.objects.ChatMessage;
+import dev.unnm3d.redischat.api.objects.AudienceType;
+import dev.unnm3d.redischat.api.objects.ChatMessage;
 import dev.unnm3d.redischat.settings.FiltersConfig;
 import lombok.Getter;
 import net.kyori.adventure.text.minimessage.MiniMessage;

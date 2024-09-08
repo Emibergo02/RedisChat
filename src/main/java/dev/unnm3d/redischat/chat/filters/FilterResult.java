@@ -1,6 +1,6 @@
 package dev.unnm3d.redischat.chat.filters;
 
-import dev.unnm3d.redischat.chat.objects.ChatMessage;
+import dev.unnm3d.redischat.api.objects.ChatMessage;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 

@@ -4,9 +4,9 @@ import com.google.gson.Gson;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.api.DataManager;
 import dev.unnm3d.redischat.api.RedisChatAPI;
-import dev.unnm3d.redischat.chat.KnownChatEntities;
-import dev.unnm3d.redischat.chat.objects.Channel;
-import dev.unnm3d.redischat.chat.objects.ChatMessage;
+import dev.unnm3d.redischat.api.objects.Channel;
+import dev.unnm3d.redischat.api.objects.ChatMessage;
+import dev.unnm3d.redischat.api.objects.KnownChatEntities;
 import dev.unnm3d.redischat.datamanagers.redistools.RedisAbstract;
 import dev.unnm3d.redischat.mail.Mail;
 import io.lettuce.core.RedisClient;
@@ -14,6 +14,7 @@ import io.lettuce.core.RedisURI;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.time.Duration;
 import java.util.*;
@@ -32,6 +33,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
         registerSub(DataKey.CHAT_CHANNEL.toString(),
                 DataKey.GLOBAL_CHANNEL.withoutCluster(),
                 DataKey.PLAYERLIST.toString(),
+                DataKey.PLAYER_ACTIVE_CHANNEL_UPDATE.toString(),
                 DataKey.REJOIN_CHANNEL.toString(),
                 DataKey.CHANNEL_UPDATE.toString(),
                 DataKey.MUTED_UPDATE.toString(),
@@ -76,12 +78,22 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
             if (plugin.getPlayerListManager() != null)
                 plugin.getPlayerListManager().updatePlayerList(Arrays.asList(message.split("§")));
 
+        } else if (channel.equals(DataKey.PLAYER_ACTIVE_CHANNEL_UPDATE.toString())) {
+            final String[] splitMsg = message.split(";");
+            if (plugin.config.debug)
+                plugin.getLogger().info("2Active channel received " + message);
+            if (splitMsg.length != 2) return;
+            if (splitMsg[1].equals(DataKey.DELETE_TAG.toString())) {
+                plugin.getChannelManager().updateActiveChannel(splitMsg[0], null);
+                return;
+            }
+            plugin.getChannelManager().updateActiveChannel(splitMsg[0], splitMsg[1]);
         } else if (channel.equals(DataKey.REJOIN_CHANNEL.toString())) {
             if (plugin.getJoinQuitManager() != null)
                 plugin.getJoinQuitManager().rejoinRequest(message);
 
         } else if (channel.equals(DataKey.CHANNEL_UPDATE.toString())) {
-            if (message.startsWith("delete§")) {
+            if (message.startsWith(DataKey.DELETE_TAG.toString())) {
                 plugin.getChannelManager().updateChannel(message.substring(7), null);
             } else {
                 Channel ch = gson.fromJson(message, Channel.class);
@@ -463,7 +475,7 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
                 plugin.getLogger().warning("Error registering custom channel");
                 return null;
             });
-            connection.publish(DataKey.CHANNEL_UPDATE.toString(), "delete§" + channelName);
+            connection.publish(DataKey.CHANNEL_UPDATE.toString(), DataKey.DELETE_TAG + channelName);
             return null;
         });
     }
@@ -483,27 +495,40 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
     }
 
     @Override
-    public CompletionStage<String> getActivePlayerChannel(@NotNull String playerName, Map<String, Channel> registeredChannels) {
+    public CompletionStage<String> getActivePlayerChannel(@NotNull String playerName) {
         return getConnectionAsync(conn ->
-                conn.hget(DataKey.PLAYER_ACTIVE_CHANNELS.toString(), playerName)
+                conn.get(DataKey.PLAYER_ACTIVE_CHANNEL_PREFIX + playerName)
                         .exceptionally(throwable -> {
                             throwable.printStackTrace();
                             plugin.getLogger().warning("Error getting active channel");
                             return null;
-                        }))
-                .thenApply(channelName -> channelName == null ? KnownChatEntities.GENERAL_CHANNEL.toString() : channelName);
+                        })
+                        .thenApply(channelName -> {
+                            if (plugin.config.debug) {
+                                plugin.getLogger().info("Get Active channel received " + channelName + " from " + DataKey.PLAYER_ACTIVE_CHANNEL_PREFIX + playerName);
+                            }
+                            return channelName == null ? KnownChatEntities.GENERAL_CHANNEL.toString() : channelName;
+                        }));
     }
 
     @Override
-    public void setActivePlayerChannel(String playerName, String channelName) {
-        getConnectionAsync(connection ->
-                connection.hset(DataKey.PLAYER_ACTIVE_CHANNELS.toString(), playerName, channelName)
-                        .exceptionally(throwable -> {
-                            throwable.printStackTrace();
-                            plugin.getLogger().warning("Error registering custom channel");
-                            return null;
-                        }));
+    public void setActivePlayerChannel(@NotNull String playerName, @Nullable String channelName) {
+        getConnectionPipeline(connection -> {
+            connection.set(DataKey.PLAYER_ACTIVE_CHANNEL_PREFIX + playerName, channelName)
+                    .exceptionally(throwable -> {
+                        throwable.printStackTrace();
+                        plugin.getLogger().warning("Error registering custom channel");
+                        return null;
+                    });
+            connection.expire(DataKey.PLAYER_ACTIVE_CHANNEL_PREFIX + playerName, Duration.ofDays(7));
+            return connection.publish(DataKey.PLAYER_ACTIVE_CHANNEL_UPDATE.toString(), channelName == null ? DataKey.DELETE_TAG.toString() : channelName);
+        }).thenAccept(integer -> {
+            if (plugin.config.debug) {
+                plugin.getLogger().info("Set Active " + channelName + " sent to " + integer + " servers");
+            }
+        });
     }
+
 
     @Override
     public void setMutedEntities(@NotNull String keyEntity, @NotNull Set<String> valueEntities) {

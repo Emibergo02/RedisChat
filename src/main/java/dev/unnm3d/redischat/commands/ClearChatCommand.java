@@ -2,7 +2,7 @@ package dev.unnm3d.redischat.commands;
 
 import com.github.Anon8281.universalScheduler.UniversalRunnable;
 import dev.unnm3d.redischat.RedisChat;
-import dev.unnm3d.redischat.chat.objects.ChatMessage;
+import dev.unnm3d.redischat.api.objects.ChatMessage;
 import lombok.AllArgsConstructor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;

@@ -2,7 +2,7 @@ package dev.unnm3d.redischat.datamanagers.sqlmanagers;
 
 import com.zaxxer.hikari.HikariDataSource;
 import dev.unnm3d.redischat.RedisChat;
-import dev.unnm3d.redischat.chat.objects.Channel;
+import dev.unnm3d.redischat.api.objects.Channel;
 import dev.unnm3d.redischat.mail.Mail;
 import org.bukkit.Bukkit;
 import org.bukkit.inventory.ItemStack;
@@ -91,7 +91,7 @@ public class SQLiteDataManager extends SQLDataManager {
     }
 
     @Override
-    public void setActivePlayerChannel(String playerName, String channelName) {
+    public void setActivePlayerChannel(@NotNull String playerName, String channelName) {
         CompletableFuture.runAsync(() -> {
             try (Connection connection = getConnection()) {
                 try (PreparedStatement statement = connection.prepareStatement("""

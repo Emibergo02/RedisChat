@@ -3,8 +3,8 @@ package dev.unnm3d.redischat.task;
 import com.github.Anon8281.universalScheduler.UniversalRunnable;
 import com.google.common.base.Strings;
 import dev.unnm3d.redischat.RedisChat;
-import dev.unnm3d.redischat.chat.objects.ChannelAudience;
-import dev.unnm3d.redischat.chat.objects.ChatMessage;
+import dev.unnm3d.redischat.api.objects.ChannelAudience;
+import dev.unnm3d.redischat.api.objects.ChatMessage;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 

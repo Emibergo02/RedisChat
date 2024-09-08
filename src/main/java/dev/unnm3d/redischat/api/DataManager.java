@@ -1,12 +1,13 @@
 package dev.unnm3d.redischat.api;
 
-import dev.unnm3d.redischat.chat.objects.Channel;
-import dev.unnm3d.redischat.chat.objects.ChatMessage;
+import dev.unnm3d.redischat.api.objects.Channel;
+import dev.unnm3d.redischat.api.objects.ChatMessage;
 import dev.unnm3d.redischat.mail.Mail;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.io.BukkitObjectInputStream;
 import org.bukkit.util.io.BukkitObjectOutputStream;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -22,7 +23,9 @@ public interface DataManager {
 
     void unregisterChannel(@NotNull String channelName);
 
-    CompletionStage<String> getActivePlayerChannel(@NotNull String playerName, Map<String, Channel> registeredChannels);
+    CompletionStage<String> getActivePlayerChannel(@NotNull String playerName);
+
+    void setActivePlayerChannel(@NotNull String playerName, @Nullable String channelName);
 
     CompletionStage<List<Channel>> getChannels();
 
@@ -65,8 +68,6 @@ public interface DataManager {
     CompletionStage<Boolean> setMailRead(@NotNull String playerName, @NotNull Mail mail);
 
     CompletionStage<Boolean> deleteMail(@NotNull Mail mail);
-
-    void setActivePlayerChannel(String playerName, String channelName);
 
     void setMutedEntities(@NotNull String playerName, @NotNull Set<String> mutedChannels);
 

@@ -40,6 +40,7 @@ public enum Permissions {
     JOIN_QUIT("redischat.joinquit"),
     CHAT_COLOR("redischat.chatcolorcommand"),
     SET_PLACEHOLDER("redischat.setchatplaceholder"),
+    SPY_OTHERS("redischat.spycommand.other"),
     ;
 
     private final String permission;

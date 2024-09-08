@@ -3,7 +3,7 @@ package dev.unnm3d.redischat.channels.gui;
 import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.api.events.ChannelGuiPopulateEvent;
-import dev.unnm3d.redischat.chat.KnownChatEntities;
+import dev.unnm3d.redischat.api.objects.KnownChatEntities;
 import lombok.AllArgsConstructor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;

@@ -6,7 +6,7 @@ import dev.jorel.commandapi.arguments.ArgumentSuggestions;
 import dev.jorel.commandapi.arguments.GreedyStringArgument;
 import dev.jorel.commandapi.arguments.StringArgument;
 import dev.unnm3d.redischat.RedisChat;
-import dev.unnm3d.redischat.chat.objects.Channel;
+import dev.unnm3d.redischat.api.objects.Channel;
 import lombok.AllArgsConstructor;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;

@@ -2,8 +2,8 @@ package dev.unnm3d.redischat.api;
 
 import dev.unnm3d.redischat.chat.ComponentProvider;
 import dev.unnm3d.redischat.chat.filters.FilterManager;
-import dev.unnm3d.redischat.chat.objects.Channel;
-import dev.unnm3d.redischat.chat.objects.ChatMessage;
+import dev.unnm3d.redischat.api.objects.Channel;
+import dev.unnm3d.redischat.api.objects.ChatMessage;
 import dev.unnm3d.redischat.mail.MailGUIManager;
 import dev.unnm3d.redischat.moderation.MuteManager;
 import org.bukkit.command.CommandSender;
@@ -12,7 +12,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
-import java.util.concurrent.CompletionStage;
 
 @SuppressWarnings("unused")
 public abstract class RedisChatAPI {
@@ -165,11 +164,16 @@ public abstract class RedisChatAPI {
     public abstract void setActiveChannel(String playerName, String channelName);
 
     /**
-     * Get the active channel for a player
+     * Get the active channel for a player stored in the local cache.
+     * The cache is updated whenever a remote change is made to the active channel
+     * Or when a player joins the server.
+     * To get a precise, global active channel (you probably don't need that),
+     * use DataManager#getActiveChannel
+     *
      * @param playerName The player name
      * @return The currently enabled channel
      */
-    public abstract CompletionStage<String> getActiveChannel(String playerName);
+    public abstract String getActiveChannel(String playerName);
 
     /**
      * Add vanish "canSee" integration

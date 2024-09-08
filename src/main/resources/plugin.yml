@@ -104,6 +104,9 @@ permissions:
   redischat.spycommand:
     description: Allows to use the /spychat command
     default: op
+  redischat.spycommand.other:
+    description: Allows to use the /spychat command others
+    default: false
   redischat.staffchat:
     description: Allows to use the /staffchat command
     default: op

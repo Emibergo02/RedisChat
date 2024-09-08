@@ -4,7 +4,7 @@ import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.chat.filters.AbstractFilter;
 import dev.unnm3d.redischat.chat.filters.FilterResult;
-import dev.unnm3d.redischat.chat.objects.ChatMessage;
+import dev.unnm3d.redischat.api.objects.ChatMessage;
 import dev.unnm3d.redischat.settings.FiltersConfig;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.kyori.adventure.text.minimessage.MiniMessage;

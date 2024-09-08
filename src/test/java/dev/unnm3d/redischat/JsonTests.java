@@ -2,11 +2,11 @@ package dev.unnm3d.redischat;
 
 
 import com.google.gson.Gson;
-import dev.unnm3d.redischat.chat.KnownChatEntities;
-import dev.unnm3d.redischat.chat.objects.AudienceType;
-import dev.unnm3d.redischat.chat.objects.ChannelAudience;
-import dev.unnm3d.redischat.chat.objects.Channel;
-import dev.unnm3d.redischat.chat.objects.ChatMessage;
+import dev.unnm3d.redischat.api.objects.KnownChatEntities;
+import dev.unnm3d.redischat.api.objects.AudienceType;
+import dev.unnm3d.redischat.api.objects.ChannelAudience;
+import dev.unnm3d.redischat.api.objects.Channel;
+import dev.unnm3d.redischat.api.objects.ChatMessage;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

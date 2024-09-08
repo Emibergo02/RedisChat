@@ -39,12 +39,7 @@ public class RedisChatPAPI extends PlaceholderExpansion {
 
         if (params.equalsIgnoreCase("active_channel")) {
             if (player.getName() == null) return plugin.getChannelManager().getPublicChannel(null).getName();
-            return plugin.getDataManager().getActivePlayerChannel(player.getName(), plugin.getChannelManager().getRegisteredChannels())
-                    .thenApply(channel -> channel == null ?
-
-                            plugin.getChannelManager().getPublicChannel(null).getName() :
-                            channel
-                    ).toCompletableFuture().join();
+            return plugin.getChannelManager().getActiveChannel(player.getName());
         }
 
         if (params.equalsIgnoreCase("notify_status")) {

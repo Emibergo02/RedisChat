@@ -1,8 +1,9 @@
-package dev.unnm3d.redischat.chat;
+package dev.unnm3d.redischat.chat.listeners;
 
 import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
-import dev.unnm3d.redischat.chat.objects.ChatMessage;
+import dev.unnm3d.redischat.chat.ChatFormat;
+import dev.unnm3d.redischat.api.objects.ChatMessage;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;

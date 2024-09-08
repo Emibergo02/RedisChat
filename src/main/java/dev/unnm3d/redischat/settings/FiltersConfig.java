@@ -4,7 +4,7 @@ import de.exlll.configlib.*;
 import dev.unnm3d.redischat.chat.filters.DefaultSettings;
 import dev.unnm3d.redischat.chat.filters.incoming.IgnorePlayerFilter;
 import dev.unnm3d.redischat.chat.filters.outgoing.*;
-import dev.unnm3d.redischat.chat.objects.AudienceType;
+import dev.unnm3d.redischat.api.objects.AudienceType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

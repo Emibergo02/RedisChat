@@ -3,10 +3,12 @@ package dev.unnm3d.redischat.chat.filters;
 import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.api.events.FilterEvent;
-import dev.unnm3d.redischat.chat.filters.incoming.*;
+import dev.unnm3d.redischat.chat.filters.incoming.IgnorePlayerFilter;
+import dev.unnm3d.redischat.chat.filters.incoming.PermissionFilter;
 import dev.unnm3d.redischat.chat.filters.outgoing.*;
-import dev.unnm3d.redischat.chat.objects.ChannelAudience;
-import dev.unnm3d.redischat.chat.objects.ChatMessage;
+import dev.unnm3d.redischat.api.objects.Channel;
+import dev.unnm3d.redischat.api.objects.ChannelAudience;
+import dev.unnm3d.redischat.api.objects.ChatMessage;
 import dev.unnm3d.redischat.settings.FiltersConfig;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.bukkit.command.CommandSender;
@@ -46,10 +48,10 @@ public class FilterManager {
         addFilter(new PermissionFilter(plugin, plugin.filterSettings.permission));
 
         //OUTGOING
-        addFilter(new CapsFilter(plugin.filterSettings.caps));
+        addFilter(new CapsFilter(plugin));
         addFilter(new SpamFilter(plugin, plugin.filterSettings.spam));
         addFilter(new DuplicateFilter(plugin.filterSettings.duplicate));
-        addFilter(new IgnoreFilter(plugin,plugin.filterSettings.ignore));
+        addFilter(new IgnoreFilter(plugin, plugin.filterSettings.ignore));
         addFilter(new MutedChannelFilter(plugin, plugin.filterSettings.mutedChannel));
         addFilter(new TagFilter(plugin, plugin.filterSettings.tags));
         addFilter(new WordBlacklistFilter(plugin, plugin.filterSettings.words));
@@ -101,7 +103,6 @@ public class FilterManager {
                 continue;
             }
 
-
             if (!filter.getFilterSettings().isEnabled()) continue;
 
             if (chatEntity.hasPermission(Permissions.BYPASS_FILTER_PREFIX.getPermission() + filter.getName())) {
@@ -130,6 +131,14 @@ public class FilterManager {
                     plugin.getLogger().info("Skip: wrong channel: " + message.getReceiver().getName());
                 }
                 continue;
+            }
+
+            //Check if the channel is filtered. if not skip caps and wordblacklist
+            if ((filter instanceof CapsFilter || filter instanceof WordBlacklistFilter) && message.getReceiver().isChannel()) {
+                Optional<Boolean> isFiltered = plugin.getChannelManager().getChannel(message.getReceiver().getName(), null)
+                        .map(Channel::isFiltered);
+
+                if (isFiltered.isPresent() && !isFiltered.get()) continue;
             }
 
             result = filter.applyWithPrevious(chatEntity,

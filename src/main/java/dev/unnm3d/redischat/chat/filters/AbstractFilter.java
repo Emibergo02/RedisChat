@@ -1,6 +1,6 @@
 package dev.unnm3d.redischat.chat.filters;
 
-import dev.unnm3d.redischat.chat.objects.ChatMessage;
+import dev.unnm3d.redischat.api.objects.ChatMessage;
 import dev.unnm3d.redischat.settings.FiltersConfig;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

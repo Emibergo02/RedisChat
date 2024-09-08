@@ -4,9 +4,9 @@ import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.api.DataManager;
-import dev.unnm3d.redischat.chat.KnownChatEntities;
-import dev.unnm3d.redischat.chat.objects.Channel;
-import dev.unnm3d.redischat.chat.objects.ChatMessage;
+import dev.unnm3d.redischat.api.objects.KnownChatEntities;
+import dev.unnm3d.redischat.api.objects.Channel;
+import dev.unnm3d.redischat.api.objects.ChatMessage;
 import dev.unnm3d.redischat.datamanagers.DataKey;
 import dev.unnm3d.redischat.mail.Mail;
 import org.bukkit.Bukkit;
@@ -723,7 +723,7 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
     }
 
     @Override
-    public CompletionStage<String> getActivePlayerChannel(@NotNull String playerName, Map<String, Channel> registeredChannels) {
+    public CompletionStage<String> getActivePlayerChannel(@NotNull String playerName) {
         return CompletableFuture.supplyAsync(() -> {
             try (Connection connection = getConnection()) {
                 try (PreparedStatement statement = connection.prepareStatement("""
@@ -790,7 +790,7 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
     }
 
     @Override
-    public void setActivePlayerChannel(String playerName, String channelName) {
+    public void setActivePlayerChannel(@NotNull String playerName, String channelName) {
         CompletableFuture.runAsync(() -> {
             try (Connection connection = getConnection()) {
                 try (PreparedStatement statement = connection.prepareStatement("""
@@ -805,6 +805,7 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
                     if (statement.executeUpdate() == 0) {
                         throw new SQLException("Failed to update active channel to database: " + statement);
                     }
+                    updatePlayerChannel(playerName, channelName);
                 }
             } catch (SQLException e) {
                 errWarn("Failed to update active channel to database", e);
@@ -825,8 +826,10 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
                     while (resultSet.next()) {
                         channels.add(Channel.builder(resultSet.getString("name"))
                                 .displayName(resultSet.getString("display_name"))
+                                .format(resultSet.getString("format"))
                                 .rateLimit(resultSet.getInt("rate_limit"))
                                 .rateLimitPeriod(resultSet.getInt("rate_limit_period"))
+                                .proximityDistance(resultSet.getInt("proximity_distance"))
                                 .discordWebhook(resultSet.getString("discord_webhook"))
                                 .filtered(resultSet.getBoolean("filtered"))
                                 .shownByDefault(resultSet.getBoolean("shown_by_default"))

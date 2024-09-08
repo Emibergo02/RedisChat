@@ -1,7 +1,7 @@
 package dev.unnm3d.redischat.moderation;
 
 import dev.unnm3d.redischat.RedisChat;
-import dev.unnm3d.redischat.chat.KnownChatEntities;
+import dev.unnm3d.redischat.api.objects.KnownChatEntities;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;

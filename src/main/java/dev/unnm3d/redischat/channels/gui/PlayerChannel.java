@@ -2,8 +2,8 @@ package dev.unnm3d.redischat.channels.gui;
 
 import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
-import dev.unnm3d.redischat.chat.KnownChatEntities;
-import dev.unnm3d.redischat.chat.objects.Channel;
+import dev.unnm3d.redischat.api.objects.KnownChatEntities;
+import dev.unnm3d.redischat.api.objects.Channel;
 import lombok.Getter;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;

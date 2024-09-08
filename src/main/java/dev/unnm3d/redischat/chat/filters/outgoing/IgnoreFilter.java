@@ -3,7 +3,7 @@ package dev.unnm3d.redischat.chat.filters.outgoing;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.chat.filters.AbstractFilter;
 import dev.unnm3d.redischat.chat.filters.FilterResult;
-import dev.unnm3d.redischat.chat.objects.ChatMessage;
+import dev.unnm3d.redischat.api.objects.ChatMessage;
 import dev.unnm3d.redischat.settings.FiltersConfig;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;

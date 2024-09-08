@@ -1,4 +1,4 @@
-package dev.unnm3d.redischat.chat;
+package dev.unnm3d.redischat.api.objects;
 
 public enum KnownChatEntities {
     GENERAL_CHANNEL("public"),

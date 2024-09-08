@@ -2,7 +2,7 @@ package dev.unnm3d.redischat.commands;
 
 import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
-import dev.unnm3d.redischat.chat.KnownChatEntities;
+import dev.unnm3d.redischat.api.objects.KnownChatEntities;
 import lombok.AllArgsConstructor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;

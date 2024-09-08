@@ -9,9 +9,9 @@ public enum DataKey {
     REJOIN_CHANNEL("rchat:rejoin"),
     PLAYERLIST("rchat:playerlist"),
     MAIL_UPDATE_CHANNEL("rchat:mail_update"),
-    PLAYER_ACTIVE_CHANNELS("rchat:pactch"),
+    PLAYER_ACTIVE_CHANNEL_PREFIX("rchat:ach_"),
+    PLAYER_ACTIVE_CHANNEL_UPDATE("rchat:achup"),
     CHANNELS("rchat:ch"),
-    PLAYER_CHANNELS_PREFIX("rchat:pch_"),
     ACTIVE_CHANNEL_ID("!activech"),
     IGNORE_PREFIX("rchat:ignore_"),
     MUTED_ENTITIES("rchat:muted"),
@@ -28,6 +28,7 @@ public enum DataKey {
     WHITELIST_ENABLED_PLAYERS("rchat:wl_enabled"),
     WHITELIST_ENABLED_UPDATE("rchat:wl_enabled_update"),
     READ_MAIL_MAP("rchat:read_mails:"),
+    DELETE_TAG("§del§"),
     ;
 
     private final String keyName;

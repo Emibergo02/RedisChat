@@ -5,8 +5,8 @@ import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import com.google.gson.Gson;
 import dev.unnm3d.redischat.RedisChat;
-import dev.unnm3d.redischat.chat.objects.Channel;
-import dev.unnm3d.redischat.chat.objects.ChatMessage;
+import dev.unnm3d.redischat.api.objects.Channel;
+import dev.unnm3d.redischat.api.objects.ChatMessage;
 import dev.unnm3d.redischat.datamanagers.DataKey;
 import dev.unnm3d.redischat.mail.Mail;
 import org.bukkit.entity.Player;
@@ -49,8 +49,16 @@ public abstract class PluginMessageManager {
         } else if (subchannel.equals(DataKey.PLAYERLIST.toString())) {
             if (plugin.getPlayerListManager() != null)
                 plugin.getPlayerListManager().updatePlayerList(Arrays.asList(messageString.split("§")));
+        }else if (subchannel.equals(DataKey.PLAYER_ACTIVE_CHANNEL_UPDATE.toString())) {
+            final String[] splitMsg = messageString.split(";");
+            if (splitMsg.length != 2) return;
+            if (splitMsg[1].equals(DataKey.DELETE_TAG.toString())) {
+                plugin.getChannelManager().updateActiveChannel(splitMsg[0], null);
+                return;
+            }
+            plugin.getChannelManager().updateActiveChannel(splitMsg[0], splitMsg[1]);
         } else if (subchannel.equals(DataKey.CHANNEL_UPDATE.toString())) {
-            if (messageString.startsWith("delete§")) {
+            if (messageString.startsWith(DataKey.DELETE_TAG.toString())) {
                 plugin.getChannelManager().updateChannel(messageString.substring(7), null);
             } else {
                 final Channel ch = gson.fromJson(messageString, Channel.class);
@@ -78,7 +86,7 @@ public abstract class PluginMessageManager {
         out.writeUTF(DataKey.CHANNEL_UPDATE.toString());
 
         if (channel == null) {
-            out.writeUTF("delete§" + channelName);
+            out.writeUTF(DataKey.DELETE_TAG + channelName);
         } else {
             out.writeUTF(gson.toJson(channel));
         }
@@ -138,5 +146,15 @@ public abstract class PluginMessageManager {
         final Iterator<? extends Player> iterator = plugin.getServer().getOnlinePlayers().iterator();
         if (!iterator.hasNext()) return;
         iterator.next().sendPluginMessage(plugin, "BungeeCord", byteArray);
+    }
+
+    public void updatePlayerChannel(@NotNull String playerName, @Nullable String playerChannel) {
+        final ByteArrayDataOutput out = ByteStreams.newDataOutput();
+        out.writeUTF("Forward");
+        out.writeUTF("ALL");
+        out.writeUTF(DataKey.PLAYER_ACTIVE_CHANNEL_UPDATE.toString());
+        out.writeUTF(playerName + ";" + (playerChannel == null ? DataKey.DELETE_TAG.toString() : playerChannel));
+
+        sendPluginMessage(out.toByteArray());
     }
 }

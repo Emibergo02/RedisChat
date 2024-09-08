@@ -144,7 +144,7 @@ loadScripts(document, 'script');</script>
 <div class="block">Add vanish "canSee" integration</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>abstract void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#broadcastMessage(dev.unnm3d.redischat.chat.objects.Channel,java.lang.String)" class="member-name-link">broadcastMessage</a><wbr>(<a href="../chat/objects/Channel.html" title="class in dev.unnm3d.redischat.chat.objects">Channel</a>&nbsp;channel,
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#broadcastMessage(dev.unnm3d.redischat.api.objects.Channel,java.lang.String)" class="member-name-link">broadcastMessage</a><wbr>(<a href="../chat/objects/Channel.html" title="class in dev.unnm3d.redischat.chat.objects">Channel</a>&nbsp;channel,
  <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;message)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
 <div class="block">Broadcast a message to a channel</div>
@@ -220,7 +220,7 @@ loadScripts(document, 'script');</script>
 <div class="block">Pauses the chat for a player and caches all messages sent to them</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>abstract void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#registerChannel(dev.unnm3d.redischat.chat.objects.Channel)" class="member-name-link">registerChannel</a><wbr>(<a href="../chat/objects/Channel.html" title="class in dev.unnm3d.redischat.chat.objects">Channel</a>&nbsp;channel)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#registerChannel(dev.unnm3d.redischat.api.objects.Channel)" class="member-name-link">registerChannel</a><wbr>(<a href="../chat/objects/Channel.html" title="class in dev.unnm3d.redischat.chat.objects">Channel</a>&nbsp;channel)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
 <div class="block">Register a channel</div>
 </div>
@@ -230,7 +230,7 @@ loadScripts(document, 'script');</script>
 <div class="block">Remove vanish "canSee" integration</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>abstract void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#sendGenericChat(dev.unnm3d.redischat.chat.objects.ChatMessage)" class="member-name-link">sendGenericChat</a><wbr>(@NotNull <a href="../chat/objects/ChatMessage.html" title="class in dev.unnm3d.redischat.chat.objects">ChatMessage</a>&nbsp;chatMessage)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#sendGenericChat(dev.unnm3d.redischat.api.objects.ChatMessage)" class="member-name-link">sendGenericChat</a><wbr>(@NotNull <a href="../chat/objects/ChatMessage.html" title="class in dev.unnm3d.redischat.chat.objects">ChatMessage</a>&nbsp;chatMessage)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
 <div class="block">Send a generic (non-private) ChatMessageInfo to all local players
  Checks multicast permissions and mentions
@@ -365,7 +365,7 @@ loadScripts(document, 'script');</script>
 </section>
 </li>
 <li>
-<section class="detail" id="registerChannel(dev.unnm3d.redischat.chat.objects.Channel)">
+<section class="detail" id="registerChannel(dev.unnm3d.redischat.api.objects.Channel)">
 <h3>registerChannel</h3>
 <div class="member-signature"><span class="modifiers">public abstract</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">registerChannel</span><wbr><span class="parameters">(<a href="../chat/objects/Channel.html" title="class in dev.unnm3d.redischat.chat.objects">Channel</a>&nbsp;channel)</span></div>
 <div class="block">Register a channel</div>
@@ -398,7 +398,7 @@ loadScripts(document, 'script');</script>
 </section>
 </li>
 <li>
-<section class="detail" id="broadcastMessage(dev.unnm3d.redischat.chat.objects.Channel,java.lang.String)">
+<section class="detail" id="broadcastMessage(dev.unnm3d.redischat.api.objects.Channel,java.lang.String)">
 <h3>broadcastMessage</h3>
 <div class="member-signature"><span class="modifiers">public abstract</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">broadcastMessage</span><wbr><span class="parameters">(<a href="../chat/objects/Channel.html" title="class in dev.unnm3d.redischat.chat.objects">Channel</a>&nbsp;channel,
  <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;message)</span></div>
@@ -425,7 +425,7 @@ loadScripts(document, 'script');</script>
 </section>
 </li>
 <li>
-<section class="detail" id="sendGenericChat(dev.unnm3d.redischat.chat.objects.ChatMessage)">
+<section class="detail" id="sendGenericChat(dev.unnm3d.redischat.api.objects.ChatMessage)">
 <h3>sendGenericChat</h3>
 <div class="member-signature"><span class="modifiers">public abstract</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">sendGenericChat</span><wbr><span class="parameters">(@NotNull
  @NotNull <a href="../chat/objects/ChatMessage.html" title="class in dev.unnm3d.redischat.chat.objects">ChatMessage</a>&nbsp;chatMessage)</span></div>

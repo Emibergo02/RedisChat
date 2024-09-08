@@ -201,7 +201,7 @@ implements <a href="../api/DataManager.html" title="interface in dev.unnm3d.redi
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getWhitelistEnabledPlayers()" class="member-name-link">getWhitelistEnabledPlayers</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isRateLimited(java.lang.String,dev.unnm3d.redischat.chat.objects.Channel)" class="member-name-link">isRateLimited</a><wbr>(@NotNull <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;playerName,
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isRateLimited(java.lang.String,dev.unnm3d.redischat.api.objects.Channel)" class="member-name-link">isRateLimited</a><wbr>(@NotNull <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;playerName,
  @NotNull <a href="../chat/objects/Channel.html" title="class in dev.unnm3d.redischat.chat.objects">Channel</a>&nbsp;channel)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/CompletionStage.html" title="class or interface in java.util.concurrent" class="external-link">CompletionStage</a><wbr>&lt;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Boolean.html" title="class or interface in java.lang" class="external-link">Boolean</a>&gt;</code></div>
@@ -215,10 +215,10 @@ implements <a href="../api/DataManager.html" title="interface in dev.unnm3d.redi
  <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;message)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#registerChannel(dev.unnm3d.redischat.chat.objects.Channel)" class="member-name-link">registerChannel</a><wbr>(@NotNull <a href="../chat/objects/Channel.html" title="class in dev.unnm3d.redischat.chat.objects">Channel</a>&nbsp;channel)</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#registerChannel(dev.unnm3d.redischat.api.objects.Channel)" class="member-name-link">registerChannel</a><wbr>(@NotNull <a href="../chat/objects/Channel.html" title="class in dev.unnm3d.redischat.chat.objects">Channel</a>&nbsp;channel)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#sendChatMessage(dev.unnm3d.redischat.chat.objects.ChatMessage)" class="member-name-link">sendChatMessage</a><wbr>(@NotNull <a href="../chat/objects/ChatMessage.html" title="class in dev.unnm3d.redischat.chat.objects">ChatMessage</a>&nbsp;packet)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#sendChatMessage(dev.unnm3d.redischat.api.objects.ChatMessage)" class="member-name-link">sendChatMessage</a><wbr>(@NotNull <a href="../chat/objects/ChatMessage.html" title="class in dev.unnm3d.redischat.chat.objects">ChatMessage</a>&nbsp;packet)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#sendRejoin(java.lang.String)" class="member-name-link">sendRejoin</a><wbr>(@NotNull <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;playerName)</code></div>
@@ -381,7 +381,7 @@ implements <a href="../api/DataManager.html" title="interface in dev.unnm3d.redi
 </section>
 </li>
 <li>
-<section class="detail" id="isRateLimited(java.lang.String,dev.unnm3d.redischat.chat.objects.Channel)">
+<section class="detail" id="isRateLimited(java.lang.String,dev.unnm3d.redischat.api.objects.Channel)">
 <h3>isRateLimited</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">isRateLimited</span><wbr><span class="parameters">(@NotNull
  @NotNull <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;playerName,
@@ -389,7 +389,7 @@ implements <a href="../api/DataManager.html" title="interface in dev.unnm3d.redi
  @NotNull <a href="../chat/objects/Channel.html" title="class in dev.unnm3d.redischat.chat.objects">Channel</a>&nbsp;channel)</span></div>
 <dl class="notes">
 <dt>Specified by:</dt>
-<dd><code><a href="../api/DataManager.html#isRateLimited(java.lang.String,dev.unnm3d.redischat.chat.objects.Channel)">isRateLimited</a></code>&nbsp;in interface&nbsp;<code><a href="../api/DataManager.html" title="interface in dev.unnm3d.redischat.api">DataManager</a></code></dd>
+<dd><code><a href="../api/DataManager.html#isRateLimited(java.lang.String,dev.unnm3d.redischat.api.objects.Channel)">isRateLimited</a></code>&nbsp;in interface&nbsp;<code><a href="../api/DataManager.html" title="interface in dev.unnm3d.redischat.api">DataManager</a></code></dd>
 </dl>
 </section>
 </li>
@@ -564,13 +564,13 @@ implements <a href="../api/DataManager.html" title="interface in dev.unnm3d.redi
 </section>
 </li>
 <li>
-<section class="detail" id="registerChannel(dev.unnm3d.redischat.chat.objects.Channel)">
+<section class="detail" id="registerChannel(dev.unnm3d.redischat.api.objects.Channel)">
 <h3>registerChannel</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">registerChannel</span><wbr><span class="parameters">(@NotNull
  @NotNull <a href="../chat/objects/Channel.html" title="class in dev.unnm3d.redischat.chat.objects">Channel</a>&nbsp;channel)</span></div>
 <dl class="notes">
 <dt>Specified by:</dt>
-<dd><code><a href="../api/DataManager.html#registerChannel(dev.unnm3d.redischat.chat.objects.Channel)">registerChannel</a></code>&nbsp;in interface&nbsp;<code><a href="../api/DataManager.html" title="interface in dev.unnm3d.redischat.api">DataManager</a></code></dd>
+<dd><code><a href="../api/DataManager.html#registerChannel(dev.unnm3d.redischat.api.objects.Channel)">registerChannel</a></code>&nbsp;in interface&nbsp;<code><a href="../api/DataManager.html" title="interface in dev.unnm3d.redischat.api">DataManager</a></code></dd>
 </dl>
 </section>
 </li>
@@ -664,13 +664,13 @@ implements <a href="../api/DataManager.html" title="interface in dev.unnm3d.redi
 </section>
 </li>
 <li>
-<section class="detail" id="sendChatMessage(dev.unnm3d.redischat.chat.objects.ChatMessage)">
+<section class="detail" id="sendChatMessage(dev.unnm3d.redischat.api.objects.ChatMessage)">
 <h3>sendChatMessage</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">sendChatMessage</span><wbr><span class="parameters">(@NotNull
  @NotNull <a href="../chat/objects/ChatMessage.html" title="class in dev.unnm3d.redischat.chat.objects">ChatMessage</a>&nbsp;packet)</span></div>
 <dl class="notes">
 <dt>Specified by:</dt>
-<dd><code><a href="../api/DataManager.html#sendChatMessage(dev.unnm3d.redischat.chat.objects.ChatMessage)">sendChatMessage</a></code>&nbsp;in interface&nbsp;<code><a href="../api/DataManager.html" title="interface in dev.unnm3d.redischat.api">DataManager</a></code></dd>
+<dd><code><a href="../api/DataManager.html#sendChatMessage(dev.unnm3d.redischat.api.objects.ChatMessage)">sendChatMessage</a></code>&nbsp;in interface&nbsp;<code><a href="../api/DataManager.html" title="interface in dev.unnm3d.redischat.api">DataManager</a></code></dd>
 </dl>
 </section>
 </li>

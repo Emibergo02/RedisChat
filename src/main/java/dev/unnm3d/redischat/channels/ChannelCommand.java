@@ -5,8 +5,8 @@ import dev.jorel.commandapi.arguments.*;
 import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.channels.gui.PlayerChannel;
-import dev.unnm3d.redischat.chat.KnownChatEntities;
-import dev.unnm3d.redischat.chat.objects.Channel;
+import dev.unnm3d.redischat.api.objects.KnownChatEntities;
+import dev.unnm3d.redischat.api.objects.Channel;
 import lombok.AllArgsConstructor;
 
 import java.util.List;
@@ -192,28 +192,28 @@ public class ChannelCommand {
                 .withPermission(Permissions.CHANNEL_LIST.getPermission())
                 .executesPlayer((sender, args) -> {
                     plugin.getComponentProvider().sendMessage(sender, plugin.messages.channelListHeader);
-                    plugin.getDataManager().getActivePlayerChannel(sender.getName(), plugin.getChannelManager().getRegisteredChannels())
-                            .thenAccept(activeChannelName -> {
-                                final List<PlayerChannel> availableChannels = plugin.getChannelManager().getRegisteredChannels().values().stream()
-                                        .filter(channel -> channel.isShownByDefault() || sender.hasPermission(Permissions.CHANNEL_SHOW_PREFIX.getPermission() + channel.getName()))
-                                        .map(channel -> new PlayerChannel(channel, sender, channel.getName().equals(activeChannelName)))
-                                        .filter(playerChannel -> !playerChannel.isHidden())
-                                        .toList();
+                    final String activeChannelName = plugin.getChannelManager().getActiveChannel(sender.getName());
 
-                                for (PlayerChannel channel : availableChannels) {
-                                    final String channelMsg =
-                                            channel.isListening() ?
-                                                    plugin.messages.channelListTransmitting :
-                                                    channel.isMuted() ?
-                                                            plugin.messages.channelListMuted :
-                                                            plugin.messages.channelListReceiving;
-                                    plugin.getComponentProvider().sendMessage(sender,
-                                            channelMsg.replace("%channel%", channel.getChannel().getName())
-                                    );
-                                }
-                            });
+                    final List<PlayerChannel> availableChannels = plugin.getChannelManager().getRegisteredChannels().values().stream()
+                            .filter(channel -> channel.isShownByDefault() || sender.hasPermission(Permissions.CHANNEL_SHOW_PREFIX.getPermission() + channel.getName()))
+                            .map(channel -> new PlayerChannel(channel, sender, channel.getName().equals(activeChannelName)))
+                            .filter(playerChannel -> !playerChannel.isHidden())
+                            .toList();
 
+                    for (PlayerChannel channel : availableChannels) {
+                        final String channelMsg =
+                                channel.isListening() ?
+                                        plugin.messages.channelListTransmitting :
+                                        channel.isMuted() ?
+                                                plugin.messages.channelListMuted :
+                                                plugin.messages.channelListReceiving;
+                        plugin.getComponentProvider().sendMessage(sender,
+                                channelMsg.replace("%channel%", channel.getChannel().getName())
+                        );
+                    }
                 });
+
+
     }
 
     public CommandAPICommand getDeleteSubCommand() {

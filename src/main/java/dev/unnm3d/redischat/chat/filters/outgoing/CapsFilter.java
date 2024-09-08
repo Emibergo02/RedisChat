@@ -5,8 +5,7 @@ import de.exlll.configlib.Configuration;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.chat.filters.AbstractFilter;
 import dev.unnm3d.redischat.chat.filters.FilterResult;
-import dev.unnm3d.redischat.chat.objects.Channel;
-import dev.unnm3d.redischat.chat.objects.ChatMessage;
+import dev.unnm3d.redischat.api.objects.ChatMessage;
 import dev.unnm3d.redischat.settings.FiltersConfig;
 import lombok.Getter;
 import org.bukkit.command.CommandSender;
@@ -17,10 +16,11 @@ import java.util.Set;
 
 
 public class CapsFilter extends AbstractFilter<CapsFilter.CapsFilterProperties> {
+    private RedisChat plugin;
 
-
-    public CapsFilter(CapsFilterProperties filterSettings) {
-        super("caps", Direction.OUTGOING, filterSettings);
+    public CapsFilter(RedisChat plugin) {
+        super("caps", Direction.OUTGOING, plugin.filterSettings.caps);
+        this.plugin = plugin;
     }
 
 
@@ -40,22 +40,25 @@ public class CapsFilter extends AbstractFilter<CapsFilter.CapsFilterProperties> 
 
     @Override
     public FilterResult applyWithPrevious(CommandSender sender, @NotNull ChatMessage message, ChatMessage... previousMessages) {
-        Optional<Boolean> isFiltered = RedisChat.getInstance().getChannelManager().getChannel(message.getReceiver().getName(), null)
-                .map(Channel::isFiltered);
 
-        //If the channel is filtered or the receiver is not a channel
-        if ((isFiltered.isPresent() && isFiltered.get()) || isFiltered.isEmpty()) {
-            if (antiCaps(message.getContent())) {
-                message.setContent(message.getContent().toLowerCase());
-                return new FilterResult(message, filterSettings.shouldBlock, Optional.of(
-                        RedisChat.getInstance().getComponentProvider().parse(sender,
-                                RedisChat.getInstance().messages.caps,
-                                true,
-                                false,
-                                false)
-                ));
-            }
+        //Remove usernames from the message so players can send UPPERCASE USERNAMES
+        String mentionRemoved = message.getContent();
+        for (String playerName : plugin.getPlayerListManager().getPlayerList(sender)) {
+            mentionRemoved = mentionRemoved.replace(playerName, "");
         }
+
+        //Then check for the presence of caps
+        if (antiCaps(mentionRemoved)) {
+            message.setContent(message.getContent().toLowerCase());
+            return new FilterResult(message, filterSettings.shouldBlock, Optional.of(
+                    RedisChat.getInstance().getComponentProvider().parse(sender,
+                            RedisChat.getInstance().messages.caps,
+                            true,
+                            false,
+                            false)
+            ));
+        }
+
         return new FilterResult(message, false, Optional.empty());
     }
 

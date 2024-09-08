@@ -1,6 +1,5 @@
-package dev.unnm3d.redischat.chat.objects;
+package dev.unnm3d.redischat.api.objects;
 
-import dev.unnm3d.redischat.chat.KnownChatEntities;
 import lombok.*;
 
 import java.util.ArrayList;

@@ -1,4 +1,4 @@
-package dev.unnm3d.redischat.chat.objects;
+package dev.unnm3d.redischat.api.objects;
 
 import lombok.*;
 

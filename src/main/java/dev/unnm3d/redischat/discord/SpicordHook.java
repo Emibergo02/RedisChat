@@ -1,8 +1,8 @@
 package dev.unnm3d.redischat.discord;
 
 import dev.unnm3d.redischat.RedisChat;
-import dev.unnm3d.redischat.chat.objects.ChannelAudience;
-import dev.unnm3d.redischat.chat.objects.ChatMessage;
+import dev.unnm3d.redischat.api.objects.ChannelAudience;
+import dev.unnm3d.redischat.api.objects.ChatMessage;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
