@@ -14,5 +14,5 @@ public enum AudienceType {
     /**
      * Represents a user/channel on Discord.
      */
-    DISCORD;
+    DISCORD
 }

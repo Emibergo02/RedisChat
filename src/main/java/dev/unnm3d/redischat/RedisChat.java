@@ -335,17 +335,6 @@ public final class RedisChat extends JavaPlugin {
                         .build());
     }
 
-    public void saveFilters() {
-        YamlConfigurations.save(
-                new File(this.getDataFolder(), "filters.yml").toPath(),
-                FiltersConfig.class,
-                filterSettings,
-                YamlConfigurationProperties.newBuilder()
-                        .header("RedisChat filters")
-                        .footer("Authors: Unnm3d")
-                        .build());
-    }
-
     @Override
     public void onDisable() {
         getLogger().warning("RedisChat is disabling...");

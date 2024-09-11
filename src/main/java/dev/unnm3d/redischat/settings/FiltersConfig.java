@@ -31,7 +31,6 @@ public final class FiltersConfig {
     @Configuration
     @AllArgsConstructor
     @Getter
-
     public static class FilterSettings {
         protected boolean enabled;
         protected int priority;

@@ -16,7 +16,7 @@ import java.util.Set;
 
 
 public class CapsFilter extends AbstractFilter<CapsFilter.CapsFilterProperties> {
-    private RedisChat plugin;
+    private final RedisChat plugin;
 
     public CapsFilter(RedisChat plugin) {
         super("caps", Direction.OUTGOING, plugin.filterSettings.caps);
