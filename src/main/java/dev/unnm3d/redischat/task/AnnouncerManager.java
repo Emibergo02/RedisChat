@@ -1,6 +1,7 @@
 package dev.unnm3d.redischat.task;
 
 import dev.unnm3d.redischat.RedisChat;
+import dev.unnm3d.redischat.settings.Config;
 
 import java.util.HashMap;
 
@@ -18,15 +19,18 @@ public class AnnouncerManager {
     public void reload() {
         cancelAll();
         announcerTasks.clear();
-        plugin.config.announcer.forEach(announce -> {
-            AnnouncerTask at = new AnnouncerTask(plugin,
+        int fullInterval = plugin.config.announcer.stream().mapToInt(Config.Announcement::delay).sum();
+        int previousDelay = 0;
+        for (Config.Announcement announce : plugin.config.announcer) {
+            final AnnouncerTask at = new AnnouncerTask(plugin,
                     announce.message(),
                     announce.channelName() == null || announce.channelName().isEmpty() ? "public" : announce.channelName(),
-                    announce.delay(),
-                    announce.interval());
+                    previousDelay + announce.delay(),
+                    fullInterval);
+            previousDelay += announce.delay();
             announcerTasks.put(announce.announcementName(), at);
             at.start();
-        });
+        }
     }
 
     public void cancelAll() {

@@ -186,11 +186,11 @@ public final class Config implements ConfigValidator {
 
     @Comment({
             "Announcer configurations",
-            "delay and interval are in seconds",
+            "delay is in seconds, how many seconds between each announcement",
             "If you want to disable an announce, just remove it from the list, remember that in yaml [] is an empty list",
             "If you specify a permission, only players with that permission will see the announce. Keep it empty to make it public",
     })
-    public List<Announcement> announcer = List.of(new Announcement("default", "<yellow>RedisChat</yellow> <gray>»</gray> <red>To EssentialsX and CMI users: <aqua><br>disable <gold>/msg, /reply, /broadcast, /ignore, etc</gold> commands inside CMI and EssentialsX<br>Or RedisChat commands <red>will <u>not</u> work</red>!!!</aqua>", "public", 5, 300));
+    public List<Announcement> announcer = List.of(new Announcement("default", "<yellow>RedisChat</yellow> <gray>»</gray> <red>To EssentialsX and CMI users: <aqua><br>disable <gold>/msg, /reply, /broadcast, /ignore, etc</gold> commands inside CMI and EssentialsX<br>Or RedisChat commands <red>will <u>not</u> work</red>!!!</aqua>", "public", 300));
 
     @Comment({"Title of the ShowInventory GUI"})
     public String inv_title = "Inventory of %player%";
@@ -378,8 +378,7 @@ public final class Config implements ConfigValidator {
             String announcementName,
             String message,
             String channelName,
-            int delay,
-            int interval) {
+            int delay) {
     }
 
     public record SpicordSettings(
