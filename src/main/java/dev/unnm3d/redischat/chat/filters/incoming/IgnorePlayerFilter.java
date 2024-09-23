@@ -1,5 +1,6 @@
 package dev.unnm3d.redischat.chat.filters.incoming;
 
+import de.exlll.configlib.Comment;
 import de.exlll.configlib.Configuration;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.api.objects.AudienceType;
@@ -12,6 +13,7 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.Set;
 
@@ -27,12 +29,20 @@ public class IgnorePlayerFilter extends AbstractFilter<IgnorePlayerFilter.Ignore
                 .isPlayerIgnored(receiver.getName(), chatMessage.getSender().getName());
 
 
-        if (isIgnored && (chatMessage.getReceiver().isPlayer() || filterSettings.ignorePublicMessages)) {
-            if (filterSettings.sendWarnWhenIgnoring) {
+        if (isIgnored && (chatMessage.getReceiver().isPlayer() || filterSettings.ignoreChannelMessages)) {
+
+            if (filterSettings.sendWarnWhenIgnoring &&
+                    Arrays.stream(previousMessages)
+                            .filter(message -> message.getSender().getName().equals(chatMessage.getSender().getName()))
+                            .filter(message -> message.getReceiver().getName().equals(chatMessage.getReceiver().getName()))
+                            .findAny()
+                            .isEmpty()) {
+
                 return new FilterResult(chatMessage, true,
-                        Optional.of(MiniMessage.miniMessage().deserialize(RedisChat.getInstance().messages.ignored_player
+                        Optional.of(MiniMessage.miniMessage().deserialize(RedisChat.getInstance().messages.ignored_player_receiver
                                 .replace("%player%", chatMessage.getSender().getName()))));
             }
+
             return new FilterResult(chatMessage, true);
         }
 
@@ -42,13 +52,16 @@ public class IgnorePlayerFilter extends AbstractFilter<IgnorePlayerFilter.Ignore
     @Configuration
     @Getter
     public static class IgnorePlayerFilterProperties extends FiltersConfig.FilterSettings {
-        private boolean ignorePublicMessages;
+        private boolean ignoreChannelMessages;
         private boolean sendWarnWhenIgnoring;
+        @Comment("Do not send more than one warning message per player every x messages ignored")
+        private int warnAgainMessages;
 
         public IgnorePlayerFilterProperties() {
             super(true, 4, Set.of(AudienceType.PLAYER, AudienceType.CHANNEL), Set.of());
-            this.ignorePublicMessages = true;
+            this.ignoreChannelMessages = true;
             this.sendWarnWhenIgnoring = true;
+            this.warnAgainMessages = 5;
         }
     }
 }

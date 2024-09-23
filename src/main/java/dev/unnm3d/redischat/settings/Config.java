@@ -51,13 +51,9 @@ public final class Config implements ConfigValidator {
     public String webEditorUrl = "https://webui.advntr.dev/";
     @Comment("Enables /rmail /mail and the whole feature")
     public boolean enableMails = true;
-    @Comment("Register tag integrations (Like Oraxen Integration which is internal)")
-    public boolean useTagsIntegration = false;
     @Comment({"Use RedisChat for join and quit messages",
             "The quit message will be delayed because it might be a early reconnection to one of the servers using RedisChat"})
     public boolean enableQuitJoinMessages = true;
-    @Comment("Re-enables bukkit color glitches for colored placeholders")
-    public boolean enablePlaceholderGlitch = true;
     @Comment("If true, RedisChat will log public chat messages")
     public boolean chatLogging = false;
     @Comment({"Here you can decide your chat format", "Permission format is overridden on descending order", "(if a player has default and vip, if default is the first element, vip will be ignored)"})
@@ -207,8 +203,9 @@ public final class Config implements ConfigValidator {
     public String first_join_message = "<red>Welcome to the server, <white>%player_name%<red>!";
     @Comment("This message will be sent to all players when the chat is cleared")
     public String clear_chat_message = "<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared<br><br><br><br><br><br><br><br><br><br>Chat cleared";
+
     @Comment("How many messages to keep in the chat history for each player and for each audience")
-    public int last_message_count = 5;
+    public int last_message_keep = 3;
     @Comment("Here you can set the number of messages that a player can send without being rate limited inside public chat")
     public int rate_limit = 3;
     @Comment("Here you can set the time in seconds that a player can send the number of messages specified in rate_limit inside public chat")
@@ -225,6 +222,7 @@ public final class Config implements ConfigValidator {
             "The number is the distance in blocks"
     })
     public int publicProximityDistance = -1;
+
     @Comment("Rejoin delay in milliseconds")
     public int rejoinSendDelay = 500;
     @Comment("Quit delay in milliseconds")
@@ -272,6 +270,11 @@ public final class Config implements ConfigValidator {
             "rbroadcastraw", List.of("bcraw", "broadcastraw"),
             "announcer", List.of("announce")
     ));
+
+    @Comment("Re-enables bukkit color glitches for colored placeholders")
+    public boolean enablePlaceholderGlitch = true;
+    @Comment("Register tag integrations (Like Oraxen Integration which is internal)")
+    public boolean useTagsIntegration = false;
     @Comment({"The priority of the listening event (LOWEST, LOW, NORMAL, HIGH, HIGHEST, MONITOR)",
             "adjust this if other plugins are interfering with RedisChat"})
     public String listeningPriority = "NORMAL";

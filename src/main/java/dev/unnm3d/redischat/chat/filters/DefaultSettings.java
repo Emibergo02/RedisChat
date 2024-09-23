@@ -19,7 +19,7 @@ public enum DefaultSettings {
     PRIVATE_OUT(new FiltersConfig.FilterSettings(true, 3, Set.of(AudienceType.PLAYER), Set.of())),
     CAPS(new CapsFilter.CapsFilterProperties()),
     DUPLICATE(new DuplicateFilter.DuplicateFilterProperties()),
-    IGNORE(new FiltersConfig.FilterSettings(true, 4, Set.of(AudienceType.CHANNEL, AudienceType.PLAYER), Set.of())),
+    IGNORE(new FiltersConfig.FilterSettings(true, 4, Set.of(AudienceType.PLAYER), Set.of())),
     MUTED_CHANNEL(new FiltersConfig.FilterSettings(true, 5, Set.of(AudienceType.CHANNEL), Set.of())),
     TAGS(new FiltersConfig.FilterSettings(true, 9, Set.of(), Set.of())),
     WORDS(new WordBlacklistFilter.WordBlacklistFilterProperties()),

@@ -179,12 +179,15 @@ public class MuteManager {
      */
     public boolean isPlayerIgnored(String ignorer, String ignored) {
         if(ignored.equals(KnownChatEntities.SERVER_SENDER.toString())) return false;
+        if(ignorer.equals(ignored)) return false;
+
         final Set<String> mutedPlayers = playersMutedForPlayers.get(ignorer);
         boolean isIgnored = mutedPlayers != null && (
                 mutedPlayers.contains(ignored) || mutedPlayers.contains(KnownChatEntities.ALL_PLAYERS.toString())
         );
         // If the player is in the whitelist, the result is inverted
-        return isWhitelistEnabledPlayer(ignorer) != isIgnored;
+        if(isWhitelistEnabledPlayer(ignorer)) return !isIgnored;
+        return isIgnored;
     }
 
     public boolean isWhitelistEnabledPlayer(String playerName) {

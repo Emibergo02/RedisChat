@@ -3,12 +3,11 @@ package dev.unnm3d.redischat.chat.filters;
 import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.api.events.FilterEvent;
+import dev.unnm3d.redischat.api.objects.Channel;
+import dev.unnm3d.redischat.api.objects.ChatMessage;
 import dev.unnm3d.redischat.chat.filters.incoming.IgnorePlayerFilter;
 import dev.unnm3d.redischat.chat.filters.incoming.PermissionFilter;
 import dev.unnm3d.redischat.chat.filters.outgoing.*;
-import dev.unnm3d.redischat.api.objects.Channel;
-import dev.unnm3d.redischat.api.objects.ChannelAudience;
-import dev.unnm3d.redischat.api.objects.ChatMessage;
 import dev.unnm3d.redischat.settings.FiltersConfig;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.bukkit.command.CommandSender;
@@ -88,8 +87,8 @@ public class FilterManager {
     public FilterResult filterMessage(@NotNull CommandSender chatEntity, @NotNull ChatMessage message, AbstractFilter.Direction filterType) {
         FilterResult result = new FilterResult(message, false);
         final Queue<ChatMessage> lastMessages = lastMessagesCache.getOrDefault(
-                genKeyIndex(filterType, message.getReceiver(), chatEntity.getName()),
-                new CircularFifoQueue<>(plugin.config.last_message_count));
+                genKeyIndex(filterType, message, chatEntity.getName()),
+                new CircularFifoQueue<>(plugin.config.last_message_keep));
 
         if (plugin.config.debug) {
             plugin.getLogger().info("Starting filtering filterType: " + filterType + " for player: " + chatEntity.getName());
@@ -158,17 +157,20 @@ public class FilterManager {
         }
 
         //Save message to last messages
-        if (result != null && !result.filtered()) {
+        if (result != null) {
             lastMessages.add(message);
-            lastMessagesCache.put(genKeyIndex(filterType, message.getReceiver(), chatEntity.getName()), lastMessages);
+            lastMessagesCache.put(genKeyIndex(filterType, message, chatEntity.getName()), lastMessages);
         }
 
 
         return result;
     }
 
-    private String genKeyIndex(AbstractFilter.Direction direction, ChannelAudience audience, String playerName) {
-        return direction.toString() + playerName + audience.getType().toString() + audience.getName();
+    private String genKeyIndex(AbstractFilter.Direction direction, ChatMessage message, String playerName) {
+        return direction + playerName +
+                (direction == AbstractFilter.Direction.OUTGOING ?
+                        message.getReceiver().getType() + message.getReceiver().getName() :
+                        message.getSender().getType() + message.getSender().getName());
     }
 
 }
