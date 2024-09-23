@@ -178,6 +178,7 @@ public class MuteManager {
      * @return true if the "ignorer" is ignoring the "ignored"
      */
     public boolean isPlayerIgnored(String ignorer, String ignored) {
+        if(ignored.equals(KnownChatEntities.SERVER_SENDER.toString())) return false;
         final Set<String> mutedPlayers = playersMutedForPlayers.get(ignorer);
         boolean isIgnored = mutedPlayers != null && (
                 mutedPlayers.contains(ignored) || mutedPlayers.contains(KnownChatEntities.ALL_PLAYERS.toString())

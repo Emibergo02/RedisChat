@@ -217,6 +217,14 @@ public final class Config implements ConfigValidator {
     public String publicDiscordWebhook = "";
     @Comment("Whether to filter the public chat")
     public boolean isPublicFiltered = true;
+    @Comment({
+            "Proximity chat settings",
+            "Set to -1 to disable proximity chat (normal cross-server chat)",
+            "Set to 0 to make it work for the whole local server",
+            "Set to a positive number to check if a player is in the same server, same world and below the specified distance",
+            "The number is the distance in blocks"
+    })
+    public int publicProximityDistance = -1;
     @Comment("Rejoin delay in milliseconds")
     public int rejoinSendDelay = 500;
     @Comment("Quit delay in milliseconds")

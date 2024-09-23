@@ -50,6 +50,9 @@ commands:
     description: Setchatplaceholder command
     permission: redischat.setchatplaceholder
 permissions:
+  redischat.channelgui:
+    description: Allows to open the /channel GUI
+    default: true
   redischat.chatcolorcommand:
     description: Allows to use the /chatcolor command
     default: op

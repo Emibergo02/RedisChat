@@ -2,11 +2,10 @@ package dev.unnm3d.redischat.chat.filters.incoming;
 
 import de.exlll.configlib.Configuration;
 import dev.unnm3d.redischat.RedisChat;
-import dev.unnm3d.redischat.api.objects.KnownChatEntities;
-import dev.unnm3d.redischat.chat.filters.AbstractFilter;
-import dev.unnm3d.redischat.chat.filters.FilterResult;
 import dev.unnm3d.redischat.api.objects.AudienceType;
 import dev.unnm3d.redischat.api.objects.ChatMessage;
+import dev.unnm3d.redischat.chat.filters.AbstractFilter;
+import dev.unnm3d.redischat.chat.filters.FilterResult;
 import dev.unnm3d.redischat.settings.FiltersConfig;
 import lombok.Getter;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -29,7 +28,7 @@ public class IgnorePlayerFilter extends AbstractFilter<IgnorePlayerFilter.Ignore
 
 
         if (isIgnored && (chatMessage.getReceiver().isPlayer() || filterSettings.ignorePublicMessages)) {
-            if(filterSettings.sendWarnWhenIgnoring) {
+            if (filterSettings.sendWarnWhenIgnoring) {
                 return new FilterResult(chatMessage, true,
                         Optional.of(MiniMessage.miniMessage().deserialize(RedisChat.getInstance().messages.ignored_player
                                 .replace("%player%", chatMessage.getSender().getName()))));
@@ -47,7 +46,7 @@ public class IgnorePlayerFilter extends AbstractFilter<IgnorePlayerFilter.Ignore
         private boolean sendWarnWhenIgnoring;
 
         public IgnorePlayerFilterProperties() {
-            super(true, 4, Set.of(AudienceType.PLAYER,AudienceType.CHANNEL), Set.of(KnownChatEntities.GENERAL_CHANNEL.toString()));
+            super(true, 4, Set.of(AudienceType.PLAYER, AudienceType.CHANNEL), Set.of());
             this.ignorePublicMessages = true;
             this.sendWarnWhenIgnoring = true;
         }

@@ -7,17 +7,13 @@ import dev.unnm3d.redischat.api.DataManager;
 import dev.unnm3d.redischat.api.RedisChatAPI;
 import dev.unnm3d.redischat.api.VanishIntegration;
 import dev.unnm3d.redischat.api.events.AsyncRedisChatMessageEvent;
+import dev.unnm3d.redischat.api.objects.*;
 import dev.unnm3d.redischat.channels.gui.ChannelGUI;
 import dev.unnm3d.redischat.chat.ChatFormat;
 import dev.unnm3d.redischat.chat.ComponentProvider;
-import dev.unnm3d.redischat.api.objects.KnownChatEntities;
 import dev.unnm3d.redischat.chat.filters.AbstractFilter;
 import dev.unnm3d.redischat.chat.filters.FilterManager;
 import dev.unnm3d.redischat.chat.filters.FilterResult;
-import dev.unnm3d.redischat.api.objects.AudienceType;
-import dev.unnm3d.redischat.api.objects.Channel;
-import dev.unnm3d.redischat.api.objects.ChannelAudience;
-import dev.unnm3d.redischat.api.objects.ChatMessage;
 import dev.unnm3d.redischat.mail.MailGUIManager;
 import dev.unnm3d.redischat.moderation.MuteManager;
 import lombok.Getter;
@@ -196,7 +192,7 @@ public class ChannelManager extends RedisChatAPI {
         chatMessage.setFormat(MiniMessage.miniMessage().serialize(event.getFormat()));
         chatMessage.setContent(MiniMessage.miniMessage().serialize(event.getContent()));
 
-        if (currentChannel.get().getProximityDistance() > 0) {// Send to local server
+        if (currentChannel.get().getProximityDistance() >= 0) {// Send to local server
             sendGenericChat(chatMessage);
             return;
         }
@@ -430,6 +426,7 @@ public class ChannelManager extends RedisChatAPI {
                 .format(plugin.config.defaultFormat.format())
                 .rateLimit(plugin.config.rate_limit)
                 .rateLimitPeriod(plugin.config.rate_limit_time_seconds)
+                .proximityDistance(plugin.config.publicProximityDistance)
                 .discordWebhook(plugin.config.publicDiscordWebhook)
                 .filtered(plugin.config.isPublicFiltered)
                 .shownByDefault(true)
@@ -463,7 +460,7 @@ public class ChannelManager extends RedisChatAPI {
     }
 
     public void updateActiveChannel(@NotNull String playerName, @Nullable String channelName) {
-        if(plugin.config.debug)
+        if (plugin.config.debug)
             plugin.getLogger().info("Local active channel for " + playerName + " is now " + channelName);
         if (channelName == null) {
             activePlayerChannels.remove(playerName);

@@ -27,6 +27,10 @@ public class ChannelCommand {
                 .withSubcommand(getListSubCommand())
                 .withSubcommand(getDiscordLinkSubCommand())
                 .executesPlayer((sender, args) -> {
+                    if(!sender.hasPermission(Permissions.CHANNEL_GUI.getPermission())){
+                        plugin.messages.sendMessage(sender, plugin.messages.noPermission);
+                        return;
+                    }
                     try {
                         plugin.getChannelManager().openChannelsGUI(sender);
                     } catch (Exception e) {

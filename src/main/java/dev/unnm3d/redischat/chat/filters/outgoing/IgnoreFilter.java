@@ -22,7 +22,7 @@ public class IgnoreFilter extends AbstractFilter<FiltersConfig.FilterSettings> {
 
     @Override
     public FilterResult applyWithPrevious(CommandSender sender, @NotNull ChatMessage message, ChatMessage... previousMessages) {
-        if (plugin.getChannelManager().getMuteManager().isPlayerIgnored(sender.getName(), message.getSender().getName())) {
+        if (plugin.getChannelManager().getMuteManager().isPlayerIgnored(sender.getName(), message.getReceiver().getName())) {
             return new FilterResult(message, true, Optional.of(
                     plugin.getComponentProvider().parse(sender, plugin.messages.ignored_player,
                             true, false, false)));
