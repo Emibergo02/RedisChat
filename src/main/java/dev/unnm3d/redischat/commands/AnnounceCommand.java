@@ -9,6 +9,7 @@ import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.settings.Config;
 import dev.unnm3d.redischat.task.AnnouncerManager;
+import dev.unnm3d.redischat.task.AnnouncerTask;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
@@ -39,11 +40,13 @@ public class AnnounceCommand {
                             plugin.messages.sendMessage(sender, plugin.messages.action_completed_successfully);
                         }
                         case "start" -> {
-                            if (announcerManager.startAnnounce(announceName) == null) {
+                            final AnnouncerTask at = announcerManager.startAnnounce(announceName);
+                            if (at == null) {
                                 plugin.messages.sendMessage(sender, plugin.messages.announce_not_found.replace("%name%", announceName));
                                 return;
                             }
                             plugin.messages.sendMessage(sender, plugin.messages.action_completed_successfully);
+                            at.run();
                         }
                         default -> plugin.messages.sendMessage(sender, plugin.messages.missing_arguments);
                     }

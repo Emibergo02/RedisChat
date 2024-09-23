@@ -752,7 +752,6 @@ public abstract class SQLDataManager extends PluginMessageManager implements Dat
                 try (PreparedStatement statement = connection.prepareStatement("""
                         select player_name from whitelist_enabled_players;""")) {
 
-                    statement.setBoolean(1, true);
                     final ResultSet resultSet = statement.executeQuery();
                     final Set<String> players = new HashSet<>();
                     while (resultSet.next()) {

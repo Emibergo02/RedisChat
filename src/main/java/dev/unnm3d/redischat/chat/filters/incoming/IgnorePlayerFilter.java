@@ -30,7 +30,7 @@ public class IgnorePlayerFilter extends AbstractFilter<IgnorePlayerFilter.Ignore
         if (isIgnored && (chatMessage.getReceiver().isPlayer() || filterSettings.ignorePublicMessages)) {
             if (filterSettings.sendWarnWhenIgnoring) {
                 return new FilterResult(chatMessage, true,
-                        Optional.of(MiniMessage.miniMessage().deserialize(RedisChat.getInstance().messages.ignored_player
+                        Optional.of(MiniMessage.miniMessage().deserialize(RedisChat.getInstance().messages.ignored_player_receiver
                                 .replace("%player%", chatMessage.getSender().getName()))));
             }
             return new FilterResult(chatMessage, true);
