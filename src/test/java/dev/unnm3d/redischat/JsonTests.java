@@ -24,15 +24,15 @@ public class JsonTests {
                 .rateLimit(10)
                 .rateLimitPeriod(1000)
                 .discordWebhook("webhook")
-                .proximityDistance(-1)
+                .proximityDistance(50)
                 .filtered(false)
                 .permission("perm1")
                 .notificationSound("sound")
                 .build();
         Channel nc2 = gson.fromJson(gson.toJson(nc), Channel.class);
         assertEquals(nc, nc2);
-        System.out.println(nc);
-        System.out.println(nc2);
+        System.out.println(nc.getProximityDistance());
+        System.out.println(nc2.getProximityDistance());
     }
 
     @Test

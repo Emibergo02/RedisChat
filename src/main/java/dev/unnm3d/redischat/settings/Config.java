@@ -259,7 +259,7 @@ public final class Config implements ConfigValidator {
     public boolean interactiveChatNostalgia = true;
     @Comment("Command aliases (works for msg, mail, reply, staffchat and channel)")
     public Map<String, List<String>> commandAliases = new HashMap<>(Map.of(
-            "msg", List.of("rmsg", "whisper", "msg", "pm", "w"),
+            "msg", List.of("rmsg", "whisper", "tell", "w"),
             "rmail", List.of("mail", "mails"),
             "reply", List.of("r"),
             "channel", List.of("ch", "channels"),

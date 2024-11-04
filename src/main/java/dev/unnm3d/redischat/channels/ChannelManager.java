@@ -20,7 +20,6 @@ import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
-import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -137,23 +136,17 @@ public class ChannelManager extends RedisChatAPI {
     /**
      * Send a message to a specific ChannelAudience
      *
-     * @param player   The player that is sending the message
-     * @param receiver The receiver audience of the message
-     * @param message  The message to be sent
+     * @param player         The player that is sending the message
+     * @param currentChannel The receiver channel audience of the message
+     * @param message        The message to be sent
      */
-    public void outgoingMessage(CommandSender player, ChannelAudience receiver, @NotNull String message) {
-        //Get channel or public channel by default
-        final Optional<Channel> currentChannel = getChannel(receiver.getName(), player);
-        if (currentChannel.isEmpty()) {
-            plugin.getLogger().warning("Channel not found for: " + receiver.getName());
-            return;
-        }
+    public void outgoingMessage(CommandSender player, Channel currentChannel, @NotNull String message) {
 
         ChatMessage chatMessage = new ChatMessage(
                 new ChannelAudience(AudienceType.PLAYER, player.getName()),
-                currentChannel.get().getFormat(),
+                currentChannel.getFormat(),
                 message,
-                receiver
+                currentChannel
         );
 
         //Filter and send filter message if present
@@ -192,7 +185,10 @@ public class ChannelManager extends RedisChatAPI {
         chatMessage.setFormat(MiniMessage.miniMessage().serialize(event.getFormat()));
         chatMessage.setContent(MiniMessage.miniMessage().serialize(event.getContent()));
 
-        if (currentChannel.get().getProximityDistance() >= 0) {// Send to local server
+        if (!chatMessage.getSender().isDiscord())
+            plugin.getDiscordHook().sendDiscordMessage(chatMessage);
+
+        if (currentChannel.getProximityDistance() >= 0) {// Send to local server
             sendGenericChat(chatMessage);
             return;
         }
@@ -210,7 +206,7 @@ public class ChannelManager extends RedisChatAPI {
     public void outgoingMessage(CommandSender player, @NotNull final String finalMessage) {
         CompletableFuture.runAsync(() -> {
             String channelName = plugin.getChannelManager().getActiveChannel(player.getName());
-            ChannelAudience audience;
+            Channel audience;
             String message = finalMessage;
 
             if (plugin.config.enableStaffChat &&
@@ -222,12 +218,12 @@ public class ChannelManager extends RedisChatAPI {
             }
 
             if (channelName == null) {
-                audience = new ChannelAudience(KnownChatEntities.GENERAL_CHANNEL.toString());
+                audience = getPublicChannel(player);
             } else if (channelName.equals(KnownChatEntities.VOID_CHAT.toString())) {
                 getComponentProvider().sendMessage(player, plugin.messages.channelNoPermission);
                 return;
             } else {
-                audience = new ChannelAudience(channelName);
+                audience = getChannel(channelName, player).orElse(getPublicChannel(player));
             }
 
             if (plugin.config.debug) {
@@ -317,8 +313,6 @@ public class ChannelManager extends RedisChatAPI {
         getComponentProvider().logComponent(miniMessage.deserialize(
                 chatMessage.getFormat().replace("{message}", chatMessage.getContent())));
 
-        if (!chatMessage.getSender().isDiscord())
-            plugin.getDiscordHook().sendDiscordMessage(chatMessage);
 
         for (Player recipient : recipients) {
             final FilterResult result = filterManager.filterMessage(recipient, chatMessage, AbstractFilter.Direction.INCOMING);
@@ -374,10 +368,12 @@ public class ChannelManager extends RedisChatAPI {
 
     private boolean checkProximity(Player recipient, ChatMessage chatMessage) {
         if (chatMessage.getReceiver().getProximityDistance() <= 0) return true;
-        final Player sender = Bukkit.getPlayer(chatMessage.getSender().getName());
-        if (sender == null) return false;
-        if (!sender.getWorld().equals(recipient.getWorld())) return false;
-        return !(sender.getLocation().distance(recipient.getLocation()) > chatMessage.getReceiver().getProximityDistance());
+        final Optional<? extends Player> sender = plugin.getServer().getOnlinePlayers().stream()
+                .filter(p -> p.getName().equals(chatMessage.getSender().getName()))
+                .findAny();
+        if (sender.isEmpty()) return false;
+        if (!sender.get().getWorld().equals(recipient.getWorld())) return false;
+        return sender.get().getLocation().distance(recipient.getLocation()) < chatMessage.getReceiver().getProximityDistance();
     }
 
     @Override

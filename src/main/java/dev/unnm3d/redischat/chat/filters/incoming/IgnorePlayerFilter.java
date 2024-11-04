@@ -1,6 +1,5 @@
 package dev.unnm3d.redischat.chat.filters.incoming;
 
-import de.exlll.configlib.Comment;
 import de.exlll.configlib.Configuration;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.api.objects.AudienceType;
@@ -54,14 +53,12 @@ public class IgnorePlayerFilter extends AbstractFilter<IgnorePlayerFilter.Ignore
     public static class IgnorePlayerFilterProperties extends FiltersConfig.FilterSettings {
         private boolean ignoreChannelMessages;
         private boolean sendWarnWhenIgnoring;
-        @Comment("Do not send more than one warning message per player every x messages ignored")
-        private int warnAgainMessages;
+
 
         public IgnorePlayerFilterProperties() {
             super(true, 4, Set.of(AudienceType.PLAYER, AudienceType.CHANNEL), Set.of());
             this.ignoreChannelMessages = true;
             this.sendWarnWhenIgnoring = true;
-            this.warnAgainMessages = 5;
         }
     }
 }

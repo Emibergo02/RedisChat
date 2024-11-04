@@ -12,7 +12,9 @@ import dev.jorel.commandapi.CommandAPICommand;
 import dev.unnm3d.redischat.api.DataManager;
 import dev.unnm3d.redischat.channels.ChannelCommand;
 import dev.unnm3d.redischat.channels.ChannelManager;
-import dev.unnm3d.redischat.chat.*;
+import dev.unnm3d.redischat.chat.ComponentProvider;
+import dev.unnm3d.redischat.chat.PlaceholderManager;
+import dev.unnm3d.redischat.chat.RedisChatPAPI;
 import dev.unnm3d.redischat.chat.listeners.ChatListenerWithPriority;
 import dev.unnm3d.redischat.chat.listeners.JoinQuitManager;
 import dev.unnm3d.redischat.chat.listeners.UtilsListener;
@@ -374,6 +376,10 @@ public final class RedisChat extends JavaPlugin {
         }
 
         CommandAPI.unregister(commandAPICommand.getName(), true);
+        for (String alias : commandAPICommand.getAliases()) {
+            if (alias.equals(commandAPICommand.getName())) continue;
+            CommandAPI.unregister(alias, true);
+        }
         commandAPICommand.register();
         registeredCommands.add(commandAPICommand);
         getLogger().info("Command " + commandAPICommand.getName() + " registered on CommandAPI!");

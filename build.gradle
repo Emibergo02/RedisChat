@@ -6,7 +6,7 @@ plugins {
 
 
 group = 'dev.unnm3d'
-version = '5.4.2'
+version = '5.4.5'
 
 
 repositories {
@@ -36,7 +36,7 @@ dependencies {
     implementation 'xyz.xenondevs.invui:inventory-access-r19:1.35'
     implementation 'xyz.xenondevs.invui:inventory-access-r20:1.35'
     implementation 'xyz.xenondevs.invui:inventory-access-r21:1.35'
-    implementation 'dev.jorel:commandapi-bukkit-shade:9.5.3'
+    implementation 'dev.jorel:commandapi-bukkit-shade:9.6.1'
     implementation 'com.github.Anon8281:UniversalScheduler:0.1.6'
 
 
