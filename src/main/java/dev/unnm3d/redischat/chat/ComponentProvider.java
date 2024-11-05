@@ -263,12 +263,7 @@ public class ComponentProvider {
 
             final ItemMeta itemMeta = p.getInventory().getItemInMainHand().getItemMeta();
 
-            if (p.getInventory().getItemInMainHand().getType().isAir()) {
-                toParseItemComponent = toParseItemComponent.replaceText(rTextBuilder ->
-                        rTextBuilder.matchLiteral("%item_name%")
-                                .replacement("Nothing")
-                );
-            } else if (itemMeta != null && itemNameProvider.hasItemName(itemMeta)) {
+            if (itemMeta != null && itemNameProvider.hasItemName(itemMeta)) {
                 toParseItemComponent = toParseItemComponent.replaceText(rTextBuilder ->
                         rTextBuilder.matchLiteral("%item_name%")
                                 .replacement(LegacyComponentSerializer.legacySection()
