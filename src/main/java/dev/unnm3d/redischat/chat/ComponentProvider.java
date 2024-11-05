@@ -16,6 +16,7 @@ import net.kyori.adventure.text.minimessage.tag.standard.StandardTags;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -263,12 +264,7 @@ public class ComponentProvider {
 
             final ItemMeta itemMeta = p.getInventory().getItemInMainHand().getItemMeta();
 
-            if (p.getInventory().getItemInMainHand().getType().isAir()) {
-                toParseItemComponent = toParseItemComponent.replaceText(rTextBuilder ->
-                        rTextBuilder.matchLiteral("%item_name%")
-                                .replacement("Nothing")
-                );
-            } else if (itemMeta != null && itemNameProvider.hasItemName(itemMeta)) {
+            if (itemMeta != null && itemNameProvider.hasItemName(itemMeta)) {
                 toParseItemComponent = toParseItemComponent.replaceText(rTextBuilder ->
                         rTextBuilder.matchLiteral("%item_name%")
                                 .replacement(LegacyComponentSerializer.legacySection()
