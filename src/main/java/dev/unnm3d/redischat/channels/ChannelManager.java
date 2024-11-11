@@ -292,8 +292,16 @@ public class ChannelManager extends RedisChatAPI {
                         .replace("%receiver%", receiverName)
                         .replace("%sender%", sender.getName()));
 
-        privateChatMessage.setFormat(MiniMessage.miniMessage().serialize(receiverFormatComponent));
-        privateChatMessage.setContent(MiniMessage.miniMessage().serialize(contentComponent));
+        //Call event and check cancellation
+        final AsyncRedisChatMessageEvent event = new AsyncRedisChatMessageEvent(sender,
+                privateChatMessage.getReceiver(),
+                receiverFormatComponent,
+                contentComponent);
+        plugin.getServer().getPluginManager().callEvent(event);
+        if (event.isCancelled()) return;
+
+        privateChatMessage.setFormat(MiniMessage.miniMessage().serialize(event.getFormat()));
+        privateChatMessage.setContent(MiniMessage.miniMessage().serialize(event.getContent()));
 
         //Send the message to the receiver, the receiver format will be modified on the incoming filter
         plugin.getDataManager().sendChatMessage(privateChatMessage);

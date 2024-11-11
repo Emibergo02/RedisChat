@@ -15,6 +15,7 @@ public final class Messages {
 
     public String player_not_online = "<yellow>RedisChat</yellow> <gray>»</gray> <red>The player %player% is not online</red>";
     public String cannot_message_yourself = "<yellow>RedisChat</yellow> <gray>»</gray> <red>You cannot message yourself</red>";
+    public String cannot_ignore_yourself = "<yellow>RedisChat</yellow> <gray>»</gray> <red>You cannot ignore yourself</red>";
     public String missing_arguments = "<yellow>RedisChat</yellow> <gray>»</gray> <red>Missing arguments</red>";
     public String empty_message = "<yellow>RedisChat</yellow> <gray>»</gray> <red>Message cannot be empty</red>";
     public String action_completed_successfully = "<yellow>RedisChat</yellow> <gray>»</gray> <green>Action completed successfully</green>";
