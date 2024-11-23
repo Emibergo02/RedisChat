@@ -330,6 +330,11 @@ public class ChannelManager extends RedisChatAPI {
                 continue;
             }
 
+            //If proximity is enabled, check if player is in range
+            if (!checkProximity(recipient, chatMessage)) {
+                continue;
+            }
+
             //Channel sound
             final Channel soundChannel = getRegisteredChannel(chatMessage.getReceiver().getName()).orElse(getPublicChannel(null));
             if (soundChannel.getNotificationSound() != null) {
@@ -340,18 +345,18 @@ public class ChannelManager extends RedisChatAPI {
             if (getComponentProvider().purgeTags(chatMessage.getContent()).contains(recipient.getName())) {
                 if (!plugin.config.mentionSound.isEmpty()) {
                     final String[] split = plugin.config.mentionSound.split(":");
-                    recipient.playSound(
-                            recipient.getLocation(),
-                            Sound.valueOf(split[0]).getKey().toString(),
-                            Float.parseFloat(split[1]),
-                            Float.parseFloat(split[2]));
+                    recipient.playSound(recipient.getLocation(), Sound.valueOf(split[0]).getKey().toString(),
+                            Float.parseFloat(split[1]), Float.parseFloat(split[2]));
                 }
             }
 
-
-            //If proximity is enabled, check if player is in range
-            if (!checkProximity(recipient, chatMessage)) {
-                continue;
+            //Private message sound
+            if (chatMessage.getReceiver().isPlayer()) {
+                if (!plugin.config.privateMessageSound.isEmpty()) {
+                    final String[] split = plugin.config.privateMessageSound.split(":");
+                    recipient.playSound(recipient.getLocation(), Sound.valueOf(split[0]).getKey().toString(),
+                            Float.parseFloat(split[1]), Float.parseFloat(split[2]));
+                }
             }
 
             getComponentProvider().sendComponentOrCache(recipient,

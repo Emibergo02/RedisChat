@@ -30,6 +30,7 @@ public enum Permissions {
     CHANNEL_PREFIX("redischat.channel."),
     CHANNEL_PUBLIC("redischat.channel.public"),
     CHANNEL_CREATE("redischat.createchannel"),
+    CHANNEL_INFO("redischat.infochannel"),
     CHANNEL_GUI("redischat.channelgui"),
     CHANNEL_CHANGE_DISPLAYNAME("redischat.changedisplayname"),
     CHANNEL_DELETE("redischat.deletechannel"),

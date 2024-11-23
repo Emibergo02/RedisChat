@@ -231,6 +231,8 @@ public final class Config implements ConfigValidator {
             "You can find the list of sounds here: https://jd.papermc.io/paper/1.20/org/bukkit/Sound.html",
             "Leave it empty \"\" to disable the sound"})
     public String mentionSound = "ENTITY_EXPERIENCE_ORB_PICKUP:1:1";
+    @Comment("The format is the same as the mention sound, leave empty for no sound")
+    public String privateMessageSound = "";
     @Comment("Enable or disable the staff chat")
     public boolean enableStaffChat = true;
     @Comment("Enable or disable the chat color GUI")
@@ -245,7 +247,7 @@ public final class Config implements ConfigValidator {
     public String staffChatDiscordWebhook = "";
     public String inventoryFormat = "<click:run_command:%command%><gold>[%player%'s Inventory]</gold></click>";
     public String itemFormat = "<click:run_command:%command%>[%item_name%]</click>";
-    @Comment({"Only 1.20.6+","Whether to use the item name or the display name when parsing the <item> tag"})
+    @Comment({"Only 1.20.6+", "Whether to use the item name or the display name when parsing the <item> tag"})
     public boolean useItemName = true;
     public String enderChestFormat = "<click:run_command:%command%><light_purple>[%player%'s EnderChest]</light_purple></click>";
 

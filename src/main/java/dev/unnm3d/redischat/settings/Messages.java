@@ -51,23 +51,23 @@ public final class Messages {
     public String mailReceived = "<yellow>RedisChat</yellow> <gray>»</gray> <aqua>You got mail from %sender%! Object: %title%</aqua>";
     public String privateMailHeader =
             """
-            <dark_gray>Sender: %sender%
-            Object:
-            %title%
-            Date:
-            %timestamp%</dark_gray>
-            <hover:show_text:'Reply to the sender'><click:run_command:'/rmail send %sender% Re: %title%'><green>[Reply]</green></click></hover> <hover:show_text:'Delete the mail from private mail section'><click:run_command:'/rmail delete %mail_id%'><red>[Delete]</red></click></hover> <hover:show_text:'Mark the mail as unread'><click:run_command:'/rmail unread %mail_id% private'><dark_aqua>[Unread]</dark_aqua></click></hover>
-            <dark_gray><st>-------------------</st>
-            """;
+                    <dark_gray>Sender: %sender%
+                    Object:
+                    %title%
+                    Date:
+                    %timestamp%</dark_gray>
+                    <hover:show_text:'Reply to the sender'><click:run_command:'/rmail send %sender% Re: %title%'><green>[Reply]</green></click></hover> <hover:show_text:'Delete the mail from private mail section'><click:run_command:'/rmail delete %mail_id%'><red>[Delete]</red></click></hover> <hover:show_text:'Mark the mail as unread'><click:run_command:'/rmail unread %mail_id% private'><dark_aqua>[Unread]</dark_aqua></click></hover>
+                    <dark_gray><st>-------------------</st>
+                    """;
     public String publicMailHeader =
             """
-            <dark_gray>Object:
-            %title%
-            <hover:show_text:'Mark the mail as unread'><click:run_command:'/rmail unread %mail_id% public'><dark_aqua>[Unread]</dark_aqua></click></hover>
-            <color:dark_gray><st>-------------------</st>
-            """;
-    public String mailItemDisplayName="<yellow>%title%";
-    public List<String> mailItemLore= List.of(
+                    <dark_gray>Object:
+                    %title%
+                    <hover:show_text:'Mark the mail as unread'><click:run_command:'/rmail unread %mail_id% public'><dark_aqua>[Unread]</dark_aqua></click></hover>
+                    <color:dark_gray><st>-------------------</st>
+                    """;
+    public String mailItemDisplayName = "<yellow>%title%";
+    public List<String> mailItemLore = List.of(
             "<dark_aqua>Sender: %sender%",
             "<aqua>Date: %timestamp%",
             "<dark_gray>%content%"
@@ -101,11 +101,20 @@ public final class Messages {
     public String ignored_player_receiver = "<click:run_command:'/ignore list'><hover:show_text:'Click to see ignored players'><color:#545454>Ignored message from %player%</color></hover></click>";
     public String ignored_player_sender = "<click:run_command:'/ignore list'><color:#545454>You are ignoring this player, Click to see ignored players</color></click>";
     public String invalid_color = "<yellow>RedisChat</yellow> <gray>»</gray> <red>Invalid color!</red>";
-    public String color_set= "<yellow>RedisChat</yellow> <gray>»</gray> <green>You successfully set your chat color!</green>";
-    public String placeholder_set= "<yellow>RedisChat</yellow> <gray>»</gray> <green>You successfully set %redischat_%placeholder%% to \"%value%\" for player %player%!</green>";
-    public String placeholder_deleted= "<yellow>RedisChat</yellow> <gray>»</gray> <red>You successfully deleted %redischat_%placeholder%% for player %player%!</red>";
+    public String color_set = "<yellow>RedisChat</yellow> <gray>»</gray> <green>You successfully set your chat color!</green>";
+    public String placeholder_set = "<yellow>RedisChat</yellow> <gray>»</gray> <green>You successfully set %redischat_%placeholder%% to \"%value%\" for player %player%!</green>";
+    public String placeholder_deleted = "<yellow>RedisChat</yellow> <gray>»</gray> <red>You successfully deleted %redischat_%placeholder%% for player %player%!</red>";
     public String duplicate_message = "<red>You can't send the same message!</red>";
     public String configuration_parameter = "<red>You should configure the parameter %parameter% in the configuration file!</red>";
+    public String channelInfo = "<yellow>RedisChat</yellow> <gray>»</gray> <aqua>Channel %channel%<br>" +
+            "Display name: %displayname%<br>" +
+            "Rate limit: %rate_limit%<br>" +
+            "Rate limit period: %rate_limit_period%<br>" +
+            "Proximity distance: %proximity_distance%<br>" +
+            "Shown by default: %shown_by_default%<br>" +
+            "Permission required: %permission_required%<br>" +
+            "Discord webhook: %discord_webhook%<br>";
+
 
     public void sendMessage(CommandSender sender, String message) {
         RedisChat.getInstance().getComponentProvider().sendMessage(sender, MiniMessage.miniMessage().deserialize(message));

@@ -20,6 +20,7 @@ public class ChannelCommand {
         return new CommandAPICommand("channel")
                 .withAliases(plugin.config.getCommandAliases("channel"))
                 .withSubcommand(getCreateSubCommand())
+                .withSubcommand(getInfoSubCommand())
                 .withSubcommand(getSetDisplayNameCommand())
                 .withSubcommand(getSetFormatSubCommand())
                 .withSubcommand(getDeleteSubCommand())
@@ -36,6 +37,36 @@ public class ChannelCommand {
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
+                });
+    }
+
+    private CommandAPICommand getInfoSubCommand() {
+        return new CommandAPICommand("info")
+                .withPermission(Permissions.CHANNEL_INFO.getPermission())
+                .withArguments(new StringArgument("name")
+                        .replaceSuggestions(ArgumentSuggestions.strings(commandSenderSuggestionInfo ->
+                                plugin.getChannelManager().getRegisteredChannels().keySet().stream()
+                                        .filter(s -> s.toLowerCase().startsWith(commandSenderSuggestionInfo.currentArg()))
+                                        .toArray(String[]::new)
+                        )))
+                .executes((sender, args) -> {
+                    final String channelName = (String) args.get(0);
+                    if (channelName == null) {
+                        plugin.messages.sendMessage(sender, plugin.messages.missing_arguments);
+                        return;
+                    }
+                    plugin.getChannelManager().getChannel(channelName,null).ifPresentOrElse(channel -> {
+                        plugin.messages.sendMessage(sender, plugin.messages.channelInfo
+                                .replace("%channel%", channel.getName())
+                                .replace("%displayname%", channel.getDisplayName())
+                                .replace("%rate_limit%", String.valueOf(channel.getRateLimit()))
+                                .replace("%rate_limit_period%", String.valueOf(channel.getRateLimitPeriod()))
+                                .replace("%proximity_distance%", String.valueOf(channel.getProximityDistance()))
+                                .replace("%discord_webhook%", channel.getDiscordWebhook())
+                                .replace("%shown_by_default%", String.valueOf(channel.isShownByDefault()))
+                                .replace("%permission_required%", String.valueOf(channel.isPermissionEnabled()))
+                        );
+                    }, () -> plugin.messages.sendMessage(sender, plugin.messages.channelNotFound));
                 });
     }
 
