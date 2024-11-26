@@ -143,4 +143,3 @@ publishing {
 }
 
 jar.dependsOn shadowJar
-clean.delete "$rootDir/target"
