@@ -104,10 +104,10 @@ public final class RedisChat extends JavaPlugin {
         CommandAPI.onLoad(new CommandAPIBukkitConfig(this)
                 .usePluginNamespace()
                 .silentLogs(true)
+                .skipReloadDatapacks(true)
                 .shouldHookPaperReload(true)
                 .verboseOutput(false));
     }
-
 
     @Override
     public void onEnable() {
