@@ -8,7 +8,6 @@ import java.lang.reflect.Method;
 
 public class ItemNameProvider {
     private Method getItemNameField;
-    private Method setItemNameField;
     private Method hasItemNameField;
     private final boolean useItemName;
 
@@ -16,9 +15,9 @@ public class ItemNameProvider {
         this.useItemName = useItemName;
         try {
             this.getItemNameField = ItemMeta.class.getDeclaredMethod("getItemName");
-            this.setItemNameField = ItemMeta.class.getDeclaredMethod("setItemName", String.class);
             this.hasItemNameField = ItemMeta.class.getDeclaredMethod("hasItemName");
-        } catch (NoSuchMethodException ignored) {
+        } catch (NoSuchMethodException a) {
+            a.printStackTrace();
         }
     }
 

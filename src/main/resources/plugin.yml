@@ -22,6 +22,8 @@ depend:
 softdepend:
   - Oraxen
   - Spicord
+  - PremiumVanish
+  - SuperVanish
 loadbefore:
   - CMI
   - CMILib
