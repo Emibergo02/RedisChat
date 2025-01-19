@@ -162,6 +162,8 @@ public final class RedisChat extends JavaPlugin {
 
         this.channelManager = new ChannelManager(this);
         loadCommandAPICommand(new ChannelCommand(this).getCommand());
+        final TalkOnCommand talkOnCommand = new TalkOnCommand(this);
+        loadCommand("talkon", talkOnCommand, talkOnCommand);
 
         if (config.enableQuitJoinMessages) {
             if (config.getDataType() == Config.DataType.REDIS) {
