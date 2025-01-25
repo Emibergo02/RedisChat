@@ -422,10 +422,8 @@ public class ChannelManager extends RedisChatAPI {
 
     @Override
     public Channel getPublicChannel(@Nullable CommandSender player) {
-
         final Channel publicChannel = getGenericPublic();
         publicChannel.setFormat(plugin.config.getChatFormat(player).format());
-
         return publicChannel;
     }
 

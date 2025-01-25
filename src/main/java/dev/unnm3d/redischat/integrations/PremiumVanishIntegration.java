@@ -13,7 +13,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class PremiumVanishIntegration implements VanishIntegration {
-    private final Set<String> vanishedPlayers = new HashSet<>();
+    protected final Set<String> vanishedPlayers = new HashSet<>();
 
     public PremiumVanishIntegration(RedisChat plugin) {
         plugin.getServer().getPluginManager().registerEvents(new VanishListener(), plugin);

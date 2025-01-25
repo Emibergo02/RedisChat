@@ -22,13 +22,17 @@ depend:
 softdepend:
   - Oraxen
   - Spicord
+  - PremiumVanish
+  - SuperVanish
 loadbefore:
   - CMI
-  - CMILib
 commands:
   redischat-setitem:
     description: Setitem command
     permission: redischat.setitem
+  talkon:
+    description: Talkon command
+    permission: redischat.talkon
   ignore:
     aliases: [allowmsg]
     description: Ignore command or allowmsg
@@ -79,6 +83,9 @@ permissions:
     default: op
   redischat.showenderchest:
     description: Allows to see the enderchests in the chat
+    default: op
+  redischat.talkon:
+    description: Allows to use the /talkon command
     default: op
   redischat.spychat:
     description: You are spying the chat if it is true
@@ -190,3 +197,4 @@ permissions:
       - redischat.mail.read
       - redischat.mail.delete
       - redischat.mail.unread
+      - redischat.talkon

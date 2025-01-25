@@ -83,6 +83,7 @@ public final class Messages {
     public String channelListMuted = "<yellow>%channel% <gray>Status: <blue>Muted</blue>";
     public String channelListReceiving = "<yellow>%channel% <gray>Status: Receiving";
     public String channelForceListen = "<yellow>RedisChat</yellow> <gray>»</gray> <green>You forced %player% to talk inside %channel%!</green>";
+    public String channelTalk = "<yellow>RedisChat</yellow> <gray>»</gray> <green>You are now talking on %channel%!</green>";
     public String messageContainsBadWords = "<yellow>RedisChat</yellow> <gray>»</gray> <red>Your message contains bad words!</red>";
     public String channelNotFound = "<red>Channel not found!</red>";
     public String channelNoPermission = "<red>You muted this channel or you don't have permission to talk! Check your /channels GUI</red>";

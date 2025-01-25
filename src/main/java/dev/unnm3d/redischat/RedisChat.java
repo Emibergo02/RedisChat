@@ -27,6 +27,7 @@ import dev.unnm3d.redischat.discord.IDiscordHook;
 import dev.unnm3d.redischat.discord.SpicordHook;
 import dev.unnm3d.redischat.integrations.OraxenTagResolver;
 import dev.unnm3d.redischat.integrations.PremiumVanishIntegration;
+import dev.unnm3d.redischat.integrations.SuperVanishIntegration;
 import dev.unnm3d.redischat.mail.MailCommand;
 import dev.unnm3d.redischat.mail.MailGUIManager;
 import dev.unnm3d.redischat.moderation.MuteCommand;
@@ -161,6 +162,8 @@ public final class RedisChat extends JavaPlugin {
 
         this.channelManager = new ChannelManager(this);
         loadCommandAPICommand(new ChannelCommand(this).getCommand());
+        final TalkOnCommand talkOnCommand = new TalkOnCommand(this);
+        loadCommand("talkon", talkOnCommand, talkOnCommand);
 
         if (config.enableQuitJoinMessages) {
             if (config.getDataType() == Config.DataType.REDIS) {
@@ -236,6 +239,10 @@ public final class RedisChat extends JavaPlugin {
         if (getServer().getPluginManager().getPlugin("PremiumVanish") != null) {
             getLogger().info("PremiumVanish found, enabling integration");
             playerListManager.addVanishIntegration(new PremiumVanishIntegration(this));
+        }
+        if (getServer().getPluginManager().getPlugin("SuperVanish") != null) {
+            getLogger().info("SuperVanish found, enabling integration");
+            playerListManager.addVanishIntegration(new SuperVanishIntegration(this));
         }
         if (getServer().getPluginManager().getPlugin("Spicord") != null && config.spicord.enabled()) {
             getLogger().info("Spicord found, enabling integration");
