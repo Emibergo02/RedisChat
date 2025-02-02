@@ -255,6 +255,8 @@ public final class Config implements ConfigValidator {
     public String mailTimestampFormat = "dd/MM/yyyy HH:mm";
     @Comment("The timezone of the timestamp in mails (by default is Central European Time)")
     public String mailTimestampZone = "UTC+1";
+    @Comment("Resend \"received mail\" message on join if a mail is unread")
+    public boolean remindMailOnJoin = true;
     @Comment("Those commands will be disabled")
     public List<String> disabledCommands = List.of();
     @Comment("The [inv], [item] and [ec] placeholders will be considered as minimessage tags")
@@ -363,6 +365,16 @@ public final class Config implements ConfigValidator {
                 Bukkit.getLogger().warning("Announce " + announcement.announcementName() + " doesn't have a channel name, using \"public\" as default");
             }
         }
+        if (!privateMessageSound.isEmpty() && privateMessageSound.split(":").length != 3) {
+            Bukkit.getLogger().warning("Private message sound format is invalid!!!, using no sound");
+            privateMessageSound = "";
+        }
+        if (!mentionSound.isEmpty() && mentionSound.split(":").length != 3) {
+            Bukkit.getLogger().warning("Mention sound format is invalid!!!, using no sound");
+            mentionSound = "";
+        }
+        String[] splittedSound = privateMessageSound.split(":");
+
         return modified;
     }
 

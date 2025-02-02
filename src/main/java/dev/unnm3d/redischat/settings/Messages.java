@@ -48,7 +48,7 @@ public final class Messages {
     public String mailDeleted = "<yellow>RedisChat</yellow> <gray>»</gray> <green>Mail %title% deleted successfully!</green>";
     public String mailNotFound = "<yellow>RedisChat</yellow> <gray>»</gray> <red>Mail not found!</red>";
     public String mailUnRead = "<yellow>RedisChat</yellow> <gray>»</gray> <red>Mail %title% marked as unread!</red>";
-    public String mailReceived = "<yellow>RedisChat</yellow> <gray>»</gray> <aqua>You got mail from %sender%! Object: %title%</aqua>";
+    public String mailReceived = "<yellow>RedisChat</yellow> <gray>»</gray> You got mail from %sender%! <click:run_command:'/mail'><aqua>[Open mails]</aqua></click><br>Object: %title%";
     public String privateMailHeader =
             """
                     <dark_gray>Sender: %sender%
