@@ -1,5 +1,6 @@
 package dev.unnm3d.redischat.mail;
 
+import dev.unnm3d.redischat.RedisChat;
 import lombok.Getter;
 import lombok.Setter;
 import net.kyori.adventure.text.Component;
@@ -26,7 +27,6 @@ import java.util.stream.Collectors;
 @Getter
 public class Mail extends AbstractItem {
     private static final int PAGE_LINES = 14;
-    private static final int LINE_LENGTH = 19;
 
     private final double id;
     private final MailGUIManager manager;
@@ -168,12 +168,12 @@ public class Mail extends AbstractItem {
             // Fills the page with content
             while (lineCount < PAGE_LINES && contentIndex < contentLines.length) {
                 String line = contentLines[contentIndex++];
-                if (line.length() <= LINE_LENGTH) {
+                if (line.length() <= RedisChat.getInstance().config.mailLineSize) {
                     componentText.append(line).append("\n");
                 } else {
                     // If the line is too long, split it and add the first part to the current page
-                    componentText.append(line, 0, LINE_LENGTH).append("\n");
-                    line = line.substring(LINE_LENGTH);
+                    componentText.append(line, 0, RedisChat.getInstance().config.mailLineSize).append("\n");
+                    line = line.substring(RedisChat.getInstance().config.mailLineSize);
                     // Put the rest of the line back into the contentLines array for the next page
                     contentLines[--contentIndex] = line;
                 }

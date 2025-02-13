@@ -257,6 +257,8 @@ public final class Config implements ConfigValidator {
     public String mailTimestampZone = "UTC+1";
     @Comment("Resend \"received mail\" message on join if a mail is unread")
     public boolean remindMailOnJoin = true;
+    @Comment("Mail line char size")
+    public int mailLineSize = 19;
     @Comment("Those commands will be disabled")
     public List<String> disabledCommands = List.of();
     @Comment("The [inv], [item] and [ec] placeholders will be considered as minimessage tags")

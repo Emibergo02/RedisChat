@@ -33,12 +33,12 @@ public class TalkOnCommand implements CommandExecutor, TabCompleter {
             return true;
         }
 
-        if(getAvailableChannelNames(sender).noneMatch(name -> name.equalsIgnoreCase(args[0]))) {
+        if (getAvailableChannelNames(sender).noneMatch(name -> name.equalsIgnoreCase(args[0])) && !args[0].equalsIgnoreCase("public")) {
             plugin.getComponentProvider().sendMessage(sender, plugin.messages.channelNotFound);
             return true;
         }
 
-        plugin.getChannelManager().setActiveChannel(sender.getName(), args[0]);
+        plugin.getChannelManager().setActiveChannel(sender.getName(), args[0].equalsIgnoreCase("public") ? null : args[0]);
         plugin.messages.sendMessage(sender, plugin.messages.channelTalk
                 .replace("%channel%", args[0])
         );
@@ -53,7 +53,7 @@ public class TalkOnCommand implements CommandExecutor, TabCompleter {
             return getAvailableChannelNames(sender)
                     .filter(name -> name.toLowerCase().startsWith(args[0].toLowerCase()))
                     .collect(Collectors.collectingAndThen(Collectors.toList(), list -> {
-                        if("public".startsWith(args[0].toLowerCase())) list.add("public");
+                        if ("public".startsWith(args[0].toLowerCase())) list.add("public");
                         return list;
                     }));
         }
