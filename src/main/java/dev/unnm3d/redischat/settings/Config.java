@@ -248,13 +248,17 @@ public final class Config implements ConfigValidator {
     public String inventoryFormat = "<click:run_command:%command%><gold>[%player%'s Inventory]</gold></click>";
     public String itemFormat = "<click:run_command:%command%>[%item_name%]</click>";
     @Comment({"Only 1.20.6+", "Whether to use the item name or the display name when parsing the <item> tag"})
-    public boolean useItemName = true;
+    public boolean useItemName = false;
     public String enderChestFormat = "<click:run_command:%command%><light_purple>[%player%'s EnderChest]</light_purple></click>";
 
     @Comment("The format of the timestamp in mails (by default is like 31/07/2023 15:24)")
     public String mailTimestampFormat = "dd/MM/yyyy HH:mm";
     @Comment("The timezone of the timestamp in mails (by default is Central European Time)")
     public String mailTimestampZone = "UTC+1";
+    @Comment("Resend \"received mail\" message on join if a mail is unread")
+    public boolean remindMailOnJoin = true;
+    @Comment("Mail line char size")
+    public int mailLineSize = 19;
     @Comment("Those commands will be disabled")
     public List<String> disabledCommands = List.of();
     @Comment("The [inv], [item] and [ec] placeholders will be considered as minimessage tags")
@@ -363,6 +367,16 @@ public final class Config implements ConfigValidator {
                 Bukkit.getLogger().warning("Announce " + announcement.announcementName() + " doesn't have a channel name, using \"public\" as default");
             }
         }
+        if (!privateMessageSound.isEmpty() && privateMessageSound.split(":").length != 3) {
+            Bukkit.getLogger().warning("Private message sound format is invalid!!!, using no sound");
+            privateMessageSound = "";
+        }
+        if (!mentionSound.isEmpty() && mentionSound.split(":").length != 3) {
+            Bukkit.getLogger().warning("Mention sound format is invalid!!!, using no sound");
+            mentionSound = "";
+        }
+        String[] splittedSound = privateMessageSound.split(":");
+
         return modified;
     }
 

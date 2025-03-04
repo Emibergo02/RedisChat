@@ -8,6 +8,7 @@ import dev.unnm3d.redischat.RedisChat;
 import lombok.AllArgsConstructor;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 @AllArgsConstructor
 public class MsgCommand {
@@ -18,17 +19,20 @@ public class MsgCommand {
         return new CommandAPICommand("msg")
                 .withAliases(plugin.config.getCommandAliases("msg"))
                 .withPermission(Permissions.MESSAGE.getPermission())
-                .withArguments(new GreedyStringArgument(plugin.messages.msgPlayerSuggestion + " " + plugin.messages.msgMessageSuggestion)
+                .withOptionalArguments(new GreedyStringArgument(plugin.messages.msgPlayerSuggestion + " " + plugin.messages.msgMessageSuggestion)
                         .replaceSuggestions(ArgumentSuggestions.strings(commandSenderSuggestionInfo ->
                                 plugin.getPlayerListManager().getPlayerList(commandSenderSuggestionInfo.sender()).stream()
                                         .filter(s -> s.toLowerCase().startsWith(commandSenderSuggestionInfo.currentArg().toLowerCase()))
                                         .toArray(String[]::new))))
                 .executes((sender, args) -> {
                     RedisChat.getScheduler().runTaskAsynchronously(() -> {
-                        final String allArgs = (String) args.get(0);
-                        if (allArgs == null) return;
+                        final Optional<Object> allArgs = args.getOptional(0);
+                        if (allArgs.isEmpty()) {
+                            plugin.messages.sendMessage(sender, plugin.messages.missing_arguments);
+                            return;
+                        }
 
-                        final String[] argsArr = allArgs.split(" ");
+                        final String[] argsArr = ((String) allArgs.get()).split(" ");
                         final String receiverName = argsArr[0];
                         if (argsArr.length == 1) {
                             plugin.messages.sendMessage(sender, plugin.messages.missing_arguments);

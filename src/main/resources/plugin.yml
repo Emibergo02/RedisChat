@@ -5,7 +5,7 @@ author: Unnm3d
 api-version: 1.19
 folia-supported: true
 libraries:
-  - io.lettuce:lettuce-core:6.4.0.RELEASE
+  - io.lettuce:lettuce-core:6.5.3.RELEASE
   - org.yaml:snakeyaml:1.27
   - org.snakeyaml:snakeyaml-engine:2.3
   - org.jetbrains:annotations:24.1.0
@@ -13,22 +13,26 @@ libraries:
   - org.xerial:sqlite-jdbc:3.45.3.0
   - org.projectlombok:lombok:1.18.34
   - org.apache.commons:commons-collections4:4.4
-  - net.kyori:adventure-text-minimessage:4.17.0
-  - net.kyori:adventure-text-serializer-plain:4.17.0
-  - net.kyori:adventure-text-serializer-legacy:4.17.0
+  - net.kyori:adventure-text-minimessage:4.19.0
+  - net.kyori:adventure-text-serializer-plain:4.19.0
+  - net.kyori:adventure-text-serializer-legacy:4.19.0
   - net.kyori:adventure-platform-bukkit:4.3.4
 depend:
   - PlaceholderAPI
 softdepend:
   - Oraxen
   - Spicord
+  - PremiumVanish
+  - SuperVanish
 loadbefore:
   - CMI
-  - CMILib
 commands:
   redischat-setitem:
     description: Setitem command
     permission: redischat.setitem
+  talkon:
+    description: Talkon command
+    permission: redischat.talkon
   ignore:
     aliases: [allowmsg]
     description: Ignore command or allowmsg
@@ -79,6 +83,9 @@ permissions:
     default: op
   redischat.showenderchest:
     description: Allows to see the enderchests in the chat
+    default: op
+  redischat.talkon:
+    description: Allows to use the /talkon command
     default: op
   redischat.spychat:
     description: You are spying the chat if it is true
@@ -190,3 +197,4 @@ permissions:
       - redischat.mail.read
       - redischat.mail.delete
       - redischat.mail.unread
+      - redischat.talkon
