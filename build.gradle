@@ -6,7 +6,7 @@ plugins {
 
 
 group = 'dev.unnm3d'
-version = '5.4.15'
+version = '5.4.16'
 
 
 repositories {

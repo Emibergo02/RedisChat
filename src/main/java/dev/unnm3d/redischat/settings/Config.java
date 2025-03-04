@@ -375,7 +375,12 @@ public final class Config implements ConfigValidator {
             Bukkit.getLogger().warning("Mention sound format is invalid!!!, using no sound");
             mentionSound = "";
         }
-        String[] splittedSound = privateMessageSound.split(":");
+
+        if (redis.poolSize <= 1 && dataMedium.equals(DataType.REDIS.keyName)) {
+            Bukkit.getLogger().warning("Redis pool size is too low, setting it to 2");
+            redis = new RedisSettings(redis.host, redis.port, redis.user, redis.password, redis.database, redis.timeout, redis.clientName, 2);
+            modified = true;
+        }
 
         return modified;
     }

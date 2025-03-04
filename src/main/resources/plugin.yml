@@ -49,7 +49,7 @@ commands:
     permission: redischat.spycommand
   chatcolor:
     description: Chatcolor command
-    permission: redischat.chatcolorcommand
+    permission: redischat.chatcolor
   setchatplaceholder:
     description: Setchatplaceholder command
     permission: redischat.setchatplaceholder
