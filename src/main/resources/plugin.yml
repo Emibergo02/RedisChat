@@ -74,7 +74,7 @@ permissions:
     default: true
   redischat.use_emoji:
     description: Allows to see the item in the chat
-    default: true
+    default: false
   redischat.showitem:
     description: Allows to see the item in the chat
     default: op

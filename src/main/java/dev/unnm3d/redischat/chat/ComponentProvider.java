@@ -300,7 +300,7 @@ public class ComponentProvider {
         String toParse = text;
         for (String playerName : plugin.getPlayerListManager().getPlayerList(mentioner)) {
             playerName = playerName.replace("*", "\\*");
-            Pattern p = Pattern.compile("(^" + playerName + "|" + playerName + "$|\\s" + playerName + "\\s)");
+            Pattern p = Pattern.compile("((?<=^|\\s)"+playerName+"(?=\\s|$))");
             Matcher m = p.matcher(text);
             if (m.find()) {
                 String replacing = m.group();

@@ -5,10 +5,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.inventory.ItemStack;
 import xyz.xenondevs.invui.gui.AbstractGui;
-import xyz.xenondevs.invui.gui.SlotElement;
-import xyz.xenondevs.invui.inventory.Inventory;
 
 public class ChatColorGUI extends AbstractGui {
     private final RedisChat plugin;
@@ -17,7 +14,6 @@ public class ChatColorGUI extends AbstractGui {
         super(9, plugin.guiSettings.chatColorGUIStructure.size());
         this.plugin = plugin;
         this.applyStructure(plugin.guiSettings.getChatColorGUIStructure());
-
     }
 
     @Override
@@ -34,8 +30,12 @@ public class ChatColorGUI extends AbstractGui {
             plugin.messages.sendMessage(player, plugin.messages.invalid_color);
             return;
         }
+        if (color == ChatColor.RESET) {
+            plugin.getPlaceholderManager().removePlayerPlaceholder(player.getName(), "chat_color");
+        } else {
+            plugin.getPlaceholderManager().addPlayerPlaceholder(player.getName(), "chat_color", "<" + color.name().toLowerCase() + ">");
+        }
 
-        plugin.getPlaceholderManager().addPlayerPlaceholder(player.getName(), "chat_color", "<" + color.name().toLowerCase() + ">");
         plugin.messages.sendMessage(player, plugin.messages.color_set);
 
     }

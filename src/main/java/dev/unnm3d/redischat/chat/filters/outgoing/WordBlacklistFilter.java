@@ -10,8 +10,9 @@ import lombok.Getter;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 public class WordBlacklistFilter extends AbstractFilter<WordBlacklistFilter.WordBlacklistFilterProperties> {
@@ -25,14 +26,25 @@ public class WordBlacklistFilter extends AbstractFilter<WordBlacklistFilter.Word
     @Override
     public FilterResult applyWithPrevious(CommandSender sender, @NotNull ChatMessage message, ChatMessage... previousMessages) {
         String sanitized = message.getContent();
+        long init = System.currentTimeMillis();
+        Set<String> forbiddenWords = new HashSet<>();
         for (String regex : plugin.config.regex_blacklist) {
-            sanitized = sanitized.replaceAll(regex, filterSettings.replacement);
+            StringBuilder sanitizedFinal = new StringBuilder();
+            Pattern p = Pattern.compile("(" + regex + ")");
+            Matcher m = p.matcher(sanitized);
+            while (m.find()) {
+                forbiddenWords.add(m.group().trim());
+                m.appendReplacement(sanitizedFinal, filterSettings.replacement);
+            }
+            m.appendTail(sanitizedFinal);
+            sanitized = sanitizedFinal.toString();
         }
-
-        if (filterSettings.blockCensoredMessage && !sanitized.equals(message.getContent())) {
+        System.out.println("TIME TO FILTER BAD WORDS: " + (System.currentTimeMillis() - init) + "ms");
+        if (filterSettings.blockCensoredMessage && !forbiddenWords.isEmpty()) {
             return new FilterResult(message, true, Optional.of(
                     plugin.getComponentProvider().parse(sender,
-                            plugin.messages.messageContainsBadWords,
+                            plugin.messages.messageContainsBadWords
+                                    .replace("%words%", String.join(",", forbiddenWords)),
                             true,
                             false,
                             false)

@@ -36,6 +36,11 @@ public class ChatColorCommand implements CommandExecutor, TabCompleter {
             plugin.messages.sendMessage(player, plugin.messages.missing_arguments);
             return true;
         }
+        if(args[0].equalsIgnoreCase("reset")){
+            plugin.getPlaceholderManager().removePlayerPlaceholder(player.getName(), "chat_color");
+            plugin.messages.sendMessage(player, plugin.messages.color_set);
+            return true;
+        }
         if (!args[0].matches("#[0-9A-Fa-f]{6}")) {
             if (!getAvailableColors().contains(args[0])) {
                 plugin.messages.sendMessage(player, plugin.messages.invalid_color);
@@ -60,6 +65,7 @@ public class ChatColorCommand implements CommandExecutor, TabCompleter {
             return List.of();
         final List<String> colors = new ArrayList<>(getAvailableColors());
         colors.add("#RRGGBB");
+        colors.add("reset");
         return colors.stream().filter(s -> s.toLowerCase().startsWith(args[args.length - 1].toLowerCase())).toList();
     }
 

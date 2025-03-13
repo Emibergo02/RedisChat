@@ -37,7 +37,8 @@ public class TagFilter extends AbstractFilter<FiltersConfig.FilterSettings> {
         if (PlaceholderAPI.containsPlaceholders(chatMessage.getContent())) {
             return new FilterResult(chatMessage, true, Optional.of(
                     plugin.getComponentProvider().parse(sender,
-                            plugin.messages.messageContainsBadWords,
+                            plugin.messages.messageContainsBadWords
+                                    .replace("%words%","%placeholder%"),
                             true,
                             false,
                             false)
