@@ -84,7 +84,7 @@ public final class Messages {
     public String channelListReceiving = "<yellow>%channel% <gray>Status: Receiving";
     public String channelForceListen = "<yellow>RedisChat</yellow> <gray>»</gray> <green>You forced %player% to talk inside %channel%!</green>";
     public String channelTalk = "<yellow>RedisChat</yellow> <gray>»</gray> <green>You are now talking on %channel%!</green>";
-    public String messageContainsBadWords = "<yellow>RedisChat</yellow> <gray>»</gray> <red>Your message contains bad words!</red>";
+    public String messageContainsBadWords = "<yellow>RedisChat</yellow> <gray>»</gray> <red>Your message contains bad words: %words%</red>";
     public String channelNotFound = "<red>Channel not found!</red>";
     public String channelNoPermission = "<red>You muted this channel or you don't have permission to talk! Check your /channels GUI</red>";
     public String channelNoFormat = "<red>Channel format not found! Use <click:suggest_command:'/channel setformat %channel%'><color:#33c5ff>[/channel setformat %channel%]</color></click> to set a format</red>";
@@ -99,8 +99,9 @@ public final class Messages {
     public String muted_player = "<yellow>RedisChat</yellow> <gray>»</gray> <aqua>You muted %player% on channel %channel%!</aqua>";
     public String unmuted_player = "<yellow>RedisChat</yellow> <gray>»</gray> <aqua>You unmuted %player% on channel %channel%!</aqua>";
     public String muted_on_channel = "<yellow>RedisChat</yellow> <gray>»</gray> <aqua>You've been muted in this channel (%channel%)!</aqua>";
-    public String ignored_player_receiver = "<click:run_command:'/ignore list'><hover:show_text:'Click to see ignored players'><color:#545454>Ignored message from %player%</color></hover></click>";
-    public String ignored_player_sender = "<click:run_command:'/ignore list'><color:#545454>You are ignoring this player, Click to see ignored players</color></click>";
+    public String ignoredMessageReceiver = "<click:run_command:'/ignore list'><hover:show_text:'Click to see ignored players'><color:#545454>Ignored message from %player%</color></hover></click>";
+    public String ignoredMessageSender = "<click:run_command:'/ignore list'><color:#545454>You are ignoring this player, Click to see ignored players</color></click>";
+    public String receiverIgnoringSender = "<color:#545454>The receiver of the message is ignoring you!</color>";
     public String invalid_color = "<yellow>RedisChat</yellow> <gray>»</gray> <red>Invalid color!</red>";
     public String color_set = "<yellow>RedisChat</yellow> <gray>»</gray> <green>You successfully set your chat color!</green>";
     public String placeholder_set = "<yellow>RedisChat</yellow> <gray>»</gray> <green>You successfully set %redischat_%placeholder%% to \"%value%\" for player %player%!</green>";

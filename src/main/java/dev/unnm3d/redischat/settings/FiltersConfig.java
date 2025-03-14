@@ -15,15 +15,25 @@ import java.util.*;
 public final class FiltersConfig {
 
     //INCOMING
+    @Comment({"Filters incoming private messages: Checks if the player is ignoring the sender",
+            "If the player is ignoring the sender, it may send a warning message"})
     public IgnorePlayerFilter.IgnorePlayerFilterProperties ignorePlayer = (IgnorePlayerFilter.IgnorePlayerFilterProperties) DefaultSettings.IGNORE_PLAYER.getFilterSettings();
+    @Comment({"Filters incoming channel messages: Checks if the player has all the permissions",
+            "to see the message (if the channel is permission-enabled)"})
     public FilterSettings permission = DefaultSettings.PERMISSION.getFilterSettings();
 
     //OUTGOING
     public CapsFilter.CapsFilterProperties caps = (CapsFilter.CapsFilterProperties) DefaultSettings.CAPS.getFilterSettings();
     public FilterSettings spam = DefaultSettings.SPAM.getFilterSettings();
     public DuplicateFilter.DuplicateFilterProperties duplicate = (DuplicateFilter.DuplicateFilterProperties) DefaultSettings.DUPLICATE.getFilterSettings();
-    public FilterSettings ignore = DefaultSettings.IGNORE.getFilterSettings();
+    @Comment({"Filters outgoing private messages: If a player is ignoring the receiver",
+            "or the receiver is ignoring the sender, the message will not be sent"})
+    public IgnoreFilter.IgnoreFilterProperties ignore = (IgnoreFilter.IgnoreFilterProperties) DefaultSettings.IGNORE.getFilterSettings();
+    @Comment({"Filters outgoing channel messages: If a player is muted on that channel",
+            "or does not have permission to write, the message will not be sent"})
     public FilterSettings mutedChannel = DefaultSettings.MUTED_CHANNEL.getFilterSettings();
+    @Comment({"Filters outgoing channel messages: Replace dangerous tags with safer ones",
+            "and checks if the player has permission to use them"})
     public FilterSettings tags = DefaultSettings.TAGS.getFilterSettings();
     public WordBlacklistFilter.WordBlacklistFilterProperties words = (WordBlacklistFilter.WordBlacklistFilterProperties) DefaultSettings.WORDS.getFilterSettings();
 

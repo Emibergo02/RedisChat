@@ -2,9 +2,9 @@ package dev.unnm3d.redischat.chat.filters.outgoing;
 
 import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
+import dev.unnm3d.redischat.api.objects.ChatMessage;
 import dev.unnm3d.redischat.chat.filters.AbstractFilter;
 import dev.unnm3d.redischat.chat.filters.FilterResult;
-import dev.unnm3d.redischat.api.objects.ChatMessage;
 import dev.unnm3d.redischat.settings.FiltersConfig;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -12,6 +12,7 @@ import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
+import java.util.regex.Matcher;
 
 
 public class TagFilter extends AbstractFilter<FiltersConfig.FilterSettings> {
@@ -34,11 +35,12 @@ public class TagFilter extends AbstractFilter<FiltersConfig.FilterSettings> {
         if (sender.hasPermission(Permissions.USE_FORMATTING.getPermission()))
             return new FilterResult(chatMessage, false);
 
-        if (PlaceholderAPI.containsPlaceholders(chatMessage.getContent())) {
+        final Matcher m = PlaceholderAPI.getPlaceholderPattern().matcher(chatMessage.getContent());
+        if (m.find()) {
             return new FilterResult(chatMessage, true, Optional.of(
                     plugin.getComponentProvider().parse(sender,
                             plugin.messages.messageContainsBadWords
-                                    .replace("%words%","%placeholder%"),
+                                    .replace("%words%", m.group()),
                             true,
                             false,
                             false)

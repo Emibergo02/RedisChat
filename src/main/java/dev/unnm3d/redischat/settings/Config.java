@@ -118,6 +118,9 @@ public final class Config implements ConfigValidator {
             Map.entry(":)", "☺"),
             Map.entry(":(", "☹"),
             Map.entry("<3", "§c❤"),
+            Map.entry("<inventory>", "<inv>"),
+            Map.entry("<i>", "<item>"),
+            Map.entry("<enderchest>", "<ec>"),
             Map.entry("discord", "<click:open_url:https://discord.gg/C8d7EqQz>Click to join our discord server</click>"),
             Map.entry("position", "<white><blue>Server:</blue> %server_name% <aqua>World:</aqua> %player_world% <gold>X:</gold> %player_x% <gold>Y:</gold> %player_y% <gold>Z:</gold> %player_z%</white>")
     ));
@@ -190,12 +193,19 @@ public final class Config implements ConfigValidator {
 
     @Comment({"Title of the ShowInventory GUI"})
     public String inv_title = "Inventory of %player%";
+    @Comment({"The text inside inventory <tag>"})
+    public String inv_tag = "inv";
     @Comment({"Title of the ShowItem GUI"})
     public String item_title = "Item of %player%";
-    @Comment({"Title of the ShowShulkerBox GUI"})
-    public String shulker_title = "Shulker of %player%";
+    @Comment({"The text inside item <tag>"})
+    public String item_tag = "item";
     @Comment({"Title of the ShowEnderchest GUI"})
     public String ec_title = "Enderchest of %player%";
+    @Comment({"The text inside enderchest <tag>"})
+    public String ec_tag = "ec";
+    public String nothing_tag= "Nothing";
+    @Comment({"Title of the ShowShulkerBox GUI"})
+    public String shulker_title = "Shulker of %player%";
     @Comment("There are some others chat formats, like broadcast and clear chat messages")
     public String broadcast_format = "<red>Announce <dark_gray>» <white>{message}";
     @Comment({"This message will be sent when a player logs in for the first time",
@@ -227,6 +237,10 @@ public final class Config implements ConfigValidator {
     public int rejoinSendDelay = 500;
     @Comment("Quit delay in milliseconds")
     public int quitSendWaiting = 3000;
+    @Comment({"ALL player string, used in ignore and mute commands to ignore or mute all players",
+    "Leave it empty to disable ignoring/muting all players",
+    "Don't choose a string that can be a player name!!"})
+    public String allPlayersString = "-ALL-";
     @Comment({"Format id:volume:pitch",
             "You can find the list of sounds here: https://jd.papermc.io/paper/1.20/org/bukkit/Sound.html",
             "Leave it empty \"\" to disable the sound"})
@@ -246,7 +260,7 @@ public final class Config implements ConfigValidator {
     @Comment("The discord webhook of the staff chat")
     public String staffChatDiscordWebhook = "";
     public String inventoryFormat = "<click:run_command:%command%><gold>[%player%'s Inventory]</gold></click>";
-    public String itemFormat = "<click:run_command:%command%>[%item_name%]</click>";
+    public String itemFormat = "<click:run_command:%command%>[%amount%%item_name%]</click>";
     @Comment({"Only 1.20.6+", "Whether to use the item name or the display name when parsing the <item> tag"})
     public boolean useItemName = false;
     public String enderChestFormat = "<click:run_command:%command%><light_purple>[%player%'s EnderChest]</light_purple></click>";

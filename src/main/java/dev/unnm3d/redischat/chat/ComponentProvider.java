@@ -19,7 +19,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -210,20 +210,15 @@ public class ComponentProvider {
     }
 
     public Component parseChatMessageContent(@NotNull CommandSender cmdSender, @NotNull String text) {
-        Component component = parse(cmdSender,
+        if (cmdSender.hasPermission(Permissions.USE_EMOJI_PLACEHOLDERS.getPermission())) {
+            for (Map.Entry<String, String> stringStringEntry : plugin.config.placeholders.entrySet()) {
+                text = text.replace(stringStringEntry.getKey(), stringStringEntry.getValue());
+            }
+        }
+        return parse(cmdSender,
                 invShareFormatting(cmdSender, text),
                 cmdSender.hasPermission(Permissions.USE_FORMATTING.getPermission()),
                 true, true, getRedisChatTagResolver(cmdSender));
-
-        if (!cmdSender.hasPermission(Permissions.USE_EMOJI_PLACEHOLDERS.getPermission())) return component;
-
-        for (Map.Entry<String, String> replacementEntry : plugin.config.placeholders.entrySet()) {
-            component = component.replaceText(rBuilder ->
-                    rBuilder.matchLiteral(replacementEntry.getKey())
-                            .replacement(parsePlaceholders(cmdSender,
-                                    parseLegacy(replacementEntry.getValue(), true), this.standardTagResolver)));
-        }
-        return component;
     }
 
     /**
@@ -248,45 +243,54 @@ public class ComponentProvider {
         final TagResolver.Builder builder = TagResolver.builder();
 
         if (player.hasPermission(Permissions.USE_INVENTORY.getPermission())) {
-            String toParseInv = plugin.config.inventoryFormat;
-            toParseInv = toParseInv.replace("%player%", player.getName());
-            toParseInv = toParseInv.replace("%command%", "/invshare " + player.getName() + "-inventory");
-            TagResolver inv = Placeholder.component("inv", parse(player, toParseInv, true, false, false, this.standardTagResolver));
+            String toParseInventory = plugin.config.inventoryFormat
+                    .replace("%player%", player.getName())
+                    .replace("%command%", "/invshare " + player.getName() + "-inventory");
+            TagResolver inv = Placeholder.component(plugin.config.inv_tag, parse(player, toParseInventory,
+                    true, false, false, this.standardTagResolver));
             builder.resolver(inv);
         }
 
         if (player.hasPermission(Permissions.USE_ITEM.getPermission()) && player instanceof Player p) {
-            String toParseItem = plugin.config.itemFormat;
-            toParseItem = toParseItem.replace("%player%", player.getName());
-            toParseItem = toParseItem.replace("%command%", "/invshare " + player.getName() + "-item");
+            String toParseItem = plugin.config.itemFormat
+                    .replace("%player%", player.getName())
+                    .replace("%command%", "/invshare " + player.getName() + "-item");
             Component toParseItemComponent = parse(player, toParseItem, true, false, false, this.standardTagResolver);
 
-            final ItemMeta itemMeta = p.getInventory().getItemInMainHand().getItemMeta();
+            final Component itemName = getItemNameComponent(p.getInventory().getItemInMainHand());
+            toParseItemComponent = toParseItemComponent.replaceText(rTextBuilder -> rTextBuilder.matchLiteral("%item_name%").replacement(itemName));
+            toParseItemComponent = toParseItemComponent.replaceText(rTextBuilder -> rTextBuilder.matchLiteral("%amount%").replacement(
+                    p.getInventory().getItemInMainHand().getAmount() > 1 ?
+                            "x" + p.getInventory().getItemInMainHand().getAmount() + " " :
+                            ""
+            ));
 
-            if (itemMeta != null && itemNameProvider.hasItemName(itemMeta)) {
-                toParseItemComponent = toParseItemComponent.replaceText(rTextBuilder ->
-                        rTextBuilder.matchLiteral("%item_name%")
-                                .replacement(LegacyComponentSerializer.legacySection()
-                                        .deserialize(replaceAmpersandCodesWithSection(itemNameProvider.getItemName(itemMeta)))));
-            } else {
-                toParseItemComponent = toParseItemComponent.replaceText(rTextBuilder ->
-                        rTextBuilder.matchLiteral("%item_name%")
-                                .replacement(Component.translatable(
-                                        p.getInventory().getItemInMainHand().getType().getTranslationKey())));
-            }
-            TagResolver item = Placeholder.component("item", toParseItemComponent);
-            builder.resolver(item);
+            builder.resolver(Placeholder.component(plugin.config.item_tag, toParseItemComponent));
         }
 
         if (player.hasPermission(Permissions.USE_ENDERCHEST.getPermission())) {
-            String toParseEnderChest = plugin.config.enderChestFormat;
-            toParseEnderChest = toParseEnderChest.replace("%player%", player.getName());
-            toParseEnderChest = toParseEnderChest.replace("%command%", "/invshare " + player.getName() + "-enderchest");
-            TagResolver ec = Placeholder.component("ec", parse(player, toParseEnderChest, true, false, false, this.standardTagResolver));
+            String toParseEnderChest = plugin.config.enderChestFormat
+                    .replace("%player%", player.getName())
+                    .replace("%command%", "/invshare " + player.getName() + "-enderchest");
+            TagResolver ec = Placeholder.component(plugin.config.ec_tag, parse(player, toParseEnderChest,
+                    true, false, false, this.standardTagResolver));
             builder.resolver(ec);
         }
 
         return builder.build();
+    }
+
+    private Component getItemNameComponent(@NotNull ItemStack itemStack) {
+        if (itemStack.getItemMeta() != null && itemNameProvider.hasItemName(itemStack.getItemMeta())) {
+            return LegacyComponentSerializer.legacySection().deserialize(
+                            replaceAmpersandCodesWithSection(itemNameProvider.getItemName(itemStack.getItemMeta())))
+                    .hoverEvent(itemStack.asHoverEvent());
+        }
+        if (itemStack.getType().isAir()) {
+            return Component.text(plugin.config.nothing_tag);
+        }
+        return Component.translatable(itemStack.getType().translationKey())
+                .hoverEvent(itemStack.asHoverEvent());
     }
 
     /**
@@ -300,7 +304,7 @@ public class ComponentProvider {
         String toParse = text;
         for (String playerName : plugin.getPlayerListManager().getPlayerList(mentioner)) {
             playerName = playerName.replace("*", "\\*");
-            Pattern p = Pattern.compile("((?<=^|\\s)"+playerName+"(?=\\s|$))");
+            Pattern p = Pattern.compile("((?<=^|\\s)" + playerName + "(?=\\s|$))");
             Matcher m = p.matcher(text);
             if (m.find()) {
                 String replacing = m.group();
@@ -388,26 +392,21 @@ public class ComponentProvider {
     public String invShareFormatting(CommandSender sender, String message) {
         if (!(sender instanceof Player player)) return message;
 
-        //Placeholder aliases
-        message = message.replace("<inventory>", "<inv>")
-                .replace("<i>", "<item>")
-                .replace("<enderchest>", "<ec>");
-
         if (plugin.config.interactiveChatNostalgia) {
-            message = message.replace("[inv]", "<inv>")
-                    .replace("[inventory]", "<inv>")
-                    .replace("[i]", "<item>")
-                    .replace("[item]", "<item>")
-                    .replace("[enderchest]", "<ec>")
-                    .replace("[ec]", "<ec>");
+            message = message.replace("[inv]", "<" + plugin.config.inv_tag + ">")
+                    .replace("[inventory]", "<" + plugin.config.inv_tag + ">")
+                    .replace("[i]", "<" + plugin.config.item_tag + ">")
+                    .replace("[item]", "<" + plugin.config.item_tag + ">")
+                    .replace("[enderchest]", "<" + plugin.config.ec_tag + ">")
+                    .replace("[ec]", "<" + plugin.config.ec_tag + ">");
         }
-        if (message.contains("<inv>")) {
+        if (message.contains("<" + plugin.config.inv_tag + ">")) {
             plugin.getDataManager().addInventory(player.getName(), player.getInventory().getContents());
         }
-        if (message.contains("<item>")) {
+        if (message.contains("<" + plugin.config.item_tag + ">")) {
             plugin.getDataManager().addItem(player.getName(), player.getInventory().getItemInMainHand());
         }
-        if (message.contains("<ec>")) {
+        if (message.contains("<" + plugin.config.ec_tag + ">")) {
             plugin.getDataManager().addEnderchest(player.getName(), player.getEnderChest().getContents());
         }
         return message;
