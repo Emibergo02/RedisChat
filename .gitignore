@@ -1,6 +1,9 @@
 # User-specific stuff
 .idea/
 
+# Gradle files
+.gradle/
+
 *.iml
 *.ipr
 *.iws
