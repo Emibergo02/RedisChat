@@ -24,8 +24,10 @@ public class UtilsListener implements Listener {
                 .thenAccept(channelName ->
                         plugin.getChannelManager().updateActiveChannel(event.getPlayer().getName(), channelName));
         //Remove chat color placeholder if player doesn't have permission to edit it
-        if (!event.getPlayer().hasPermission(Permissions.CHAT_COLOR.getPermission()) &&
-                !plugin.getPlaceholderManager().getPlaceholder(event.getPlayer().getName(), "chat_color").isEmpty()) {
+        final String activeChatColor = plugin.getPlaceholderManager().getPlaceholder(event.getPlayer().getName(), "chat_color")
+                .replace("<", "").replace(">", "");
+        if (!activeChatColor.isEmpty() &&
+                !event.getPlayer().hasPermission(Permissions.CHAT_COLOR.getPermission() + "." + activeChatColor)) {
             plugin.getPlaceholderManager().removePlayerPlaceholder(event.getPlayer().getName(), "chat_color");
         }
 
