@@ -59,7 +59,7 @@ public enum ChatListenerWithPriority {
 
         public void listenChat(AsyncPlayerChatEvent event) {
             if (event.isCancelled()) return;
-            event.setCancelled(true);
+            event.getRecipients().clear(); // Prevent chat from being shown to players
             plugin.getChannelManager().outgoingMessage(event.getPlayer(), event.getMessage());
         }
     }
