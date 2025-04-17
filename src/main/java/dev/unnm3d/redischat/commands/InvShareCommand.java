@@ -81,9 +81,18 @@ public class InvShareCommand implements CommandExecutor {
                                 if (plugin.config.debugItemShare) {
                                     plugin.getLogger().info("ECshare openGUI for player " + p.getName() + ": " + Arrays.toString(ecContents));
                                 }
+                                int totalSlots;
+                                if (plugin.getCustomInventoryAPI().hasCustomEnderChest(p)) {
+                                    ItemStack[] custom = plugin.getCustomInventoryAPI().getCustomEnderChest(p);
+                                    totalSlots = custom.length;
+                                } else {
+                                    totalSlots = p.getEnderChest().getSize();
+                                }
+                                int rows = totalSlots / 9;
+
                                 openInvShareGui(p,
                                         plugin.config.ec_title.replace("%player%", playerName),
-                                        3,
+                                        rows,
                                         ecContents
                                 );
                             }));

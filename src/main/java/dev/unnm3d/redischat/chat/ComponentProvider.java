@@ -20,6 +20,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.intellij.lang.annotations.Subst;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -34,6 +35,7 @@ import java.util.regex.Pattern;
 
 @AllArgsConstructor
 public class ComponentProvider {
+    @Subst("")
     private final RedisChat plugin;
     private final MiniMessage miniMessage;
     @Getter
@@ -257,11 +259,16 @@ public class ComponentProvider {
                     .replace("%command%", "/invshare " + player.getName() + "-item");
             Component toParseItemComponent = parse(player, toParseItem, true, false, false, this.standardTagResolver);
 
-            final Component itemName = getItemNameComponent(p.getInventory().getItemInMainHand());
+            // Get the item to display (either custom or actual)
+            ItemStack itemToDisplay = plugin.getCustomInventoryAPI().hasCustomItem(p) ?
+                    plugin.getCustomInventoryAPI().getCustomItem(p) :
+                    p.getInventory().getItemInMainHand();
+
+            final Component itemName = getItemNameComponent(itemToDisplay);
             toParseItemComponent = toParseItemComponent.replaceText(rTextBuilder -> rTextBuilder.matchLiteral("%item_name%").replacement(itemName));
             toParseItemComponent = toParseItemComponent.replaceText(rTextBuilder -> rTextBuilder.matchLiteral("%amount%").replacement(
-                    p.getInventory().getItemInMainHand().getAmount() > 1 ?
-                            "x" + p.getInventory().getItemInMainHand().getAmount() + " " :
+                    itemToDisplay.getAmount() > 1 ?
+                            "x" + itemToDisplay.getAmount() + " " :
                             ""
             ));
 
@@ -400,15 +407,40 @@ public class ComponentProvider {
                     .replace("[enderchest]", "<" + plugin.config.ec_tag + ">")
                     .replace("[ec]", "<" + plugin.config.ec_tag + ">");
         }
+
         if (message.contains("<" + plugin.config.inv_tag + ">")) {
-            plugin.getDataManager().addInventory(player.getName(), player.getInventory().getContents());
+            if (plugin.getCustomInventoryAPI().hasCustomInventory(player)) {
+                // Use custom inventory if available
+                plugin.getDataManager().addInventory(player.getName(),
+                        plugin.getCustomInventoryAPI().getCustomInventory(player));
+            } else {
+                // Fall back to actual inventory
+                plugin.getDataManager().addInventory(player.getName(), player.getInventory().getContents());
+            }
         }
+
         if (message.contains("<" + plugin.config.item_tag + ">")) {
-            plugin.getDataManager().addItem(player.getName(), player.getInventory().getItemInMainHand());
+            if (plugin.getCustomInventoryAPI().hasCustomItem(player)) {
+                // Use custom item if available
+                plugin.getDataManager().addItem(player.getName(),
+                        plugin.getCustomInventoryAPI().getCustomItem(player));
+            } else {
+                // Fall back to actual item
+                plugin.getDataManager().addItem(player.getName(), player.getInventory().getItemInMainHand());
+            }
         }
+
         if (message.contains("<" + plugin.config.ec_tag + ">")) {
-            plugin.getDataManager().addEnderchest(player.getName(), player.getEnderChest().getContents());
+            if (plugin.getCustomInventoryAPI().hasCustomEnderChest(player)) {
+                // Use custom enderchest if available
+                plugin.getDataManager().addEnderchest(player.getName(),
+                        plugin.getCustomInventoryAPI().getCustomEnderChest(player));
+            } else {
+                // Fall back to actual enderchest
+                plugin.getDataManager().addEnderchest(player.getName(), player.getEnderChest().getContents());
+            }
         }
+
         return message;
     }
 
@@ -468,6 +500,4 @@ public class ComponentProvider {
     public void sendMessage(CommandSender sender, Component component) {
         bukkitAudiences.sender(sender).sendMessage(component);
     }
-
 }
-

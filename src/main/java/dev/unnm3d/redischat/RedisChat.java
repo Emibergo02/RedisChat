@@ -9,6 +9,7 @@ import de.exlll.configlib.YamlConfigurations;
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIBukkitConfig;
 import dev.jorel.commandapi.CommandAPICommand;
+import dev.unnm3d.redischat.api.CustomInventoryAPI;
 import dev.unnm3d.redischat.api.DataManager;
 import dev.unnm3d.redischat.channels.ChannelCommand;
 import dev.unnm3d.redischat.channels.ChannelManager;
@@ -45,9 +46,11 @@ import dev.unnm3d.redischat.task.AnnouncerManager;
 import dev.unnm3d.redischat.utils.AdventureWebuiEditorAPI;
 import dev.unnm3d.redischat.utils.Metrics;
 import lombok.Getter;
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.command.TabCompleter;
+import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -94,6 +97,9 @@ public final class RedisChat extends JavaPlugin {
     private ExecutorService executorService;
     @Getter
     private MailGUIManager mailGUIManager;
+    // New field for the custom inventory API
+    @Getter
+    private CustomInventoryAPI customInventoryAPI;
 
     public Config config;
     public FiltersConfig filterSettings;
@@ -124,6 +130,11 @@ public final class RedisChat extends JavaPlugin {
         }
 
         this.executorService = Executors.newFixedThreadPool(config.chatThreads);
+
+        // Initialize the custom inventory API
+        this.customInventoryAPI = new CustomInventoryAPI();
+        Bukkit.getServicesManager().register(CustomInventoryAPI.class, this.customInventoryAPI, this, ServicePriority.Normal);
+
 
         //Redis section
         this.dataManager = switch (config.getDataType()) {
@@ -391,5 +402,4 @@ public final class RedisChat extends JavaPlugin {
         registeredCommands.add(commandAPICommand);
         getLogger().info("Command " + commandAPICommand.getName() + " registered on CommandAPI!");
     }
-
 }
