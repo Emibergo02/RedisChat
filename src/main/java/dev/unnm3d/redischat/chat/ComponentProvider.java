@@ -3,6 +3,7 @@ package dev.unnm3d.redischat.chat;
 import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.api.TagResolverIntegration;
+import dev.unnm3d.redischat.api.events.InventoryPlaceholderEvent;
 import dev.unnm3d.redischat.utils.ItemNameProvider;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -16,6 +17,7 @@ import net.kyori.adventure.text.minimessage.tag.standard.StandardTags;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -257,23 +259,44 @@ public class ComponentProvider {
             String toParseItem = plugin.config.itemFormat
                     .replace("%player%", player.getName())
                     .replace("%command%", "/invshare " + player.getName() + "-item");
-            Component toParseItemComponent = parse(player, toParseItem, true, false, false, this.standardTagResolver);
+            Component toParseItemComponent = parse(player, toParseItem,
+                    true, false, false, this.standardTagResolver);
 
-            // Get the item to display (either custom or actual)
-            ItemStack itemToDisplay = plugin.getCustomInventoryAPI().hasCustomItem(p) ?
-                    plugin.getCustomInventoryAPI().getCustomItem(p) :
-                    p.getInventory().getItemInMainHand();
+            // 1) Default item from main hand
+            ItemStack defaultItem = p.getInventory().getItemInMainHand();
 
+            // 2) Fire event and allow override
+            InventoryPlaceholderEvent itemEvent = new InventoryPlaceholderEvent(
+                    p,
+                    InventoryPlaceholderEvent.Type.ITEM,
+                    new ItemStack[]{ defaultItem }
+            );
+            Bukkit.getPluginManager().callEvent(itemEvent);
+
+            // 3) Unwrap result
+            ItemStack[] itemArr = itemEvent.getContents();
+            ItemStack itemToDisplay = (itemArr.length > 0 && itemArr[0] != null)
+                    ? itemArr[0]
+                    : new ItemStack(Material.AIR);
+
+            // … and continue as usual:
             final Component itemName = getItemNameComponent(itemToDisplay);
-            toParseItemComponent = toParseItemComponent.replaceText(rTextBuilder -> rTextBuilder.matchLiteral("%item_name%").replacement(itemName));
-            toParseItemComponent = toParseItemComponent.replaceText(rTextBuilder -> rTextBuilder.matchLiteral("%amount%").replacement(
-                    itemToDisplay.getAmount() > 1 ?
-                            "x" + itemToDisplay.getAmount() + " " :
-                            ""
-            ));
+            toParseItemComponent = toParseItemComponent.replaceText(r -> r
+                    .matchLiteral("%item_name%")
+                    .replacement(itemName)
+            );
+            toParseItemComponent = toParseItemComponent.replaceText(r -> r
+                    .matchLiteral("%amount%")
+                    .replacement(itemToDisplay.getAmount() > 1
+                            ? "x" + itemToDisplay.getAmount() + " "
+                            : ""
+                    )
+            );
 
             builder.resolver(Placeholder.component(plugin.config.item_tag, toParseItemComponent));
         }
+
+
 
         if (player.hasPermission(Permissions.USE_ENDERCHEST.getPermission())) {
             String toParseEnderChest = plugin.config.enderChestFormat
@@ -400,49 +423,57 @@ public class ComponentProvider {
         if (!(sender instanceof Player player)) return message;
 
         if (plugin.config.interactiveChatNostalgia) {
-            message = message.replace("[inv]", "<" + plugin.config.inv_tag + ">")
+            message = message
+                    .replace("[inv]", "<" + plugin.config.inv_tag + ">")
                     .replace("[inventory]", "<" + plugin.config.inv_tag + ">")
-                    .replace("[i]", "<" + plugin.config.item_tag + ">")
                     .replace("[item]", "<" + plugin.config.item_tag + ">")
-                    .replace("[enderchest]", "<" + plugin.config.ec_tag + ">")
-                    .replace("[ec]", "<" + plugin.config.ec_tag + ">");
+                    .replace("[i]", "<" + plugin.config.item_tag + ">")
+                    .replace("[ec]", "<" + plugin.config.ec_tag + ">")
+                    .replace("[enderchest]", "<" + plugin.config.ec_tag + ">");
         }
 
+        // Inventory-Tag → Event + save
         if (message.contains("<" + plugin.config.inv_tag + ">")) {
-            if (plugin.getCustomInventoryAPI().hasCustomInventory(player)) {
-                // Use custom inventory if available
-                plugin.getDataManager().addInventory(player.getName(),
-                        plugin.getCustomInventoryAPI().getCustomInventory(player));
-            } else {
-                // Fall back to actual inventory
-                plugin.getDataManager().addInventory(player.getName(), player.getInventory().getContents());
-            }
+            ItemStack[] inv = player.getInventory().getContents();
+            InventoryPlaceholderEvent ev = new InventoryPlaceholderEvent(
+                    player,
+                    InventoryPlaceholderEvent.Type.INVENTORY,
+                    inv
+            );
+            Bukkit.getPluginManager().callEvent(ev);
+            plugin.getDataManager().addInventory(player.getName(), ev.getContents());
         }
 
         if (message.contains("<" + plugin.config.item_tag + ">")) {
-            if (plugin.getCustomInventoryAPI().hasCustomItem(player)) {
-                // Use custom item if available
-                plugin.getDataManager().addItem(player.getName(),
-                        plugin.getCustomInventoryAPI().getCustomItem(player));
-            } else {
-                // Fall back to actual item
-                plugin.getDataManager().addItem(player.getName(), player.getInventory().getItemInMainHand());
-            }
+            ItemStack inHand = player.getInventory().getItemInMainHand();
+            InventoryPlaceholderEvent ev = new InventoryPlaceholderEvent(
+                    player,
+                    InventoryPlaceholderEvent.Type.ITEM,
+                    new ItemStack[]{ inHand }
+            );
+            Bukkit.getPluginManager().callEvent(ev);
+            // save only one item
+            ItemStack toSave = ev.getContents().length > 0
+                    ? ev.getContents()[0]
+                    : new ItemStack(Material.AIR);
+            plugin.getDataManager().addItem(player.getName(), toSave);
         }
 
+        // Enderchest-Tag → Event + save
         if (message.contains("<" + plugin.config.ec_tag + ">")) {
-            if (plugin.getCustomInventoryAPI().hasCustomEnderChest(player)) {
-                // Use custom enderchest if available
-                plugin.getDataManager().addEnderchest(player.getName(),
-                        plugin.getCustomInventoryAPI().getCustomEnderChest(player));
-            } else {
-                // Fall back to actual enderchest
-                plugin.getDataManager().addEnderchest(player.getName(), player.getEnderChest().getContents());
-            }
+            ItemStack[] ec = player.getEnderChest().getContents();
+            InventoryPlaceholderEvent ev = new InventoryPlaceholderEvent(
+                    player,
+                    InventoryPlaceholderEvent.Type.ENDERCHEST,
+                    ec
+            );
+            Bukkit.getPluginManager().callEvent(ev);
+            plugin.getDataManager().addEnderchest(player.getName(), ev.getContents());
         }
 
         return message;
     }
+
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     public void logComponent(Component component) {
