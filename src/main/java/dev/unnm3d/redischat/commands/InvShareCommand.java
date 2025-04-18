@@ -62,18 +62,24 @@ public class InvShareCommand implements CommandExecutor {
                     .thenAccept(rawInv -> {
                         final ItemStack[] guiItems = new ItemStack[45];
                         for (int i = 0; i < 9; i++) {
-                            final int idx = 36 + i;
-                            final ItemStack it = idx < rawInv.length && rawInv[idx] != null
-                                    ? rawInv[idx]
+                            int armorIdx = 36 + i;
+                            ItemStack armorOrAir = (armorIdx < rawInv.length && rawInv[armorIdx] != null)
+                                    ? rawInv[armorIdx]
                                     : new ItemStack(Material.AIR);
-                            guiItems[i] = guiItems[36 + i] = it;
+                            guiItems[i] = armorOrAir;
                         }
-                        for (int i = 9; i < 36; i++) {
-                            guiItems[i] = i < rawInv.length && rawInv[i] != null
+                        for (int slot = 9; slot < 36; slot++) {
+                            ItemStack content = (slot < rawInv.length && rawInv[slot] != null)
+                                    ? rawInv[slot]
+                                    : new ItemStack(Material.AIR);
+                            guiItems[slot] = content;
+                        }
+                        for (int i = 0; i < 9; i++) {
+                            ItemStack hotbarOrAir = (i < rawInv.length && rawInv[i] != null)
                                     ? rawInv[i]
                                     : new ItemStack(Material.AIR);
+                            guiItems[36 + i] = hotbarOrAir;
                         }
-
                         RedisChat.getScheduler().runTask(() ->
                                 openRawGUI(
                                         p,
@@ -82,6 +88,8 @@ public class InvShareCommand implements CommandExecutor {
                                 )
                         );
                     });
+
+
 
             case ENDERCHEST -> plugin.getDataManager()
                     .getPlayerEnderchest(targetName)
