@@ -47,15 +47,18 @@ public class InvShareCommand implements CommandExecutor {
             case ITEM -> plugin.getDataManager()
                     .getPlayerItem(targetName)
                     .thenAccept(item -> {
-                        // item ist effektiv final
+                        ItemStack[] guiItems = new ItemStack[27];
+                        Arrays.fill(guiItems, new ItemStack(Material.AIR));
+                        guiItems[13] = item;
                         RedisChat.getScheduler().runTask(() ->
                                 openRawGUI(
                                         p,
                                         plugin.config.item_title.replace("%player%", targetName),
-                                        new ItemStack[]{ item }
+                                        guiItems
                                 )
                         );
                     });
+
 
             case INVENTORY -> plugin.getDataManager()
                     .getPlayerInventory(targetName)
