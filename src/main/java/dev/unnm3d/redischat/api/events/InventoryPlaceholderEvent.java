@@ -20,8 +20,8 @@ public class InventoryPlaceholderEvent extends Event {
 
     public InventoryPlaceholderEvent(Player player, Type type, ItemStack[] defaultContents) {
         super(!player.getServer().isPrimaryThread());
-        this.player   = player;
-        this.type     = type;
+        this.player = player;
+        this.type = type;
         this.contents = defaultContents;
     }
 

@@ -37,7 +37,6 @@ import java.util.regex.Pattern;
 
 @AllArgsConstructor
 public class ComponentProvider {
-    @Subst("")
     private final RedisChat plugin;
     private final MiniMessage miniMessage;
     @Getter
@@ -273,13 +272,19 @@ public class ComponentProvider {
             );
             Bukkit.getPluginManager().callEvent(itemEvent);
 
-            // 3) Unwrap result
-            ItemStack[] itemArr = itemEvent.getContents();
-            ItemStack itemToDisplay = (itemArr.length > 0 && itemArr[0] != null)
-                    ? itemArr[0]
+
+            // 3) Unwrap result and clone contents
+            ItemStack[] originalArr = itemEvent.getContents();
+            ItemStack[] clonedArr = Arrays.stream(originalArr)
+                    .map(item -> item == null ? null : item.clone())
+                    .toArray(ItemStack[]::new);
+
+            // safely grab a display item
+            ItemStack itemToDisplay = (clonedArr.length > 0 && clonedArr[0] != null)
+                    ? clonedArr[0]
                     : new ItemStack(Material.AIR);
 
-            // … and continue as usual:
+            // … continue as before …
             final Component itemName = getItemNameComponent(itemToDisplay);
             toParseItemComponent = toParseItemComponent.replaceText(r -> r
                     .matchLiteral("%item_name%")
@@ -292,6 +297,7 @@ public class ComponentProvider {
                             : ""
                     )
             );
+
 
             builder.resolver(Placeholder.component(plugin.config.item_tag, toParseItemComponent));
         }

@@ -48,7 +48,6 @@ public class InvShareCommand implements CommandExecutor {
                     .getPlayerItem(targetName)
                     .thenAccept(item -> {
                         ItemStack[] guiItems = new ItemStack[27];
-                        Arrays.fill(guiItems, new ItemStack(Material.AIR));
                         guiItems[13] = item;
                         RedisChat.getScheduler().runTask(() ->
                                 openRawGUI(

@@ -126,9 +126,6 @@ public final class RedisChat extends JavaPlugin {
 
         this.executorService = Executors.newFixedThreadPool(config.chatThreads);
 
-
-
-
         //Redis section
         this.dataManager = switch (config.getDataType()) {
             case REDIS -> RedisDataManager.startup(this);
