@@ -479,9 +479,6 @@ public class ComponentProvider {
             plugin.getDataManager().addInventory(player.getName(), ev.getContents());
         }
 
-
-
-
         if (message.contains("<" + plugin.config.item_tag + ">")) {
             ItemStack inHand = player.getInventory().getItemInMainHand();
             InventoryPlaceholderEvent ev = new InventoryPlaceholderEvent(
