@@ -21,7 +21,7 @@ import java.util.List;
 @AllArgsConstructor
 public class InvShareCommand implements CommandExecutor {
 
-    private final RedisChat plugin;  // schon final
+    private final RedisChat plugin;
 
     @Override
     public boolean onCommand(final @NotNull CommandSender sender,
@@ -57,46 +57,20 @@ public class InvShareCommand implements CommandExecutor {
                                 )
                         );
                     });
-
-
             case INVENTORY -> plugin.getDataManager()
                     .getPlayerInventory(targetName)
-                    .thenAccept(rawInv -> {
-                        final ItemStack[] guiItems = new ItemStack[45];
-                        for (int i = 0; i < 9; i++) {
-                            int armorIdx = 36 + i;
-                            ItemStack armorOrAir = (armorIdx < rawInv.length && rawInv[armorIdx] != null)
-                                    ? rawInv[armorIdx]
-                                    : new ItemStack(Material.AIR);
-                            guiItems[i] = armorOrAir;
-                        }
-                        for (int slot = 9; slot < 36; slot++) {
-                            ItemStack content = (slot < rawInv.length && rawInv[slot] != null)
-                                    ? rawInv[slot]
-                                    : new ItemStack(Material.AIR);
-                            guiItems[slot] = content;
-                        }
-                        for (int i = 0; i < 9; i++) {
-                            ItemStack hotbarOrAir = (i < rawInv.length && rawInv[i] != null)
-                                    ? rawInv[i]
-                                    : new ItemStack(Material.AIR);
-                            guiItems[36 + i] = hotbarOrAir;
-                        }
-                        RedisChat.getScheduler().runTask(() ->
-                                openRawGUI(
-                                        p,
-                                        plugin.config.inv_title.replace("%player%", targetName),
-                                        guiItems
-                                )
-                        );
-                    });
-
-
-
+                    .thenAccept(combinedArray ->
+                            RedisChat.getScheduler().runTask(() ->
+                                    openRawGUI(
+                                            p,
+                                            plugin.config.inv_title.replace("%player%", targetName),
+                                            combinedArray
+                                    )
+                            )
+                    );
             case ENDERCHEST -> plugin.getDataManager()
                     .getPlayerEnderchest(targetName)
                     .thenAccept(fetched -> {
-                        // fetched ist effektiv final
                         RedisChat.getScheduler().runTask(() ->
                                 openRawGUI(
                                         p,
@@ -114,7 +88,6 @@ public class InvShareCommand implements CommandExecutor {
                             final String title,
                             final ItemStack[] contents) {
 
-        // Inhalte auf die GUI‑Größe trimmen/padden
         int rows = contents.length / 9 + (contents.length % 9 == 0 ? 0 : 1);
         rows = Math.max(1, Math.min(6, rows));
 

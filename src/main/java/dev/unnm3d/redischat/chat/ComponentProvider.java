@@ -22,7 +22,6 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.intellij.lang.annotations.Subst;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -440,15 +439,48 @@ public class ComponentProvider {
 
         // Inventory-Tag → Event + save
         if (message.contains("<" + plugin.config.inv_tag + ">")) {
-            ItemStack[] inv = player.getInventory().getContents();
+            ItemStack[] contents = player.getInventory().getContents();
+            ItemStack[] armor    = player.getInventory().getArmorContents();
+            ItemStack  offhand   = player.getInventory().getItemInOffHand();
+
+            ItemStack[] combined = new ItemStack[45];
+            Arrays.fill(combined, new ItemStack(Material.AIR));
+
+            for (int i = 0; i < armor.length && i < 4; i++) {
+                if (armor[i] != null) {
+                    combined[i] = armor[i].clone();
+                }
+            }
+                combined[4] = offhand.clone();
+
+            for (int i = 9; i < contents.length; i++) {
+                ItemStack it = contents[i];
+                if (it != null) {
+                    combined[i] = it.clone();
+                }
+            }
+
+            for (int i = 0; i < 9; i++) {
+                ItemStack hot = contents[i];
+                if (hot != null) {
+                    combined[36 + i] = hot.clone();
+                } else {
+                    //Secure to not show duplicated Armour
+                    combined[36 + i] = new ItemStack(Material.AIR);
+                }
+            }
+
             InventoryPlaceholderEvent ev = new InventoryPlaceholderEvent(
                     player,
                     InventoryPlaceholderEvent.Type.INVENTORY,
-                    inv
+                    combined
             );
             Bukkit.getPluginManager().callEvent(ev);
             plugin.getDataManager().addInventory(player.getName(), ev.getContents());
         }
+
+
+
 
         if (message.contains("<" + plugin.config.item_tag + ">")) {
             ItemStack inHand = player.getInventory().getItemInMainHand();
