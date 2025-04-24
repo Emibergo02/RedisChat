@@ -4,16 +4,13 @@ import com.github.Anon8281.universalScheduler.UniversalRunnable;
 import dev.unnm3d.redischat.RedisChat;
 import lombok.AllArgsConstructor;
 import org.bukkit.Material;
-import org.bukkit.block.Container;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.BlockStateMeta;
 import org.jetbrains.annotations.NotNull;
 import xyz.xenondevs.invui.gui.Gui;
-import xyz.xenondevs.invui.item.Item;
 import xyz.xenondevs.invui.item.builder.ItemBuilder;
 import xyz.xenondevs.invui.item.impl.SimpleItem;
 import xyz.xenondevs.invui.window.Window;
@@ -27,103 +24,98 @@ public class InvShareCommand implements CommandExecutor {
     private final RedisChat plugin;
 
     @Override
-    public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] strings) {
-        if (!(commandSender instanceof Player p)) return true;
+    public boolean onCommand(final @NotNull CommandSender sender,
+                             final @NotNull Command command,
+                             final @NotNull String label,
+                             final @NotNull String[] args) {
 
-        if (strings.length == 0) return true;
-        final String[] split = strings[0].split("-");
-        if (split.length == 1) return true;
+        if (!(sender instanceof final Player p)) return true;
+        if (args.length == 0) return true;
 
+        final String[] split = args[0].split("-");
+        if (split.length != 2) return true;
 
-        final String playerName = split[0];
-        InventoryType type = InventoryType.valueOf(split[1].toUpperCase());
-        switch (type) {
-            case ITEM -> plugin.getDataManager().getPlayerItem(playerName)
-                    .thenAccept(item ->
-                            RedisChat.getScheduler().runTask(() -> {
-                                        if (plugin.config.debugItemShare) {
-                                            plugin.getLogger().info("Itemshare openGUI for player " + p.getName() + ": " + item.getType());
-                                        }
-                                        if (item.getType().toString().endsWith("SHULKER_BOX")) {
-                                            if (item.getItemMeta() instanceof BlockStateMeta bsm)
-                                                if (bsm.getBlockState() instanceof Container shulkerBox) {
-                                                    openInvShareGui(p,
-                                                            plugin.config.shulker_title.replace("%player%", playerName),
-                                                            3,
-                                                            shulkerBox.getSnapshotInventory().getContents()
-                                                    );
-                                                }
-                                        } else {
-                                            openInvShareGuiItem(p,
-                                                    plugin.config.item_title.replace("%player%", playerName),
-                                                    item
-                                            );
-                                        }
-                                    }
-                            ));
-
-
-            case INVENTORY -> plugin.getDataManager().getPlayerInventory(playerName)
-                    .thenAccept(inventoryContents ->
-                            RedisChat.getScheduler().runTask(() -> {
-                                if (plugin.config.debugItemShare) {
-                                    plugin.getLogger().info("Invshare openGUI for player " + p.getName() + ": " + Arrays.toString(inventoryContents));
-                                }
-                                openInvShareGui(p,
-                                        plugin.config.inv_title.replace("%player%", playerName),
-                                        5,
-                                        inventoryContents
-                                );
-                            }));
-            case ENDERCHEST -> plugin.getDataManager().getPlayerEnderchest(playerName)
-                    .thenAccept(ecContents ->
-                            RedisChat.getScheduler().runTask(() -> {
-                                if (plugin.config.debugItemShare) {
-                                    plugin.getLogger().info("ECshare openGUI for player " + p.getName() + ": " + Arrays.toString(ecContents));
-                                }
-                                openInvShareGui(p,
-                                        plugin.config.ec_title.replace("%player%", playerName),
-                                        3,
-                                        ecContents
-                                );
-                            }));
+        final String targetName = split[0];
+        final InventoryType type;
+        try {
+            type = InventoryType.valueOf(split[1].toUpperCase());
+        } catch (final IllegalArgumentException e) {
+            return true;
         }
+
+        switch (type) {
+            case ITEM -> plugin.getDataManager()
+                    .getPlayerItem(targetName)
+                    .thenAccept(item -> {
+                        ItemStack[] guiItems = new ItemStack[27];
+                        guiItems[13] = item;
+                        RedisChat.getScheduler().runTask(() ->
+                                openRawGUI(
+                                        p,
+                                        plugin.config.item_title.replace("%player%", targetName),
+                                        guiItems
+                                )
+                        );
+                    });
+            case INVENTORY -> plugin.getDataManager()
+                    .getPlayerInventory(targetName)
+                    .thenAccept(combinedArray ->
+                            RedisChat.getScheduler().runTask(() ->
+                                    openRawGUI(
+                                            p,
+                                            plugin.config.inv_title.replace("%player%", targetName),
+                                            combinedArray
+                                    )
+                            )
+                    );
+            case ENDERCHEST -> plugin.getDataManager()
+                    .getPlayerEnderchest(targetName)
+                    .thenAccept(fetched -> {
+                        RedisChat.getScheduler().runTask(() ->
+                                openRawGUI(
+                                        p,
+                                        plugin.config.ec_title.replace("%player%", targetName),
+                                        fetched
+                                )
+                        );
+                    });
+        }
+
         return true;
     }
 
-    private void openInvShareGui(Player player, String title, int size, ItemStack[] items) {
-        final Gui gui = Gui.empty(9, size);
-        gui.addItems(Arrays.stream(items)
-                .map(itemStack -> {
-                    if (itemStack == null) return new ItemBuilder(Material.AIR);
-                    return new ItemBuilder(itemStack);
-                })
+    private void openRawGUI(final Player viewer,
+                            final String title,
+                            final ItemStack[] contents) {
+
+        int rows = contents.length / 9 + (contents.length % 9 == 0 ? 0 : 1);
+        rows = Math.max(1, Math.min(6, rows));
+
+        final ItemStack[] gui = Arrays.copyOf(contents, rows * 9);
+        for (int i = 0; i < gui.length; i++) {
+            if (gui[i] == null) gui[i] = new ItemStack(Material.AIR);
+        }
+
+        final Gui inv = Gui.empty(9, rows);
+        final List<SimpleItem> items = Arrays.stream(gui)
+                .map(ItemBuilder::new)
                 .map(SimpleItem::new)
-                .toArray(Item[]::new)
-        );
-        Window.single().setTitle(title).setGui(gui).setCloseHandlers(List.of(() -> new UniversalRunnable() {
-            @Override
-            public void run() {
-                player.updateInventory();
-            }
-        }.runTaskLater(plugin, 1))).open(player);
+                .toList();
+        inv.addItems(items.toArray(SimpleItem[]::new));
+
+        Window.single()
+                .setTitle(title)
+                .setGui(inv)
+                .setCloseHandlers(List.of(() ->
+                        new UniversalRunnable() {
+                            @Override
+                            public void run() {
+                                viewer.updateInventory();
+                            }
+                        }.runTaskLater(plugin, 1)
+                ))
+                .open(viewer);
     }
 
-    private void openInvShareGuiItem(Player player, String title, ItemStack item) {
-        Gui gui = Gui.empty(9, 3);
-        gui.setItem(13, new SimpleItem(item));
-        Window.single().setTitle(title).setGui(gui).setCloseHandlers(List.of(() -> new UniversalRunnable() {
-            @Override
-            public void run() {
-                player.updateInventory();
-            }
-        }.runTaskLater(plugin, 1))).open(player);
-    }
-
-    public enum InventoryType {
-        INVENTORY,
-        ENDERCHEST,
-        ITEM
-    }
-
+    public enum InventoryType { INVENTORY, ENDERCHEST, ITEM }
 }

@@ -95,6 +95,7 @@ public final class RedisChat extends JavaPlugin {
     @Getter
     private MailGUIManager mailGUIManager;
 
+
     public Config config;
     public FiltersConfig filterSettings;
     public Messages messages;
@@ -391,5 +392,4 @@ public final class RedisChat extends JavaPlugin {
         registeredCommands.add(commandAPICommand);
         getLogger().info("Command " + commandAPICommand.getName() + " registered on CommandAPI!");
     }
-
 }
