@@ -6,11 +6,12 @@ plugins {
 
 
 group = 'dev.unnm3d'
-version = '5.4.15'
+version = '5.5.0'
 
 
 repositories {
     mavenLocal()
+    maven { url 'https://repo.papermc.io/repository/maven-public/' }
     maven { url 'https://repo.spicord.org/' }
     maven { url 'https://jitpack.io' }
     maven { url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
@@ -32,13 +33,14 @@ dependencies {
     implementation 'xyz.xenondevs.invui:inventory-access-r17:1.43'
     implementation 'xyz.xenondevs.invui:inventory-access-r18:1.43'
     implementation 'xyz.xenondevs.invui:inventory-access-r19:1.43'
+    implementation 'xyz.xenondevs.invui:inventory-access-r20:1.43'
     implementation 'xyz.xenondevs.invui:inventory-access-r21:1.43'
     implementation 'xyz.xenondevs.invui:inventory-access-r22:1.43'
     implementation 'dev.jorel:commandapi-bukkit-shade:9.7.0'
     implementation 'com.github.Anon8281:UniversalScheduler:0.1.6'
 
 
-    compileOnly 'org.spigotmc:spigot-api:1.19.4-R0.1-SNAPSHOT'
+    compileOnly 'io.papermc.paper:paper-api:1.19.4-R0.1-SNAPSHOT'
     compileOnly 'me.clip:placeholderapi:2.11.6'
     compileOnly 'io.lettuce:lettuce-core:6.5.3.RELEASE'
     compileOnly 'org.jetbrains:annotations:24.1.0'
@@ -55,7 +57,7 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.2'
     testImplementation 'org.junit.jupiter:junit-jupiter-params:5.10.2'
     testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.10.2'
-    testImplementation 'io.papermc.paper:paper-api:1.20.1-R0.1-SNAPSHOT'
+    testImplementation 'io.papermc.paper:paper-api:1.19.4-R0.1-SNAPSHOT'
 
     annotationProcessor 'org.projectlombok:lombok:1.18.34'
 }
@@ -78,6 +80,7 @@ shadowJar {
         include dependency('xyz.xenondevs.invui:inventory-access-r17')
         include dependency('xyz.xenondevs.invui:inventory-access-r18')
         include dependency('xyz.xenondevs.invui:inventory-access-r19')
+        include dependency('xyz.xenondevs.invui:inventory-access-r20')
         include dependency('xyz.xenondevs.invui:inventory-access-r21')
         include dependency('xyz.xenondevs.invui:inventory-access-r22')
         include dependency('dev.jorel:commandapi-bukkit-shade')

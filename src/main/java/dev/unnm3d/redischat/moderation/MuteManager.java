@@ -167,7 +167,8 @@ public class MuteManager {
     public boolean isMutedOnChannel(String playerName, String channel) {
         final Set<String> mutedPlayers = channelMutedForPlayers.get(channel);
         if (mutedPlayers == null) return false;
-        return mutedPlayers.contains(playerName) || mutedPlayers.contains(KnownChatEntities.ALL_PLAYERS.toString());
+        return mutedPlayers.contains(playerName) ||
+                (!plugin.config.allPlayersString.isEmpty() && mutedPlayers.contains(plugin.config.allPlayersString));
     }
 
     /**
@@ -178,15 +179,16 @@ public class MuteManager {
      * @return true if the "ignorer" is ignoring the "ignored"
      */
     public boolean isPlayerIgnored(String ignorer, String ignored) {
-        if(ignored.equals(KnownChatEntities.SERVER_SENDER.toString())) return false;
-        if(ignorer.equals(ignored)) return false;
+        if (ignored.equals(KnownChatEntities.SERVER_SENDER.toString())) return false;
+        if (ignorer.equals(ignored)) return false;
 
         final Set<String> mutedPlayers = playersMutedForPlayers.get(ignorer);
         boolean isIgnored = mutedPlayers != null && (
-                mutedPlayers.contains(ignored) || mutedPlayers.contains(KnownChatEntities.ALL_PLAYERS.toString())
+                mutedPlayers.contains(ignored) ||
+                        (!plugin.config.allPlayersString.isEmpty() && mutedPlayers.contains(plugin.config.allPlayersString))
         );
         // If the player is in the whitelist, the result is inverted
-        if(isWhitelistEnabledPlayer(ignorer)) return !isIgnored;
+        if (isWhitelistEnabledPlayer(ignorer)) return !isIgnored;
         return isIgnored;
     }
 

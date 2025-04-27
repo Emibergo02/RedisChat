@@ -21,6 +21,11 @@ public class IgnoreWhitelistCommand {
                     final String targetName = args.getOptional("player")
                             .map(o -> ((Player) o).getName())
                             .orElseGet(sender::getName);
+                    if (!sender.hasPermission(Permissions.IGNORE_WHITELIST.getPermission() + ".other") &&
+                            !sender.getName().equals(targetName)) {
+                        plugin.messages.sendMessage(sender, plugin.messages.noPermission);
+                        return;
+                    }
                     if (plugin.getChannelManager().getMuteManager().isWhitelistEnabledPlayer(targetName)) {
                         plugin.getChannelManager().getMuteManager().setWhitelistEnabledPlayer(targetName, false);
                         plugin.messages.sendMessage(sender, plugin.messages.ignore_whitelist_disabled);

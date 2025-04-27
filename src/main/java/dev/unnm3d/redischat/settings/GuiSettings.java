@@ -19,7 +19,7 @@ public final class GuiSettings implements ConfigValidator {
     public String chatColorGUITitle = "Choose your chat color";
     public List<String> chatColorGUIStructure = List.of(
             "1 2 3 4 5 6 7 8 9",
-            "a b c d e f x x x");
+            "a b c d e f r x x");
     public ItemStack colorBlack = new ItemBuilder(Material.BLACK_DYE).setDisplayName("§0Black").get();
     public ItemStack colorDarkBlue = new ItemBuilder(Material.BLUE_DYE).setDisplayName("§1Dark Blue").get();
     public ItemStack colorDarkGreen = new ItemBuilder(Material.GREEN_DYE).setDisplayName("§2Dark Green").get();
@@ -36,6 +36,7 @@ public final class GuiSettings implements ConfigValidator {
     public ItemStack colorLightPurple = new ItemBuilder(Material.PINK_DYE).setDisplayName("§dLight Purple").get();
     public ItemStack colorYellow = new ItemBuilder(Material.YELLOW_DYE).setDisplayName("§eYellow").get();
     public ItemStack colorWhite = new ItemBuilder(Material.WHITE_DYE).setDisplayName("§fWhite").get();
+    public ItemStack colorReset = new ItemBuilder(Material.BARRIER).setDisplayName("§fReset").get();
 
     public String publicMailTabTitle = "Public Mail";
     public String privateMailTabTitle = "Private Mail";
@@ -227,6 +228,7 @@ public final class GuiSettings implements ConfigValidator {
         structure.addIngredient('d', colorLightPurple);
         structure.addIngredient('e', colorYellow);
         structure.addIngredient('f', colorWhite);
+        structure.addIngredient('r', colorReset);
         return structure;
     }
 

@@ -1,5 +1,6 @@
 package dev.unnm3d.redischat.chat.filters.incoming;
 
+import de.exlll.configlib.Comment;
 import de.exlll.configlib.Configuration;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.api.objects.AudienceType;
@@ -38,7 +39,7 @@ public class IgnorePlayerFilter extends AbstractFilter<IgnorePlayerFilter.Ignore
                             .isEmpty()) {
 
                 return new FilterResult(chatMessage, true,
-                        Optional.of(MiniMessage.miniMessage().deserialize(RedisChat.getInstance().messages.ignored_player_receiver
+                        Optional.of(MiniMessage.miniMessage().deserialize(RedisChat.getInstance().messages.ignoredMessageReceiver
                                 .replace("%player%", chatMessage.getSender().getName()))));
             }
 
@@ -51,9 +52,10 @@ public class IgnorePlayerFilter extends AbstractFilter<IgnorePlayerFilter.Ignore
     @Configuration
     @Getter
     public static class IgnorePlayerFilterProperties extends FiltersConfig.FilterSettings {
-        private boolean ignoreChannelMessages;
+        @Comment("If true, send a ignored_player_receiver message when ignoring a player")
         private boolean sendWarnWhenIgnoring;
-
+        @Comment("If true, sendWarnWhenIgnoring will work on channel messages too")
+        private boolean ignoreChannelMessages;
 
         public IgnorePlayerFilterProperties() {
             super(true, 4, Set.of(AudienceType.PLAYER, AudienceType.CHANNEL), Set.of());

@@ -49,7 +49,7 @@ commands:
     permission: redischat.spycommand
   chatcolor:
     description: Chatcolor command
-    permission: redischat.chatcolorcommand
+    permission: redischat.chatcolor
   setchatplaceholder:
     description: Setchatplaceholder command
     permission: redischat.setchatplaceholder
@@ -72,9 +72,9 @@ permissions:
   redischat.joinquit:
     description: Allows to see the join and quit messages
     default: true
-  redischat.usecustomplaceholders:
+  redischat.use_emoji:
     description: Allows to see the item in the chat
-    default: true
+    default: false
   redischat.showitem:
     description: Allows to see the item in the chat
     default: op
@@ -144,9 +144,6 @@ permissions:
   redischat.bypassfilter.muted_channel:
     description: Allows to bypass the muted channel filter
     default: false
-  redischat.bypassfilter.private:
-    description: Allows to bypass the private filter
-    default: false
   redischat.bypassfilter.ignore:
     description: Allows to bypass the ignore filter
     default: false
@@ -181,20 +178,22 @@ permissions:
       - redischat.mutechannel
       - redischat.setchatplaceholder
       - redischat.chatcolorcommand
+      - redischat.ignore_whitelist
+      - redischat.ignore_whitelist.other
   redischat.default:
     description: Allows you to use default commands
     default: true
     children:
       - redischat.message
       - redischat.ignore
-      - redischat.usecustomplaceholders
+      - redischat.use_emoji
       - redischat.showitem
       - redischat.showinv
       - redischat.showenderchest
       - redischat.channel.public
       - redischat.listchannel
       - redischat.mail.write
-      - redischat.mail.read
+      - redischat.mail
       - redischat.mail.delete
       - redischat.mail.unread
       - redischat.talkon

@@ -69,7 +69,7 @@ public class MuteCommand {
                     final List<String> suggestions = plugin.getPlayerListManager().getPlayerList(functi1.sender())
                             .stream().filter(s -> s.toLowerCase().startsWith(functi1.currentArg().toLowerCase()))
                             .collect(Collectors.toCollection(ArrayList::new));
-                    suggestions.add(KnownChatEntities.ALL_PLAYERS.toString());
+                    if (!plugin.config.allPlayersString.isEmpty()) suggestions.add(plugin.config.allPlayersString);
                     return suggestions;
                 }));
     }
