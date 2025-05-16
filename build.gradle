@@ -6,7 +6,7 @@ plugins {
 
 
 group = 'dev.unnm3d'
-version = '5.5.0'
+version = '5.5.1'
 
 
 repositories {
@@ -36,7 +36,8 @@ dependencies {
     implementation 'xyz.xenondevs.invui:inventory-access-r20:1.43'
     implementation 'xyz.xenondevs.invui:inventory-access-r21:1.43'
     implementation 'xyz.xenondevs.invui:inventory-access-r22:1.43'
-    implementation 'dev.jorel:commandapi-bukkit-shade:9.7.0'
+    implementation 'xyz.xenondevs.invui:inventory-access-r23:1.45'
+    implementation 'dev.jorel:commandapi-bukkit-shade:10.0.0'
     implementation 'com.github.Anon8281:UniversalScheduler:0.1.6'
 
 
@@ -83,6 +84,7 @@ shadowJar {
         include dependency('xyz.xenondevs.invui:inventory-access-r20')
         include dependency('xyz.xenondevs.invui:inventory-access-r21')
         include dependency('xyz.xenondevs.invui:inventory-access-r22')
+        include dependency('xyz.xenondevs.invui:inventory-access-r23')
         include dependency('dev.jorel:commandapi-bukkit-shade')
         include dependency('com.github.Anon8281:UniversalScheduler:0.1.6')
     }
