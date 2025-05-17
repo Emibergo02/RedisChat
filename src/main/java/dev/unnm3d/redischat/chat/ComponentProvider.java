@@ -269,8 +269,7 @@ public class ComponentProvider {
         Component itemName;
         if (itemStack.getItemMeta() != null && itemNameProvider.hasItemName(itemStack.getItemMeta())) {
             itemName = LegacyComponentSerializer.legacySection().deserialize(
-                            replaceAmpersandCodesWithSection(itemNameProvider.getItemName(itemStack.getItemMeta())))
-                    .hoverEvent(itemStack.asHoverEvent());
+                            replaceAmpersandCodesWithSection(itemNameProvider.getItemName(itemStack.getItemMeta())));
         } else if (itemStack.getType().isAir()) {
             itemName = Component.text(plugin.config.nothing_tag);
         } else {
