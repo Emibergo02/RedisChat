@@ -30,6 +30,7 @@ dependencies {
 
 
     implementation 'com.github.Exlll.ConfigLib:configlib-paper:v4.5.0'
+
     implementation 'xyz.xenondevs.invui:invui-core:1.45'
     implementation 'xyz.xenondevs.invui:inventory-access-r15:1.45'
     implementation 'xyz.xenondevs.invui:inventory-access-r16:1.45'
@@ -40,8 +41,9 @@ dependencies {
     implementation 'xyz.xenondevs.invui:inventory-access-r21:1.45'
     implementation 'xyz.xenondevs.invui:inventory-access-r22:1.45'
     implementation 'xyz.xenondevs.invui:inventory-access-r23:1.45'
-    implementation 'dev.jorel:commandapi-bukkit-shade:9.7.0'
+    implementation 'dev.jorel:commandapi-bukkit-shade:10.0.1'
     implementation "net.william278.uniform:uniform-paper:1.3.2-da777df-indev"
+
     implementation 'com.github.Anon8281:UniversalScheduler:0.1.6'
 
 
