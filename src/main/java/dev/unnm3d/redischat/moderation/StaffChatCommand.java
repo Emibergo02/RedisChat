@@ -1,26 +1,43 @@
 package dev.unnm3d.redischat.moderation;
 
+import com.mojang.brigadier.arguments.StringArgumentType;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.arguments.GreedyStringArgument;
 import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
+import dev.unnm3d.redischat.commands.RedisChatCommand;
 import lombok.AllArgsConstructor;
+import net.william278.uniform.BaseCommand;
+import net.william278.uniform.Permission;
+import net.william278.uniform.paper.LegacyPaperCommand;
+import org.bukkit.command.CommandSender;
+
+import java.util.List;
 
 @AllArgsConstructor
-public class StaffChatCommand {
-    private RedisChat plugin;
+public class StaffChatCommand implements RedisChatCommand {
 
-
-    public CommandAPICommand getCommand() {
-        return new CommandAPICommand("staffchat")
-                .withPermission(Permissions.ADMIN_STAFF_CHAT.getPermission())
-                .withAliases(plugin.config.getCommandAliases("staffchat"))
-                .withArguments(new GreedyStringArgument(plugin.messages.staffChatSuggestion))
-                .executes((sender, args) -> {
-                    String message = (String) args.get(0);
+    @Override
+    public LegacyPaperCommand getCommand() {
+        return LegacyPaperCommand.builder("staffchat")
+                .addPermissions(new Permission(Permissions.ADMIN_STAFF_CHAT.getPermission(), Permission.Default.IF_OP))
+                .setAliases(RedisChat.getInstance().config.commandAliases.getOrDefault("staffchat", List.of()))
+                .addArgument("content", StringArgumentType.greedyString(),
+                        (commandContext, builder) -> {
+                            if (builder.getRemaining().isEmpty()) {
+                                builder.suggest(RedisChat.getInstance().messages.replySuggestion);
+                            }
+                            return builder.buildFuture();
+                        })
+                .execute(commandContext -> {
+                    String message = commandContext.getArgument("content", String.class);
                     if (message == null) return;
+                    if (message.isEmpty()) {
+                        RedisChat.getInstance().messages.sendMessage(commandContext.getSource(), RedisChat.getInstance().messages.missing_arguments);
+                        return;
+                    }
                     RedisChat.getScheduler().runTaskAsynchronously(() ->
-                            plugin.getChannelManager().outgoingMessage(sender, plugin.getChannelManager().getStaffChatChannel(), message));
-                });
+                            RedisChat.getInstance().getChannelManager().outgoingMessage(commandContext.getSource(), RedisChat.getInstance().getChannelManager().getStaffChatChannel(), message));
+                }, "content").build();
     }
 }

@@ -18,6 +18,7 @@ public class AnnounceCommand {
     private final AnnouncerManager announcerManager;
 
     public CommandAPICommand getCommand() {
+
         return new CommandAPICommand("announcer")
                 .withAliases(plugin.config.getCommandAliases("announcer"))
                 .withPermission(Permissions.ANNOUNCER.getPermission())

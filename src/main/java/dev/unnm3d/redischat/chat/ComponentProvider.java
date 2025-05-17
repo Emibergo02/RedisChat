@@ -34,6 +34,7 @@ import java.util.regex.Pattern;
 
 @AllArgsConstructor
 public class ComponentProvider {
+    private static final Pattern PERCENTAGE_PLACEHOLDER_PATTERN = Pattern.compile("([%][^%]+[%])");
     private final RedisChat plugin;
     private final MiniMessage miniMessage;
     @Getter
@@ -139,65 +140,49 @@ public class ComponentProvider {
      * @return The parsed text
      */
     public @NotNull Component parsePlaceholders(@Nullable CommandSender cmdSender, @NotNull String text, TagResolver... tagResolvers) {
-        final String[] stringPlaceholders = text.split("%");
-        final LinkedHashMap<String, Component> placeholders = new LinkedHashMap<>();
-        int placeholderStep = 1;
-        // we need to split the text by % and then check if the placeholder is a placeholder or not
-        for (int i = 0; i < stringPlaceholders.length; i++) {
-            if (i % 2 == placeholderStep) {
-                final String placeholderStringToBeReplaced = "%" + stringPlaceholders[i] + "%";
-                String parsedPlaceH;
-                try {
-                    parsedPlaceH = replaceAmpersandCodesWithSection(
-                            cmdSender instanceof OfflinePlayer offlinePlayer
-                                    ? PlaceholderAPI.setPlaceholders(offlinePlayer, placeholderStringToBeReplaced)
-                                    : PlaceholderAPI.setPlaceholders(null, placeholderStringToBeReplaced)
-                    );
-                } catch (Exception e) {
-                    plugin.getLogger().warning("Error while parsing placeholder " + placeholderStringToBeReplaced + ": " + e.getMessage());
-                    parsedPlaceH = placeholderStringToBeReplaced;
-                }
+        final Matcher plMatcher = PERCENTAGE_PLACEHOLDER_PATTERN.matcher(text);
+        final Set<String> alreadyParsed = new HashSet<>();
+        final HashMap<String, Component> postRender = new HashMap<>();
+        while (plMatcher.find()) {
+            final String placeholder = plMatcher.group();
 
-                //If the placeholder is not a valid placeholder skip to the next "%"
-                if (parsedPlaceH.equals(placeholderStringToBeReplaced)) {
-                    placeholderStep = Math.abs(placeholderStep - 1);
-                    continue;
-                }
+            if (alreadyParsed.contains(placeholder)) continue;
+            alreadyParsed.add(placeholder);
 
-                boolean containsMiniMessageTags = MiniMessage.miniMessage().stripTags(parsedPlaceH).length()
-                        != parsedPlaceH.length();
-                boolean hasLegacyColors = parsedPlaceH.contains("§");
-
-                //The objective is to glitch the color only if the color is a legacy color code
-                //(by default is glitched since the beginning of Minecraft)
-                if (plugin.config.enablePlaceholderGlitch && !containsMiniMessageTags) {
-                    text = text.replace(placeholderStringToBeReplaced, miniMessage.serialize(
-                            //Translate legacy color codes to MiniMessage
-                            LegacyComponentSerializer.legacySection().deserialize(parsedPlaceH)
-                    ));
-                } else if (hasLegacyColors) {
-                    //Colored placeholder needs to be pasted after the normal text is parsed
-                    placeholders.put(placeholderStringToBeReplaced, LegacyComponentSerializer.legacySection().deserialize(parsedPlaceH));
-                } else {
-                    text = text.replace(placeholderStringToBeReplaced, parsedPlaceH);
-                }
-            }
-        }
-
-        Component answer = miniMessage.deserialize(text, tagResolvers);
-        for (String placeholder : placeholders.keySet()) {
-            answer = answer.replaceText(rBuilder -> rBuilder
-                    .matchLiteral(placeholder)//Replace string with components (only if enablePlaceholderGlitch is false)
-                    .replacement(placeholders.get(placeholder))
+            String parsed = replaceAmpersandCodesWithSection(
+                    cmdSender instanceof OfflinePlayer offlinePlayer
+                            ? PlaceholderAPI.setPlaceholders(offlinePlayer, placeholder)
+                            : PlaceholderAPI.setPlaceholders(null, placeholder)
             );
+            if (parsed.contains("§")) {//If the placeholder contains legacy
+                parsed = miniMessage.serialize(
+                        //Translate legacy color codes to MiniMessage
+                        LegacyComponentSerializer.legacySection().deserialize(parsed)
+                );
+            }
+            //The objective is to glitch the color only if the color is a legacy color code
+            //(by default is glitched since the beginning of Minecraft)
+            if (plugin.config.enablePlaceholderGlitch) {
+                text = text.replace(placeholder, parsed);
+                continue;
+            }
+            //Mark as post render
+            postRender.put(placeholder, miniMessage.deserialize(parsed, tagResolvers));
         }
-        return answer;
+
+        //Post render the needed placeholders
+        Component textComponent = miniMessage.deserialize(text, tagResolvers);
+        for (Map.Entry<String, Component> entry : postRender.entrySet()) {
+            textComponent = textComponent.replaceText(rTextBuilder ->
+                    rTextBuilder.matchLiteral(entry.getKey())
+                            .replacement(entry.getValue()));
+        }
+        return textComponent;
     }
 
     public Component parseChatMessageFormat(@NotNull CommandSender cmdSender, @NotNull String text) {
-        Component component = parsePlaceholders(cmdSender,
-                parseResolverIntegrations(
-                        parseLegacy(text, true)), this.standardTagResolver);
+        Component component = parsePlaceholders(cmdSender, parseResolverIntegrations(
+                parseLegacy(text, true)), this.standardTagResolver);
 
         for (Map.Entry<String, String> replacementEntry : plugin.config.components.entrySet()) {
             component = component.replaceText(rBuilder -> rBuilder
@@ -281,16 +266,17 @@ public class ComponentProvider {
     }
 
     private Component getItemNameComponent(@NotNull ItemStack itemStack) {
+        Component itemName;
         if (itemStack.getItemMeta() != null && itemNameProvider.hasItemName(itemStack.getItemMeta())) {
-            return LegacyComponentSerializer.legacySection().deserialize(
-                            replaceAmpersandCodesWithSection(itemNameProvider.getItemName(itemStack.getItemMeta())))
-                    .hoverEvent(itemStack.asHoverEvent());
+            itemName = LegacyComponentSerializer.legacySection().deserialize(
+                            replaceAmpersandCodesWithSection(itemNameProvider.getItemName(itemStack.getItemMeta())));
+        } else if (itemStack.getType().isAir()) {
+            itemName = Component.text(plugin.config.nothing_tag);
+        } else {
+            itemName = Component.translatable(itemStack.getType().translationKey());
         }
-        if (itemStack.getType().isAir()) {
-            return Component.text(plugin.config.nothing_tag);
-        }
-        return Component.translatable(itemStack.getType().translationKey())
-                .hoverEvent(itemStack.asHoverEvent());
+        if (plugin.config.hoverItem) itemName = itemName.hoverEvent(itemStack.asHoverEvent());
+        return itemName;
     }
 
     /**
