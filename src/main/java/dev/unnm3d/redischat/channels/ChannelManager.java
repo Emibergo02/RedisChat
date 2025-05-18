@@ -316,10 +316,9 @@ public class ChannelManager extends RedisChatAPI {
             recipients = pmReceiver == null ? Collections.emptySet() : Collections.singleton(pmReceiver);
         } else {
             recipients = new HashSet<>(plugin.getServer().getOnlinePlayers());
+            getComponentProvider().logComponent(miniMessage.deserialize(
+                    chatMessage.getFormat().replace("{message}", chatMessage.getContent())));
         }
-
-        getComponentProvider().logComponent(miniMessage.deserialize(
-                chatMessage.getFormat().replace("{message}", chatMessage.getContent())));
 
 
         for (Player recipient : recipients) {
