@@ -113,7 +113,6 @@ public final class RedisChat extends JavaPlugin {
     @Override
     public void onEnable() {
         instance = this;
-        PaperUniform.getInstance(this);
         CommandAPI.onEnable();
         registeredCommands = new ArrayList<>();
         scheduler = UniversalScheduler.getScheduler(this);
@@ -397,7 +396,7 @@ public final class RedisChat extends JavaPlugin {
     }
 
     public void loadUniformCommand(RedisChatCommand command) {
-        PaperUniform.getInstance(this).register(command.getCommand());
+        PaperUniform.getInstance(this,false).register(command.getCommand());
     }
 
 }

@@ -6,6 +6,7 @@ import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.api.objects.ChannelAudience;
 import dev.unnm3d.redischat.api.objects.ChatMessage;
 import lombok.Getter;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.jetbrains.annotations.NotNull;
 
 
@@ -43,7 +44,8 @@ public class AnnouncerTask extends UniversalRunnable {
                 new ChatMessage(
                         new ChannelAudience(),
                         "{message}",
-                        getMessage(),
+                        MiniMessage.miniMessage().serialize(plugin.getComponentProvider().parse(null,
+                                getMessage(), true, false, false)),
                         new ChannelAudience(channelName)
                 ));
     }
