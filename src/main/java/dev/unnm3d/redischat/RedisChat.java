@@ -12,6 +12,7 @@ import dev.jorel.commandapi.CommandAPICommand;
 import dev.unnm3d.redischat.api.DataManager;
 import dev.unnm3d.redischat.channels.ChannelCommand;
 import dev.unnm3d.redischat.channels.ChannelManager;
+import dev.unnm3d.redischat.channels.ChannelUniformCommand;
 import dev.unnm3d.redischat.chat.ComponentProvider;
 import dev.unnm3d.redischat.chat.PlaceholderManager;
 import dev.unnm3d.redischat.chat.RedisChatPAPI;
@@ -30,6 +31,7 @@ import dev.unnm3d.redischat.integrations.PremiumVanishIntegration;
 import dev.unnm3d.redischat.integrations.SuperVanishIntegration;
 import dev.unnm3d.redischat.mail.MailCommand;
 import dev.unnm3d.redischat.mail.MailGUIManager;
+import dev.unnm3d.redischat.mail.MailUniformCommand;
 import dev.unnm3d.redischat.moderation.MuteCommand;
 import dev.unnm3d.redischat.moderation.SpyChatCommand;
 import dev.unnm3d.redischat.moderation.SpyManager;
@@ -161,7 +163,7 @@ public final class RedisChat extends JavaPlugin {
 
 
         this.channelManager = new ChannelManager(this);
-        loadCommandAPICommand(new ChannelCommand(this).getCommand());
+        loadUniformCommand(new ChannelUniformCommand(this));
         final TalkOnCommand talkOnCommand = new TalkOnCommand(this);
         loadCommand("talkon", talkOnCommand, talkOnCommand);
 
@@ -180,7 +182,7 @@ public final class RedisChat extends JavaPlugin {
         //Mail section
         if (config.enableMails) {
             this.mailGUIManager = new MailGUIManager(this);
-            loadCommandAPICommand(new MailCommand(this.mailGUIManager).getCommand());
+            loadUniformCommand(new MailUniformCommand(this));
         }
 
 

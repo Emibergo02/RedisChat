@@ -670,7 +670,6 @@ public class RedisDataManager extends RedisAbstract implements DataManager {
         getConnectionAsync(connection ->
                 connection.publish(DataKey.PLAYERLIST.toString(),
                                 String.join("§", playerNames))
-                        .toCompletableFuture().orTimeout(1, TimeUnit.SECONDS)
                         .exceptionally(exception -> {
                             exception.printStackTrace();
                             plugin.getLogger().warning("Error when publishing player list");

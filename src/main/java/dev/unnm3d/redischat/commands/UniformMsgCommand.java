@@ -25,6 +25,13 @@ public class UniformMsgCommand implements RedisChatCommand {
                             .forEach(builder::suggest);
                     return builder.buildFuture();
                 })
+                .addArgument("content", StringArgumentType.greedyString(),
+                        (commandContext, builder) -> {
+                            if (builder.getRemaining().isEmpty()) {
+                                builder.suggest(plugin.messages.msgMessageSuggestion);
+                            }
+                            return builder.buildFuture();
+                        })
                 .execute(commandContext -> RedisChat.getScheduler().runTaskAsynchronously(() -> {
                     String target = commandContext.getArgument("target", String.class);
                     String content = commandContext.getArgument("content", String.class);
@@ -54,7 +61,7 @@ public class UniformMsgCommand implements RedisChatCommand {
                     //Set reply name for /reply
                     plugin.getDataManager().setReplyName(target, commandContext.getSource().getName());
 
-                }), "target")
+                }), "target", "content")
                 .build();
     }
 }

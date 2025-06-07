@@ -25,7 +25,7 @@ public class StaffChatCommand implements RedisChatCommand {
                 .addArgument("content", StringArgumentType.greedyString(),
                         (commandContext, builder) -> {
                             if (builder.getRemaining().isEmpty()) {
-                                builder.suggest(RedisChat.getInstance().messages.replySuggestion);
+                                builder.suggest(RedisChat.getInstance().messages.staffChatSuggestion);
                             }
                             return builder.buildFuture();
                         })

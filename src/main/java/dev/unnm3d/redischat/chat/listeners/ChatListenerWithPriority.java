@@ -1,7 +1,10 @@
 package dev.unnm3d.redischat.chat.listeners;
 
 import dev.unnm3d.redischat.RedisChat;
+import io.papermc.paper.event.player.AsyncChatEvent;
 import lombok.Getter;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -11,37 +14,37 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 public enum ChatListenerWithPriority {
     LOWEST(new ChatListener() {
         @EventHandler(priority = EventPriority.LOWEST)
-        public void onChat(AsyncPlayerChatEvent event) {
+        public void onChat(AsyncChatEvent event) {
             listenChat(event);
         }
     }),
     LOW(new ChatListener() {
         @EventHandler(priority = EventPriority.LOW)
-        public void onChat(AsyncPlayerChatEvent event) {
+        public void onChat(AsyncChatEvent event) {
             listenChat(event);
         }
     }),
     NORMAL(new ChatListener() {
         @EventHandler(priority = EventPriority.NORMAL)
-        public void onChat(AsyncPlayerChatEvent event) {
+        public void onChat(AsyncChatEvent event) {
             listenChat(event);
         }
     }),
     HIGH(new ChatListener() {
         @EventHandler(priority = EventPriority.HIGH)
-        public void onChat(AsyncPlayerChatEvent event) {
+        public void onChat(AsyncChatEvent event) {
             listenChat(event);
         }
     }),
     HIGHEST(new ChatListener() {
         @EventHandler(priority = EventPriority.HIGHEST)
-        public void onChat(AsyncPlayerChatEvent event) {
+        public void onChat(AsyncChatEvent event) {
             listenChat(event);
         }
     }),
     MONITOR(new ChatListener() {
         @EventHandler(priority = EventPriority.MONITOR)
-        public void onChat(AsyncPlayerChatEvent event) {
+        public void onChat(AsyncChatEvent event) {
             listenChat(event);
         }
     });
@@ -57,10 +60,11 @@ public enum ChatListenerWithPriority {
     private abstract static class ChatListener implements Listener {
         private final RedisChat plugin = RedisChat.getInstance();
 
-        public void listenChat(AsyncPlayerChatEvent event) {
+        public void listenChat(AsyncChatEvent event) {
             if (event.isCancelled()) return;
             event.setCancelled(true);
-            plugin.getChannelManager().outgoingMessage(event.getPlayer(), event.getMessage());
+            plugin.getChannelManager().outgoingMessage(event.getPlayer(), MiniMessage.miniMessage().serialize(event.message())
+                    .replace("\\<", "<"));
         }
     }
 }
