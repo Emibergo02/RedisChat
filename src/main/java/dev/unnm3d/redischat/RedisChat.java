@@ -10,7 +10,6 @@ import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIBukkitConfig;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.unnm3d.redischat.api.DataManager;
-import dev.unnm3d.redischat.channels.ChannelCommand;
 import dev.unnm3d.redischat.channels.ChannelManager;
 import dev.unnm3d.redischat.channels.ChannelUniformCommand;
 import dev.unnm3d.redischat.chat.ComponentProvider;
@@ -29,7 +28,6 @@ import dev.unnm3d.redischat.discord.SpicordHook;
 import dev.unnm3d.redischat.integrations.OraxenTagResolver;
 import dev.unnm3d.redischat.integrations.PremiumVanishIntegration;
 import dev.unnm3d.redischat.integrations.SuperVanishIntegration;
-import dev.unnm3d.redischat.mail.MailCommand;
 import dev.unnm3d.redischat.mail.MailGUIManager;
 import dev.unnm3d.redischat.mail.MailUniformCommand;
 import dev.unnm3d.redischat.moderation.MuteCommand;
@@ -398,7 +396,7 @@ public final class RedisChat extends JavaPlugin {
     }
 
     public void loadUniformCommand(RedisChatCommand command) {
-        PaperUniform.getInstance(this,false).register(command.getCommand());
+        PaperUniform.getInstance(this, false).register(command.getCommand());
     }
 
 }

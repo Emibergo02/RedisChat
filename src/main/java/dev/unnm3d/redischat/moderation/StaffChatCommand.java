@@ -1,16 +1,12 @@
 package dev.unnm3d.redischat.moderation;
 
 import com.mojang.brigadier.arguments.StringArgumentType;
-import dev.jorel.commandapi.CommandAPICommand;
-import dev.jorel.commandapi.arguments.GreedyStringArgument;
 import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
 import dev.unnm3d.redischat.commands.RedisChatCommand;
 import lombok.AllArgsConstructor;
-import net.william278.uniform.BaseCommand;
 import net.william278.uniform.Permission;
 import net.william278.uniform.paper.LegacyPaperCommand;
-import org.bukkit.command.CommandSender;
 
 import java.util.List;
 

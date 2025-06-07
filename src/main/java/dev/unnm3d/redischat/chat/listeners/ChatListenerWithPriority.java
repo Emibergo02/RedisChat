@@ -4,7 +4,6 @@ import dev.unnm3d.redischat.RedisChat;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import lombok.Getter;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
