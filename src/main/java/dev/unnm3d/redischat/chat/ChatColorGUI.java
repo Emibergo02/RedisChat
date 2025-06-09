@@ -33,6 +33,10 @@ public class ChatColorGUI extends AbstractGui {
         if (color == ChatColor.RESET) {
             plugin.getPlaceholderManager().removePlayerPlaceholder(player.getName(), "chat_color");
         } else {
+            if (!player.hasPermission(Permissions.CHAT_COLOR.getPermission() + "." + color.name().toLowerCase())) {
+                this.plugin.messages.sendMessage(player, this.plugin.messages.noPermission);
+                return;
+            }
             plugin.getPlaceholderManager().addPlayerPlaceholder(player.getName(), "chat_color", "<" + color.name().toLowerCase() + ">");
         }
 
