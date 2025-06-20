@@ -84,6 +84,7 @@ public class SpicordHook extends SimpleAddon implements IDiscordHook {
     @Override
     public void onMessageReceived(DiscordBot bot, MessageReceivedEvent event) {
         if (event.getAuthor().isBot()) return;
+        if (!plugin.config.spicord.discordReceiver()) return;
         plugin.config.spicord.spicordChannelLink().entrySet().stream()
                 .filter(channelLink -> channelLink.getValue().equals(event.getGuildChannel().getId()))
                 .forEach(channelLink -> {

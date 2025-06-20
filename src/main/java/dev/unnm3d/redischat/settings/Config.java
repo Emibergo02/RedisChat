@@ -312,7 +312,7 @@ public final class Config implements ConfigValidator {
             "Every channel of RedisChat is linked with a channel on Discord",
             "The first element is a RedisChat channel, the second one is a Discord channel id",
             "You can find the Discord channel id by right clicking on the channel and clicking on 'Copy ID'"})
-    public SpicordSettings spicord = new SpicordSettings(true, "<blue>[Discord]</blue> %role% %username% » {message}", "**%channel%** %sender% » {message}", Map.of("public", "1127207189547847740"));
+    public SpicordSettings spicord = new SpicordSettings(true, true, "<blue>[Discord]</blue> %role% %username% » {message}", "**%channel%** %sender% » {message}", Map.of("public", "1127207189547847740"));
 
     @Override
     public boolean validateConfig() {
@@ -431,6 +431,7 @@ public final class Config implements ConfigValidator {
 
     public record SpicordSettings(
             boolean enabled,
+            boolean discordReceiver,
             String chatFormat,
             String discordFormat,
             Map<String, String> spicordChannelLink
