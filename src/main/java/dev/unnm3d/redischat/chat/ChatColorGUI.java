@@ -1,5 +1,6 @@
 package dev.unnm3d.redischat.chat;
 
+import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;

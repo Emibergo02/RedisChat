@@ -12,7 +12,6 @@ import dev.jorel.commandapi.CommandAPICommand;
 import dev.unnm3d.redischat.api.DataManager;
 import dev.unnm3d.redischat.channels.ChannelCommand;
 import dev.unnm3d.redischat.channels.ChannelManager;
-import dev.unnm3d.redischat.channels.ChannelUniformCommand;
 import dev.unnm3d.redischat.chat.ComponentProvider;
 import dev.unnm3d.redischat.chat.PlaceholderManager;
 import dev.unnm3d.redischat.chat.RedisChatPAPI;
