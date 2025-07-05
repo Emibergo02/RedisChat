@@ -263,7 +263,7 @@ public final class Config implements ConfigValidator {
     public String itemFormat = "<click:run_command:%command%>[%amount%%item_name%]</click>";
     @Comment({"Only 1.20.6+", "Whether to use the item name or the display name when parsing the <item> tag"})
     public boolean useItemName = false;
-    @Comment({"Only 1.20.6+", "Whether to use the item name or the display name when parsing the <item> tag"})
+    @Comment({"Whether to use hover on itemshare tags to show item lore"})
     public boolean hoverItem = false;
     public String enderChestFormat = "<click:run_command:%command%><light_purple>[%player%'s EnderChest]</light_purple></click>";
 

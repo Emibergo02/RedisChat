@@ -10,6 +10,7 @@ import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIBukkitConfig;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.unnm3d.redischat.api.DataManager;
+import dev.unnm3d.redischat.channels.ChannelCommand;
 import dev.unnm3d.redischat.channels.ChannelManager;
 import dev.unnm3d.redischat.channels.ChannelUniformCommand;
 import dev.unnm3d.redischat.chat.ComponentProvider;
@@ -161,7 +162,8 @@ public final class RedisChat extends JavaPlugin {
 
 
         this.channelManager = new ChannelManager(this);
-        loadUniformCommand(new ChannelUniformCommand(this));
+        loadCommandAPICommand(new ChannelCommand(this).getCommand());
+        //loadUniformCommand(new ChannelUniformCommand(this));
         final TalkOnCommand talkOnCommand = new TalkOnCommand(this);
         loadCommand("talkon", talkOnCommand, talkOnCommand);
 

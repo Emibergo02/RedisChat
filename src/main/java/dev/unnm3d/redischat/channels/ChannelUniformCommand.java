@@ -1,5 +1,8 @@
 package dev.unnm3d.redischat.channels;
 
+import com.mojang.brigadier.LiteralMessage;
+import com.mojang.brigadier.arguments.BoolArgumentType;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
@@ -14,6 +17,7 @@ import net.william278.uniform.paper.LegacyPaperCommand;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -53,14 +57,14 @@ public class ChannelUniformCommand implements RedisChatCommand {
     public LegacyPaperCommand getCreateSubCommand() {
         return LegacyPaperCommand.builder("create")
                 .setPermission(Permissions.CHANNEL_CREATE.getPermission())
-                .addArgument(BaseCommand.word("name"))
-                .addArgument(BaseCommand.intNum("rate-limit", 0))
-                .addArgument(BaseCommand.intNum("rate-limit-period", 0))
-                .addArgument(BaseCommand.bool("filtered"))
-                .addArgument(BaseCommand.intNum("proximity-distance", -1, 100))
-                .addArgument(BaseCommand.string("discord-webhook"))
-                .addArgument(BaseCommand.bool("shown-by-default"))
-                .addArgument(BaseCommand.bool("permission-required"))
+                .addArgument(stringArg("name"))
+                .addArgument(intArg("rate-limit", 0))
+                .addArgument(intArg("rate-limit-period", 0))
+                .addArgument(boolArg("filtered"))
+                .addArgument(intArg("proximity-distance", -1))
+                .addArgument(stringArg("discord-webhook", "Your-Discord-Webhook-URL-here"))
+                .addArgument(boolArg("shown-by-default"))
+                .addArgument(boolArg("permission-required"))
                 .execute(commandContext -> {
                     final String channelName = commandContext.getArgument("name", String.class);
                     final Integer rateLimit = commandContext.getArgument("rate-limit", Integer.class);
@@ -89,7 +93,8 @@ public class ChannelUniformCommand implements RedisChatCommand {
                     );
 
                     plugin.messages.sendMessage(commandContext.getSource(), plugin.messages.channelCreated);
-                }).build();
+                },"name", "rate-limit", "rate-limit-period", "filtered", "proximity-distance", "discord-webhook", "shown-by-default", "permission-required"
+                ).build();
     }
 
     public LegacyPaperCommand getInfoSubCommand() {
@@ -240,6 +245,24 @@ public class ChannelUniformCommand implements RedisChatCommand {
         return new ArgumentElement<>("channel_name", StringArgumentType.word(), (context, builder) -> {
             plugin.getChannelManager().getRegisteredChannels().keySet().stream()
                     .filter(s -> s.toLowerCase().contains(builder.getRemainingLowerCase()))
+                    .forEach(builder::suggest);
+            return builder.buildFuture();
+        });
+    }
+
+    public ArgumentElement<CommandSender, Integer> intArg(String argName, int suggestion) {
+        return new ArgumentElement<>(argName, IntegerArgumentType.integer(), (context, builder) ->
+                builder.suggest(suggestion, new LiteralMessage(argName)).buildFuture());
+    }
+
+    public ArgumentElement<CommandSender, Boolean> boolArg(String argName) {
+        return new ArgumentElement<>(argName, BoolArgumentType.bool(), (context, builder) ->
+                builder.suggest("true", new LiteralMessage(argName)).suggest("false", new LiteralMessage(argName)).buildFuture());
+    }
+
+    public ArgumentElement<CommandSender, String> stringArg(String argName, String... suggestions) {
+        return new ArgumentElement<>(argName, StringArgumentType.word(), (context, builder) -> {
+            Arrays.stream(suggestions).filter(s -> s.toLowerCase().contains(builder.getRemainingLowerCase()))
                     .forEach(builder::suggest);
             return builder.buildFuture();
         });
