@@ -7,7 +7,6 @@ import dev.unnm3d.redischat.utils.ItemNameProvider;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import me.clip.placeholderapi.PlaceholderAPI;
-import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
@@ -42,8 +41,6 @@ public class ComponentProvider {
     private final Map<CommandSender, List<Component>> cacheBlocked;
     private final List<TagResolverIntegration> tagResolverIntegrationList;
     @Getter
-    private final BukkitAudiences bukkitAudiences;
-    @Getter
     private final ItemNameProvider itemNameProvider;
 
 
@@ -53,7 +50,6 @@ public class ComponentProvider {
         this.cacheBlocked = Collections.synchronizedMap(new WeakHashMap<>());
         this.standardTagResolver = StandardTags.defaults();
         this.tagResolverIntegrationList = new ArrayList<>();
-        this.bukkitAudiences = BukkitAudiences.create(plugin);
         this.itemNameProvider = new ItemNameProvider(plugin.config.useItemName);
     }
 
@@ -401,7 +397,7 @@ public class ComponentProvider {
     @SuppressWarnings("ResultOfMethodCallIgnored")
     public void logComponent(Component component) {
         if (!plugin.config.chatLogging) {
-            bukkitAudiences.console().sendMessage(component);
+            Bukkit.getConsoleSender().sendMessage(component);
             return;
         }
 
@@ -452,7 +448,7 @@ public class ComponentProvider {
     }
 
     public void sendMessage(CommandSender sender, Component component) {
-        bukkitAudiences.sender(sender).sendMessage(component);
+        sender.sendMessage(component);
     }
 
 }

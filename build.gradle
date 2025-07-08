@@ -6,7 +6,7 @@ plugins {
 
 
 group = 'dev.unnm3d'
-version = '5.5.6'
+version = '5.5.7'
 
 
 repositories {
@@ -22,12 +22,8 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'net.kyori:adventure-text-minimessage:4.23.0'
-    compileOnly 'net.kyori:adventure-text-serializer-plain:4.23.0'
-    compileOnly 'net.kyori:adventure-text-serializer-legacy:4.23.0'
     compileOnly 'net.kyori:adventure-platform-bukkit:4.4.0'
     compileOnly 'com.mojang:brigadier:1.1.8'
-
 
     implementation 'com.github.Exlll.ConfigLib:configlib-paper:v4.5.0'
 
