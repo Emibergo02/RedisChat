@@ -34,6 +34,7 @@ public enum Permissions {
     CHANNEL_CHANGE_DISPLAYNAME("redischat.changedisplayname"),
     CHANNEL_DELETE("redischat.deletechannel"),
     CHANNEL_TOGGLE_PLAYER("redischat.playerchannel"),
+    CHANNEL_TOGGLE_SELF("redischat.listenchannel"),
     CHANNEL_LIST("redischat.listchannel"),
     CHANNEL_MUTE("redischat.mutechannel"),
     CHANNEL_HIDE_PREFIX("redischat.hidechannel."),

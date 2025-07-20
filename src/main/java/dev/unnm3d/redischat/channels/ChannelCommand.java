@@ -24,6 +24,7 @@ public class ChannelCommand {
                 .withSubcommand(getSetDisplayNameCommand())
                 .withSubcommand(getSetFormatSubCommand())
                 .withSubcommand(getDeleteSubCommand())
+                .withSubcommand(getForceListenSubCommand())
                 .withSubcommand(getListenSubCommand())
                 .withSubcommand(getListSubCommand())
                 .withSubcommand(getDiscordLinkSubCommand())
@@ -195,7 +196,7 @@ public class ChannelCommand {
                 });
     }
 
-    public CommandAPICommand getListenSubCommand() {
+    public CommandAPICommand getForceListenSubCommand() {
         return new CommandAPICommand("force-listen")
                 .withPermission(Permissions.CHANNEL_TOGGLE_PLAYER.getPermission())
                 .withArguments(new StringArgument("playerName")
@@ -209,7 +210,7 @@ public class ChannelCommand {
                                         .filter(s -> s.toLowerCase().startsWith(commandSenderSuggestionInfo.currentArg()))
                                         .toArray(String[]::new)
                         )))
-                .executesPlayer((sender, args) -> {
+                .executes((sender, args) -> {
                     if (args.count() < 2) {
                         plugin.messages.sendMessage(sender, plugin.messages.missing_arguments);
                         return;
@@ -219,6 +220,35 @@ public class ChannelCommand {
                             .replace("%channel%", (String) args.get(1))
                             .replace("%player%", (String) args.get(0))
                     );
+                });
+    }
+
+    public CommandAPICommand getListenSubCommand() {
+        return new CommandAPICommand("listen")
+                .withArguments(new StringArgument("channelName")
+                        .replaceSuggestions(ArgumentSuggestions.strings(commandSenderSuggestionInfo ->
+                                plugin.getChannelManager().getRegisteredChannels().keySet().stream()
+                                        .filter(s -> s.toLowerCase().startsWith(commandSenderSuggestionInfo.currentArg()))
+                                        .toArray(String[]::new)
+                        )))
+                .executesPlayer((sender, args) -> {
+                    if (args.count() < 1) {
+                        plugin.messages.sendMessage(sender, plugin.messages.missing_arguments);
+                        return;
+                    }
+                    plugin.getChannelManager().getChannel((String) args.get(0), sender).ifPresentOrElse(channel -> {
+                        if(sender.hasPermission(Permissions.CHANNEL_SHOW_PREFIX.getPermission() + channel.getName())||
+                                channel.isShownByDefault()) {
+                            plugin.messages.sendMessage(sender, plugin.messages.channelNoPermission);
+                            return;
+                        }
+                        plugin.getChannelManager().setActiveChannel(sender.getName(), channel.getName());
+                        plugin.messages.sendMessage(sender, plugin.messages.channelTalk
+                                .replace("%channel%", channel.getName()));
+                    }, () -> {
+                        plugin.messages.sendMessage(sender, plugin.messages.channelNotFound);
+                    });
+
                 });
     }
 
