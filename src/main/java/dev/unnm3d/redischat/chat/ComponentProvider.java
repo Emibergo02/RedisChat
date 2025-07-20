@@ -238,7 +238,7 @@ public class ComponentProvider {
                     .replace("%command%", "/invshare " + player.getName() + "-item");
             Component toParseItemComponent = parse(player, toParseItem, true, false, false, this.standardTagResolver);
 
-            final Component itemName = getItemNameComponent(p.getInventory().getItemInMainHand());
+            final Component itemName = getItemInHandNameComponent(p);
             toParseItemComponent = toParseItemComponent.replaceText(rTextBuilder -> rTextBuilder.matchLiteral("%item_name%").replacement(itemName));
             toParseItemComponent = toParseItemComponent.replaceText(rTextBuilder -> rTextBuilder.matchLiteral("%amount%").replacement(
                     p.getInventory().getItemInMainHand().getAmount() > 1 ?
@@ -261,11 +261,15 @@ public class ComponentProvider {
         return builder.build();
     }
 
-    private Component getItemNameComponent(@NotNull ItemStack itemStack) {
+    private Component getItemInHandNameComponent(Player player) {
+        ItemStack itemStack = player.getInventory().getItemInMainHand();
         Component itemName;
         if (itemStack.getItemMeta() != null && itemNameProvider.hasItemName(itemStack.getItemMeta())) {
-            itemName = LegacyComponentSerializer.legacySection().deserialize(
-                            replaceAmpersandCodesWithSection(itemNameProvider.getItemName(itemStack.getItemMeta())));
+            final String unSubstitutedName = itemNameProvider.getItemName(itemStack.getItemMeta());
+            itemName = player.hasPermission(Permissions.USE_FORMATTING.getPermission())?
+                    LegacyComponentSerializer.legacySection()
+                            .deserialize(replaceAmpersandCodesWithSection(unSubstitutedName)) :
+                    LegacyComponentSerializer.legacySection().deserialize(unSubstitutedName);
         } else if (itemStack.getType().isAir()) {
             itemName = Component.text(plugin.config.nothing_tag);
         } else {
