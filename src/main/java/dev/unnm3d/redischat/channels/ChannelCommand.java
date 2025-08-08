@@ -4,9 +4,9 @@ import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.arguments.*;
 import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
-import dev.unnm3d.redischat.channels.gui.PlayerChannel;
-import dev.unnm3d.redischat.api.objects.KnownChatEntities;
 import dev.unnm3d.redischat.api.objects.Channel;
+import dev.unnm3d.redischat.api.objects.KnownChatEntities;
+import dev.unnm3d.redischat.channels.gui.PlayerChannel;
 import lombok.AllArgsConstructor;
 
 import java.util.List;
@@ -29,7 +29,7 @@ public class ChannelCommand {
                 .withSubcommand(getListSubCommand())
                 .withSubcommand(getDiscordLinkSubCommand())
                 .executesPlayer((sender, args) -> {
-                    if(!sender.hasPermission(Permissions.CHANNEL_GUI.getPermission())){
+                    if (!sender.hasPermission(Permissions.CHANNEL_GUI.getPermission())) {
                         plugin.messages.sendMessage(sender, plugin.messages.noPermission);
                         return;
                     }
@@ -56,7 +56,7 @@ public class ChannelCommand {
                         plugin.messages.sendMessage(sender, plugin.messages.missing_arguments);
                         return;
                     }
-                    plugin.getChannelManager().getChannel(channelName,null).ifPresentOrElse(channel -> {
+                    plugin.getChannelManager().getChannel(channelName, null).ifPresentOrElse(channel -> {
                         plugin.messages.sendMessage(sender, plugin.messages.channelInfo
                                 .replace("%channel%", channel.getName())
                                 .replace("%displayname%", channel.getDisplayName())
@@ -237,14 +237,14 @@ public class ChannelCommand {
                         return;
                     }
                     plugin.getChannelManager().getChannel((String) args.get(0), sender).ifPresentOrElse(channel -> {
-                        if(sender.hasPermission(Permissions.CHANNEL_SHOW_PREFIX.getPermission() + channel.getName())||
+                        if (sender.hasPermission(Permissions.CHANNEL_SHOW_PREFIX.getPermission() + channel.getName()) ||
                                 channel.isShownByDefault()) {
-                            plugin.messages.sendMessage(sender, plugin.messages.channelNoPermission);
+                            plugin.getChannelManager().setActiveChannel(sender.getName(), channel.getName());
+                            plugin.messages.sendMessage(sender, plugin.messages.channelTalk
+                                    .replace("%channel%", channel.getName()));
                             return;
                         }
-                        plugin.getChannelManager().setActiveChannel(sender.getName(), channel.getName());
-                        plugin.messages.sendMessage(sender, plugin.messages.channelTalk
-                                .replace("%channel%", channel.getName()));
+                        plugin.messages.sendMessage(sender, plugin.messages.channelNoPermission);
                     }, () -> {
                         plugin.messages.sendMessage(sender, plugin.messages.channelNotFound);
                     });
