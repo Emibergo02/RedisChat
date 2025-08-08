@@ -53,7 +53,7 @@ dependencies {
     compileOnly 'com.github.oraxen:oraxen:1.162.0'
     compileOnly 'com.github.LeonMangler:PremiumVanishAPI:2.8.8'
     compileOnly 'org.projectlombok:lombok:1.18.34'
-    compileOnly 'com.github.Spicord.Spicord:spicord-common:5.7.0'
+    compileOnly 'com.github.Spicord.Spicord:spicord-common:5.7.2'
     compileOnly 'net.dv8tion:JDA:5.0.0-beta.16'
     compileOnly 'org.apache.commons:commons-collections4:4.4'
 
