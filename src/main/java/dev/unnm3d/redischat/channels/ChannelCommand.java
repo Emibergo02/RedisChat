@@ -85,15 +85,15 @@ public class ChannelCommand {
                 .withArguments(new BooleanArgument("filtered"))
                 .withOptionalArguments(new IntegerArgument("proximity-distance")
                         .replaceSuggestions(ArgumentSuggestions.strings("-1", "100")))
-                .withOptionalArguments(new TextArgument("discord-webhook")
-                        .replaceSuggestions(ArgumentSuggestions.strings("\"https://discord.com/api/webhooks/...\"")))
                 .withOptionalArguments(new BooleanArgument("shown-by-default"))
                 .withOptionalArguments(new BooleanArgument("permission-required"))
+                .withOptionalArguments(new TextArgument("discord-webhook")
+                        .replaceSuggestions(ArgumentSuggestions.strings("\"https://discord.com/api/webhooks/...\"")))
                 .executesPlayer((sender, args) -> {
                     Optional<Object> proximityDistance = args.getOptional("proximity-distance");
-                    Optional<Object> discordWebhook = args.getOptional("discord-webhook");
                     Optional<Object> shownByDefault = args.getOptional("shown-by-default");
                     Optional<Object> needsPermission = args.getOptional("permission-required");
+                    Optional<Object> discordWebhook = args.getOptional("discord-webhook");
 
                     if (args.count() < 4) {
                         plugin.messages.sendMessage(sender, plugin.messages.missing_arguments);
@@ -115,10 +115,10 @@ public class ChannelCommand {
                             .rateLimitPeriod(rateLimitPeriod)
                             .format(plugin.messages.channelNoFormat.replace("%channel%", channelName))
                             .proximityDistance(proximityDistance.map(o -> (int) o).orElse(-1))
-                            .discordWebhook(discordWebhook.map(o -> (String) o).orElse(""))
                             .filtered(filtered)
                             .shownByDefault(shownByDefault.map(o -> (boolean) o).orElse(true))
                             .permissionEnabled(needsPermission.map(o -> (boolean) o).orElse(true))
+                            .discordWebhook(discordWebhook.map(o -> (String) o).orElse(""))
                             .build()
                     );
 

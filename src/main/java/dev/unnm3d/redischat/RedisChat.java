@@ -25,6 +25,7 @@ import dev.unnm3d.redischat.datamanagers.sqlmanagers.SQLiteDataManager;
 import dev.unnm3d.redischat.discord.DiscordWebhook;
 import dev.unnm3d.redischat.discord.IDiscordHook;
 import dev.unnm3d.redischat.discord.SpicordHook;
+import dev.unnm3d.redischat.integrations.EssentialsVanishIntegration;
 import dev.unnm3d.redischat.integrations.OraxenTagResolver;
 import dev.unnm3d.redischat.integrations.PremiumVanishIntegration;
 import dev.unnm3d.redischat.integrations.SuperVanishIntegration;
@@ -104,10 +105,10 @@ public final class RedisChat extends JavaPlugin {
     @Override
     public void onLoad() {
         CommandAPI.onLoad(new CommandAPIBukkitConfig(this)
-                .silentLogs(true)
+                .silentLogs(false)
                 .skipReloadDatapacks(true)
                 .shouldHookPaperReload(true)
-                .verboseOutput(false));
+                .verboseOutput(true));
     }
 
     @Override
@@ -195,10 +196,10 @@ public final class RedisChat extends JavaPlugin {
 
         //Commands section
         loadCommandAPICommand(new MainCommand(this, this.webEditorAPI).getCommand());
-        //loadCommandAPICommand(new MsgCommand(this).getCommand());
-        loadUniformCommand(new UniformMsgCommand());
-        loadUniformCommand(new UniformReplyCommand());
-        //loadCommandAPICommand(new ReplyCommand(this).getCommand());
+        //loadUniformCommand(new UniformMsgCommand());
+        loadCommandAPICommand(new MsgCommand(this).getCommand());
+        //loadUniformCommand(new UniformReplyCommand());
+        loadCommandAPICommand(new ReplyCommand(this).getCommand());
         loadCommandAPICommand(new ChatAsCommand(this).getCommand());
         final BroadcastCommand broadcastCommand = new BroadcastCommand(this);
         loadCommandAPICommand(broadcastCommand.getBroadcastCommand());
@@ -246,6 +247,10 @@ public final class RedisChat extends JavaPlugin {
         if (getServer().getPluginManager().getPlugin("SuperVanish") != null) {
             getLogger().info("SuperVanish found, enabling integration");
             playerListManager.addVanishIntegration(new SuperVanishIntegration(this));
+        }
+        if (getServer().getPluginManager().getPlugin("Essentials") != null) {
+            getLogger().info("SuperVanish found, enabling integration");
+            playerListManager.addVanishIntegration(new EssentialsVanishIntegration(this));
         }
         if (getServer().getPluginManager().getPlugin("Spicord") != null && config.spicord.enabled()) {
             getLogger().info("Spicord found, enabling integration");

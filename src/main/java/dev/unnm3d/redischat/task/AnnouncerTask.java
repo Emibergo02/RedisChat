@@ -3,6 +3,7 @@ package dev.unnm3d.redischat.task;
 import com.github.Anon8281.universalScheduler.UniversalRunnable;
 import com.google.common.base.Strings;
 import dev.unnm3d.redischat.RedisChat;
+import dev.unnm3d.redischat.api.objects.Channel;
 import dev.unnm3d.redischat.api.objects.ChannelAudience;
 import dev.unnm3d.redischat.api.objects.ChatMessage;
 import lombok.Getter;
@@ -40,14 +41,22 @@ public class AnnouncerTask extends UniversalRunnable {
 
     @Override
     public void run() {
-        plugin.getDataManager().sendChatMessage(
-                new ChatMessage(
-                        new ChannelAudience(),
-                        "{message}",
-                        MiniMessage.miniMessage().serialize(plugin.getComponentProvider().parse(null,
-                                getMessage(), true, false, false)),
-                        new ChannelAudience(channelName)
-                ));
+        final Channel receiverChannel = plugin.getChannelManager().getChannel(channelName, null)
+                .orElse(plugin.getChannelManager().getPublicChannel(null));
+
+        final ChatMessage chMsg = new ChatMessage(
+                new ChannelAudience(),
+                "{message}",
+                MiniMessage.miniMessage().serialize(plugin.getComponentProvider().parse(null,
+                        getMessage(), true, false, false)),
+                receiverChannel
+        );
+
+        if (receiverChannel.getProximityDistance() >= 0) {// Send to local server
+            plugin.getChannelManager().sendGenericChat(chMsg);
+            return;
+        }
+        plugin.getDataManager().sendChatMessage(chMsg);
     }
 
     public @NotNull String getMessage() {

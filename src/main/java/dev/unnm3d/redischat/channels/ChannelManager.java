@@ -381,6 +381,9 @@ public class ChannelManager extends RedisChatAPI {
 
     private boolean checkProximity(Player recipient, ChatMessage chatMessage) {
         if (chatMessage.getReceiver().getProximityDistance() <= 0) return true;
+        if (chatMessage.getSender().isServer()) {
+            return true;
+        }
         final Optional<? extends Player> sender = plugin.getServer().getOnlinePlayers().stream()
                 .filter(p -> p.getName().equals(chatMessage.getSender().getName()))
                 .findAny();
