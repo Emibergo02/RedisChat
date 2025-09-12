@@ -1,6 +1,7 @@
 package dev.unnm3d.redischat.utils;
 
 import org.bukkit.Bukkit;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.lang.reflect.InvocationTargetException;
@@ -24,21 +25,21 @@ public class ItemNameProvider {
         this.useItemName = useItemName;
     }
 
-    public String getItemName(ItemMeta itemMeta) {
+    public String getItemName(ItemStack itemStack) {
         if (getItemNameMethod == null || !useItemName)
-            return itemMeta.getDisplayName();
+            return itemStack.getItemMeta().getDisplayName();
         try {
-            return (String) getItemNameMethod.invoke(itemMeta);
+            return (String) getItemNameMethod.invoke(itemStack.getItemMeta());
         } catch (IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public boolean hasItemName(ItemMeta itemMeta) {
+    public boolean hasItemName(ItemStack itemMeta) {
         if (hasItemNameMethod == null || !useItemName)
-            return itemMeta.hasDisplayName();
+            return itemMeta.getItemMeta().hasDisplayName();
         try {
-            return (boolean) hasItemNameMethod.invoke(itemMeta);
+            return (boolean) hasItemNameMethod.invoke(itemMeta.getItemMeta());
         } catch (IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException(e);
         }

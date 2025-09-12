@@ -34,6 +34,7 @@ import java.util.regex.Pattern;
 @AllArgsConstructor
 public class ComponentProvider {
     private static final Pattern PERCENTAGE_PLACEHOLDER_PATTERN = Pattern.compile("([%][^%]+[%])");
+    private static final Pattern URL_PATTERN = Pattern.compile("((?:https?://)?[a-zA-Z0-9.]+\\.[a-zA-Z0-9]{2,32})([a-zA-Z0-9/?.%=\\-_&]*)");
     private final RedisChat plugin;
     private final MiniMessage miniMessage;
     @Getter
@@ -264,9 +265,9 @@ public class ComponentProvider {
     private Component getItemInHandNameComponent(Player player) {
         ItemStack itemStack = player.getInventory().getItemInMainHand();
         Component itemName;
-        if (itemStack.getItemMeta() != null && itemNameProvider.hasItemName(itemStack.getItemMeta())) {
-            final String unSubstitutedName = itemNameProvider.getItemName(itemStack.getItemMeta());
-            itemName = player.hasPermission(Permissions.USE_FORMATTING.getPermission())?
+        if (itemStack.getItemMeta() != null && itemNameProvider.hasItemName(itemStack)) {
+            final String unSubstitutedName = itemNameProvider.getItemName(itemStack);
+            itemName = player.hasPermission(Permissions.USE_FORMATTING.getPermission()) ?
                     LegacyComponentSerializer.legacySection()
                             .deserialize(replaceAmpersandCodesWithSection(unSubstitutedName)) :
                     LegacyComponentSerializer.legacySection().deserialize(unSubstitutedName);
@@ -311,17 +312,22 @@ public class ComponentProvider {
      */
     private Map.Entry<String, Component> parseLinks(@NotNull String text, @NotNull ChatFormat format) {
         Component linkComponent = null;
-        Pattern p = Pattern.compile("(https?://\\S+)");
-        Matcher m = p.matcher(text);
+        Matcher m = URL_PATTERN.matcher(text);
         if (m.find()) {
-            String linkString = m.group();
-            linkString = linkString.endsWith("/") ? // the last slash breaks the closing tag of <click>
-                    linkString.substring(0, linkString.length() - 1) :
-                    linkString;
-            text = text.replace(m.group(), "%link%");//replace the link with a placeholder
-            linkComponent = miniMessage.deserialize(format.link_format().replace("%link%", linkString));
+            String domainString = m.group(1);
+            String pathString = m.group(2);
+            if (!domainString.startsWith("http")) {
+                domainString = "https://" + domainString;
+            }
+            pathString = pathString.endsWith("/") ? // the last slash breaks the closing tag of <click>
+                    pathString.substring(0, pathString.length() - 1) :
+                    pathString;
+            text = text.replace(domainString + pathString, "%link%");//replace the link with a placeholder
+            linkComponent = miniMessage.deserialize(format.link_format()
+                    .replace("%domain%", domainString)
+                    .replace("%path%", pathString)
+                    .replace("%link%", domainString + pathString));
         }
-
         return new AbstractMap.SimpleEntry<>(text, linkComponent);
     }
 

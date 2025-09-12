@@ -58,24 +58,23 @@ public final class Config implements ConfigValidator {
     public boolean chatLogging = false;
     @Comment({"Here you can decide your chat format", "Permission format is overridden on descending order", "(if a player has default and vip, if default is the first element, vip will be ignored)"})
     public List<ChatFormat> formats = List.of(
+            new ChatFormat("redischat.staff",
+                    "{time} {ignorebtn} {mailbtn} {player} <dark_gray>» <gold>{message}",
+                    "<white>✉<green>⬆</green></white> <dark_aqua>MSG <grey>(Me ➺ <green>%receiver%<grey>): <white>{message}",
+                    "<white>✉<green>⬇</green></white> <dark_aqua>MSG <grey>(<green>%sender%<grey> ➺ Me): <white>{message}",
+                    "<aqua>@%player% (staff)</aqua>",
+                    "<aqua><click:open_url:'%link%'>%domain% or %path%</click></aqua>",
+                    "<green>%player_name% joined the server",
+                    "<red>%player_name% is no longer online"),
             new ChatFormat("redischat.default",
                     "{time} {ignorebtn} {mailbtn} {player} <dark_gray>» %redischat_chat_color%{message}",
                     "<white>✉<green>⬆</green></white> <dark_aqua>MSG <grey>(Me ➺ <green>%receiver%<grey>): <white>{message}",
                     "<white>✉<green>⬇</green></white> <dark_aqua>MSG <grey>(<green>%sender%<grey> ➺ Me): <white>{message}",
                     "<aqua>@%player%</aqua>",
-                    "<aqua><click:open_url:%link%>[Open web page <red>(be careful)</red>]</aqua>",
+                    "<aqua><click:open_url:'%link%'>[Open web page <red>(be careful)</red>]</click></aqua>",
                     "<green>%player_name% joined the server",
-                    "<red>%player_name% is no longer online"),
-            new ChatFormat("redischat.staff",
-                    "{time} {ignorebtn} {mailbtn} {player} {separator} <gold>{message}",
-                    "<white>✉<green>⬆</green></white> <dark_aqua>MSG <grey>(Me ➺ <green>%receiver%<grey>): <white>{message}",
-                    "<white>✉<green>⬇</green></white> <dark_aqua>MSG <grey>(<green>%sender%<grey> ➺ Me): <white>{message}",
-                    "<aqua>@%player% (staff)</aqua>",
-                    "<aqua><click:open_url:%link%>%link%</aqua>",
-                    "<green>%player_name% joined the server",
-                    "<red>%player_name% is no longer online"
-
-            ));
+                    "<red>%player_name% is no longer online")
+    );
 
     @Comment("Fallback format if the player doesn't have any of the formats above")
     public ChatFormat defaultFormat = new ChatFormat("none",
@@ -83,7 +82,7 @@ public final class Config implements ConfigValidator {
             "No format: Me ➺ <green>%receiver%<grey> : <white>{message}",
             "No format: <green>%sender%<grey> ➺ Me : <white>{message}",
             "<red>@%player%</red>",
-            "No format: <aqua><click:open_url:%link%>[Open web page <red>(be careful)</red>]</aqua>",
+            "No format: <aqua><click:open_url:'%link%'>[Open web page <red>(be careful)</red>]</click></aqua>",
             "No format: %player_name% joined the server",
             "No format: %player_name% is no longer online"
     );
