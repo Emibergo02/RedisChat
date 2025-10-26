@@ -357,7 +357,11 @@ public final class RedisChat extends JavaPlugin {
         if (this.dataManager != null)
             this.dataManager.clearInvShareCache();
 
-        PaperUniform.getInstance(this).shutdown();
+        try {
+            PaperUniform.getInstance(this).shutdown();
+        } catch (IllegalStateException e) {
+            getLogger().warning("PaperUniform already shutdown or not initialized: " + e.getMessage());
+        }
         registeredCommands.forEach(command -> CommandAPI.unregister(command.getName(), true));
         CommandAPI.onDisable();
 
