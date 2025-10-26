@@ -16,6 +16,7 @@ libraries:
   - net.kyori:adventure-platform-bukkit:4.4.0
 depend:
   - PlaceholderAPI
+  - CommandAPI
 softdepend:
   - Oraxen
   - Spicord
