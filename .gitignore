@@ -1,5 +1,6 @@
 # User-specific stuff
 .idea/
+.vscode/
 
 *.iml
 *.ipr
@@ -112,3 +113,9 @@ buildNumber.properties
 # Common working directory
 run/
 src/main/java/dev/unnm3d/redischat/utils/Metrics.java
+
+# Build
+build/
+
+# Gradle
+.gradle
