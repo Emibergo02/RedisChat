@@ -38,7 +38,7 @@ dependencies {
     implementation 'xyz.xenondevs.invui:inventory-access-r22:1.46'
     implementation 'xyz.xenondevs.invui:inventory-access-r23:1.46'
     implementation 'xyz.xenondevs.invui:inventory-access-r24:1.46'
-    implementation 'dev.jorel:commandapi-bukkit-shade:10.1.2'
+    implementation 'dev.jorel:commandapi-spigot-shade:11.0.0'
     implementation "net.william278.uniform:uniform-paper:1.3.8"
 
     implementation 'com.github.Anon8281:UniversalScheduler:0.1.6'
@@ -103,7 +103,7 @@ shadowJar {
         include dependency('xyz.xenondevs.invui:inventory-access-r22')
         include dependency('xyz.xenondevs.invui:inventory-access-r23')
         include dependency('xyz.xenondevs.invui:inventory-access-r24')
-        include dependency('dev.jorel:commandapi-bukkit-shade')
+        include dependency('dev.jorel:commandapi-spigot-shade')
         include dependency('net.william278.uniform:uniform-paper')
         include dependency('com.github.Anon8281:UniversalScheduler:0.1.6')
     }

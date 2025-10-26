@@ -7,7 +7,7 @@ import de.exlll.configlib.ConfigurationException;
 import de.exlll.configlib.YamlConfigurationProperties;
 import de.exlll.configlib.YamlConfigurations;
 import dev.jorel.commandapi.CommandAPI;
-import dev.jorel.commandapi.CommandAPIBukkitConfig;
+import dev.jorel.commandapi.CommandAPISpigotConfig;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.unnm3d.redischat.api.DataManager;
 import dev.unnm3d.redischat.channels.ChannelCommand;
@@ -104,10 +104,9 @@ public final class RedisChat extends JavaPlugin {
 
     @Override
     public void onLoad() {
-        CommandAPI.onLoad(new CommandAPIBukkitConfig(this)
+        CommandAPI.onLoad(new CommandAPISpigotConfig(this)
                 .silentLogs(false)
                 .skipReloadDatapacks(true)
-                .shouldHookPaperReload(true)
                 .verboseOutput(true));
     }
 
