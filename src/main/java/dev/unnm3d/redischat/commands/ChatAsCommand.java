@@ -2,7 +2,7 @@ package dev.unnm3d.redischat.commands;
 
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.arguments.GreedyStringArgument;
-import dev.jorel.commandapi.arguments.PlayerArgument;
+import dev.jorel.commandapi.arguments.PlayerProfileArgument;
 import dev.jorel.commandapi.arguments.StringArgument;
 import dev.unnm3d.redischat.RedisChat;
 import lombok.AllArgsConstructor;
@@ -16,7 +16,7 @@ public class ChatAsCommand {
         return new CommandAPICommand("chatas")
                 .withPermission("redischat.chatas")
                 .withArguments(
-                        new PlayerArgument("player"),
+                        new PlayerProfileArgument("player"),
                         new StringArgument("channel"),
                         new GreedyStringArgument("message"))
                 .executes((sender, args) -> {

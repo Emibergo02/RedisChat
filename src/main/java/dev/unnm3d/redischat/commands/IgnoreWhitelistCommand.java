@@ -1,7 +1,7 @@
 package dev.unnm3d.redischat.commands;
 
 import dev.jorel.commandapi.CommandAPICommand;
-import dev.jorel.commandapi.arguments.PlayerArgument;
+import dev.jorel.commandapi.arguments.PlayerProfileArgument;
 import dev.unnm3d.redischat.Permissions;
 import dev.unnm3d.redischat.RedisChat;
 import lombok.AllArgsConstructor;
@@ -15,7 +15,7 @@ public class IgnoreWhitelistCommand {
     public CommandAPICommand getCommand() {
         return new CommandAPICommand("ignorewhitelist")
                 .withPermission(Permissions.IGNORE_WHITELIST.getPermission())
-                .withOptionalArguments(new PlayerArgument("player"))
+                .withOptionalArguments(new PlayerProfileArgument("player"))
                 .executesPlayer((sender, args) -> {
                     //Get the target player name or sender name
                     final String targetName = args.getOptional("player")
