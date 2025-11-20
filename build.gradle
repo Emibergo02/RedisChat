@@ -116,6 +116,7 @@ shadowJar {
     relocate 'de.exlll.configlib', 'dev.unnm3d.redischat.libraries.configlib'
     relocate 'xyz.xenondevs.invui', 'dev.unnm3d.redischat.libraries.invui'
     relocate 'xyz.xenondevs.inventoryaccess', 'dev.unnm3d.redischat.libraries.inventoryaccess'
+    relocate 'net.william278.uniform', 'dev.unnm3d.redischat.libraries.uniform'
     relocate 'net.kyori.adventure.platform', 'dev.unnm3d.redischat.libraries.kyori.adventure.platform'
     relocate 'com.github.Anon8281.universalScheduler', 'dev.unnm3d.redischat.libraries.universalScheduler'
 }
