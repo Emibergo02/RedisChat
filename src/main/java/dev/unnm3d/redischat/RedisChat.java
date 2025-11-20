@@ -6,6 +6,8 @@ import de.exlll.configlib.ConfigLib;
 import de.exlll.configlib.ConfigurationException;
 import de.exlll.configlib.YamlConfigurationProperties;
 import de.exlll.configlib.YamlConfigurations;
+import dev.jorel.commandapi.CommandAPI;
+import dev.jorel.commandapi.CommandAPISpigotConfig;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.unnm3d.redischat.api.DataManager;
 import dev.unnm3d.redischat.channels.ChannelCommand;
@@ -101,8 +103,17 @@ public final class RedisChat extends JavaPlugin {
 
 
     @Override
+    public void onLoad() {
+        CommandAPI.onLoad(new CommandAPISpigotConfig(this)
+                .silentLogs(false)
+                .skipReloadDatapacks(true)
+                .verboseOutput(true));
+    }
+
+    @Override
     public void onEnable() {
         instance = this;
+        CommandAPI.onEnable();
         registeredCommands = new ArrayList<>();
         scheduler = UniversalScheduler.getScheduler(this);
 
@@ -347,8 +358,8 @@ public final class RedisChat extends JavaPlugin {
             this.dataManager.clearInvShareCache();
 
         PaperUniform.getInstance(this).shutdown();
-        // Commands are unregistered automatically by CommandAPI plugin
-        registeredCommands.clear();
+        registeredCommands.forEach(command -> CommandAPI.unregister(command.getName(), true));
+        CommandAPI.onDisable();
 
         if (this.playerListManager != null)
             this.playerListManager.stop();
@@ -379,6 +390,11 @@ public final class RedisChat extends JavaPlugin {
             return;
         }
 
+        CommandAPI.unregister(commandAPICommand.getName(), true);
+        for (String alias : commandAPICommand.getAliases()) {
+            if (alias.equals(commandAPICommand.getName())) continue;
+            CommandAPI.unregister(alias, true);
+        }
         commandAPICommand.register();
         registeredCommands.add(commandAPICommand);
         getLogger().info("Command " + commandAPICommand.getName() + " registered on CommandAPI!");
