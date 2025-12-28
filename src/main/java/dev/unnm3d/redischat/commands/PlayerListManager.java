@@ -49,8 +49,9 @@ public class PlayerListManager {
                     plugin.getLogger().info("Updated player list: " + playerList.keySet());
 
                 if (plugin.config.completeChatSuggestions) {
-                    plugin.getServer().getOnlinePlayers().forEach(player ->
-                            player.setCustomChatCompletions(getPlayerList(player)));
+                    RedisChat.getScheduler().runTask(() ->
+                            plugin.getServer().getOnlinePlayers().forEach(player ->
+                                    player.setCustomChatCompletions(getPlayerList(player))));
                 }
             }
         }.runTaskTimerAsynchronously(plugin, 0, 60);//3 seconds
