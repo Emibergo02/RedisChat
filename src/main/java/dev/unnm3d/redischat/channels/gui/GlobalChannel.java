@@ -6,7 +6,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import xyz.xenondevs.invui.item.ItemProvider;
-import xyz.xenondevs.invui.item.builder.ItemBuilder;
+import xyz.xenondevs.invui.item.ItemBuilder;
 
 public class GlobalChannel extends PlayerChannel {
     public GlobalChannel(Channel channel, Player player, boolean isActive) {
@@ -14,7 +14,7 @@ public class GlobalChannel extends PlayerChannel {
     }
 
     @Override
-    public ItemProvider getItemProvider() {
+    public ItemProvider getItemProvider(Player player) {
         ItemStack item;
         if (status == Status.MUTED) {
             item = RedisChat.getInstance().guiSettings.mutedGlobal;

@@ -9,14 +9,13 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
-import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 import org.jetbrains.annotations.NotNull;
-import xyz.xenondevs.inventoryaccess.component.AdventureComponentWrapper;
+import xyz.xenondevs.invui.Click;
+import xyz.xenondevs.invui.item.AbstractItem;
+import xyz.xenondevs.invui.item.ItemBuilder;
 import xyz.xenondevs.invui.item.ItemProvider;
-import xyz.xenondevs.invui.item.builder.ItemBuilder;
-import xyz.xenondevs.invui.item.impl.AbstractItem;
 
 import java.time.Instant;
 import java.time.ZonedDateTime;
@@ -82,7 +81,7 @@ public class Mail extends AbstractItem {
     }
 
     @Override
-    public ItemProvider getItemProvider() {
+    public ItemProvider getItemProvider(Player player) {
         ItemBuilder itemBuilder = new ItemBuilder(Material.PAPER);
         if (content.isEmpty()) {
             return itemBuilder;
@@ -101,27 +100,26 @@ public class Mail extends AbstractItem {
                 content.contains("\n") ? content.substring(0, content.indexOf("\n")) : content);
         abbreviatedContent.append("...");
 
-        final AdventureComponentWrapper[] lore = manager.getPlugin().messages.mailItemLore.stream()
-                .map(line -> new AdventureComponentWrapper(manager.getPlugin().getComponentProvider().parse(
+        final Component[] lore = manager.getPlugin().messages.mailItemLore.stream()
+                .map(line -> manager.getPlugin().getComponentProvider().parse(
                         line.replace("%sender%", sender)
                                 .replace("%title%", title)
                                 .replace("%timestamp%", timestampFormat)
                                 .replace("%content%", abbreviatedContent.toString().replace("\r", ""))
-                )))
-                .toArray(AdventureComponentWrapper[]::new);
+                ))
+                .toArray(Component[]::new);
 
         return itemBuilder
-                .setDisplayName(new AdventureComponentWrapper(
-                        manager.getPlugin().getComponentProvider().parse(
-                                manager.getPlugin().messages.mailItemDisplayName
-                                        .replace("%sender%", sender)
-                                        .replace("%title%", title)
-                                        .replace("%timestamp%", timestampFormat))))
+                .setName(manager.getPlugin().getComponentProvider().parse(
+                        manager.getPlugin().messages.mailItemDisplayName
+                                .replace("%sender%", sender)
+                                .replace("%title%", title)
+                                .replace("%timestamp%", timestampFormat)))
                 .addLoreLines(lore);
     }
 
     @Override
-    public void handleClick(@NotNull ClickType clickType, @NotNull Player player, @NotNull InventoryClickEvent event) {
+    public void handleClick(@NotNull ClickType clickType, @NotNull Player player, @NotNull Click click) {
         if (clickType.isLeftClick()) {
             openPreview(player, true);
         } else if (clickType.isRightClick()) {

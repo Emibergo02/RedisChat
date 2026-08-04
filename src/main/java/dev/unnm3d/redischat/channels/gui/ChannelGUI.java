@@ -6,15 +6,17 @@ import dev.unnm3d.redischat.api.events.ChannelGuiPopulateEvent;
 import dev.unnm3d.redischat.api.objects.KnownChatEntities;
 import lombok.AllArgsConstructor;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.ClickType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import xyz.xenondevs.invui.Click;
 import xyz.xenondevs.invui.gui.Gui;
+import xyz.xenondevs.invui.gui.Markers;
 import xyz.xenondevs.invui.gui.PagedGui;
-import xyz.xenondevs.invui.gui.structure.Markers;
+import xyz.xenondevs.invui.item.AbstractPagedGuiBoundItem;
 import xyz.xenondevs.invui.item.Item;
+import xyz.xenondevs.invui.item.ItemBuilder;
 import xyz.xenondevs.invui.item.ItemProvider;
-import xyz.xenondevs.invui.item.builder.ItemBuilder;
-import xyz.xenondevs.invui.item.impl.controlitem.PageItem;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -35,20 +37,32 @@ public class ChannelGUI {
         final ChannelGuiPopulateEvent populateEvent = new ChannelGuiPopulateEvent(player, items);
         plugin.getServer().getPluginManager().callEvent(populateEvent);
 
-        return PagedGui.items()
+        return PagedGui.itemsBuilder()
                 .setStructure(
                         plugin.guiSettings.channelGUIStructure.toArray(new String[0]))
-                .addIngredient('x', Markers.CONTENT_LIST_SLOT_HORIZONTAL) // where paged items should be put
-                .addIngredient('<', new PageItem(false) {
+                .addIngredient('x', Markers.CONTENT_LIST_SLOT_HORIZONTAL)
+                .addIngredient('<', new AbstractPagedGuiBoundItem() {
                     @Override
-                    public ItemProvider getItemProvider(PagedGui<?> gui) {
+                    public ItemProvider getItemProvider(Player player) {
                         return new ItemBuilder(plugin.guiSettings.backButton);
                     }
-                })
-                .addIngredient('>', new PageItem(true) {
+
                     @Override
-                    public ItemProvider getItemProvider(PagedGui<?> gui) {
+                    public void handleClick(@NotNull ClickType clickType, @NotNull Player player, @NotNull Click click) {
+                        PagedGui<?> gui = getGui();
+                        if (gui.getPage() > 0) gui.setPage(gui.getPage() - 1);
+                    }
+                })
+                .addIngredient('>', new AbstractPagedGuiBoundItem() {
+                    @Override
+                    public ItemProvider getItemProvider(Player player) {
                         return new ItemBuilder(plugin.guiSettings.forwardButton);
+                    }
+
+                    @Override
+                    public void handleClick(@NotNull ClickType clickType, @NotNull Player player, @NotNull Click click) {
+                        PagedGui<?> gui = getGui();
+                        if (gui.getPage() < gui.getPageCount() - 1) gui.setPage(gui.getPage() + 1);
                     }
                 })
                 .addIngredient('G', new GlobalChannel(

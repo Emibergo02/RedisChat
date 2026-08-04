@@ -108,17 +108,17 @@ public class ChannelManager extends RedisChatAPI {
     public void openChannelsGUI(Player player) {
         RedisChat.getScheduler().runTaskAsynchronously(() -> {
             final String channelName = plugin.getChannelManager().getActiveChannel(player.getName());
-            Window.Builder.Normal.Single window = Window.single()
+            Window.Builder.Normal.Split window = Window.builder()
                     .setTitle(plugin.guiSettings.channelGUITitle)
-                    .setGui(channelGUI.getChannelsGUI(player, channelName == null ? KnownChatEntities.GENERAL_CHANNEL.toString() : channelName))
-                    .setCloseHandlers(List.of(() -> new UniversalRunnable() {
+                    .setUpperGui(channelGUI.getChannelsGUI(player, channelName == null ? KnownChatEntities.GENERAL_CHANNEL.toString() : channelName))
+                    .addCloseHandler(reason -> new UniversalRunnable() {
                         @Override
                         public void run() {
                             player.updateInventory();
                         }
-                    }.runTaskLater(plugin, 1)));
+                    }.runTaskLater(plugin, 1));
 
-            RedisChat.getScheduler().runTask(() -> window.open(player));
+            RedisChat.getScheduler().runTask(player, () -> window.open(player));
         });
     }
 

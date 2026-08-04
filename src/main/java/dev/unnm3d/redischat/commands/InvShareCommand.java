@@ -14,12 +14,11 @@ import org.bukkit.inventory.meta.BlockStateMeta;
 import org.jetbrains.annotations.NotNull;
 import xyz.xenondevs.invui.gui.Gui;
 import xyz.xenondevs.invui.item.Item;
-import xyz.xenondevs.invui.item.builder.ItemBuilder;
-import xyz.xenondevs.invui.item.impl.SimpleItem;
+import xyz.xenondevs.invui.item.ItemBuilder;
+import xyz.xenondevs.invui.item.ItemWrapper;
 import xyz.xenondevs.invui.window.Window;
 
 import java.util.Arrays;
-import java.util.List;
 
 @AllArgsConstructor
 public class InvShareCommand implements CommandExecutor {
@@ -40,7 +39,7 @@ public class InvShareCommand implements CommandExecutor {
             switch (type) {
                 case ITEM -> plugin.getDataManager().getPlayerItem(playerName)
                         .thenAccept(item ->
-                                RedisChat.getScheduler().runTask(() -> {
+                                RedisChat.getScheduler().runTask(p, () -> {
                                             if (plugin.config.debugItemShare) {
                                                 plugin.getLogger().info("Itemshare openGUI for player " + p.getName() + ": " + item.getType());
                                             }
@@ -65,7 +64,7 @@ public class InvShareCommand implements CommandExecutor {
 
                 case INVENTORY -> plugin.getDataManager().getPlayerInventory(playerName)
                         .thenAccept(inventoryContents ->
-                                RedisChat.getScheduler().runTask(() -> {
+                                RedisChat.getScheduler().runTask(p, () -> {
                                     if (plugin.config.debugItemShare) {
                                         plugin.getLogger().info("Invshare openGUI for player " + p.getName() + ": " + Arrays.toString(inventoryContents));
                                     }
@@ -77,7 +76,7 @@ public class InvShareCommand implements CommandExecutor {
                                 }));
                 case ENDERCHEST -> plugin.getDataManager().getPlayerEnderchest(playerName)
                         .thenAccept(ecContents ->
-                                RedisChat.getScheduler().runTask(() -> {
+                                RedisChat.getScheduler().runTask(p, () -> {
                                     if (plugin.config.debugItemShare) {
                                         plugin.getLogger().info("ECshare openGUI for player " + p.getName() + ": " + Arrays.toString(ecContents));
                                     }
@@ -98,29 +97,28 @@ public class InvShareCommand implements CommandExecutor {
         final Gui gui = Gui.empty(9, size);
         gui.addItems(Arrays.stream(items)
                 .map(itemStack -> {
-                    if (itemStack == null) return new ItemBuilder(Material.AIR);
-                    return new ItemBuilder(itemStack);
+                    if (itemStack == null) return Item.simple(new ItemBuilder(Material.AIR));
+                    return Item.simple(new ItemWrapper(itemStack));
                 })
-                .map(SimpleItem::new)
                 .toArray(Item[]::new)
         );
-        Window.single().setTitle(title).setGui(gui).setCloseHandlers(List.of(() -> new UniversalRunnable() {
+        Window.builder().setTitle(title).setUpperGui(gui).addCloseHandler(reason -> new UniversalRunnable() {
             @Override
             public void run() {
                 player.updateInventory();
             }
-        }.runTaskLater(plugin, 1))).open(player);
+        }.runTaskLater(plugin, 1)).open(player);
     }
 
     private void openInvShareGuiItem(Player player, String title, ItemStack item) {
         Gui gui = Gui.empty(9, 3);
-        gui.setItem(13, new SimpleItem(item));
-        Window.single().setTitle(title).setGui(gui).setCloseHandlers(List.of(() -> new UniversalRunnable() {
+        gui.setItem(13, Item.simple(new ItemWrapper(item)));
+        Window.builder().setTitle(title).setUpperGui(gui).addCloseHandler(reason -> new UniversalRunnable() {
             @Override
             public void run() {
                 player.updateInventory();
             }
-        }.runTaskLater(plugin, 1))).open(player);
+        }.runTaskLater(plugin, 1)).open(player);
     }
 
     public enum InventoryType {

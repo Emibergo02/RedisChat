@@ -25,9 +25,9 @@ public class ChatColorCommand implements CommandExecutor, TabCompleter {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (!(sender instanceof Player player)) return true;
         if (plugin.config.enableChatColorGUI) {
-            Window.single()
+            Window.builder()
                     .setTitle(plugin.guiSettings.chatColorGUITitle)
-                    .setGui(new ChatColorGUI(plugin))
+                    .setUpperGui(new ChatColorGUI(plugin).buildGui())
                     .open(player);
             return true;
         }
